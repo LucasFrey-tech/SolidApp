@@ -1,0 +1,107 @@
+@startuml SOLID
+
+package APP {
+    package Usuarios {
+        abstract class USUARIO{
+            #id
+            #nombreUsuario
+            #email
+            #contraseña
+            #fechaRegistro
+            #estadoCuenta
+            # ListarUsuarios()
+        }
+
+        class DONADOR {
+            -nombre
+            -apellido
+            -telefono?
+            -direccion?
+            -puntos
+
+            +listarUsuarios()
+            +donar(d:donacion)
+            +canjear(b:beneficio)
+        }
+
+        class EMPRESA {
+            -descripcion: string
+            -rubro: string
+            -telefono: string
+            -direccion: string
+            -sitioWeb?: string
+            -verificada: boolean
+
+        }
+
+        class ORGANIZACION {
+            -descripcion: string
+            -direccion: string
+            -telefono: string
+            -sitioWeb?: string
+
+        }
+
+        class ADMINISTRADOR {
+            -rol: string
+        }
+
+    }
+
+    package Campañas {
+
+        abstract class CAMPAÑA {
+            #id
+            #titulo: string
+            #descripcion: string
+            #tipoDonacion: string
+            #estado: string
+            #imagenPortada: string
+            #cantidadActual: number
+            #fechaInicio: date
+        }
+
+        class TEMPORAL {
+            -fechaFinalizacion: date    
+        }
+
+        class PERMANENTE {
+            -cantidadObjetivo: number
+        }
+
+    }
+
+    class DONACION {
+        -id
+        -idUsuario
+        -cantidad
+        -tipoDonacion
+    }
+
+    class BENEFICIO {
+        -id
+        -titulo: string
+        -descripcion: string
+        -puntosRequeridos: number
+        -fechaExp: date
+        -codigoDescuento: string
+        -activo: boolean
+    }
+
+}
+
+
+
+DONADOR -U-|> USUARIO
+ORGANIZACION -U-|> USUARIO
+EMPRESA -U-|> USUARIO
+ADMINISTRADOR -U-|> USUARIO
+
+PERMANENTE -UP-|> CAMPAÑA
+TEMPORAL -UP-|> CAMPAÑA
+
+DONADOR --> DONACION: usa
+DONADOR --> BENEFICIO: usa
+
+
+@enduml
