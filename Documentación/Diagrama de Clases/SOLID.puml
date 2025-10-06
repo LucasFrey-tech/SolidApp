@@ -88,6 +88,15 @@ package APP {
         -activo: boolean
     }
 
+    class NOTIFICADOR {
+        -Usuarios: users[]
+        -estado
+
+        +suscribir(u: user)
+        +desuscribir(u: user)
+        +notificar()
+    }
+
 }
 
 
