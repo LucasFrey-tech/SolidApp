@@ -73,16 +73,3 @@
 .socialIcons a:hover {
   color: #b3312d;
 }
-
-.searchIcon {
-  font-size: 18px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #001a33;
-  transition: color 0.3s ease;
-}
-
-.searchIcon:hover {
-  color: #b3312d;
-}

@@ -77,13 +77,6 @@ const Navbar: React.FC = () => {
                         <FaLinkedinIn />
                     </Link>
                 </div>
-
-                <button
-                    className={styles.searchIcon}
-                    onClick={() => alert("Buscar función próximamente")}
-                >
-                    🔍
-                </button>
             </div>
         </nav>
     );
