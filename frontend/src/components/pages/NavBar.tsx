@@ -26,10 +26,10 @@ const Navbar: React.FC = () => {
         <nav className={styles.navbar}>
             <div className={styles.logoSection} onClick={() => handleNavigation("/")}>
                 <Image
-                    src="/logos/SolidApp_logo.png"
+                    src="/logos/SolidApp_logo.svg"
                     alt="Logo SolidAPP"
-                    width={890}
-                    height={150}
+                    width={214}
+                    height={88}
                     className={styles.logo}
                 />
             </div>
