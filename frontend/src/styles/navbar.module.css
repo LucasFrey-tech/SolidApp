@@ -1,0 +1,88 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+  border-top: 3px solid #003366;
+  padding: 10px 40px;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 15px;
+  color: #001a33;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+
+.navLinks {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  margin: 0;
+  padding: 0;
+}
+
+.navLinks a {
+  text-decoration: none;
+  color: #001a33;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.navLinks a:hover {
+  color: #b3312d;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.donateBtn {
+  background-color: #b3312d;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.donateBtn:hover {
+  background-color: #8e2523;
+}
+
+.socialIcons {
+  display: flex;
+  gap: 10px;
+  font-size: 18px;
+}
+
+.socialIcons a {
+  color: #001a33;
+  transition: color 0.3s ease;
+}
+
+.socialIcons a:hover {
+  color: #b3312d;
+}
+
+.searchIcon {
+  font-size: 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #001a33;
+  transition: color 0.3s ease;
+}
+
+.searchIcon:hover {
+  color: #b3312d;
+}
