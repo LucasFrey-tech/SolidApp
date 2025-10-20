@@ -16,8 +16,8 @@ export default function Auth() {
           <Image
             src="/logos/SolidApp_sqr_logo.png"
             alt="Logo SolidApp"
-            width={300}
-            height={300}
+            width={400}
+            height={400}
             className={styles.logo}
           />
         </div>
@@ -31,17 +31,15 @@ export default function Auth() {
         <div className={styles.formBox}>
           <div className={styles.tabButtons}>
             <button
-              className={`${styles.tabButton} ${
-                activeTab === "login" ? styles.active : ""
-              }`}
+              className={`${styles.tabButton} ${activeTab === "login" ? styles.active : ""
+                }`}
               onClick={() => setActiveTab("login")}
             >
               Iniciar sesión
             </button>
             <button
-              className={`${styles.tabButton} ${
-                activeTab === "register" ? styles.active : ""
-              }`}
+              className={`${styles.tabButton} ${activeTab === "register" ? styles.active : ""
+                }`}
               onClick={() => setActiveTab("register")}
             >
               Registrarme
@@ -104,10 +102,6 @@ export default function Auth() {
                   className={styles.input}
                 />
                 <span className={styles.eyeIcon}>👁️</span>
-              </div>
-              <div className={styles.checkboxRow}>
-                <input type="checkbox" id="coupon" />
-                <label htmlFor="coupon">¿Tenés un cupón?</label>
               </div>
               <button type="submit" className={styles.submitButton}>
                 Registrarme
