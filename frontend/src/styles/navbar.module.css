@@ -17,7 +17,6 @@
   cursor: pointer;
 }
 
-
 .navLinks {
   list-style: none;
   display: flex;
@@ -41,22 +40,41 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 50px;
 }
 
 .donateBtn {
   background-color: #b3312d;
   color: white;
-  padding: 8px 16px;
+  padding: 16px 36px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   transition: background-color 0.3s ease;
+  margin-right: 10px;
 }
 
 .donateBtn:hover {
   background-color: #8e2523;
+}
+
+
+.imageButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  transition: transform 0.2s ease;
+}
+
+.imageButton:hover {
+  transform: scale(1.05);
+}
+
+.buttonImage {
+  border-radius: 6px;
 }
 
 .socialIcons {
