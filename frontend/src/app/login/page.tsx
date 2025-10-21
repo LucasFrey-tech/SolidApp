@@ -14,10 +14,10 @@ export default function Auth() {
       <div className={styles.leftPanel}>
         <div className={styles.logoWrapper}>
           <Image
-            src="/logos/SolidApp_sqr_logo.png"
+            src="/logos/SolidApp_sqr_logo.svg"
             alt="Logo SolidApp"
-            width={400}
-            height={400}
+            width={600}
+            height={600}
             className={styles.logo}
           />
         </div>

@@ -1,10 +1,10 @@
 'use client';
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import styles from "../../styles/navbar.module.css"
+import styles from "../../styles/navbar.module.css";
 import {
     FaFacebookF,
     FaInstagram,
@@ -13,8 +13,7 @@ import {
     FaLinkedinIn,
 } from "react-icons/fa6";
 
-const Navbar: React.FC = () => {
-
+export default function Navbar() {
     const router = useRouter();
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -60,6 +59,19 @@ const Navbar: React.FC = () => {
                     Donar aquí
                 </button>
 
+                <button 
+                    className={styles.imageButton}
+                    onClick={() => handleNavigation("/login")}
+                >
+                    <Image
+                        src="/logos/user_logo.svg"
+                        alt="Boton Usuario"
+                        width={40}
+                        height={40}
+                        className={styles.buttonImage}
+                    />
+                </button>
+
                 <div className={styles.socialIcons}>
                     <Link href="https://www.facebook.com" target="_blank">
                         <FaFacebookF />
@@ -80,6 +92,4 @@ const Navbar: React.FC = () => {
             </div>
         </nav>
     );
-};
-
-export default Navbar;
+}
