@@ -30,6 +30,7 @@ export default function Navbar() {
                     width={214}
                     height={88}
                     className={styles.logo}
+                    priority
                 />
             </div>
 
@@ -59,16 +60,17 @@ export default function Navbar() {
                     Donar aquí
                 </button>
 
-                <button 
+                <button
                     className={styles.imageButton}
                     onClick={() => handleNavigation("/login")}
                 >
                     <Image
                         src="/logos/user_logo.svg"
-                        alt="Boton Usuario"
+                        alt="Botón Usuario"
                         width={40}
                         height={40}
                         className={styles.buttonImage}
+                        unoptimized
                     />
                 </button>
 
