@@ -2,10 +2,54 @@
   display: flex;
   height: 100vh;
   width: 100vw;
-  background-color: #f7f8fa;
   overflow: hidden;
 }
 
+/* Título de registro */
+.tituloRegistro {
+  color: black;
+  text-align: center;
+  font-family: 'Avenir', sans-serif;
+}
+.tituloTipo {
+  font-size: 20px;
+  margin-bottom: 15px;
+  text-align: center;
+  color: black;
+}
+
+/* Contenedor de imágenes del registro */
+.contenedor {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin-top: 20px;
+  padding: 20px 0;
+}
+
+/* Imagen del registro */
+.imagen {
+  margin-top: 3%;
+  margin-bottom: 3%;
+  width: 76%; 
+  height: 76%;
+}
+
+.imagen:hover {
+  transform: scale(1.1);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+/* Texto debajo de cada imagen */
+.label {
+  margin-top: 8px;
+  font-size: 16px;
+  color: #5900ff;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Panel izquierdo */
 .leftPanel {
   width: 40%;
   background-color: #fff9ea;
@@ -28,6 +72,7 @@
   color: #1e2d3b;
 }
 
+/* Panel derecho */
 .rightPanel {
   width: 60%;
   position: relative;
@@ -37,6 +82,7 @@
   justify-content: center;
 }
 
+/* Botón cerrar */
 .closeButton {
   position: absolute;
   top: 20px;
@@ -53,7 +99,7 @@
   transform: scale(1.1);
 }
 
-
+/* Caja del formulario */
 .formBox {
   width: 500px;
   display: flex;
@@ -78,6 +124,7 @@
   font-size: 1.2rem;
 }
 
+/* Pestañas */
 .tabButtons {
   display: flex;
   width: 100%;
@@ -108,10 +155,12 @@
   color: #fff;
 }
 
+/* Formulario */
 .form {
   width: 100%;
   display: flex;
   flex-direction: column;
+  border-radius: 10px;
   gap: 1rem;
 }
 
@@ -154,6 +203,7 @@
   background-color: #95c86a;
 }
 
+/* Olvidé mi contraseña */
 .forgotPassword {
   margin-top: 0.5rem;
   text-align: center;
@@ -166,6 +216,7 @@
   text-decoration: underline;
 }
 
+/* Fila nombre y apellido */
 .nameRow {
   display: flex;
   gap: 1rem;
