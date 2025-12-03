@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-import Login from "@/components/Login/Login";
-import Registro from "@/components/Registro/Registro";
+import Login from "@/components/Login/login";
+import Registro from "@/components/Registro/registro";
 
 // asegúrate de que este archivo exista en src/styles/login.module.css
 import styles from "@/styles/login.module.css";
