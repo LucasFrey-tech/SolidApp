@@ -49,7 +49,7 @@ export default function Data() {
                         <input className={styles.AreaCode} type="text" />
                         <label className={styles.Labeltel} htmlFor="tel">Telefono:</label>
                         <input className={styles.tel} type="text" />
-                    </div>
+                    </div>       
                 </section>
                 <input type="submit" value="Guardar Cambios"/>
             </form>
