@@ -1,0 +1,24 @@
+.AccountMenu {
+    display: flex;
+    background-color: #ffffff;
+    width: 30%;
+    padding: 10%;
+    justify-content: center;
+}
+
+.MenuLayer {
+    border: 2px solid black;
+}
+
+.MenuLayer > h1{
+    padding: 0px 0px 20% 0;
+}
+
+.User {
+    display: flex;
+}
+
+.Menu > ul > li {
+    padding: 5%;
+}
+

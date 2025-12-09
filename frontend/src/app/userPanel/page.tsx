@@ -11,12 +11,14 @@ export default function Panel() {
     const [activeSection, setActiveSection] = useState<'data' | 'user&pass' | 'cupons'>('data');
 
     return (
-        <main className={styles.Panel}>
-            <section className={styles.content}>
-                {activeSection === 'data' && <Data/>}
-                {activeSection === 'user&pass' && <UserAndPass/>}
-            </section>
-            <MyAccount onChangeSection={setActiveSection}/>
-        </main>
+        <div className={styles.PanelLayout}>
+            <main className={styles.Panel}>
+                <section className={styles.Content}>
+                    {activeSection === 'data' && <Data/>}
+                    {activeSection === 'user&pass' && <UserAndPass/>}
+                </section>
+                <MyAccount onChangeSection={setActiveSection}/>
+            </main>
+        </div>
     )
 }

@@ -1,0 +1,27 @@
+.Content {
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    width: 70%;
+}
+
+.Form {
+    width: 80%;
+}
+
+.PersonalFields {
+    display: flex;
+    padding: 10% 0 10% 0;
+}
+
+.AdressFields {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10% 0 10% 0;
+}
+
+.ContactFields {
+    display: flex;
+    padding: 10% 0 10% 0;
+}
+
