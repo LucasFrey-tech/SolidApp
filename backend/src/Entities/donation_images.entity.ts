@@ -1,0 +1,30 @@
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
+import { Donations } from './donations.entity';
+
+@Entity('imagenes_donacion')
+export class Donation_images {
+  @ApiProperty({
+    example: 1,
+    description: 'Id Único de la Imagen de la Donación',
+  })
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ApiProperty({ example: 'image.jpg', description: 'Imagen de la Donación' })
+  @Column({ type: 'varchar', length: 255 })
+  imagen: string;
+
+  @ApiProperty({ example: 1, description: 'Clave Foranea de la Donación' })
+  @ManyToOne(() => Donations, (donations) => donations.images, { 
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'donaciones_id' })
+  id_donacion: Donations;
+}

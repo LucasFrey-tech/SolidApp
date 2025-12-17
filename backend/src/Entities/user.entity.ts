@@ -50,7 +50,7 @@ export class User {
   imagen!: string;
 
   @ApiProperty({
-    example: '15-12-2025',
+    example: '2025-12-15T10:30:45Z',
     description: 'Fecha de Registro del Usuario',
   })
   @CreateDateColumn({ type: 'timestamp' })
@@ -60,14 +60,14 @@ export class User {
     example: '2025-12-15T10:30:45Z',
     description: 'Ultima Conexión del Usuario al sitio',
   })
-  @Column({ type: 'timestamp', nullable: true })
+  @CreateDateColumn({ type: 'timestamp', nullable: true })
   ultima_conexion: Date;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Ultima modificación del Usuario',
   })
-  @Column({ type: 'timestamp', nullable: true })
+  @CreateDateColumn({ type: 'timestamp', nullable: true })
   ultimo_cambio: Date;
 
   @ApiProperty({ example: false, description: 'Estado del Usuario' })
