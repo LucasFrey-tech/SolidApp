@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, JoinColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, JoinColumn, OneToOne } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from './user.entity';
 import { Organizations } from './organizations.entity';
@@ -13,14 +13,12 @@ export class Organizations_user {
   id: number;
 
   @ApiProperty({ example: 1, description: 'Id Foranea del Usuario' })
-  @ManyToOne(() => User, (users) => users.organizationsUser)
-  @JoinColumn({ name: 'usuarios_id' })
-  id_usuario: number;
+  @OneToOne(() => User, (user) => user.organizationsUser)
+  @JoinColumn({ name: 'id_usuario' })
+  usuario: User;
 
   @ApiProperty({ example: 1, description: 'Id Foranea de la Organización' })
-  @ManyToOne(
-    () => Organizations,
-    (organizations) => organizations.organizationsUser)
-  @JoinColumn({ name: 'organizaciones_id' })
-  id_organizacion: Organizations;
+  @OneToOne(() => Organizations, (organization) => organization.user)
+  @JoinColumn({ name: 'id_organizacion' })
+  organizacion: Organizations;
 }

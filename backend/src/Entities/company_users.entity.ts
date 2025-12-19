@@ -12,13 +12,23 @@ export class Company_users {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ example: 1, description: 'Id Foranea del Usuario' })
-  @ManyToOne(() => User, (users) => users.companyUsers)
-  @JoinColumn({ name: 'usuarios_id' })
-  id_usuario: User;
+  @ApiProperty({
+    type: () => User,
+    description: 'Usuario asociado a la empresa',
+  })
+  @ManyToOne(() => User, (user) => user.companyUser, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'id_usuario' })
+  usuario: User;
 
-  @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })
-  @ManyToOne(() => Companies, (companies) => companies.companyUsers)
-  @JoinColumn({ name: 'empresas_id' })
-  id_empresa: Companies;
+  @ApiProperty({
+    type: () => Companies,
+    description: 'Empresa asociada al usuario',
+  })
+  @ManyToOne(() => Companies, (company) => company.companyUser, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'id_empresa' })
+  empresa: Companies;
 }

@@ -1,4 +1,11 @@
-import { Entity, Column, ManyToOne, JoinColumn, CreateDateColumn, PrimaryGeneratedColumn, ManyToMany} from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
 import { Donor } from './donor.entity';
@@ -40,13 +47,18 @@ export class Donations {
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
-    description: 'Fecha de cuando se realizo la Donación'
+    description: 'Fecha de cuando se realizo la Donación',
   })
   @CreateDateColumn({ type: 'timestamp' })
   fecha_registro: Date;
 
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Campaña' })
-  @ManyToOne(() => Campaigns, (campaigns) => campaigns.Donations)
-  @JoinColumn({ name: 'campañas_id' })
-  id_campaña: Campaigns;
+  @ManyToOne(() => Campaigns, (campaign) => campaign.donations)
+  @JoinColumn({ name: 'id_campaña' })
+  campaña: Campaigns;
+
+  @ApiProperty({ example: 1, description: 'Clave Foranea del Donador' })
+  @ManyToOne(() => Donor)
+  @JoinColumn({ name: 'id_donador' })
+  donador: Donor;
 }

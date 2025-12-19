@@ -3,8 +3,12 @@ import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
   Column,
+  OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Campaigns } from './campaigns.entity';
+import { Organizations_user } from './organization_user.entity';
 
 @Entity('organizaciones')
 export class Organizations {
@@ -86,4 +90,20 @@ export class Organizations {
   })
   @CreateDateColumn({ type: 'timestamp', length: 50 })
   ultimo_cambio: Date;
+
+  @ApiProperty({
+    type: () => Campaigns,
+    isArray: true,
+    description: 'Campañas asociadas a la organización',
+  })
+  @OneToMany(() => Campaigns, (campaign) => campaign.organization)
+  campaigns: Campaigns[];
+
+  @ApiProperty({
+    type: () => Organizations_user,
+    required: true,
+    description: 'Usuario de la Organización',
+  })
+  @OneToOne(() => Organizations_user, (organization) => organization.usuario)
+  user!: Organizations_user;
 }

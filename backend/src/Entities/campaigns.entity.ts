@@ -5,9 +5,11 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Organizations } from './organizations.entity';
+import { Donations } from './donations.entity';
 
 @Entity('campañas')
 export class Campaigns {
@@ -73,7 +75,15 @@ export class Campaigns {
   ultimo_cambio: Date;
 
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Organización' })
-  @ManyToOne(() => Organizations, (organizations) => organizations.Campaigns)
-  @JoinColumn({ name: 'organizaciones_id' })
-  id_organizacion: Organizations;
+  @ManyToOne(() => Organizations, (organization) => organization.campaigns)
+  @JoinColumn({ name: 'id_organizacion' })
+  organization: Organizations;
+
+  @ApiProperty({
+    type: () => Donations,
+    isArray: true,
+    description: 'Donaciones asociadas a la organización',
+  })
+  @OneToMany(() => Donations, (donation) => donation.campaña)
+  donations: Donations[];
 }

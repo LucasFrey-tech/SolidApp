@@ -55,7 +55,7 @@ export class Benefits {
   ultimo_cambio: Date;
 
   @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })
-  @ManyToOne(() => Companies, (companies) => companies.Benefits)
-  @JoinColumn({ name: 'empresas_id' })
-  id_empresa: Companies;
+  @ManyToOne(() => Companies, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'id_empresa' })
+  empresa: Companies;
 }
