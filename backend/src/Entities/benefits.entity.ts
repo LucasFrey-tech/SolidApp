@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Companies } from './companies.entity';
@@ -51,7 +52,7 @@ export class Benefits {
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del ultimo cambio realizado al Beneficio',
   })
-  @CreateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'timestamp' })
   ultimo_cambio: Date;
 
   @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })

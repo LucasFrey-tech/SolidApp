@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   OneToMany,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Company_users } from './company_users.entity';
@@ -88,7 +89,7 @@ export class Companies {
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del ultimo cambio de información de la Empresa',
   })
-  @CreateDateColumn({ type: 'timestamp', length: 50 })
+  @UpdateDateColumn({ type: 'timestamp', length: 50 })
   ultimo_cambio: Date;
 
   @ApiProperty({

@@ -1,0 +1,9 @@
+armar DTOs para las siguientes entidades / tablas:
+
+Usuarios
+Donador
+Empresas
+Organizaciones
+Campañas
+Donaciones
+Beneficios
