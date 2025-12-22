@@ -7,7 +7,7 @@ export class UpdateCompanyDTO extends PartialType(CreateCompanyDTO) {
   @ApiProperty({
     example: false,
     description: 'Indica si la empresa está deshabilitada',
-    required: false
+    required: false,
   })
   @IsOptional()
   deshabilitado?: boolean;
