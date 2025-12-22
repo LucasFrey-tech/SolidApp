@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
   OneToOne,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Donor } from './donor.entity';
@@ -64,14 +65,14 @@ export class User {
     example: '2025-12-15T10:30:45Z',
     description: 'Ultima Conexión del Usuario al sitio',
   })
-  @CreateDateColumn({ type: 'timestamp', nullable: true })
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
   ultima_conexion: Date;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Ultima modificación del Usuario',
   })
-  @CreateDateColumn({ type: 'timestamp', nullable: true })
+  @UpdateDateColumn({ type: 'timestamp', nullable: true })
   ultimo_cambio: Date;
 
   @ApiProperty({ example: false, description: 'Estado del Usuario' })

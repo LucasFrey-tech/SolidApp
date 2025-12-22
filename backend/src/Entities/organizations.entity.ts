@@ -5,6 +5,7 @@ import {
   Column,
   OneToMany,
   OneToOne,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
@@ -88,7 +89,7 @@ export class Organizations {
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del ultimo cambio de información de la Organización',
   })
-  @CreateDateColumn({ type: 'timestamp', length: 50 })
+  @UpdateDateColumn({ type: 'timestamp', length: 50 })
   ultimo_cambio: Date;
 
   @ApiProperty({
