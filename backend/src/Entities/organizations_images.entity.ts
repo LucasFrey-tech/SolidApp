@@ -29,10 +29,7 @@ export class Organizations_images {
   banner: string;
 
   @ApiProperty({ example: 1, description: 'Id Foranea de la Organización' })
-  @ManyToOne(
-    () => Organizations,
-    (organizations) => organizations.organizationsImages,
-  )
+  @ManyToOne(() => Organizations, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'organizaciones_id' })
   id_organizacion: Organizations;
 }
