@@ -31,5 +31,5 @@ export class Organizations_images {
   @ApiProperty({ example: 1, description: 'Id Foranea de la Organización' })
   @ManyToOne(() => Organizations, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'organizaciones_id' })
-  id_organizacion: Organizations;
+  organizacion: Organizations;
 }

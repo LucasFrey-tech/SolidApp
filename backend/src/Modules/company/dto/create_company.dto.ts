@@ -1,29 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { 
-  IsString, 
-  IsNotEmpty, 
-  MaxLength, 
-  IsBoolean, 
+import {
+  IsString,
+  IsNotEmpty,
+  MaxLength,
+  IsBoolean,
   IsOptional,
-  Matches 
+  Matches,
 } from 'class-validator';
 
 export class CreateCompanyDTO {
-  @ApiProperty({ 
-    example: '20-04856975-3', 
-    description: 'CUIL de la Empresa (formato: XX-XXXXXXXX-X)' 
+  @ApiProperty({
+    example: '20-04856975-3',
+    description: 'CUIL de la Empresa (formato: XX-XXXXXXXX-X)',
   })
   @IsString()
   @IsNotEmpty()
   @MaxLength(13)
   @Matches(/^\d{2}-\d{8}-\d{1}$/, {
-    message: 'El CUIL debe tener el formato XX-XXXXXXXX-X'
+    message: 'El CUIL debe tener el formato XX-XXXXXXXX-X',
   })
   nroDocumento: string;
 
   @ApiProperty({
     example: 'Supermercados Unidos S.A.',
-    description: 'Razón social registrada de la empresa'
+    description: 'Razón social registrada de la empresa',
   })
   @IsString()
   @IsNotEmpty()
@@ -33,7 +33,7 @@ export class CreateCompanyDTO {
   @ApiProperty({
     example: 'SuperUnidos',
     description: 'Nombre comercial o de fantasía',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -41,17 +41,18 @@ export class CreateCompanyDTO {
   nombre_fantasia?: string;
 
   @ApiProperty({
-    example: 'Supermercados Unidos impulsa la solidaridad mediante bonificaciones...',
-    description: 'Descripción de la empresa y su participación'
+    example:
+      'Supermercados Unidos impulsa la solidaridad mediante bonificaciones...',
+    description: 'Descripción de la empresa y su participación',
   })
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
   descripcion: string;
 
-  @ApiProperty({ 
-    example: 'Supermercado', 
-    description: 'Rubro principal de la empresa' 
+  @ApiProperty({
+    example: 'Supermercado',
+    description: 'Rubro principal de la empresa',
   })
   @IsString()
   @IsNotEmpty()
@@ -60,7 +61,7 @@ export class CreateCompanyDTO {
 
   @ApiProperty({
     example: '+54 11 4567-8900',
-    description: 'Teléfono de contacto'
+    description: 'Teléfono de contacto',
   })
   @IsString()
   @IsNotEmpty()
@@ -69,7 +70,7 @@ export class CreateCompanyDTO {
 
   @ApiProperty({
     example: 'Calle falsa 123',
-    description: 'Dirección física de la empresa'
+    description: 'Dirección física de la empresa',
   })
   @IsString()
   @IsNotEmpty()
@@ -79,7 +80,7 @@ export class CreateCompanyDTO {
   @ApiProperty({
     example: 'www.supermercadosunidos.com.ar',
     description: 'Sitio web oficial',
-    required: false
+    required: false,
   })
   @IsString()
   @IsOptional()
@@ -89,7 +90,7 @@ export class CreateCompanyDTO {
   @ApiProperty({
     example: true,
     description: 'Indica si la empresa está verificada',
-    default: false
+    default: false,
   })
   @IsBoolean()
   @IsOptional()
