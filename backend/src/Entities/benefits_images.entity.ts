@@ -22,9 +22,9 @@ export class Benefits_images {
   imagen: string;
 
   @ApiProperty({ example: 1, description: 'Id Foranea del Beneficio' })
-  @ManyToOne(() => Benefits, (benefits) => benefits.images, {
+  @ManyToOne(() => Benefits, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'beneficios_id' })
-  id_beneficio: Benefits;
+  @JoinColumn({ name: 'id_beneficio' })
+  beneficio: Benefits;
 }

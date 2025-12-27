@@ -22,7 +22,7 @@ export class Campaigns_images {
   imagen: string;
 
   @ApiProperty({ example: 1, description: 'Id Foranea de la Campaña' })
-  @ManyToOne(() => Campaigns, (campaigns) => campaigns.Campaigns_images)
+  @ManyToOne(() => Campaigns)
   @JoinColumn({ name: 'campañas_id' })
   id_campaña: Campaigns;
 }

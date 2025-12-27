@@ -22,7 +22,7 @@ export class Donation_images {
   imagen: string;
 
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Donación' })
-  @ManyToOne(() => Donations, (donations) => donations.images, { 
+  @ManyToOne(() => Donations, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'donaciones_id' })

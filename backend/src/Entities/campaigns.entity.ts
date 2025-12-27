@@ -5,9 +5,12 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Organizations } from './organizations.entity';
+import { Donations } from './donations.entity';
 
 @Entity('campañas')
 export class Campaigns {
@@ -69,11 +72,19 @@ export class Campaigns {
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del Ultimo cambio realizado a la Campaña Solidaria',
   })
-  @CreateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'timestamp' })
   ultimo_cambio: Date;
 
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Organización' })
-  @ManyToOne(() => Organizations, (organizations) => organizations.Campaigns)
-  @JoinColumn({ name: 'organizaciones_id' })
-  id_organizacion: Organizations;
+  @ManyToOne(() => Organizations, (organization) => organization.campaigns)
+  @JoinColumn({ name: 'id_organizacion' })
+  organization: Organizations;
+
+  @ApiProperty({
+    type: () => Donations,
+    isArray: true,
+    description: 'Donaciones asociadas a la organización',
+  })
+  @OneToMany(() => Donations, (donation) => donation.campaña)
+  donations: Donations[];
 }

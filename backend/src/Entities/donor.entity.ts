@@ -1,12 +1,13 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
-  ManyToOne,
   JoinColumn,
   Column,
+  OneToOne,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from './user.entity';
+import { Donations } from './donations.entity';
 
 @Entity('donador')
 export class Donor {
@@ -19,7 +20,7 @@ export class Donor {
   puntos: number;
 
   @ApiProperty({ example: 1, description: 'Id Foranea del Usuario' })
-  @ManyToOne(() => User, (users) => users.donorUsers)
-  @JoinColumn({ name: 'usuarios_id' })
-  id_usuario: User;
+  @OneToOne(() => User, (users) => users.donor, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'id_usuario' })
+  usuario: User;
 }
