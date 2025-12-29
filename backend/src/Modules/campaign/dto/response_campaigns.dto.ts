@@ -1,6 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { OrganizationSummaryDto } from '../../organization/dto/summary_organization.dto';
 
-export class ResponseCampaignDto {
+export class ResponseCampaignsDto {
+  @ApiProperty({
+    example: 1,
+    description: 'Id única de la Campaña Solidaria',
+  })
+  id: number;
+
+  @ApiProperty({
+    type: () => OrganizationSummaryDto,
+    description: 'Información resumida de la Organización',
+  })
+  organizacion: OrganizationSummaryDto;
+
   @ApiProperty({
     example: 'Campaña Solidaria Invierno 2025',
     description: 'Título de la campaña solidaria',

@@ -22,7 +22,7 @@ import {
 import { CampaignService } from './campaign.service';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
-import { CampaignsResponseDto } from './dto/response_campaigns.dto';
+import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 
 /**
  * Controlador para gestionar las Campañas Solidarias.
@@ -41,7 +41,7 @@ export class CampaignController {
   @ApiResponse({
     status: 200,
     description: 'Lista de Campañas Solidarias obtenidas exitosamente',
-    type: CampaignsResponseDto,
+    type: ResponseCampaignsDto,
     isArray: true,
   })
 
@@ -59,7 +59,7 @@ export class CampaignController {
   @ApiResponse({
     status: 200,
     description: 'Campaña Solidaria encontrada',
-    type: CampaignsResponseDto,
+    type: ResponseCampaignsDto,
   })
   @ApiResponse({
     status: 404,
@@ -67,7 +67,7 @@ export class CampaignController {
   })
   async findOne(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<CampaignsResponseDto> {
+  ): Promise<ResponseCampaignsDto> {
     return this.campaignService.findOne(id);
   }
 
@@ -84,7 +84,7 @@ export class CampaignController {
   @ApiResponse({
     status: 201,
     description: 'Campaña creada exitosamente',
-    type: CampaignsResponseDto,
+    type: ResponseCampaignsDto,
   })
   @ApiResponse({
     status: 400,
@@ -96,7 +96,7 @@ export class CampaignController {
   })
   async create(
     @Body() createCampaignsDto: CreateCampaignsDto,
-  ): Promise<CampaignsResponseDto> {
+  ): Promise<ResponseCampaignsDto> {
     return this.campaignService.create(createCampaignsDto);
   }
 
@@ -118,12 +118,12 @@ export class CampaignController {
   @ApiResponse({
     status: 200,
     description: 'Campaña Solidaria actualizada exitosamente',
-    type: CampaignsResponseDto,
+    type: ResponseCampaignsDto,
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCampaignsDto: UpdateCampaignsDto,
-  ): Promise<CampaignsResponseDto> {
+  ): Promise<ResponseCampaignsDto> {
     return this.campaignService.update(id, updateCampaignsDto);
   }
 

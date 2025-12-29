@@ -1,23 +1,40 @@
 import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { CreateCampaignDto } from './create_campaigns.dto';
+import { CreateCampaignsDto } from './create_campaigns.dto';
+import {
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
-export class UpdateCampaignDto extends PartialType(CreateCampaignDto) {
+export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
   @ApiPropertyOptional({
     example: 'Campaña Solidaria Invierno 2025 (extendida)',
     description: 'Título actualizado de la campaña solidaria',
   })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(255)
   titulo?: string;
 
   @ApiPropertyOptional({
     example: 'FINALIZADA',
     description: 'Nuevo estado de la campaña solidaria',
   })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(20)
   estado?: string;
 
   @ApiPropertyOptional({
     example: 'Campaña extendida hasta fines de agosto',
     description: 'Descripción actualizada de la campaña',
   })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(255)
   description?: string;
 
   @ApiPropertyOptional({
@@ -26,11 +43,16 @@ export class UpdateCampaignDto extends PartialType(CreateCampaignDto) {
     type: String,
     format: 'date',
   })
+  @IsNotEmpty()
+  @IsDate()
   fechaFin?: Date;
 
   @ApiPropertyOptional({
     example: 750000,
     description: 'Nuevo monto objetivo de la campaña',
   })
+  @Min(1)
+  @IsNotEmpty()
+  @IsNumber()
   objetivo?: number;
 }

@@ -78,7 +78,7 @@ export class Campaigns {
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Organización' })
   @ManyToOne(() => Organizations, (organization) => organization.campaigns)
   @JoinColumn({ name: 'id_organizacion' })
-  organization: Organizations;
+  organizacion: Organizations;
 
   @ApiProperty({
     type: () => Donations,
@@ -86,5 +86,5 @@ export class Campaigns {
     description: 'Donaciones asociadas a la organización',
   })
   @OneToMany(() => Donations, (donation) => donation.campaña)
-  donations: Donations[];
+  donaciones: Donations[];
 }
