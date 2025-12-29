@@ -19,7 +19,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 
-import { CampaignService } from './campaign.service';
+import { CampaignsService } from './campaign.service';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
@@ -30,8 +30,8 @@ import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 
 @ApiTags('Campañas')
 @Controller('campaigns')
-export class CampaignController {
-  constructor(private readonly campaignService: CampaignService) {}
+export class CampaignsController {
+  constructor(private readonly campaignService: CampaignsService) {}
 
   /**
    * Listar todas las Campañas Solidarias

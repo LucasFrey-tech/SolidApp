@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Campaigns } from 'src/Entities/campaigns.entity';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
@@ -18,8 +18,8 @@ import { Organizations } from 'src/Entities/organizations.entity';
  */
 
 @Injectable()
-export class CampaignService {
-  private readonly logger = new Logger(CampaignService.name);
+export class CampaignsService {
+  private readonly logger = new Logger(CampaignsService.name);
 
   constructor(
     @InjectRepository(Campaigns)
