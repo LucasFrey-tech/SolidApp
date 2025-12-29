@@ -127,7 +127,9 @@ export class BenefitService {
     // Actualizar campos
     Object.keys(updateDto).forEach((key) => {
       if (key !== 'id_empresa' && updateDto[key] !== undefined) {
-        benefit[key] = updateDto[key];
+        benefit[key as keyof Omit<Benefits, 'empresa'>] = updateDto[
+          key as keyof UpdateBenefitsDTO
+        ] as never;
       }
     });
 
@@ -161,7 +163,9 @@ export class BenefitService {
     this.logger.log(`Beneficio ${id} eliminado`);
   }
 
-  private mapToResponseDto(benefit: Benefits): BenefitsResponseDTO {
+  private readonly mapToResponseDto = (
+    benefit: Benefits,
+  ): BenefitsResponseDTO => {
     const companySummary: CompanySummaryDTO = {
       id: benefit.empresa.id,
       razon_social: benefit.empresa.razon_social,
@@ -181,5 +185,5 @@ export class BenefitService {
       ultimo_cambio: benefit.ultimo_cambio,
       empresa: companySummary,
     };
-  }
+  };
 }
