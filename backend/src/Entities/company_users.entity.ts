@@ -26,7 +26,7 @@ export class Company_users {
     type: () => Companies,
     description: 'Empresa asociada al usuario',
   })
-  @ManyToOne(() => Companies, (company) => company.companyUser, {
+  @ManyToOne(() => Companies, (company) => company.usuariosCompania, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id_empresa' })
