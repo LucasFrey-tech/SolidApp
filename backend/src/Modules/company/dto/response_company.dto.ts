@@ -17,7 +17,7 @@ export class CompanyResponseDTO {
   nombre_fantasia: string;
 
   @ApiProperty({
-    example: 'Supermercados Unidos impulsa la solidaridad...', 
+    example: 'Supermercados Unidos impulsa la solidaridad...',
     description: 'Descripción',
   })
   descripcion: string;
