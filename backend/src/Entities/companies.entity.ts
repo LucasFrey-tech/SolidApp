@@ -98,5 +98,5 @@ export class Companies {
     description: 'Usuarios asociados a la empresa',
   })
   @OneToMany(() => Company_users, (company) => company.empresa)
-  companyUser: Company_users[];
+  usuariosCompania: Company_users[];
 }
