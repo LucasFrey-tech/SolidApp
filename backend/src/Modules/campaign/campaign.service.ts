@@ -34,7 +34,7 @@ export class CampaignsService {
    */
   async findAll(): Promise<ResponseCampaignsDto[]> {
     const campaigns = await this.campaignsRepository.find({
-      relations: ['organization'],
+      relations: ['organizacion'],
       where: { organizacion: { deshabilitado: false } }, // Solo organizaciones activas
     });
 
