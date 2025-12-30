@@ -14,8 +14,8 @@ export class CreateCompanyDTO {
     description: 'CUIL de la Empresa (formato: XX-XXXXXXXX-X)',
   })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(13)
+  @IsNotEmpty({ message: 'El CUIL es Obligatorio' })
+  @MaxLength(13, { message: 'El CUIL no puede superar los 13 caracteres' })
   @Matches(/^\d{2}-\d{8}-\d{1}$/, {
     message: 'El CUIL debe tener el formato XX-XXXXXXXX-X',
   })
@@ -26,8 +26,10 @@ export class CreateCompanyDTO {
     description: 'Razón social registrada de la empresa',
   })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
+  @IsNotEmpty({ message: 'La Razon Social es Obligatoria' })
+  @MaxLength(255, {
+    message: 'La razon social no puede superar los 255 caracteres',
+  })
   razon_social: string;
 
   @ApiProperty({
@@ -37,7 +39,9 @@ export class CreateCompanyDTO {
   })
   @IsString()
   @IsOptional()
-  @MaxLength(50)
+  @MaxLength(50, {
+    message: 'El nombre ficticio no puede superar los 50 caracteres',
+  })
   nombre_fantasia?: string;
 
   @ApiProperty({
@@ -46,8 +50,10 @@ export class CreateCompanyDTO {
     description: 'Descripción de la empresa y su participación',
   })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
+  @IsNotEmpty({ message: 'La descripción es Obligatoria' })
+  @MaxLength(255, {
+    message: 'La descripción no puede superar los 255 caracteres',
+  })
   descripcion: string;
 
   @ApiProperty({
@@ -55,8 +61,8 @@ export class CreateCompanyDTO {
     description: 'Rubro principal de la empresa',
   })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(15)
+  @IsNotEmpty({ message: 'El Rubro es Obligatorio' })
+  @MaxLength(15, { message: 'El Rubro no puede superar los 15 caracteres' })
   rubro: string;
 
   @ApiProperty({
@@ -64,8 +70,8 @@ export class CreateCompanyDTO {
     description: 'Teléfono de contacto',
   })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(25)
+  @IsNotEmpty({ message: 'El telefono de contacto es Obligatorio' })
+  @MaxLength(25, { message: 'El Telefono no puede superar los 25 caracteres' })
   telefono: string;
 
   @ApiProperty({
@@ -73,8 +79,8 @@ export class CreateCompanyDTO {
     description: 'Dirección física de la empresa',
   })
   @IsString()
-  @IsNotEmpty()
-  @MaxLength(25)
+  @IsNotEmpty({ message: 'La dirección es Oligatoria' })
+  @MaxLength(25, { message: 'La dirección no puede superar los 25 caracteres' })
   direccion: string;
 
   @ApiProperty({
@@ -84,7 +90,9 @@ export class CreateCompanyDTO {
   })
   @IsString()
   @IsOptional()
-  @MaxLength(255)
+  @MaxLength(255, {
+    message: 'La dirección no puede superar los 255 caracteres',
+  })
   web?: string;
 
   @ApiProperty({
@@ -92,7 +100,7 @@ export class CreateCompanyDTO {
     description: 'Indica si la empresa está verificada',
     default: false,
   })
-  @IsBoolean()
+  @IsBoolean({ message: 'Él campo Verificada debe ser booleano' })
   @IsOptional()
   verificada?: boolean;
 }
