@@ -44,6 +44,9 @@ export class CampaignsController {
     type: ResponseCampaignsDto,
     isArray: true,
   })
+  async findAll(): Promise<ResponseCampaignsDto[]> {
+    return this.campaignService.findAll();
+  }
 
   /**
    * Obtener una Campaña Solidaria por ID
