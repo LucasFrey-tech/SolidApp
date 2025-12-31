@@ -31,4 +31,10 @@ export class CreateDonationDto {
       'Estado actual de la donación (PENDIENTE, CONFIRMADA, ENTREGADA)',
   })
   estado: string;
+
+  @ApiProperty({
+    example: 3,
+    description: 'Identificador de la campaña solidaria asociada a la donación',
+  })
+  campaignId: number;
 }

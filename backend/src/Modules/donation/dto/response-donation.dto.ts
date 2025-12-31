@@ -48,4 +48,12 @@ export class ResponseDonationDto {
     description: 'Identificador del usuario (donador) que realizó la donación',
   })
   donorId: number;
+
+  @ApiProperty({
+    example: '2025-05-15T10:30:00.000Z',
+    description: 'Fecha en la que se registró la donación en el sistema',
+    type: String,
+    format: 'date-time',
+  })
+  fecha_registro: Date;
 }
