@@ -53,7 +53,7 @@ export class Donations {
   fecha_registro: Date;
 
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Campaña' })
-  @ManyToOne(() => Campaigns, (campaign) => campaign.donations)
+  @ManyToOne(() => Campaigns, (campaign) => campaign.donaciones)
   @JoinColumn({ name: 'id_campaña' })
   campaña: Campaigns;
 
