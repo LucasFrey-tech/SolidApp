@@ -11,4 +11,4 @@ import { Companies } from 'src/Entities/companies.entity';
   providers: [BenefitService],
   exports: [BenefitService],
 })
-export class UserModule {}
+export class BenefitModule {}
