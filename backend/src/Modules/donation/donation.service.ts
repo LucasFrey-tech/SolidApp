@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donations } from 'src/Entities/donations.entity';
 import { Campaigns } from 'src/Entities/campaigns.entity';
-import { Donor } from 'src/Entities/donor.entity';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { ResponseDonationDto } from './dto/response-donation.dto';
+import { DonorsService } from '../donor/donor.service';
 
 @Injectable()
 export class DonationsService {
@@ -16,8 +16,8 @@ export class DonationsService {
     private readonly donationsRepository: Repository<Donations>,
     @InjectRepository(Campaigns)
     private readonly campaignsRepository: Repository<Campaigns>,
-    @InjectRepository(Donor)
-    private readonly donorRepository: Repository<Donor>,
+
+    private readonly donorService: DonorsService,
   ) {}
 
   /**
@@ -64,16 +64,7 @@ export class DonationsService {
       throw new NotFoundException('Campaña no encontrada');
     }
 
-    let donor = await this.donorRepository.findOne({
-      where: { usuario: { id: userId } },
-    });
-
-    if (!donor) {
-      donor = this.donorRepository.create({
-        usuario: { id: userId },
-      });
-      donor = await this.donorRepository.save(donor);
-    }
+    const donor = await this.donorService.createIfNotExists(userId);
 
     const donation = this.donationsRepository.create({
       ...createDto,
