@@ -4,6 +4,7 @@ import {
   JoinColumn,
   Column,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from './user.entity';
@@ -23,4 +24,7 @@ export class Donor {
   @OneToOne(() => User, (users) => users.donor, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_usuario' })
   usuario: User;
+
+  @OneToMany(() => Donations, (donation) => donation.donador)
+  donaciones: Donations[];
 }
