@@ -42,4 +42,17 @@ export class ResponseUserDto {
     description: 'Rol del usuario dentro del sistema',
   })
   rol: string;
+
+  @ApiProperty({
+    example: false,
+    description: 'Indica si el usuario está deshabilitado',
+  })
+  deshabilitado: boolean;
+  @ApiProperty({
+    example: '2025-05-15T10:30:00.000Z',
+    description: 'Fecha en la que el usuario fue registrado en el sistema',
+    type: String,
+    format: 'date-time',
+  })
+  fechaRegistro: Date;
 }
