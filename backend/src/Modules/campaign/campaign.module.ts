@@ -10,4 +10,4 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   providers: [CampaignsService],
   exports: [CampaignsService],
 })
-export class UserModule {}
+export class CampaignModule {}
