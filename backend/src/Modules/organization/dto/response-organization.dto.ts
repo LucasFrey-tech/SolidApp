@@ -54,4 +54,12 @@ export class ResponseOrganizationDto {
     description: 'Sitio web oficial de la organización',
   })
   web: string;
+
+  @ApiProperty({
+    example: '2025-05-15T10:30:00.000Z',
+    description: 'Fecha en la que la organización fue registrada en el sistema',
+    type: String,
+    format: 'date-time',
+  })
+  fechaRegistro: Date;
 }
