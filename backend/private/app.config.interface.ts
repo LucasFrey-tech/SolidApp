@@ -5,9 +5,8 @@ export interface AppConfig {
     host: string;
     port: number;
     database: string;
-    username?: string; // <- make optional
-    password?: string;
-    name?: string;
+    username: string;
+    password: string;
   };
   logger: {
     console_details_level: string;
