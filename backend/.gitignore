@@ -43,7 +43,7 @@ lerna-debug.log*
 .env.local
 
 # App Config (Futuro .env)
-.app.config.json
+app.config.json
 
 # temp directory
 .temp
