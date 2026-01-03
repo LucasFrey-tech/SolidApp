@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donor } from 'src/Entities/donor.entity';
 import { DonationsService } from '../donation/donation.service';
-import { TopDonorResponseDto } from './dto/top-donor-response.dto';
+import { TopDonorResponseDto } from './dto/top_donor_response.dto';
 
 interface TopDonorRaw {
   id: number;

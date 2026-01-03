@@ -1,7 +1,7 @@
 import { Controller, Get, Query, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { DonorsService } from './donor.service';
-import { TopDonorResponseDto } from './dto/top-donor-response.dto';
+import { TopDonorResponseDto } from './dto/top_donor_response.dto';
 @ApiTags('Donadores')
 @Controller('donors')
 export class DonorsController {
