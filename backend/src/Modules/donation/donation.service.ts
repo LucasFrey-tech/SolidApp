@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donations } from 'src/Entities/donations.entity';
 import { Campaigns } from 'src/Entities/campaigns.entity';
-import { CreateDonationDto } from './dto/create-donation.dto';
-import { ResponseDonationDto } from './dto/response-donation.dto';
+import { CreateDonationDto } from './dto/create_donation.dto';
+import { ResponseDonationDto } from './dto/response_donation.dto';
 import { DonorsService } from '../donor/donor.service';
 
 @Injectable()

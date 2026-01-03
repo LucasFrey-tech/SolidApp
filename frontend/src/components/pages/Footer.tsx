@@ -52,7 +52,9 @@ export default function Footer() {
                     </div>
 
                     <p className={styles.description}>
-                        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nulla sed ad voluptatem doloremque ullam commodi? Animi necessitatibus beatae doloremque explicabo nesciunt, nam a fugiat, voluptatum illum aliquam maiores perspiciatis quia.
+                        En SolidApp creemos que la solidaridad puede cambiar realidades. 
+                        Creamos una plataforma que conecta ayuda, compromiso y tecnología para 
+                        construir una comunidad más justa.
                     </p>
 
 
@@ -97,7 +99,7 @@ export default function Footer() {
             </div>
 
             <div className={styles.bottomBar}>
-                © 2026 SolidApp.com All Rights Reserved.
+                © 2026 SolidApp.com - All Rights Reserved.
             </div>
         </footer>
     );

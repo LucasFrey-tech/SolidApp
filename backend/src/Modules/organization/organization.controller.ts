@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { OrganizationsService } from './organization.service';
-import { CreateOrganizationDto } from './dto/create-organization.dto';
-import { UpdateOrganizationDto } from './dto/update-organization.dto';
-import { ResponseOrganizationDto } from './dto/response-organization.dto';
+import { CreateOrganizationDto } from './dto/create_organization.dto';
+import { UpdateOrganizationDto } from './dto/update_organization.dto';
+import { ResponseOrganizationDto } from './dto/response_organization.dto';
 
 @ApiTags('Organizaciones')
 @Controller('organizations')

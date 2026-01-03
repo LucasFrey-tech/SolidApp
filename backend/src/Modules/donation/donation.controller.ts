@@ -16,8 +16,8 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { DonationsService } from './donation.service';
-import { CreateDonationDto } from './dto/create-donation.dto';
-import { ResponseDonationDto } from './dto/response-donation.dto';
+import { CreateDonationDto } from './dto/create_donation.dto';
+import { ResponseDonationDto } from './dto/response_donation.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt-payload.interface';
 @ApiTags('Donaciones')

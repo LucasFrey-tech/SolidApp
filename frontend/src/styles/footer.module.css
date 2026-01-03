@@ -3,7 +3,7 @@
     background-color: #0f3d3a;
     color: #ffffff;
     overflow: hidden;
-    padding-top: 4rem;
+    padding-top: 1rem;
 }
 
 .backgroundSvg {
@@ -76,6 +76,12 @@
     cursor: pointer;
 }
 
+.backToTop:hover {
+    background-color: #ffffff;
+    color: #0f3d3a;
+    transition: background-color 0.3s, color 0.3s;
+}
+
 .links h4 {
     margin-bottom: 1rem;
     font-size: 0.9rem;
@@ -90,21 +96,27 @@
 
 .links li {
     margin-bottom: 0.6rem;
+    padding-top: 9%;
 }
 
 .links a {
     color: #e0f2f1;
     text-decoration: none;
     font-size: 0.9rem;
+    font-weight: bold;
+}
+.links a:hover {
+    text-decoration: underline;
+    color: red;
 }
 
 .bottomBar {
     background-color: #e09b3d;
-    color: #0f3d3a;
+    color: #000000;
     text-align: center;
-    font-size: 0.75rem;
-    padding: 0.6rem;
-    letter-spacing: 0.03em;
+    font-size: 0.65rem;
+    padding: 0.3rem;
+    letter-spacing: 0.07em;
 }
 
 @media (max-width: 1199) {
