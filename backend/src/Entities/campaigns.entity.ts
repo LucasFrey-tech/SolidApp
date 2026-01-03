@@ -57,7 +57,7 @@ export class Campaigns {
     example: '2025-12-15',
     description: 'Fecha de la Creación de la Campaña Solidaria',
   })
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'datetime2' })
   fecha_registro: Date;
 
   @ApiProperty({
@@ -65,14 +65,14 @@ export class Campaigns {
     description:
       'Objetivo a alcanzar para dar por finalizada la Campaña Solidaria',
   })
-  @Column({ type: 'number', default: 0 })
+  @Column({ type: 'int', default: 0 })
   objetivo: number;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del Ultimo cambio realizado a la Campaña Solidaria',
   })
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
 
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Organización' })

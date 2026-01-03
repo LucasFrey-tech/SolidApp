@@ -17,7 +17,7 @@ export class Donor {
   id: number;
 
   @ApiProperty({ example: 500, description: 'Puntos del Donador' })
-  @Column({ type: 'number', nullable: false })
+  @Column({ type: 'int', nullable: false })
   puntos: number;
 
   @ApiProperty({ example: 1, description: 'Id Foranea del Usuario' })

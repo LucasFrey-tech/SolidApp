@@ -35,7 +35,7 @@ export class Donations {
   tipo: string;
 
   @ApiProperty({ example: 5, description: 'Cantidad del Articulo a Donar' })
-  @Column({ type: 'number' })
+  @Column({ type: 'int' })
   cantidad: number;
 
   @ApiProperty({
@@ -49,7 +49,7 @@ export class Donations {
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha de cuando se realizo la Donación',
   })
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'datetime2' })
   fecha_registro: Date;
 
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Campaña' })

@@ -38,21 +38,21 @@ export class Benefits {
     example: 50,
     description: 'La cantidad del Beneficio disponible',
   })
-  @Column({ type: 'number' })
+  @Column({ type: 'int' })
   cantidad: number;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha de Creación del Beneficio',
   })
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'datetime2' })
   fecha_registro: Date;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del ultimo cambio realizado al Beneficio',
   })
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
 
   @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })

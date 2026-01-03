@@ -58,25 +58,25 @@ export class User {
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha de Registro del Usuario',
   })
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn({ type: 'datetime2' })
   fecha_registro: Date;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Ultima Conexión del Usuario al sitio',
   })
-  @UpdateDateColumn({ type: 'timestamp', nullable: true })
+  @UpdateDateColumn({ type: 'datetime2', nullable: true })
   ultima_conexion: Date;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Ultima modificación del Usuario',
   })
-  @UpdateDateColumn({ type: 'timestamp', nullable: true })
+  @UpdateDateColumn({ type: 'datetime2', nullable: true })
   ultimo_cambio: Date;
 
   @ApiProperty({ example: false, description: 'Estado del Usuario' })
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'bit', default: false })
   deshabilitado: boolean;
 
   @ApiProperty({

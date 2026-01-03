@@ -68,28 +68,28 @@ export class Companies {
     example: true,
     description: 'Representa si la Empresa es legítima',
   })
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'bit', default: false })
   verificada: boolean;
 
   @ApiProperty({
     example: false,
     description: 'Indica si la Empresa esta deshabilitada en el sitio',
   })
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'bit', default: false })
   deshabilitado: boolean;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del Registro de la Empresa en el sitio',
   })
-  @CreateDateColumn({ type: 'timestamp', length: 50 })
+  @CreateDateColumn({ type: 'datetime2' })
   fecha_registro: Date;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del ultimo cambio de información de la Empresa',
   })
-  @UpdateDateColumn({ type: 'timestamp', length: 50 })
+  @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
 
   @ApiProperty({

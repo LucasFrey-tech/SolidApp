@@ -28,14 +28,14 @@ export class Organizations {
     example: true,
     description: 'Representa si la Organización es legítima',
   })
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'bit', default: false })
   verificada: boolean;
 
   @ApiProperty({
     example: false,
     description: 'Indica si la Organización esta deshabilitada en el sitio',
   })
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'bit', default: false })
   deshabilitado: boolean;
 
   @ApiProperty({
@@ -82,14 +82,14 @@ export class Organizations {
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del Registro de la Organización en el sitio',
   })
-  @CreateDateColumn({ type: 'timestamp', length: 50 })
+  @CreateDateColumn({ type: 'datetime2' })
   fecha_registro: Date;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del ultimo cambio de información de la Organización',
   })
-  @UpdateDateColumn({ type: 'timestamp', length: 50 })
+  @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
 
   @ApiProperty({
@@ -97,7 +97,7 @@ export class Organizations {
     isArray: true,
     description: 'Campañas asociadas a la organización',
   })
-  @OneToMany(() => Campaigns, (campaign) => campaign.organization)
+  @OneToMany(() => Campaigns, (campaign) => campaign.organizacion)
   campaigns: Campaigns[];
 
   @ApiProperty({
