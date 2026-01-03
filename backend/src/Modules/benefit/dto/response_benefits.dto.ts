@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CompanySummaryDTO } from 'src/Modules/company/dto/summary_company.dto';
+import { CompanySummaryDTO } from '../../company/dto/summary_company.dto';
 
 export class BenefitsResponseDTO {
   @ApiProperty({ example: 1, description: 'ID del beneficio' })

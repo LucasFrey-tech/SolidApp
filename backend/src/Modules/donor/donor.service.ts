@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Donor } from 'src/Entities/donor.entity';
+import { Donor } from '../../Entities/donor.entity';
 import { DonationsService } from '../donation/donation.service';
 import { TopDonorResponseDto } from './dto/top_donor_response.dto';
 

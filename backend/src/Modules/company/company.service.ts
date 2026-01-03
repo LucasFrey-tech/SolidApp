@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Companies } from 'src/Entities/companies.entity';
+import { Companies } from '../../Entities/companies.entity';
 import { CreateCompanyDTO } from './dto/create_company.dto';
 import { UpdateCompanyDTO } from './dto/update_company.dto';
 import { CompanyResponseDTO } from './dto/response_company.dto';

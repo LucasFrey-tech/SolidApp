@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Campaigns } from 'src/Entities/campaigns.entity';
+import { Campaigns } from '../../Entities/campaigns.entity';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { OrganizationSummaryDto } from '../organization/dto/summary_organization.dto';
-import { Organizations } from 'src/Entities/organizations.entity';
+import { Organizations } from '../../Entities/organizations.entity';
 
 /**
  * Servicio que maneja la lógica de negocio de las Campañas Solidarias

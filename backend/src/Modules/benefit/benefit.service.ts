@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Benefits } from 'src/Entities/benefits.entity';
-import { Companies } from 'src/Entities/companies.entity';
+import { Benefits } from '../../Entities/benefits.entity';
+import { Companies } from '../../Entities/companies.entity';
 import { CreateBenefitsDTO } from './dto/create_benefits.dto';
 import { UpdateBenefitsDTO } from './dto/update_benefits.dto';
 import { BenefitsResponseDTO } from './dto/response_benefits.dto';

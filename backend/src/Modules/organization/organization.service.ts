@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Organizations } from 'src/Entities/organizations.entity';
+import { Organizations } from '../../Entities/organizations.entity';
 import { CreateOrganizationDto } from './dto/create_organization.dto';
 import { UpdateOrganizationDto } from './dto/update_organization.dto';
 import { ResponseOrganizationDto } from './dto/response_organization.dto';
