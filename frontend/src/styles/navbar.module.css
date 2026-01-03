@@ -32,6 +32,10 @@
   color: #001a33;
   font-weight: 500;
 }
+.navLinks a:hover {
+  color: #ff0000;
+  font-weight: 500;
+}
 
 /* Acciones desktop */
 .actions {
