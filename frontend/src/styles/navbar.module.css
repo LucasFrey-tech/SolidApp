@@ -6,21 +6,22 @@
   border-top: 3px solid #003366;
   padding: 10px 40px;
   font-family: "Segoe UI", sans-serif;
-  font-size: 15px;
-  color: #001a33;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 9999;
+
 }
 
+/* Logo */
 .logoSection {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   cursor: pointer;
 }
 
+/* Links */
 .navLinks {
   list-style: none;
   display: flex;
-  align-items: center;
   gap: 25px;
   margin: 0;
   padding: 0;
@@ -30,64 +31,93 @@
   text-decoration: none;
   color: #001a33;
   font-weight: 500;
-  transition: color 0.3s ease;
 }
 
-.navLinks a:hover {
-  color: #b3312d;
-}
-
+/* Acciones desktop */
 .actions {
   display: flex;
-  align-items: center;
-  gap: 50px;
+  gap: 20px;
 }
 
+/* Botones */
 .donateBtn {
   background-color: #b3312d;
   color: white;
-  padding: 16px 36px;
+  padding: 14px 28px;
   border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-weight: 600;
-  transition: background-color 0.3s ease;
-  margin-right: 10px;
+  cursor: pointer;
 }
 
 .donateBtn:hover {
   background-color: #8e2523;
 }
 
+.loginBtn {
+  background: transparent;
+  color: black;
+  border: 1px solid #001a33;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-.imageButton {
+/* Hamburger */
+.menuToggle {
+  display: none;
+  color: black;
+  font-size: 28px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  margin: 0;
-  transition: transform 0.2s ease;
 }
 
-.imageButton:hover {
-  transform: scale(1.05);
+/* MOBILE ACTIONS – OCULTAS POR DEFECTO */
+.mobileActions {
+  display: none;
 }
 
-.buttonImage {
-  border-radius: 6px;
-}
+/* ===== MOBILE ===== */
+@media (max-width: 900px) {
+  .menuToggle {
+    display: block;
+  }
 
-.socialIcons {
-  display: flex;
-  gap: 10px;
-  font-size: 18px;
-}
+  .navLinks {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff9ea;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+    display: none;
+    border-bottom: 2px solid #003366;
+  }
 
-.socialIcons a {
-  color: #001a33;
-  transition: color 0.3s ease;
-}
+  .navLinks.open {
+    display: flex;
+  }
 
-.socialIcons a:hover {
-  color: #b3312d;
+  .actions {
+    display: none;
+  }
+
+  .mobileActions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .donateBtn,
+  .loginBtn {
+    width: 80%;
+    text-align: center;
+  }
 }
