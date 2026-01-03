@@ -34,20 +34,14 @@ import { BenefitModule } from './Modules/benefit/benefit.module';
           type: 'mssql',
           host: db.host,
           port: db.port,
-          database: db.name,
+          username: db.username,
+          password: db.password,
+          database: db.database,
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: true,
           options: {
             encrypt: false,
             trustServerCertificate: true,
-          },
-          extra: {
-            authentication: {
-              type: 'default',
-              options: {
-                trustedConnection: true,
-              },
-            },
           },
         };
       },
