@@ -55,7 +55,7 @@ export default function Navbar() {
         <li className={styles.mobileActions}>
           <button
             className={styles.donateBtn}
-            onClick={() => handleNavigation("/donar")}
+            onClick={() => handleNavigation("/donaciones-catalogo")}
           >
             Donar aquí
           </button>
@@ -72,7 +72,7 @@ export default function Navbar() {
       <div className={styles.actions}>
         <button
           className={styles.donateBtn}
-          onClick={() => handleNavigation("/donar")}
+          onClick={() => handleNavigation("/donaciones-catalogo")}
         >
           Donar aquí
         </button>
