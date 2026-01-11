@@ -1,6 +1,9 @@
+'use client'
+
 import React from 'react';
 import Image from 'next/image';
 import styles from './page.module.css';
+
 
 export default function Home() {
   return (
@@ -14,7 +17,6 @@ export default function Home() {
     />
    <div className={styles.overlay}>
     <h2 className={styles.titleBanner}>Un pequeño gesto, un gran impacto.</h2>
-    <button className={styles.buttonBanner}>Info aquí</button>
   </div>
 </section>
 
