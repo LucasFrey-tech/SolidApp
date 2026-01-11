@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { z } from "zod";
 import Image from "next/image";
-import styles from "./registro.module.css";
+import styles from "../../styles/registro.module.css";
 
 // ==================== ESQUEMAS ZOD ====================
 const usuarioSchema = z.object({
