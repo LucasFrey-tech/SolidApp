@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import styles from "./loginForm.module.css";
+import { useRouter } from "next/navigation";
+import styles from "../../styles/login.module.css";
+import Swal from "sweetalert2";
+import { BaseApi } from "@/API/baseApi";
+import { jwtDecode } from "jwt-decode";
 
 // ==================== TIPOS ====================
 interface LoginFormData {
@@ -10,27 +14,66 @@ interface LoginFormData {
 }
 
 export default function Login() {
+  const router = useRouter();
+  const api = new BaseApi();
+
   const [formData, setFormData] = useState<LoginFormData>({
     correo: "",
     clave: "",
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Iniciar sesión:", formData);
-  };
 
+    try {
+      const res = await api.log.login({
+        correo: formData.correo,
+        clave: formData.clave,
+      });
+
+      if (!res.success) {
+        if (res.status === 403) {
+          Swal.fire("Login fallido", "Usuario bloqueado", "error");
+          return;
+        }
+        Swal.fire("Login fallido", "Correo o contraseña incorrectos", "error");
+        return;
+      }  
+      
+      const token = res.data.access_token
+      localStorage.setItem("token", token);
+
+      type JwtPayload = { sub: string };
+      const decoded = jwtDecode<JwtPayload>(token);
+      localStorage.setItem("userId", decoded.sub);
+
+      Swal.fire({
+        title: "Iniciando sesión",
+        text: "Redirigiendo...",
+        icon: "success",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+
+      console.log("Login exitoso");
+
+      setTimeout(() => {
+        router.push("/inicio");
+      }, 3000);
+      
+    } catch (error) {
+      console.error("Error en login", error);
+      alert("Correo o contraseña incorrectos");
+    }
+  };
+  
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <h2 className={styles.title}>Iniciar sesión</h2>
