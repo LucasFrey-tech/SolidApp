@@ -68,6 +68,11 @@
   cursor: pointer;
 }
 
+.loginBtn:hover{
+  color: white;
+  background-color: black;
+}
+
 /* Hamburger */
 .menuToggle {
   display: none;

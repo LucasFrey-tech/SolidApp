@@ -46,11 +46,15 @@ export default function Navbar() {
       </button>
 
       <ul className={`${styles.navLinks} ${menuOpen ? styles.open : ""}`}>
-        <li><Link href="/quienes-somos">Quiénes somos</Link></li>
-        <li><Link href="/que-hacemos">Qué hacemos</Link></li>
-        <li><Link href="/como-participar">Cómo participar</Link></li>
+        <li><Link href="/">Inicio</Link></li>
+        <li><Link href="/tienda">Tienda</Link></li>
         <li><Link href="/novedades">Novedades</Link></li>
-        <li><Link href="/formacion">Formación</Link></li>
+        <li><Link href="/como-participar">Cómo participar</Link></li>
+        <li><Link href="/quienes-somos">Quiénes somos</Link></li>         
+        <li><Link href="/que-hacemos">Qué hacemos</Link></li>
+
+
+
 
         <li className={styles.mobileActions}>
           <button
