@@ -40,6 +40,7 @@ type FormType = "usuario" | "empresa" | "organizacion";
 type Errors = Record<string, string | undefined>;
 type Touched = Record<string, boolean>;
 
+
 // ==================== COMPONENTE ====================
 export default function Registro() {
   const [step, setStep] = useState<Step>("select");
@@ -71,46 +72,47 @@ export default function Registro() {
   const [errors, setErrors] = useState<Errors>({});
   const [touchedFields, setTouchedFields] = useState<Touched>({});
 
+  const schemaMap = {
+    usuario: usuarioSchema,
+    empresa: empresaSchema,
+    organizacion: organizacionSchema,
+  } as const;
+
   // ==================== VALIDACIÓN ====================
   const validateField = (
-    formType: FormType,
-    field: string,
-    value: string,
-    isBlur = false
-  ): string | null => {
-    if (!isBlur && !touchedFields[field]) return null;
+  formType: FormType,
+  field: string,
+  value: string,
+  isBlur = false
+): string | null => {
+  if (!isBlur && !touchedFields[field]) return null;
 
-    let schema: any;
+  const schema = schemaMap[formType];
 
-    if (formType === "usuario") schema = usuarioSchema;
-    else if (formType === "empresa") schema = empresaSchema;
-    else schema = organizacionSchema;
+  const result = schema.safeParse({ [field]: value });
 
-    try {
-      schema.pick({ [field]: true }).parse({ [field]: value });
-      return null;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return error.issues[0]?.message ?? "Error de validación";
-      }
-      return "Error de validación";
-    }
-  };
+  if (result.success) return null;
+
+  const issue = result.error.issues.find(
+    (i) => i.path[0] === field
+  );
+
+  return issue?.message ?? "Error de validación";
+};
 
   const validateAllFields = () => {
-    let data: any;
-    let schema: any;
-
-    if (step === "usuario") {
-      data = usuarioData;
-      schema = usuarioSchema;
-    } else if (step === "empresa") {
-      data = empresaData;
-      schema = empresaSchema;
-    } else if (step === "organizacion") {
-      data = organizacionData;
-      schema = organizacionSchema;
+    if (step === "select") {
+      return { isValid: false, errors: {} as Errors };
     }
+
+    const schema = schemaMap[step];
+
+    const data = 
+      step === "usuario"
+        ? usuarioData
+        : step === "empresa"
+        ? empresaData
+        : organizacionData;
 
     try {
       schema.parse(data);
