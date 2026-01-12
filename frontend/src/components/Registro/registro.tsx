@@ -2,11 +2,11 @@ import { useState } from "react";
 import { z } from "zod";
 import Image from "next/image";
 import styles from "../../styles/registro.module.css";
-
+import { BaseApi } from "@/API/baseApi";
 // ==================== ESQUEMAS ZOD ====================
 const usuarioSchema = z.object({
-  email: z.string().min(1, "El email es obligatorio").email("Email inválido"),
-  password: z.string().min(1, "La contraseña es obligatoria").min(6, "La contraseña debe tener al menos 6 caracteres"),
+  correo: z.string().min(1, "El email es obligatorio").email({ message: "Email inválido" }),
+  clave: z.string().min(1, "La contraseña es obligatoria").min(6, "La contraseña debe tener al menos 6 caracteres"),
   nombre: z.string().min(1, "El nombre es obligatorio").min(2, "El nombre debe tener al menos 2 caracteres"),
   apellido: z.string().min(1, "El apellido es obligatorio").min(2, "El apellido debe tener al menos 2 caracteres"),
 });
@@ -15,7 +15,7 @@ const empresaSchema = z.object({
   documento: z.string().min(1, "El documento es obligatorio").min(3, "El documento debe tener al menos 3 caracteres"),
   razonSocial: z.string().min(1, "La razón social es obligatoria").min(3, "La razón social debe tener al menos 3 caracteres"),
   nombreFantasia: z.string().min(1, "El nombre de fantasía es obligatorio").min(3, "El nombre de fantasía debe tener al menos 3 caracteres"),
-  password: z.string().min(1, "La contraseña es obligatoria").min(6, "La contraseña debe tener al menos 6 caracteres"),
+  clave: z.string().min(1, "La contraseña es obligatoria").min(6, "La contraseña debe tener al menos 6 caracteres"),
   telefono: z.string().min(1, "El teléfono es obligatorio").min(8, "El teléfono debe tener al menos 8 caracteres"),
   direccion: z.string().min(1, "La dirección es obligatoria").min(5, "La dirección debe tener al menos 5 caracteres"),
   web: z.string().optional(),
@@ -25,7 +25,7 @@ const organizacionSchema = z.object({
   documento: z.string().min(1, "El documento es obligatorio").min(3, "El documento debe tener al menos 3 caracteres"),
   razonSocial: z.string().min(1, "La razón social es obligatoria").min(3, "La razón social debe tener al menos 3 caracteres"),
   nombre: z.string().min(1, "El nombre es obligatorio").min(3, "El nombre debe tener al menos 3 caracteres"),
-  password: z.string().min(1, "La contraseña es obligatoria").min(6, "La contraseña debe tener al menos 6 caracteres"),
+  clave: z.string().min(1, "La contraseña es obligatoria").min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
 // ==================== TIPOS ====================
@@ -44,10 +44,11 @@ type Touched = Record<string, boolean>;
 // ==================== COMPONENTE ====================
 export default function Registro() {
   const [step, setStep] = useState<Step>("select");
+  const api = new BaseApi();
 
   const [usuarioData, setUsuarioData] = useState<UsuarioData>({
-    email: "",
-    password: "",
+    correo: "",
+    clave: "",
     nombre: "",
     apellido: "",
   });
@@ -56,7 +57,7 @@ export default function Registro() {
     documento: "",
     razonSocial: "",
     nombreFantasia: "",
-    password: "",
+    clave: "",
     telefono: "",
     direccion: "",
     web: "",
@@ -66,7 +67,7 @@ export default function Registro() {
     documento: "",
     razonSocial: "",
     nombre: "",
-    password: "",
+    clave: "",
   });
 
   const [errors, setErrors] = useState<Errors>({});
@@ -89,7 +90,11 @@ export default function Registro() {
 
   const schema = schemaMap[formType];
 
-  const result = schema.safeParse({ [field]: value });
+  const fieldSchema = schema.shape[field as keyof typeof schema.shape];
+
+  if (!fieldSchema) return null;
+
+  const result = fieldSchema.safeParse(value);
 
   if (result.success) return null;
 
@@ -188,6 +193,8 @@ export default function Registro() {
       empresa: empresaData,
       organizacion: organizacionData,
     });
+
+    api.register.register(usuarioData);
 
     alert("Registro exitoso");
 
