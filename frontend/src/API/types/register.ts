@@ -1,8 +1,8 @@
 export interface RegisterRequestBody {
-  firstname: string;
-  lastname: string;
-  email: string;
-  password: string;
+  nombre: string;
+  apellido: string;
+  correo: string;
+  clave: string;
 }
 export interface AuthResponse {
   access_token: string;
