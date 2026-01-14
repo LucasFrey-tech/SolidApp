@@ -1,0 +1,21 @@
+.main {
+  min-height: 100vh;
+}
+
+/* cuando hay navbar */
+.mainWithNavbar {
+  padding-top: var(--navbar-height);
+  min-height: calc(100vh - var(--navbar-height));
+}
+
+/* altura real del navbar */
+:root {
+  --navbar-height: 96px;
+}
+
+/* MOBILE: el navbar es más alto */
+@media (max-width: 900px) {
+  :root {
+    --navbar-height: 80px;
+  }
+}

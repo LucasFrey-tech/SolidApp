@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/pages/NavBar";
 import Footer from "@/components/pages/Footer";
 import { UserProvider } from "./context/UserContext";
+import styles from "./dynamicLayout.module.css";
 
 export default function DynamicLayout({
   children,
@@ -16,7 +17,11 @@ export default function DynamicLayout({
   return (
     <UserProvider>
       {!isLoginPage && <Navbar />}
-      <main>{children}</main>
+
+      <main className={!isLoginPage ? styles.mainWithNavbar : styles.main}>
+        {children}
+      </main>
+
       <Footer />
     </UserProvider>
   );
