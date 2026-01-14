@@ -52,31 +52,37 @@ export default function BeneficiosPanel({ idEmpresa }: Props) {
         <div className={styles.list}>
           {beneficios.map((beneficio) => (
             <div key={beneficio.id} className={styles.card}>
-              <div className={styles.logo}>
-                {beneficio.empresa.nombre_fantasia}
-              </div>
 
-              {/* VALOR */}
-              <div className={styles.valor}>
-                {beneficio.valor}
+              {/* LOGO */}
+              <div className={styles.logo}>
+                {beneficio.empresa.nombre_fantasia} {/* cambiar por imagen empresa */}
               </div>
 
               <div className={styles.mainInfo}>
+                {/* TITULO */}
                 <div className={styles.discount}>
                   {beneficio.titulo}
                 </div>
+                {/* TIPO */}
                 <div className={styles.subtitle}>
                   {beneficio.tipo}
                 </div>
               </div>
 
+              {/* DETALLE */}
               <div className={styles.detail}>
                 {beneficio.detalle}
               </div>
 
+              {/* VALOR */}
+              <div className={styles.valor}>
+                {beneficio.valor} pts
+              </div>
+
+              {/* ACCIÓN */}
               <div className={styles.action}>
                 <span className={styles.plus}>+</span>
-                <span className={styles.more}>Ver más</span>
+                <span className={styles.more}>Canjear</span>
               </div>
             </div>
           ))}
