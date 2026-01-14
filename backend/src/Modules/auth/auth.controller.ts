@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, FileTypeValidator, HttpCode, MaxFileSizeValidator, ParseFilePipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { LoginRequestBody, RegisterRequestBody } from './dto/auth.dto';
 import { AuthService } from './auth.service';
 import {
@@ -8,6 +8,7 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 /**
  * Controlador para gestionar las operaciones de de Autenticación.
@@ -52,7 +53,15 @@ export class AuthController {
     description: 'Registro Exitoso',
     type: RegisterRequestBody,
   })
-  async registerUser(@Body() requestBody: RegisterRequestBody) {
+  @UseInterceptors(FileInterceptor('file'))
+  async registerUser(@Body() requestBody: RegisterRequestBody, @UploadedFile(new ParseFilePipe({
+    validators: [
+      new MaxFileSizeValidator({ maxSize: 1000 }),
+      new FileTypeValidator({ fileType: 'image/jpeg' }),
+    ],
+    errorHttpStatusCode: 415, // Unsupported Media Type
+  }),) file: File) {
+    console.log(file);
     return this.authService.register(requestBody);
   }
 }

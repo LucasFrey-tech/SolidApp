@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UserModule } from '../user/usuario.module';
+import { CommonMulterModule } from '../../common/multer/multer.module';
 
 /**
  * Módulo de NestJS que agrupa los componentes relacionados a la Autenticación:
@@ -25,6 +26,7 @@ import { UserModule } from '../user/usuario.module';
         signOptions: { expiresIn: '2h' },
       }),
     }),
+    CommonMulterModule //Files upload module
   ],
   controllers: [AuthController],
   providers: [AuthService],

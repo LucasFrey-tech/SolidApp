@@ -13,6 +13,8 @@ import { DonorModule } from './Modules/donor/donor.module';
 import { EmpresaModule } from './Modules/empresa/empresa.module';
 import { CampaignModule } from './Modules/campaign/campaign.module';
 import { BeneficioModule } from './Modules/benefit/beneficio.module';
+import { AuthModule } from './Modules/auth/auth.module';
+import { SettingsService } from './common/settings/settings.service';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { BeneficioModule } from './Modules/benefit/beneficio.module';
         };
       },
     }),
+
     UserModule,
     OrganizationModule,
     DonationModule,
@@ -53,6 +56,8 @@ import { BeneficioModule } from './Modules/benefit/beneficio.module';
     EmpresaModule,
     CampaignModule,
     BeneficioModule,
+    AuthModule
   ],
+  providers: [SettingsService]
 })
 export class AppModule {}
