@@ -55,6 +55,13 @@ export class Beneficios {
   @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
 
+  @ApiProperty({
+    example: 100,
+    description: 'El valor del Beneficio',
+  })
+  @Column({ type: 'int' })
+  valor: number;
+
   @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })
   @ManyToOne(() => Empresa, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_empresa' })

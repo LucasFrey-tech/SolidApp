@@ -40,6 +40,14 @@ export class CreateBeneficiosDTO {
   @Min(1)
   cantidad: number;
 
+  @ApiProperty({
+    example: 100,
+    description: 'Valor del beneficio',
+  })
+  @IsNumber()
+  @Min(0)
+  valor: number;
+
   @ApiProperty({ example: 1, description: 'ID de la empresa' })
   @IsNumber()
   @IsNotEmpty()

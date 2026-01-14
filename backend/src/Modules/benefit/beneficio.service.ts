@@ -26,7 +26,7 @@ export class BeneficioService {
 
     @InjectRepository(Empresa)
     private readonly empresasRepository: Repository<Empresa>,
-  ) {}
+  ) { }
 
   /**
    * Obtiene todos los beneficios.
@@ -79,12 +79,18 @@ export class BeneficioService {
       throw new BadRequestException('La cantidad debe ser mayor a 0');
     }
 
+    // Validar que el valor sea positivo
+    if (createDto.valor < 0) {
+      throw new BadRequestException('El valor no puede ser negativo');
+    }
+
     // Crear el beneficio
     const beneficio = this.beneficiosRepository.create({
       titulo: createDto.titulo,
       tipo: createDto.tipo,
       detalle: createDto.detalle,
       cantidad: createDto.cantidad,
+      valor: createDto.valor,
       empresa,
     });
 
@@ -93,6 +99,35 @@ export class BeneficioService {
 
     return this.mapToResponseDto(savedBenefit);
   }
+
+  /**
+ * Obtiene beneficios por empresa
+ */
+  async findByEmpresa(idEmpresa: number): Promise<BeneficiosResponseDTO[]> {
+    const empresa = await this.empresasRepository.findOne({
+      where: { id: idEmpresa, deshabilitado: false },
+    });
+
+    if (!empresa) {
+      throw new NotFoundException(
+        `Empresa con ID ${idEmpresa} no encontrada o deshabilitada`,
+      );
+    }
+
+    const beneficios = await this.beneficiosRepository.find({
+      where: {
+        empresa: { id: idEmpresa },
+      },
+      relations: ['empresa'],
+    });
+
+    this.logger.log(
+      `Se obtuvieron ${beneficios.length} beneficios para empresa ${idEmpresa}`,
+    );
+
+    return beneficios.map(this.mapToResponseDto);
+  }
+
 
   /**
    * Actualiza un beneficio existente.
@@ -181,6 +216,7 @@ export class BeneficioService {
       tipo: beneficio.tipo,
       detalle: beneficio.detalle,
       cantidad: beneficio.cantidad,
+      valor: beneficio.valor,
       fecha_registro: beneficio.fecha_registro,
       ultimo_cambio: beneficio.ultimo_cambio,
       empresa: empresaSummary,
