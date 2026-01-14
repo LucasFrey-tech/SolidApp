@@ -4,7 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { UserModule } from '../user/user.module';
+import { UserModule } from '../user/usuario.module';
 
 /**
  * Módulo de NestJS que agrupa los componentes relacionados a la Autenticación:

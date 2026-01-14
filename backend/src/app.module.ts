@@ -6,7 +6,7 @@ import app_config from '../private/app.config.json';
 import { AppConfig } from '../private/app.config.interface';
 
 // Modulos
-import { UserModule } from './Modules/user/user.module';
+import { UserModule } from './Modules/user/usuario.module';
 import { OrganizationModule } from './Modules/organization/organization.module';
 import { DonationModule } from './Modules/donation/donation.module';
 import { DonorModule } from './Modules/donor/donor.module';

@@ -7,7 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from './user.entity';
+import { Usuario } from './usuario.entity';
 import { Donations } from './donations.entity';
 
 @Entity('donador')
@@ -21,9 +21,9 @@ export class Donor {
   puntos: number;
 
   @ApiProperty({ example: 1, description: 'Id Foranea del Usuario' })
-  @OneToOne(() => User, (users) => users.donor, { onDelete: 'CASCADE' })
+  @OneToOne(() => Usuario, (usuario) => usuario.donor, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_usuario' })
-  usuario: User;
+  usuario: Usuario;
 
   @OneToMany(() => Donations, (donation) => donation.donador)
   donaciones: Donations[];

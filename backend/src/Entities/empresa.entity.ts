@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Company_users } from './empresa_usuarios.entity';
+import { Empresa_usuarios } from './empresa_usuarios.entity';
 
 @Entity('empresas')
 export class Empresa {
@@ -93,10 +93,10 @@ export class Empresa {
   ultimo_cambio: Date;
 
   @ApiProperty({
-    type: () => Company_users,
+    type: () => Empresa_usuarios,
     isArray: true,
     description: 'Usuarios asociados a la empresa',
   })
-  @OneToMany(() => Company_users, (company) => company.empresa)
-  usuariosCompania: Company_users[];
+  @OneToMany(() => Empresa_usuarios, (empresa) => empresa.empresa)
+  usuariosCompania: Empresa_usuarios[];
 }
