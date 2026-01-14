@@ -21,9 +21,15 @@
 
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: left;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.header h2{
+  color: red;
+  justify-content: center;
+
 }
 
 .backBtn {
