@@ -1,12 +1,17 @@
 .container {
   padding: 24px;
-  padding-top: 10%;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
 }
-
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  text-align: center;
+  color: black;
+}
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -16,11 +21,11 @@
 
 .card {
   background-color: #ffffff;
-  border: 1px solid #dcdcdc;
+  border: 1px solid #000000;
   border-radius: 10px;
   height: 90px;
   width: 100%;
-
+  color: black;
   display: flex;
   align-items: center;
   justify-content: center;

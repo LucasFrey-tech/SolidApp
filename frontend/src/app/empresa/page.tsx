@@ -7,25 +7,24 @@ import styles from '@/styles/empresa.module.css';
 
 import { EmpresasService } from '@/API/class/empresas';
 import { Empresa } from '@/API/types/empresas';
-import BeneficiosPanel from "@/components/pages/Beneficios";
-
+import BeneficiosPanel from '@/components/pages/Beneficios';
 
 export default function EmpresaPage() {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
   const empresaId = searchParams.get('empresa');
 
-  useEffect(() => {
+useEffect(() => {
     const fetchEmpresas = async () => {
       try {
         const service = new EmpresasService();
         const data = await service.getAll();
         setEmpresas(data);
-      } catch {
+      } catch (err) {
         setError('No se pudieron cargar las empresas');
       } finally {
         setLoading(false);
@@ -36,7 +35,11 @@ export default function EmpresaPage() {
   }, []);
 
   const handleEmpresaClick = (id: number) => {
-    router.push(`/empresa?empresa=${id}`);
+    router.push(`/empresa?empresa=${id}`, { scroll: false });
+  };
+
+  const handleClosePanel = () => {
+    router.push('/empresa', { scroll: false });
   };
 
   if (loading) return <p>Cargando empresas...</p>;
@@ -46,6 +49,8 @@ export default function EmpresaPage() {
     <>
       {/* LISTA DE EMPRESAS */}
       <section className={styles.container}>
+        <h2 className={styles.title}>Empresas</h2>
+
         <div className={styles.grid}>
           {empresas.map((empresa) => (
             <button
@@ -66,10 +71,14 @@ export default function EmpresaPage() {
         </div>
       </section>
 
-      {/* PANEL OVERLAY */}
+      {/* PANEL DE BENEFICIOS (OVERLAY) */}
       {empresaId && (
-        <BeneficiosPanel idEmpresa={Number(empresaId)} />
+        <BeneficiosPanel
+          idEmpresa={Number(empresaId)}
+          onClose={handleClosePanel}
+        />
       )}
+
     </>
   );
 }
