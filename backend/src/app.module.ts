@@ -12,7 +12,7 @@ import { DonationModule } from './Modules/donation/donation.module';
 import { DonorModule } from './Modules/donor/donor.module';
 import { EmpresaModule } from './Modules/empresa/empresa.module';
 import { CampaignModule } from './Modules/campaign/campaign.module';
-import { BenefitModule } from './Modules/benefit/benefit.module';
+import { BeneficioModule } from './Modules/benefit/beneficio.module';
 
 @Module({
   imports: [
@@ -52,7 +52,7 @@ import { BenefitModule } from './Modules/benefit/benefit.module';
     DonorModule,
     EmpresaModule,
     CampaignModule,
-    BenefitModule,
+    BeneficioModule,
   ],
 })
 export class AppModule {}
