@@ -8,12 +8,16 @@ import {
   Param,
   Body,
   ParseIntPipe,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { UsuarioService } from './usuario.service';
 import { CreateUsuarioDto } from './dto/create_usuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 import { ResponseUsuarioDto } from './dto/response_usuario.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ImageValidationPipe, NullableImageValidationPipe } from '../../common/pipes/mediaFilePipes';
 
 @ApiTags('Usuarios')
 @Controller('users')
@@ -48,15 +52,24 @@ export class UsuarioController {
     status: 201,
     type: ResponseUsuarioDto,
   })
-  create(@Body() createDto: CreateUsuarioDto): Promise<ResponseUsuarioDto> {
-    return this.userService.create(createDto);
+  @UseInterceptors(FileInterceptor('file'))
+  create(
+    @Body() createDto: CreateUsuarioDto, 
+    @UploadedFile(new ImageValidationPipe) file: File)
+  // : Promise<ResponseUsuarioDto> {
+   {
+    console.log(file);
+    // return this.userService.create(createDto);
+    return;
   }
 
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar un usuario' })
+  @UseInterceptors(FileInterceptor('file'))
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateUsuarioDto,
+    @UploadedFile(new NullableImageValidationPipe) file: File,
   ): Promise<ResponseUsuarioDto> {
     return this.userService.update(id, updateDto);
   }
