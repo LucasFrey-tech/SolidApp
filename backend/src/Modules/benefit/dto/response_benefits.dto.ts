@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { CompanySummaryDTO } from '../../company/dto/summary_company.dto';
+import { EmpresaSummaryDTO } from '../../empresa/dto/summary_empresa.dto';
 
 export class BenefitsResponseDTO {
   @ApiProperty({ example: 1, description: 'ID del beneficio' })
@@ -30,8 +30,8 @@ export class BenefitsResponseDTO {
   ultimo_cambio: Date;
 
   @ApiProperty({
-    type: () => CompanySummaryDTO,
+    type: () => EmpresaSummaryDTO,
     description: 'Información resumida de la empresa',
   })
-  empresa: CompanySummaryDTO;
+  empresa: EmpresaSummaryDTO;
 }

@@ -10,7 +10,7 @@ import { UserModule } from './Modules/user/user.module';
 import { OrganizationModule } from './Modules/organization/organization.module';
 import { DonationModule } from './Modules/donation/donation.module';
 import { DonorModule } from './Modules/donor/donor.module';
-import { CompanyModule } from './Modules/company/company.module';
+import { EmpresaModule } from './Modules/empresa/empresa.module';
 import { CampaignModule } from './Modules/campaign/campaign.module';
 import { BenefitModule } from './Modules/benefit/benefit.module';
 
@@ -50,7 +50,7 @@ import { BenefitModule } from './Modules/benefit/benefit.module';
     OrganizationModule,
     DonationModule,
     DonorModule,
-    CompanyModule,
+    EmpresaModule,
     CampaignModule,
     BenefitModule,
   ],

@@ -7,11 +7,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Benefits } from '../../Entities/benefits.entity';
-import { Companies } from '../../Entities/companies.entity';
+import { Empresa } from '../../Entities/empresa.entity';
 import { CreateBenefitsDTO } from './dto/create_benefits.dto';
 import { UpdateBenefitsDTO } from './dto/update_benefits.dto';
 import { BenefitsResponseDTO } from './dto/response_benefits.dto';
-import { CompanySummaryDTO } from '../company/dto/summary_company.dto';
+import { EmpresaSummaryDTO } from '../empresa/dto/summary_empresa.dto';
 
 /**
  * Servicio que maneja la lógica de negocio de los Beneficios.
@@ -24,8 +24,8 @@ export class BenefitService {
     @InjectRepository(Benefits)
     private readonly benefitsRepository: Repository<Benefits>,
 
-    @InjectRepository(Companies)
-    private readonly companiesRepository: Repository<Companies>,
+    @InjectRepository(Empresa)
+    private readonly empresasRepository: Repository<Empresa>,
   ) {}
 
   /**
@@ -64,7 +64,7 @@ export class BenefitService {
    */
   async create(createDto: CreateBenefitsDTO): Promise<BenefitsResponseDTO> {
     // Validar que la empresa existe y está activa
-    const empresa = await this.companiesRepository.findOne({
+    const empresa = await this.empresasRepository.findOne({
       where: { id: createDto.id_empresa, deshabilitado: false },
     });
 
@@ -112,7 +112,7 @@ export class BenefitService {
 
     // Si se actualiza la empresa, validar que existe
     if (updateDto.id_empresa) {
-      const empresa = await this.companiesRepository.findOne({
+      const empresa = await this.empresasRepository.findOne({
         where: { id: updateDto.id_empresa, deshabilitado: false },
       });
 
@@ -166,7 +166,7 @@ export class BenefitService {
   private readonly mapToResponseDto = (
     benefit: Benefits,
   ): BenefitsResponseDTO => {
-    const companySummary: CompanySummaryDTO = {
+    const empresaSummary: EmpresaSummaryDTO = {
       id: benefit.empresa.id,
       razon_social: benefit.empresa.razon_social,
       nombre_fantasia: benefit.empresa.nombre_fantasia,
@@ -183,7 +183,7 @@ export class BenefitService {
       cantidad: benefit.cantidad,
       fecha_registro: benefit.fecha_registro,
       ultimo_cambio: benefit.ultimo_cambio,
-      empresa: companySummary,
+      empresa: empresaSummary,
     };
   };
 }

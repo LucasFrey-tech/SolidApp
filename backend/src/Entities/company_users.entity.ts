@@ -1,7 +1,7 @@
 import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from './user.entity';
-import { Companies } from './companies.entity';
+import { Empresa } from './empresa.entity';
 
 @Entity('usuarios_empresa')
 export class Company_users {
@@ -23,12 +23,12 @@ export class Company_users {
   usuario: User;
 
   @ApiProperty({
-    type: () => Companies,
+    type: () => Empresa,
     description: 'Empresa asociada al usuario',
   })
-  @ManyToOne(() => Companies, (company) => company.usuariosCompania, {
+  @ManyToOne(() => Empresa, (company) => company.usuariosCompania, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id_empresa' })
-  empresa: Companies;
+  empresa: Empresa;
 }

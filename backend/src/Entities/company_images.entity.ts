@@ -6,7 +6,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Companies } from './companies.entity';
+import { Empresa } from './empresa.entity';
 
 @Entity('imagenes_empresa')
 export class Company_images {
@@ -29,9 +29,9 @@ export class Company_images {
   banner: string;
 
   @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })
-  @ManyToOne(() => Companies, {
+  @ManyToOne(() => Empresa, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'empresas_id' })
-  id_empresa: Companies;
+  id_empresa: Empresa;
 }

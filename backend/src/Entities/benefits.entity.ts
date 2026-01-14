@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Companies } from './companies.entity';
+import { Empresa } from './empresa.entity';
 
 @Entity('beneficios')
 export class Benefits {
@@ -56,7 +56,7 @@ export class Benefits {
   ultimo_cambio: Date;
 
   @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })
-  @ManyToOne(() => Companies, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Empresa, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_empresa' })
-  empresa: Companies;
+  empresa: Empresa;
 }
