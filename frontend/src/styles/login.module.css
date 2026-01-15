@@ -117,6 +117,7 @@
   border-radius: 10px;
   border: 1px solid #ccc;
   background: #fff;
+  color: black;
   font-size: 15px;
   outline: none;
   transition: border 0.2s ease, box-shadow 0.2s ease;
