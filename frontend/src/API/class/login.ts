@@ -33,7 +33,7 @@ export class Login extends Crud<LoginRequestBody>{
 
     async login(credentials: LoginRequestBody): Promise<{ success: true, data: AuthResponse} | {
       status: number; success: false, error: string 
-}> {
+    }> {
         try{
             const res = await fetch(`${this.baseUrl}/${this.endPoint}/login`, {
                 method: 'POST',
