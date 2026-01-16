@@ -122,3 +122,31 @@ export class AuthController {
     return await this.authService.registerOrganizacion(data);
   }
 }
+
+// Ejemplo para subir imagenes
+/**
+   * Registra a un nuevo usuario en el sistema.
+   *
+   * @param {RegisterRequestBody} requestBody - Objeto con los datos necesarios para el registro del usuario.
+   * @returns Un objeto con los datos del usuario registrado.
+@Post('register')
+@ApiOperation({ summary: 'Registro de Usuario' })
+  @ApiParam({ name: 'requestBody', type: RegisterRequestBody })
+  @ApiBody({ type: RegisterRequestBody })
+  @ApiResponse({
+    status: 201,
+    description: 'Registro Exitoso',
+    type: RegisterRequestBody,
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async registerUser(@Body() requestBody: RegisterRequestBody, @UploadedFile(new ParseFilePipe({
+    validators: [
+      new MaxFileSizeValidator({ maxSize: 1000 }),
+      new FileTypeValidator({ fileType: 'image/jpeg' }),
+    ],
+    errorHttpStatusCode: 415, // Unsupported Media Type
+  }),) file: File) {
+    console.log(file);
+    return this.authService.register(requestBody);
+  }
+*/
