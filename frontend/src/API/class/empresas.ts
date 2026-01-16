@@ -4,6 +4,7 @@ import {
   EmpresaCreateRequest,
   EmpresaUpdateRequest,
   EmpresaSummary,
+  EmpresaImagen,
 } from '../types/empresas';
 
 export class EmpresasService extends Crud<Empresa> {
@@ -38,6 +39,21 @@ export class EmpresasService extends Crud<Empresa> {
 
     if (!res.ok) {
       throw new Error('Error al obtener empresas paginadas');
+    }
+
+    return res.json();
+  }
+
+  async getImages(): Promise<EmpresaImagen[]> {
+    const res = await fetch(
+      `${this.baseUrl}${this.endpoint}/imagenes`,
+      {
+        headers: this.getHeaders(),
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error('Error al obtener imágenes de empresas');
     }
 
     return res.json();

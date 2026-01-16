@@ -11,6 +11,8 @@ import { Empresa } from '../../Entities/empresa.entity';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
+import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
+import { Empresa_imagenes } from '../../Entities/empresa_imagenes.entity';
 
 @Injectable()
 export class EmpresasService {
@@ -19,6 +21,9 @@ export class EmpresasService {
   constructor(
     @InjectRepository(Empresa)
     private readonly empresasRepository: Repository<Empresa>,
+
+    @InjectRepository(Empresa_imagenes)
+    private readonly empresasImagenRepository: Repository<Empresa_imagenes>,
   ) {}
 
   /**
@@ -31,6 +36,27 @@ export class EmpresasService {
 
     this.logger.log(`Se obtuvieron ${empresas.length} Empresas`);
     return empresas.map(this.mapToResponseDto);
+  }
+
+  /**
+   * Obtengo las Imagenes de cada empresa
+   */
+  async findIMG(): Promise<EmpresaImagenDTO[]> {
+    const images = await this.empresasImagenRepository.find({
+      relations: ['id_empresa'],
+      where: {
+        id_empresa: {
+          deshabilitado: false,
+        },
+      },
+    });
+
+    this.logger.log(`Se obtuvieron ${images.length} imágenes de empresas`);
+
+    return images.map((img) => ({
+      id_empresa: img.id_empresa.id,
+      logo: img.logo,
+    }));
   }
 
   /**
