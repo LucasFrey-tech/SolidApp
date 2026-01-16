@@ -57,8 +57,8 @@ import { SettingsService } from './common/settings/settings.service';
     EmpresaModule,
     CampaignModule,
     BeneficioModule,
-    AuthModule
+    AuthModule,
   ],
-  providers: [SettingsService]
+  providers: [SettingsService],
 })
 export class AppModule {}
