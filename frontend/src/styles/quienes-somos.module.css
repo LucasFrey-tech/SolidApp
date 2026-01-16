@@ -13,7 +13,7 @@
 .hero {
   max-width: 900px;
   margin: 0 auto 90px;
-  padding-top: 5%;
+  padding-top: 10%;
   text-align: center;
 }
 
@@ -64,13 +64,43 @@
   color: #374151;
 }
 
+
+/* ===== ICON ===== */
+.icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background-color: #ffd000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 30px;
+  color: #001a33;
+}
+
+/* ===== STEPS ===== */
+.steps {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+
 /* ================= CLOSING ================= */
 
 .closing {
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
-  padding-top: 40px;
+  padding: 40px;
+  margin-top: 40px;
   border-top: 1px solid #e5e7eb;
 }
 
@@ -122,4 +152,35 @@
   .closing {
     padding-top: 30px;
   }
+}
+
+/* ================= BACK TO TOP BUTTON ================= */
+
+.backToTop {
+  display: flex;
+  justify-content: center;
+  margin-top: 60px;
+  margin-bottom: 30px;
+}
+
+.backToTop button {
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  color: black;
+  background: #ffd000;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  font-weight: bold;
+}
+
+.backToTop button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.backToTop button:active {
+  transform: translateY(0);
 }

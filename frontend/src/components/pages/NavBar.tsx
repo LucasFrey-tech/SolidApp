@@ -51,8 +51,6 @@ export default function Navbar() {
         <li><Link href="/novedades">Novedades</Link></li>
         <li><Link href="/como-participar">Cómo participar</Link></li>
         <li><Link href="/quienes-somos">Quiénes somos</Link></li>         
-        <li><Link href="/que-hacemos">Qué hacemos</Link></li>
-
 
 
 
