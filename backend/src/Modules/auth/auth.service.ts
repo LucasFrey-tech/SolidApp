@@ -198,27 +198,58 @@ export class AuthService {
     };
   }
 
-  /**
-   * Login - Busca en usuarios
-   */
-  async login(requestBody: LoginRequestBody) {
+  /** * Login de Usuario */
+  async loginUsuario(requestBody: LoginRequestBody) {
     const user = await this.validateUser(requestBody.correo, requestBody.clave);
-
+    if (user.rol !== 'usuario') {
+      throw new UnauthorizedException('El correo no corresponde a un usuario');
+    }
     if (user.deshabilitado) {
       throw new ForbiddenException(
         'Usuario bloqueado. Contacta al administrador.',
       );
     }
+    const payload = { email: user.correo, sub: user.id, rol: user.rol };
+    const token = this.jwtService.sign(payload);
+    this.logger.log(`Usuario logueado con ID ${user.id}`);
+    return { token };
+  }
 
-    const payload = {
-      email: user.correo,
-      sub: user.id,
-      rol: user.rol,
-    };
+  /** * Login de Empresa */
+  async loginEmpresa(requestBody: LoginRequestBody) {
+    const user = await this.validateUser(requestBody.correo, requestBody.clave);
+    if (user.rol !== 'empresa') {
+      throw new UnauthorizedException('El correo no corresponde a una empresa');
+    }
+    if (user.deshabilitado) {
+      throw new ForbiddenException(
+        'Usuario bloqueado. Contacta al administrador.',
+      );
+    }
+    const payload = { email: user.correo, sub: user.id, rol: user.rol };
+    const token = this.jwtService.sign(payload);
+    this.logger.log(`Empresa logueada con ID ${user.id}`);
+    return { token };
+  }
 
-    const access_token = this.jwtService.sign(payload);
-    this.logger.log('Usuario logueado');
-    return { access_token };
+  /** * Login de Organización */ async loginOrganizacion(
+    requestBody: LoginRequestBody,
+  ) {
+    const user = await this.validateUser(requestBody.correo, requestBody.clave);
+    if (user.rol !== 'organizacion') {
+      throw new UnauthorizedException(
+        'El correo no corresponde a una organización',
+      );
+    }
+    if (user.deshabilitado) {
+      throw new ForbiddenException(
+        'Usuario bloqueado. Contacta al administrador.',
+      );
+    }
+    const payload = { email: user.correo, sub: user.id, rol: user.rol };
+    const token = this.jwtService.sign(payload);
+    this.logger.log(`Organización logueada con ID ${user.id}`);
+    return { token };
   }
 
   async validateUser(email: string, pass: string): Promise<Usuario> {
