@@ -67,6 +67,10 @@
   box-shadow: 0 0 18px 6px rgba(255, 208, 0, 0.897);
 }
 
+.imagenCentrada {
+  display: block;
+  margin: 0 auto;
+}
 
 .tituloIcono {
   font-size: clamp(20px, 2vw, 26px);
