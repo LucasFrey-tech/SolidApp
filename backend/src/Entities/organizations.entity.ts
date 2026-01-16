@@ -9,7 +9,6 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
-import { Organizations_user } from './organization_user.entity';
 
 @Entity('organizaciones')
 export class Organizations {
@@ -101,10 +100,16 @@ export class Organizations {
   campaigns: Campaigns[];
 
   @ApiProperty({
-    type: () => Organizations_user,
-    required: true,
-    description: 'Usuario de la Organización',
+    example: 'correo@dominio.com',
+    description: 'correo electronico del usuario de la empresa.',
   })
-  @OneToOne(() => Organizations_user, (organization) => organization.usuario)
-  user!: Organizations_user;
+  @Column({ type: 'varchar', length: 255 })
+  correo: string;
+
+  @ApiProperty({
+    example: 'password123',
+    description: 'contraseña del usuario de la empresa.',
+  })
+  @Column({ type: 'varchar', length: 255 })
+  clave: string;
 }

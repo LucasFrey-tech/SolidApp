@@ -9,8 +9,6 @@ import { AuthController } from './auth.controller';
 import { UserModule } from '../user/usuario.module';
 import { EmpresaModule } from '../empresa/empresa.module';
 import { OrganizationModule } from '../organization/organization.module';
-import { Empresa_usuarios } from '../../Entities/empresa_usuarios.entity';
-import { Organizations_user } from '../../Entities/organization_user.entity';
 import { Empresa } from '../../Entities/empresa.entity';
 import { Organizations } from '../../Entities/organizations.entity';
 import { CommonMulterModule } from '../../common/multer/multer.module';
@@ -23,8 +21,6 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
     PassportModule,
     ConfigModule,
     TypeOrmModule.forFeature([
-      Empresa_usuarios,
-      Organizations_user,
       Empresa,
       Organizations,
     ]),

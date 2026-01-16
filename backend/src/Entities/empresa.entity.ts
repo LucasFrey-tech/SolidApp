@@ -7,7 +7,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Empresa_usuarios } from './empresa_usuarios.entity';
 
 @Entity('empresas')
 export class Empresa {
@@ -91,12 +90,18 @@ export class Empresa {
   })
   @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
+  
+  @ApiProperty({
+    example: 'correo@dominio.com',
+    description: 'Correo electronico del usuario de la empresa.',
+  })
+  @Column({ type: 'varchar', length: 255 })
+  correo: string;
 
   @ApiProperty({
-    type: () => Empresa_usuarios,
-    isArray: true,
-    description: 'Usuarios asociados a la empresa',
+    example: 'password123',
+    description: 'Contraseña del usuario de la empresa.',
   })
-  @OneToMany(() => Empresa_usuarios, (empresa) => empresa.empresa)
-  usuariosCompania: Empresa_usuarios[];
+  @Column({ type: 'varchar', length: 255 })
+  clave: string;
 }
