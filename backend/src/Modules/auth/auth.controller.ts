@@ -1,5 +1,15 @@
 // /backend/src/auth/auth.controller.ts
-import { Body, Controller, FileTypeValidator, HttpCode, MaxFileSizeValidator, ParseFilePipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  //FileTypeValidator,
+  HttpCode,
+  //MaxFileSizeValidator,
+  //ParseFilePipe,
+  Post,
+  //UploadedFile,
+  //UseInterceptors,
+} from '@nestjs/common';
 import {
   LoginRequestBody,
   RegisterEmpresaDto,
@@ -10,11 +20,11 @@ import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiParam,
+  //ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+//import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Autorización')
 @Controller('auth')
