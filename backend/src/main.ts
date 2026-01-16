@@ -62,9 +62,10 @@ async function bootstrap() {
    * CORS
    */
   app.enableCors({
-    origin: frontUrl,
+    origin: "http://localhost:3000", // Url Front
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: 'Content-Type, Authorization', // Encabezados de solicitud permitidos 
   });
 
   /**
