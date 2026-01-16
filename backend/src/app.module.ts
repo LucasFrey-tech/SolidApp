@@ -21,6 +21,7 @@ import { SettingsService } from './common/settings/settings.service';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [() => app_config as AppConfig],
+      envFilePath: '.env',
     }),
 
     TypeOrmModule.forRootAsync({
@@ -56,8 +57,8 @@ import { SettingsService } from './common/settings/settings.service';
     EmpresaModule,
     CampaignModule,
     BeneficioModule,
-    AuthModule
+    AuthModule,
   ],
-  providers: [SettingsService]
+  providers: [SettingsService],
 })
 export class AppModule {}
