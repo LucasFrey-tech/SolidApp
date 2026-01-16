@@ -57,3 +57,12 @@ export interface EmpresaSummary {
   verificada: boolean;
   deshabilitado: boolean;
 }
+
+
+/**
+ * Imagen de empresa (EmpresaImagenDTO)
+ */
+export interface EmpresaImagen {
+  empresaId: number
+  logo: string;
+}

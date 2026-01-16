@@ -23,11 +23,12 @@ import { EmpresasService } from './empresa.service';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
+import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
 
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: EmpresasService) {}
+  constructor(private readonly empresasService: EmpresasService) { }
 
   /**
    * Obtener todas las empresas activas
@@ -42,6 +43,21 @@ export class EmpresaController {
   })
   async findAll(): Promise<EmpresaResponseDTO[]> {
     return this.empresasService.findAll();
+  }
+
+  /**
+   * Obtener las imagenes de las empresas
+   */
+  @Get('imagenes')
+  @ApiOperation({ summary: 'Listar las imagenes de las empresas' })
+  @ApiResponse({
+    status: 200,
+    description: 'Listado de imagenes de empresas',
+    type: EmpresaImagenDTO,
+    isArray: true,
+  })
+  async findIMG(): Promise<EmpresaImagenDTO[]> {
+    return this.empresasService.findIMG();
   }
 
   /**

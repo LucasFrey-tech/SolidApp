@@ -31,6 +31,7 @@ export default function Home() {
       alt="Icono 1"
       width={80}
       height={80}
+      className={styles.imagenCentrada}
     />
     <h3 className={styles.tituloIcono}>Doná</h3>
     <p className={styles.textoIcono}>
@@ -47,6 +48,7 @@ export default function Home() {
         alt="Icono puntos"
         width={80}
         height={80}
+        className={styles.imagenCentrada}
       />
       <h3 className={styles.tituloIcono}>Obtené puntos</h3>
       <p className={styles.textoIcono}>
@@ -61,6 +63,7 @@ export default function Home() {
       alt="Icono canje"
       width={80}
       height={80}
+      className={styles.imagenCentrada}
     />
     <h3 className={styles.tituloIcono}>Canjeá por premios</h3>
     <p className={styles.textoIcono}>

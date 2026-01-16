@@ -1,0 +1,165 @@
+/* ===============================
+   MODAL OVERLAY
+================================ */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+/* ===============================
+   MODAL
+================================ */
+.modal {
+  width: 100%;
+  max-width: 50vw;
+  padding: 2% 16px;
+  background-color: rgb(46, 46, 46);
+}
+
+/* ===============================
+   PANEL (FORM)
+================================ */
+.panel {
+  background-color: #111;
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* ===============================
+   TITLE
+================================ */
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #e5e7eb;
+}
+
+/* ===============================
+   FORM
+================================ */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===============================
+   FIELD
+================================ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===============================
+   LABELS
+================================ */
+.field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #cbd5e1;
+}
+
+/* ===============================
+   INPUTS
+================================ */
+.field input,
+.field textarea {
+  background: #1b1b1b !important;
+  border: 1px solid #2e2e2e;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e5e7eb !important;
+  font-size: 14px;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #94a3b8;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #4f8cff;
+}
+
+/* ===============================
+   DATE BUTTON
+================================ */
+.dateButton {
+  background: #1b1b1b;
+  border: 1px solid #2e2e2e;
+  color: #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* ===============================
+   CALENDAR
+================================ */
+.calendarWrapper {
+  background: #111;
+  border-radius: 10px;
+  padding: 8px;
+}
+
+/* ===============================
+   ERROR
+================================ */
+.error {
+  font-size: 12px;
+  color: #f87171;
+}
+
+/* ===============================
+   ACTIONS (BOTONES)
+================================ */
+.actions {
+  display: flex;
+  justify-content: center; /* 🔹 botones centrados */
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.actions button {
+  min-width: 110px;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* BOTÓN CANCELAR */
+.actions button[type="button"] {
+  background-color: #000;   /* 🔹 fondo negro */
+  color: #fff;              /* 🔹 letras blancas */
+  border: 1px solid #333;
+}
+
+/* BOTÓN SUBMIT */
+.actions button[type="submit"] {
+  background-color: #000000; /* morado oscuro */
+  color: #fff;
+  border: none;
+}
+
+.actions button[type="submit"]:hover {
+  background-color: #4338ca;
+}
