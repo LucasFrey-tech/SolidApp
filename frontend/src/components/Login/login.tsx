@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../../styles/login.module.css";
 import Swal from "sweetalert2";
@@ -15,7 +15,7 @@ interface LoginFormData {
 
 export default function Login() {
   const router = useRouter();
-  const api = new BaseApi();
+  const api = useMemo(() => new BaseApi(), []);
 
   const [formData, setFormData] = useState<LoginFormData>({
     correo: "",
