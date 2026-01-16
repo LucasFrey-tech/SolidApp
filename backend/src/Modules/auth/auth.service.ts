@@ -1,3 +1,4 @@
+// /backend/src/auth/auth.service.ts
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import {
@@ -7,70 +8,200 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UsuarioService } from '../user/usuario.service';
-import { LoginRequestBody, RegisterRequestBody } from './dto/auth.dto';
+import { EmpresasService } from '../empresa/empresa.service'; // ← Cambiado a EmpresasService
+import { OrganizationsService } from '../organization/organization.service'; // ← Cambiado a OrganizationsService
+import {
+  LoginRequestBody,
+  RegisterUsuarioDto,
+  RegisterEmpresaDto,
+  RegisterOrganizacionDto,
+} from './dto/auth.dto';
 import { Usuario } from '../../Entities/usuario.entity';
-import { ResponseUsuarioDto } from '../user/dto/response_usuario.dto';
+import { Empresa_usuarios } from '../../Entities/empresa_usuarios.entity';
+import { Organizations_user } from '../../Entities/organization_user.entity'; // ← Cambiado a organizations_user.entity
+import { Empresa } from '../../Entities/empresa.entity';
+import { Organizations } from '../../Entities/organizations.entity'; // ← Cambiado a organizations.entity
 
-/**
- * Servicio que maneja la lógica de negocio para el Sistema de Autenticación
- */
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsuarioService,
+    private readonly empresasService: EmpresasService, // ← Cambiado
+    private readonly organizationsService: OrganizationsService, // ← Cambiado
+    @InjectRepository(Empresa_usuarios)
+    private readonly empresaUsuarioRepository: Repository<Empresa_usuarios>,
+    @InjectRepository(Organizations_user)
+    private readonly organizacionUsuarioRepository: Repository<Organizations_user>,
+    @InjectRepository(Empresa)
+    private readonly empresaRepository: Repository<Empresa>,
+    @InjectRepository(Organizations)
+    private readonly organizacionRepository: Repository<Organizations>,
     private readonly jwtService: JwtService,
   ) {
     this.logger.log('AuthService inicializado');
   }
 
-  /**
-   * Registra un nuevo usuario en el sistema.
-   *
-   * @param {RegisterRequestBody} requestBody - Datos de registro del usuario
-   * @returns {Promise<ResponseUsuarioDto>} Promesa que resuelve con los datos del usuario creado (sin contraseña)
-   * @throws {BadRequestException} En estos casos:
-   * - Si el email y nombre de usuario ya existen
-   * - Si el email ya está registrado
-   * - Si el nombre de usuario ya existe
-   */
-  // REGISTRO
-  async register(requestBody: RegisterRequestBody): Promise<ResponseUsuarioDto> {
-    // Verificar si ya existe el usuario por email
-    const existingUserEmail = await this.usersService.findByEmail(
-      requestBody.correo,
-    );
+  async registerUsuario(dto: RegisterUsuarioDto) {
+    this.logger.log('Registrando usuario tipo: Usuario');
 
-    if (existingUserEmail) {
-      throw new BadRequestException('El correo ya está registrado');
+    // Verificar si ya existe el email
+    try {
+      const existingUser = await this.usersService.findByEmail(dto.correo);
+      if (existingUser) {
+        throw new BadRequestException('El correo ya está registrado');
+      }
+    } catch (error) {
+      // Si no encuentra usuario (NotFoundException), continuar
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      // Ignorar NotFoundException
     }
 
-    // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(requestBody.clave, 10);
+    // Hashear contraseña
+    const hashedPassword = await bcrypt.hash(dto.clave, 10);
 
-    // Crear usuario con contraseña hasheada
+    // Crear usuario
     const user = await this.usersService.create({
-      ...requestBody,
+      correo: dto.correo,
       clave: hashedPassword,
+      nombre: dto.nombre,
+      apellido: dto.apellido,
+      rol: 'usuario',
+      imagen: dto.imagen || '',
+      direccion: dto.direccion || '',
     });
 
-    this.logger.log('Usuario Creado');
+    this.logger.log(`Usuario creado con ID ${user.id}`);
     return user;
   }
 
-  /**
-   * Autentica a un usuario y genera un token JWT
-   *
-   * @param {LoginRequestBody} requestBody - Objeto que contiene las credenciales del usuario
-   * @returns - Un objeto con el token de acceso.
-   * @throws {UnauthorizedException} Si las credenciales son incorrectas
-   * @throws {ForbiddenException} Si el usuario está desabilidato
-   */
+  async registerEmpresa(dto: RegisterEmpresaDto) {
+    this.logger.log('Registrando usuario tipo: Empresa');
 
-  // LOGIN
+    // 1. Verificar si ya existe el email en usuarios
+    try {
+      const existingUser = await this.usersService.findByEmail(dto.correo);
+      if (existingUser) {
+        throw new BadRequestException('El correo ya está registrado');
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+    }
+
+    // 2. Hashear contraseña
+    const hashedPassword = await bcrypt.hash(dto.clave, 10);
+
+    // 3. Crear usuario base
+    const user = await this.usersService.create({
+      correo: dto.correo,
+      clave: hashedPassword,
+      nombre: dto.nombreFantasia,
+      apellido: '', // No aplica para empresa
+      rol: 'empresa',
+      imagen: '',
+      direccion: dto.direccion,
+    });
+
+    // 4. Crear empresa
+    const empresa = await this.empresasService.create({
+      nroDocumento: dto.documento,
+      razon_social: dto.razonSocial,
+      nombre_fantasia: dto.nombreFantasia,
+      descripcion: 'Empresa registrada recientemente',
+      rubro: 'General',
+      telefono: dto.telefono,
+      direccion: dto.direccion,
+      web: dto.web || '',
+      verificada: false,
+    });
+
+    // 5. Crear relación empresa-usuario
+    const empresaUsuario = this.empresaUsuarioRepository.create({
+      empresa: empresa,
+      usuario: user,
+    });
+    await this.empresaUsuarioRepository.save(empresaUsuario);
+
+    this.logger.log(
+      `Empresa creada con ID ${empresa.id}, usuario ID ${user.id}`,
+    );
+
+    return {
+      usuario: user,
+      empresa: empresa,
+      message: 'Empresa registrada exitosamente',
+    };
+  }
+
+  async registerOrganizacion(dto: RegisterOrganizacionDto) {
+    this.logger.log('Registrando usuario tipo: Organización');
+
+    // 1. Verificar si ya existe el email
+    try {
+      const existingUser = await this.usersService.findByEmail(dto.correo);
+      if (existingUser) {
+        throw new BadRequestException('El correo ya está registrado');
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+    }
+
+    // 2. Hashear contraseña
+    const hashedPassword = await bcrypt.hash(dto.clave, 10);
+
+    // 3. Crear usuario base
+    const user = await this.usersService.create({
+      correo: dto.correo,
+      clave: hashedPassword,
+      nombre: dto.nombre,
+      apellido: '', // No aplica para organización
+      rol: 'organizacion',
+      imagen: '',
+      direccion: '',
+    });
+
+    // 4. Crear organización
+    const organizacion = await this.organizationsService.create({
+      nroDocumento: dto.documento,
+      razonSocial: dto.razonSocial,
+      nombreFantasia: dto.nombre,
+      descripcion: 'Organización registrada recientemente',
+      telefono: '',
+      web: '',
+    });
+
+    // 5. Crear relación organización-usuario
+    const organizacionUsuario = this.organizacionUsuarioRepository.create({
+      organizacion: organizacion,
+      usuario: user,
+    });
+    await this.organizacionUsuarioRepository.save(organizacionUsuario);
+
+    this.logger.log(
+      `Organización creada con ID ${organizacion.id}, usuario ID ${user.id}`,
+    );
+
+    return {
+      usuario: user,
+      organizacion: organizacion,
+      message: 'Organización registrada exitosamente',
+    };
+  }
+
+  /**
+   * Login - Busca en usuarios
+   */
   async login(requestBody: LoginRequestBody) {
-    // Validamos el usuario y la contraseña
     const user = await this.validateUser(requestBody.correo, requestBody.clave);
 
     if (user.deshabilitado) {
@@ -79,17 +210,13 @@ export class AuthService {
       );
     }
 
-    // Creamos el payload del JWT (puedes agregar más info si querés)
     const payload = {
       email: user.correo,
       sub: user.id,
       rol: user.rol,
-    }; //agregamos el username al payload para usarlo en el login
+    };
 
-    // Firmamos el token
     const access_token = this.jwtService.sign(payload);
-
-    // Devolvemos el token
     this.logger.log('Usuario logueado');
     return { access_token };
   }

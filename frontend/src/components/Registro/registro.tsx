@@ -3,49 +3,226 @@ import { z } from "zod";
 import Image from "next/image";
 import styles from "../../styles/registro.module.css";
 import { BaseApi } from "@/API/baseApi";
+
+// ==================== Estrategias =====================
+import { RegisterUsuarioStrategy } from "@/API/class/register/usuario";
+import { RegisterEmpresaStrategy } from "@/API/class/register/empresa";
+import { RegisterOrganizacionStrategy } from "@/API/class/register/organizacion";
+
 // ==================== ESQUEMAS ZOD ====================
 const usuarioSchema = z.object({
-  correo: z.string().min(1, "El email es obligatorio").email({ message: "Email inválido" }),
-  clave: z.string().min(1, "La contraseña es obligatoria").min(6, "La contraseña debe tener al menos 6 caracteres"),
-  nombre: z.string().min(1, "El nombre es obligatorio").min(2, "El nombre debe tener al menos 2 caracteres"),
-  apellido: z.string().min(1, "El apellido es obligatorio").min(2, "El apellido debe tener al menos 2 caracteres"),
+  correo: z
+    .string()
+    .min(1, "El email es obligatorio")
+    .email({ message: "Email inválido" }),
+  clave: z
+    .string()
+    .min(1, "La contraseña es obligatoria")
+    .min(6, "La contraseña debe tener al menos 6 caracteres"),
+  nombre: z
+    .string()
+    .min(1, "El nombre es obligatorio")
+    .min(2, "El nombre debe tener al menos 2 caracteres"),
+  apellido: z
+    .string()
+    .min(1, "El apellido es obligatorio")
+    .min(2, "El apellido debe tener al menos 2 caracteres"),
 });
 
 const empresaSchema = z.object({
-  documento: z.string().min(1, "El documento es obligatorio").min(3, "El documento debe tener al menos 3 caracteres"),
-  razonSocial: z.string().min(1, "La razón social es obligatoria").min(3, "La razón social debe tener al menos 3 caracteres"),
-  nombreFantasia: z.string().min(1, "El nombre de fantasía es obligatorio").min(3, "El nombre de fantasía debe tener al menos 3 caracteres"),
-  clave: z.string().min(1, "La contraseña es obligatoria").min(6, "La contraseña debe tener al menos 6 caracteres"),
-  telefono: z.string().min(1, "El teléfono es obligatorio").min(8, "El teléfono debe tener al menos 8 caracteres"),
-  direccion: z.string().min(1, "La dirección es obligatoria").min(5, "La dirección debe tener al menos 5 caracteres"),
+  documento: z
+    .string()
+    .min(1, "El documento es obligatorio")
+    .min(3, "El documento debe tener al menos 3 caracteres"),
+  razonSocial: z
+    .string()
+    .min(1, "La razón social es obligatoria")
+    .min(3, "La razón social debe tener al menos 3 caracteres"),
+  nombreFantasia: z
+    .string()
+    .min(1, "El nombre de fantasía es obligatorio")
+    .min(3, "El nombre de fantasía debe tener al menos 3 caracteres"),
+  clave: z
+    .string()
+    .min(1, "La contraseña es obligatoria")
+    .min(6, "La contraseña debe tener al menos 6 caracteres"),
+  telefono: z
+    .string()
+    .min(1, "El teléfono es obligatorio")
+    .min(8, "El teléfono debe tener al menos 8 caracteres"),
+  direccion: z
+    .string()
+    .min(1, "La dirección es obligatoria")
+    .min(5, "La dirección debe tener al menos 5 caracteres"),
+  correo: z
+    .string()
+    .min(1, "El correo es obligatorio")
+    .email("El correo debe tener un formato válido"),
   web: z.string().optional(),
 });
 
 const organizacionSchema = z.object({
-  documento: z.string().min(1, "El documento es obligatorio").min(3, "El documento debe tener al menos 3 caracteres"),
-  razonSocial: z.string().min(1, "La razón social es obligatoria").min(3, "La razón social debe tener al menos 3 caracteres"),
-  nombre: z.string().min(1, "El nombre es obligatorio").min(3, "El nombre debe tener al menos 3 caracteres"),
-  clave: z.string().min(1, "La contraseña es obligatoria").min(6, "La contraseña debe tener al menos 6 caracteres"),
+  documento: z
+    .string()
+    .min(1, "El documento es obligatorio")
+    .min(3, "El documento debe tener al menos 3 caracteres"),
+  razonSocial: z
+    .string()
+    .min(1, "La razón social es obligatoria")
+    .min(3, "La razón social debe tener al menos 3 caracteres"),
+  nombre: z
+    .string()
+    .min(1, "El nombre es obligatorio")
+    .min(3, "El nombre debe tener al menos 3 caracteres"),
+  clave: z
+    .string()
+    .min(1, "La contraseña es obligatoria")
+    .min(6, "La contraseña debe tener al menos 6 caracteres"),
+  correo: z
+    .string()
+    .min(1, "El correo es obligatorio")
+    .email("El correo debe tener un formato válido"),
 });
 
 // ==================== TIPOS ====================
-type Step = "select" | "usuario" | "empresa" | "organizacion";
+type FormType = "usuario" | "empresa" | "organizacion";
 
 type UsuarioData = z.infer<typeof usuarioSchema>;
 type EmpresaData = z.infer<typeof empresaSchema>;
 type OrganizacionData = z.infer<typeof organizacionSchema>;
 
-type FormType = "usuario" | "empresa" | "organizacion";
+type Step = "select" | FormType;
 
 type Errors = Record<string, string | undefined>;
 type Touched = Record<string, boolean>;
 
+// ==================== CONFIGURACIÓN DE CAMPOS ====================
+type FieldConfig = {
+  field: string;
+  label: string;
+  type: string;
+  placeholder: string;
+  optional?: boolean;
+};
+
+const fieldConfigs: Record<FormType, FieldConfig[]> = {
+  usuario: [
+    {
+      field: "correo",
+      label: "Correo electrónico",
+      type: "email",
+      placeholder: "ejemplo@email.com",
+    },
+    {
+      field: "clave",
+      label: "Contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "nombre",
+      label: "Nombre",
+      type: "text",
+      placeholder: "Tu nombre",
+    },
+    {
+      field: "apellido",
+      label: "Apellido",
+      type: "text",
+      placeholder: "Tu apellido",
+    },
+  ],
+  empresa: [
+    {
+      field: "documento",
+      label: "Número de documento",
+      type: "text",
+      placeholder: "Ej: 30-12345678-9",
+    },
+    {
+      field: "razonSocial",
+      label: "Razón Social",
+      type: "text",
+      placeholder: "Nombre legal",
+    },
+    {
+      field: "nombreFantasia",
+      label: "Nombre Fantasía",
+      type: "text",
+      placeholder: "Nombre comercial",
+    },
+    {
+      field: "clave",
+      label: "Contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "telefono",
+      label: "Teléfono",
+      type: "text",
+      placeholder: "+54 11 1234-5678",
+    },
+    {
+      field: "direccion",
+      label: "Dirección",
+      type: "text",
+      placeholder: "Calle y número",
+    },
+    {
+      field: "correo",
+      label: "Correo electrónico",
+      type: "email",
+      placeholder: "ejemplo@empresa.com",
+    },
+    {
+      field: "web",
+      label: "Web",
+      type: "text",
+      placeholder: "https://...",
+      optional: true,
+    },
+  ],
+  organizacion: [
+    {
+      field: "documento",
+      label: "Número de documento",
+      type: "text",
+      placeholder: "12345",
+    },
+    {
+      field: "razonSocial",
+      label: "Razón Social",
+      type: "text",
+      placeholder: "Nombre legal",
+    },
+    {
+      field: "nombre",
+      label: "Nombre",
+      type: "text",
+      placeholder: "Nombre de uso común",
+    },
+    {
+      field: "clave",
+      label: "Contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "correo",
+      label: "Correo electrónico",
+      type: "email",
+      placeholder: "ejemplo@organizacion.com",
+    },
+  ],
+};
 
 // ==================== COMPONENTE ====================
 export default function Registro() {
   const [step, setStep] = useState<Step>("select");
-  const api = new BaseApi();
+  const [api] = useState(() => new BaseApi());
 
+  // ==================== ESTADOS INDEPENDIENTES ====================
   const [usuarioData, setUsuarioData] = useState<UsuarioData>({
     correo: "",
     clave: "",
@@ -61,6 +238,7 @@ export default function Registro() {
     telefono: "",
     direccion: "",
     web: "",
+    correo: "",
   });
 
   const [organizacionData, setOrganizacionData] = useState<OrganizacionData>({
@@ -68,56 +246,88 @@ export default function Registro() {
     razonSocial: "",
     nombre: "",
     clave: "",
+    correo: "",
   });
 
   const [errors, setErrors] = useState<Errors>({});
   const [touchedFields, setTouchedFields] = useState<Touched>({});
 
-  const schemaMap = {
-    usuario: usuarioSchema,
-    empresa: empresaSchema,
-    organizacion: organizacionSchema,
-  } as const;
+  // ==================== MAPEO SIMPLE ====================
+  const getCurrentData = () => {
+    switch (step) {
+      case "usuario":
+        return usuarioData;
+      case "empresa":
+        return empresaData;
+      case "organizacion":
+        return organizacionData;
+      default:
+        return null;
+    }
+  };
+
+  const getCurrentSchema = () => {
+    switch (step) {
+      case "usuario":
+        return usuarioSchema;
+      case "empresa":
+        return empresaSchema;
+      case "organizacion":
+        return organizacionSchema;
+      default:
+        return null;
+    }
+  };
+
+  const getCurrentStrategy = () => {
+    switch (step) {
+      case "usuario":
+        return new RegisterUsuarioStrategy(api.register);
+      case "empresa":
+        return new RegisterEmpresaStrategy(api.register);
+      case "organizacion":
+        return new RegisterOrganizacionStrategy(api.register);
+      default:
+        return null;
+    }
+  };
 
   // ==================== VALIDACIÓN ====================
   const validateField = (
-  formType: FormType,
-  field: string,
-  value: string,
-  isBlur = false
-): string | null => {
-  if (!isBlur && !touchedFields[field]) return null;
+    field: string,
+    value: string,
+    isBlur = false
+  ): string | null => {
+    if (!isBlur && !touchedFields[field]) return null;
 
-  const schema = schemaMap[formType];
+    const schema = getCurrentSchema();
+    if (!schema) return null;
 
-  const fieldSchema = schema.shape[field as keyof typeof schema.shape];
+    const fieldSchema = (schema.shape as Record<string, z.ZodTypeAny>)[field];
+    if (!fieldSchema) return null;
 
-  if (!fieldSchema) return null;
-
-  const result = fieldSchema.safeParse(value);
-
-  if (result.success) return null;
-
-  const issue = result.error.issues.find(
-    (i) => i.path[0] === field
-  );
-
-  return issue?.message ?? "Error de validación";
-};
+    try {
+      fieldSchema.parse(value);
+      return null;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return error.issues[0]?.message ?? "Error de Validación";
+      }
+      return "Error de Validación";
+    }
+  };
 
   const validateAllFields = () => {
     if (step === "select") {
       return { isValid: false, errors: {} as Errors };
     }
 
-    const schema = schemaMap[step];
+    const schema = getCurrentSchema();
+    const data = getCurrentData();
 
-    const data = 
-      step === "usuario"
-        ? usuarioData
-        : step === "empresa"
-        ? empresaData
-        : organizacionData;
+    if (!schema || !data) {
+      return { isValid: false, errors: {} as Errors };
+    }
 
     try {
       schema.parse(data);
@@ -137,51 +347,53 @@ export default function Registro() {
   const isFormValid = () => validateAllFields().isValid;
 
   // ==================== EVENTOS ====================
-  const handleChange = (formType: FormType, field: string, value: string) => {
-    if (formType === "usuario") {
-      setUsuarioData((prev) => ({ ...prev, [field]: value }));
-    } else if (formType === "empresa") {
-      setEmpresaData((prev) => ({ ...prev, [field]: value }));
-    } else {
-      setOrganizacionData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: string) => {
+    if (step === "select") return;
+
+    // Actualizar el estado correspondiente
+    switch (step) {
+      case "usuario":
+        setUsuarioData((prev) => ({ ...prev, [field]: value }));
+        break;
+      case "empresa":
+        setEmpresaData((prev) => ({ ...prev, [field]: value }));
+        break;
+      case "organizacion":
+        setOrganizacionData((prev) => ({ ...prev, [field]: value }));
+        break;
     }
 
     if (touchedFields[field]) {
-      const error = validateField(formType, field, value, false);
+      const error = validateField(field, value, false);
       setErrors((prev) => ({ ...prev, [field]: error || undefined }));
     }
   };
 
-  const handleBlur = (formType: FormType, field: string) => {
+  const handleBlur = (field: string) => {
     setTouchedFields((prev) => ({ ...prev, [field]: true }));
 
-    const value =
-      step === "usuario"
-        ? usuarioData[field as keyof UsuarioData]
-        : step === "empresa"
-        ? empresaData[field as keyof EmpresaData]
-        : organizacionData[field as keyof OrganizacionData];
+    const data = getCurrentData();
+    if (!data) return;
 
-    const error = validateField(formType, field, value ?? "", true);
+    const value = (data as Record<string, string>)[field] || "";
+    const error = validateField(field, value, true);
     setErrors((prev) => ({ ...prev, [field]: error || undefined }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (step === "select") return;
 
     const validation = validateAllFields();
     if (!validation.isValid) {
       setErrors(validation.errors);
 
       const allFields: Touched = {};
-      const keys =
-        step === "usuario"
-          ? Object.keys(usuarioData)
-          : step === "empresa"
-          ? Object.keys(empresaData)
-          : Object.keys(organizacionData);
-
-      keys.forEach((k) => (allFields[k] = true));
+      const data = getCurrentData();
+      if (data) {
+        Object.keys(data).forEach((k) => (allFields[k] = true));
+      }
 
       setTouchedFields(allFields);
       alert("Por favor, completa todos los campos requeridos.");
@@ -194,14 +406,72 @@ export default function Registro() {
       organizacion: organizacionData,
     });
 
-    api.register.register(usuarioData);
+    try {
+      const strategy = getCurrentStrategy();
+      const data = getCurrentData();
 
-    alert("Registro exitoso");
+      if (!strategy || !data) {
+        throw new Error("Formulario no válido");
+      }
 
-    // reset
-    setErrors({});
-    setTouchedFields({});
-    setStep("select");
+      // Type-safe casting basado en el tipo actual
+      let response;
+      switch (step) {
+        case "usuario":
+          response = await (strategy as RegisterUsuarioStrategy).register(
+            data as UsuarioData
+          );
+          break;
+        case "empresa":
+          response = await (strategy as RegisterEmpresaStrategy).register(
+            data as EmpresaData
+          );
+          break;
+        case "organizacion":
+          response = await (strategy as RegisterOrganizacionStrategy).register(
+            data as OrganizacionData
+          );
+          break;
+        default:
+          throw new Error("Tipo de formulario no soportado");
+      }
+
+      console.log("Registro Exitoso: ", response);
+      alert("Registro Exitoso");
+
+      // Reset
+      setStep("select");
+      setErrors({});
+      setTouchedFields({});
+
+      // Resetear cada formulario
+      setUsuarioData({
+        correo: "",
+        clave: "",
+        nombre: "",
+        apellido: "",
+      });
+      setEmpresaData({
+        documento: "",
+        razonSocial: "",
+        nombreFantasia: "",
+        clave: "",
+        telefono: "",
+        direccion: "",
+        web: "",
+        correo: "",
+      });
+      setOrganizacionData({
+        documento: "",
+        razonSocial: "",
+        nombre: "",
+        clave: "",
+        correo: "",
+      });
+    } catch (error) {
+      console.error("Error al Registrar:", error);
+      alert("Error al registrar usuario");
+    }
   };
 
   const handleStepChange = (newStep: Step) => {
@@ -217,39 +487,82 @@ export default function Registro() {
 
   // ==================== RENDER DE CAMPOS ====================
   const renderField = (
-    formType: FormType,
     field: string,
     label: string,
     type = "text",
     placeholder: string,
-    options: { optional?: boolean } = {}
+    options: { optional?: boolean } = {},
+    key: string // ← Agregar parámetro key
   ) => {
     const optional = options.optional ?? false;
     const showError = touchedFields[field] && errors[field];
 
-    const value =
-      formType === "usuario"
-        ? usuarioData[field as keyof UsuarioData]
-        : formType === "empresa"
-        ? empresaData[field as keyof EmpresaData]
-        : organizacionData[field as keyof OrganizacionData];
+    const data = getCurrentData();
+    const value = data ? (data as Record<string, string>)[field] || "" : "";
 
     return (
-      <div className={styles.fieldGroup}>
+      <div key={key} className={styles.fieldGroup}>
+        {" "}
+        {/* ← Agregar key aquí */}
         <label className={`${styles.label} ${optional ? styles.optional : ""}`}>
           {label} {!optional && "*"}
         </label>
-
         <input
           className={getInputClass(field)}
           type={type}
           placeholder={placeholder}
           value={value}
-          onChange={(e) => handleChange(formType, field, e.target.value)}
-          onBlur={() => handleBlur(formType, field)}
+          onChange={(e) => handleChange(field, e.target.value)}
+          onBlur={() => handleBlur(field)}
         />
-
         {showError && <span className={styles.errorText}>{errors[field]}</span>}
+      </div>
+    );
+  };
+
+  // ==================== RENDER DINÁMICO DE FORMULARIOS ====================
+  const renderForm = (formType: FormType) => {
+    const configs = fieldConfigs[formType];
+
+    return (
+      <div className={styles.formWrapper}>
+        <form className={styles.form} onSubmit={handleSubmit}>
+          <div className={styles.formHeader}>
+            <button
+              className={styles.backButton}
+              type="button"
+              onClick={() => handleStepChange("select")}
+            >
+              ← Volver
+            </button>
+            <h2 className={styles.title}>
+              Registro {formType.charAt(0).toUpperCase() + formType.slice(1)}
+            </h2>
+          </div>
+
+          <div className={styles.scrollableFields}>
+            {configs.map(
+              ({ field, label, type, placeholder, optional }, index) =>
+                renderField(
+                  field,
+                  label,
+                  type,
+                  placeholder,
+                  { optional },
+                  `${formType}-${field}-${index}` // ← Pasar key única
+                )
+            )}
+          </div>
+
+          <button
+            disabled={!isFormValid()}
+            className={styles.btn}
+            type="submit"
+          >
+            {formType === "usuario" ? "Crear cuenta" : `Registrar ${formType}`}
+          </button>
+          <p className={styles.requiredHint}>* Campos obligatorios</p>
+        </form>
       </div>
     );
   };
@@ -263,20 +576,44 @@ export default function Registro() {
 
           <div className={styles.cards}>
             {/* USUARIO */}
-            <div className={styles.card} onClick={() => handleStepChange("usuario")}>
-              <Image src="/Registro/Donador_Registro.svg" alt="Usuario" width={80} height={80} />
+            <div
+              className={styles.card}
+              onClick={() => handleStepChange("usuario")}
+            >
+              <Image
+                src="/Registro/Donador_Registro.svg" // ← Verifica el nombre real
+                alt="Usuario"
+                width={80}
+                height={80}
+              />
               <p className={styles.cardText}>Usuario</p>
             </div>
 
             {/* EMPRESA */}
-            <div className={styles.card} onClick={() => handleStepChange("empresa")}>
-              <Image src="/Registro/Empresa_Registro.svg" alt="Empresa" width={80} height={80} />
+            <div
+              className={styles.card}
+              onClick={() => handleStepChange("empresa")}
+            >
+              <Image
+                src="/Registro/Empresa_Registro.svg" // ← Verifica el nombre real
+                alt="Empresa"
+                width={80}
+                height={80}
+              />
               <p className={styles.cardText}>Empresa</p>
             </div>
 
             {/* ORGANIZACION */}
-            <div className={styles.card} onClick={() => handleStepChange("organizacion")}>
-              <Image src="/Registro/Organizacion_Registro.svg" alt="Organización" width={80} height={80} />
+            <div
+              className={styles.card}
+              onClick={() => handleStepChange("organizacion")}
+            >
+              <Image
+                src="/Registro/Organizacion_Registro.svg" // ← Verifica el nombre real
+                alt="Organización"
+                width={80}
+                height={80}
+              />
               <p className={styles.cardText}>Organización</p>
             </div>
           </div>
@@ -285,84 +622,8 @@ export default function Registro() {
         </>
       )}
 
-      {/* === FORMULARIOS === */}
-      {step === "usuario" && (
-        <div className={styles.formWrapper}>
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.formHeader}>
-              <button className={styles.backButton} type="button" onClick={() => handleStepChange("select")}>
-                ← Volver
-              </button>
-              <h2 className={styles.title}>Registro Usuario</h2>
-            </div>
-
-            <div className={styles.scrollableFields}>
-              {renderField("usuario", "email", "Correo electrónico", "email", "ejemplo@email.com")}
-              {renderField("usuario", "password", "Contraseña", "password", "••••••••")}
-              {renderField("usuario", "nombre", "Nombre", "text", "Tu nombre")}
-              {renderField("usuario", "apellido", "Apellido", "text", "Tu apellido")}
-            </div>
-
-            <button disabled={!isFormValid()} className={styles.btn} type="submit">
-              Crear cuenta
-            </button>
-            <p className={styles.requiredHint}>* Campos obligatorios</p>
-          </form>
-        </div>
-      )}
-
-      {step === "empresa" && (
-        <div className={styles.formWrapper}>
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.formHeader}>
-              <button className={styles.backButton} type="button" onClick={() => handleStepChange("select")}>
-                ← Volver
-              </button>
-              <h2 className={styles.title}>Registro Empresa</h2>
-            </div>
-
-            <div className={styles.scrollableFields}>
-              {renderField("empresa", "documento", "Número de documento", "text", "Ej: 30-12345678-9")}
-              {renderField("empresa", "razonSocial", "Razón Social", "text", "Nombre legal")}
-              {renderField("empresa", "nombreFantasia", "Nombre Fantasía", "text", "Nombre comercial")}
-              {renderField("empresa", "password", "Contraseña", "password", "••••••••")}
-              {renderField("empresa", "telefono", "Teléfono", "text", "+54 11 1234-5678")}
-              {renderField("empresa", "direccion", "Dirección", "text", "Calle y número")}
-              {renderField("empresa", "web", "Web", "text", "https://...", { optional: true })}
-            </div>
-
-            <button disabled={!isFormValid()} className={styles.btn} type="submit">
-              Registrar empresa
-            </button>
-            <p className={styles.requiredHint}>* Campos obligatorios</p>
-          </form>
-        </div>
-      )}
-
-      {step === "organizacion" && (
-        <div className={styles.formWrapper}>
-          <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.formHeader}>
-              <button className={styles.backButton} type="button" onClick={() => handleStepChange("select")}>
-                ← Volver
-              </button>
-              <h2 className={styles.title}>Registro Organización</h2>
-            </div>
-
-            <div className={styles.scrollableFields}>
-              {renderField("organizacion", "documento", "Número de documento", "text", "12345")}
-              {renderField("organizacion", "razonSocial", "Razón Social", "text", "Nombre legal")}
-              {renderField("organizacion", "nombre", "Nombre", "text", "Nombre de uso común")}
-              {renderField("organizacion", "password", "Contraseña", "password", "••••••••")}
-            </div>
-
-            <button disabled={!isFormValid()} className={styles.btn} type="submit">
-              Registrar organización
-            </button>
-            <p className={styles.requiredHint}>* Campos obligatorios</p>
-          </form>
-        </div>
-      )}
+      {/* === FORMULARIOS DINÁMICOS === */}
+      {step !== "select" && renderForm(step)}
     </div>
   );
 }

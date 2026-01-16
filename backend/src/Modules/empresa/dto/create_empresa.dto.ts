@@ -80,7 +80,9 @@ export class CreateEmpresaDTO {
   })
   @IsString()
   @IsNotEmpty({ message: 'La dirección es Oligatoria' })
-  @MaxLength(255, { message: 'La dirección no puede superar los 255 caracteres' })
+  @MaxLength(255, {
+    message: 'La dirección no puede superar los 255 caracteres',
+  })
   direccion: string;
 
   @ApiProperty({

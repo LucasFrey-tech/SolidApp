@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength } from 'class-validator';
-
-/**
- * Data Transfer Object (DTO) para Register y Login.
- * Se usa para validar y transformar datos entre el cliente y el servidor.
- */
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class LoginRequestBody {
   /**
@@ -97,4 +92,104 @@ export class RegisterRequestBody {
     this.direccion = direccion;
     this.rol = rol;
   }
+}
+
+// En auth.dto.ts, actualiza los DTOs:
+
+export class RegisterUsuarioDto {
+  @ApiProperty({ description: 'Email del usuario' })
+  @IsEmail()
+  correo: string;
+
+  @ApiProperty({ description: 'Contraseña del usuario' })
+  @IsString()
+  @MinLength(6)
+  clave: string;
+
+  @ApiProperty({ description: 'Nombre del usuario' })
+  @IsString()
+  @MinLength(2)
+  nombre: string;
+
+  @ApiProperty({ description: 'Apellido del usuario' })
+  @IsString()
+  @MinLength(2)
+  apellido: string;
+
+  @ApiProperty({ description: 'Imagen de perfil', required: false })
+  @IsString()
+  @IsOptional()
+  imagen?: string;
+
+  @ApiProperty({ description: 'Dirección', required: false })
+  @IsString()
+  @IsOptional()
+  direccion?: string;
+}
+
+export class RegisterEmpresaDto {
+  @ApiProperty({ description: 'Número de documento' })
+  @IsString()
+  @MinLength(3)
+  documento: string;
+
+  @ApiProperty({ description: 'Razón social' })
+  @IsString()
+  @MinLength(3)
+  razonSocial: string;
+
+  @ApiProperty({ description: 'Nombre de fantasía' })
+  @IsString()
+  @MinLength(3)
+  nombreFantasia: string;
+
+  @ApiProperty({ description: 'Contraseña' })
+  @IsString()
+  @MinLength(6)
+  clave: string;
+
+  @ApiProperty({ description: 'Teléfono' })
+  @IsString()
+  @MinLength(8)
+  telefono: string;
+
+  @ApiProperty({ description: 'Dirección' })
+  @IsString()
+  @MinLength(5)
+  direccion: string;
+
+  @ApiProperty({ description: 'Email' })
+  @IsEmail()
+  correo: string;
+
+  @ApiProperty({ description: 'Sitio web', required: false })
+  @IsString()
+  @IsOptional()
+  web?: string;
+}
+
+export class RegisterOrganizacionDto {
+  @ApiProperty({ description: 'Número de documento' })
+  @IsString()
+  @MinLength(3)
+  documento: string;
+
+  @ApiProperty({ description: 'Razón social' })
+  @IsString()
+  @MinLength(3)
+  razonSocial: string;
+
+  @ApiProperty({ description: 'Nombre' })
+  @IsString()
+  @MinLength(3)
+  nombre: string;
+
+  @ApiProperty({ description: 'Contraseña' })
+  @IsString()
+  @MinLength(6)
+  clave: string;
+
+  @ApiProperty({ description: 'Email' })
+  @IsEmail()
+  correo: string;
 }

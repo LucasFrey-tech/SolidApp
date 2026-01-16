@@ -73,7 +73,10 @@ export class UsuarioService {
     return this.mapToResponseDto(saved);
   }
 
-  async update(id: number, updateDto: UpdateUsuarioDto): Promise<ResponseUsuarioDto> {
+  async update(
+    id: number,
+    updateDto: UpdateUsuarioDto,
+  ): Promise<ResponseUsuarioDto> {
     const usuario = await this.usuarioRepository.findOne({
       where: { id },
     });
@@ -124,7 +127,9 @@ export class UsuarioService {
     this.logger.log(`Usuario ${id} restaurado`);
   }
 
-  private readonly mapToResponseDto = (usuario: Usuario): ResponseUsuarioDto => ({
+  private readonly mapToResponseDto = (
+    usuario: Usuario,
+  ): ResponseUsuarioDto => ({
     id: usuario.id,
     correo: usuario.correo,
     nombre: usuario.nombre,
