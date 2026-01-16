@@ -13,6 +13,7 @@ import { Empresa_usuarios } from '../../Entities/empresa_usuarios.entity';
 import { Organizations_user } from '../../Entities/organization_user.entity';
 import { Empresa } from '../../Entities/empresa.entity';
 import { Organizations } from '../../Entities/organizations.entity';
+import { CommonMulterModule } from '../../common/multer/multer.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { Organizations } from '../../Entities/organizations.entity';
         signOptions: { expiresIn: '2h' },
       }),
     }),
+    CommonMulterModule, //Files upload module
   ],
   controllers: [AuthController],
   providers: [AuthService],

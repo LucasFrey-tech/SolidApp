@@ -29,7 +29,7 @@ import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 @ApiTags('Beneficios')
 @Controller('beneficios')
 export class BeneficioController {
-  constructor(private readonly beneficiosService: BeneficioService) {}
+  constructor(private readonly beneficiosService: BeneficioService) { }
 
   /**
    * Lista todos los beneficios.
@@ -45,6 +45,29 @@ export class BeneficioController {
   async findAll(): Promise<BeneficiosResponseDTO[]> {
     return this.beneficiosService.findAll();
   }
+
+  /**
+ * Lista beneficios por empresa
+ */
+  @Get('empresa/:idEmpresa')
+  @ApiOperation({ summary: 'Listar Beneficios por Empresa' })
+  @ApiParam({
+    name: 'idEmpresa',
+    description: 'ID de la empresa',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de beneficios de la empresa',
+    type: BeneficiosResponseDTO,
+    isArray: true,
+  })
+  async findByEmpresa(
+    @Param('idEmpresa', ParseIntPipe) idEmpresa: number,
+  ): Promise<BeneficiosResponseDTO[]> {
+    return this.beneficiosService.findByEmpresa(idEmpresa);
+  }
+
 
   /**
    * Obtiene un beneficio por ID.

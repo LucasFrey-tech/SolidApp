@@ -1,0 +1,255 @@
+/* ================= OVERLAY ================= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: auto;
+  padding-top: 8%;
+}
+
+/* ================= PANEL ================= */
+.panel {
+  background: #fff;
+  width: 100%;
+  max-width: 1200px;
+
+  max-height: 80vh;
+  overflow-y: auto;
+
+  padding: 24px;
+  border-radius: 14px;
+}
+
+
+/* ================= HEADER ================= */
+.header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.titleBeneficios {
+  grid-column: 2;
+  text-align: center;
+  font-size: rem;
+  font-weight: 700;
+  color: #c62828;
+}
+
+.backBtn {
+  grid-column: 1;
+  justify-self: start;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #0070f3;
+}
+
+/* ================= LIST ================= */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ================= CARD ================= */
+.card {
+  display: grid;
+  grid-template-columns:
+    180px
+    260px
+    1fr
+    140px
+    160px;
+
+  align-items: center;
+  background-color: #f6f6f6;
+  border-radius: 10px;
+  min-height: 110px;
+  padding: 16px 20px;
+  box-sizing: border-box;
+  outline: 1px solid #d0d0d0;
+  outline-offset: -1px;
+}
+
+/* ===== LINEAS UNIFORMES ===== */
+.card > div {
+  box-shadow: inset -1px 0 0 #d0d0d0;
+  padding-right: 12px;
+}
+
+.card > div:last-child {
+  box-shadow: none;
+}
+
+/* ================= LOGO ================= */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ================= MAIN INFO ================= */
+.mainInfo {
+  text-align: center;
+}
+
+.discount {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2e7d32;
+  line-height: 1.1;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #2e7d32;
+  margin-top: 4px;
+}
+
+/* ================= DETAIL ================= */
+.detail {
+  font-size: 0.85rem;
+  color: #555;
+  max-height: 70px;
+  overflow-y: auto;
+  padding-left: 4%;
+  text-align: center;
+}
+
+/* ================= VALOR (PUNTOS BACK) ================= */
+.valor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: black;
+  font-weight: 600;
+}
+
+.valor span {
+  font-size: 0.7rem;
+  color: #777;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.valor strong {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #111;
+}
+
+/* ================= ACTION ================= */
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* CONTADOR */
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.counter button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #000;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.counter span {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 700;
+  color: #000;
+}
+
+/* TOTAL PUNTOS */
+.total {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #000;
+}
+
+/* BOTON CANJEAR */
+.canjearBtn {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  border: none;
+  background: #2e7d32;
+  color: white;
+  cursor: pointer;
+}
+
+.canjearBtn:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+/* ================= SCROLL ================= */
+.detail::-webkit-scrollbar {
+  width: 4px;
+}
+
+.detail::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+/* ================= TABLET ================= */
+@media (max-width: 900px) {
+  .overlay {
+    padding-top: 4%;
+  }
+
+  .card {
+    grid-template-columns: 1fr;
+  }
+
+  .card > div {
+    box-shadow: inset 0 -1px 0 #d0d0d0;
+    padding: 12px 0;
+  }
+
+  .card > div:last-child {
+    box-shadow: none;
+  }
+
+  .valor strong {
+    font-size: 1.4rem;
+  }
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 480px) {
+  .panel {
+    padding: 16px;
+  }
+
+  .discount {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: 14px;
+  }
+}

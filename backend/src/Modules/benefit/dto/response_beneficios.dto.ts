@@ -17,6 +17,9 @@ export class BeneficiosResponseDTO {
   @ApiProperty({ example: 50, description: 'Cantidad disponible' })
   cantidad: number;
 
+  @ApiProperty({ example: 100, description: 'Valor del beneficio' })
+  valor: number;
+
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha de registro',
