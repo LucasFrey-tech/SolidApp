@@ -105,10 +105,9 @@ export class AuthService {
       web: dto.web || '',
       verificada: false,
       correo: dto.correo,
-      clave: hashedPassword
+      clave: hashedPassword,
     });
 
- 
     return {
       usuario: dto.correo,
       empresa: empresa,
@@ -143,7 +142,7 @@ export class AuthService {
       telefono: '',
       web: '',
       correo: dto.correo,
-      clave: hashedPassword
+      clave: hashedPassword,
     });
 
     this.logger.log(
