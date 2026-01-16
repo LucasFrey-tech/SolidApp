@@ -21,6 +21,7 @@ import { SettingsService } from './common/settings/settings.service';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [() => app_config as AppConfig],
+      envFilePath: '.env',
     }),
 
     TypeOrmModule.forRootAsync({
