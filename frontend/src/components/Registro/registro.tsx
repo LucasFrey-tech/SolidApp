@@ -70,7 +70,7 @@ const organizacionSchema = z.object({
     .string()
     .min(1, "La razón social es obligatoria")
     .min(3, "La razón social debe tener al menos 3 caracteres"),
-  nombre: z
+  nombreFantasia: z
     .string()
     .min(1, "El nombre es obligatorio")
     .min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -197,7 +197,7 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
       placeholder: "Nombre legal",
     },
     {
-      field: "nombre",
+      field: "nombreFantasia",
       label: "Nombre",
       type: "text",
       placeholder: "Nombre de uso común",
@@ -244,7 +244,7 @@ export default function Registro() {
   const [organizacionData, setOrganizacionData] = useState<OrganizacionData>({
     documento: "",
     razonSocial: "",
-    nombre: "",
+    nombreFantasia: "",
     clave: "",
     correo: "",
   });
@@ -464,7 +464,7 @@ export default function Registro() {
       setOrganizacionData({
         documento: "",
         razonSocial: "",
-        nombre: "",
+        nombreFantasia: "",
         clave: "",
         correo: "",
       });
