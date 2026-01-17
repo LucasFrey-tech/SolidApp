@@ -77,6 +77,22 @@ export class EmpresasService {
   }
 
   /**
+   * Obtiene una Empresa por Correo
+   */
+
+  async findByEmail(correo: string): Promise<Empresa> {
+    const empresa = await this.empresasRepository.findOne({
+      where: { correo },
+    });
+
+    if (!empresa) {
+      throw new NotFoundException(`Usuario con email ${correo} no encontrado`);
+    }
+
+    return empresa;
+  }
+
+  /**
    * Crea una nueva Empresa
    */
   async create(createDto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {

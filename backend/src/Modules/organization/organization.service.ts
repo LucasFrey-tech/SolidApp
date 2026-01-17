@@ -41,6 +41,18 @@ export class OrganizationsService {
     return this.mapToResponseDto(organization);
   }
 
+  async findByEmail(correo: string): Promise<Organizations> {
+    const organizacion = await this.organizationRepository.findOne({
+      where: { correo },
+    });
+
+    if (!organizacion) {
+      throw new NotFoundException(`Usuario con email ${correo} no encontrado`);
+    }
+
+    return organizacion;
+  }
+
   async create(
     createDto: CreateOrganizationDto,
   ): Promise<ResponseOrganizationDto> {
@@ -54,6 +66,9 @@ export class OrganizationsService {
 
     const organization = this.organizationRepository.create({
       ...createDto,
+      razon_social: createDto.razonSocial,
+      nombre_fantasia: createDto.nombreFantasia,
+      direccion: '',
       verificada: false,
       deshabilitado: false,
     });
