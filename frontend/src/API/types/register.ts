@@ -22,7 +22,7 @@ export interface RegisterEmpresaRequest {
 export interface RegisterOrganizacionRequest {
   documento: string;
   razonSocial: string;
-  nombre: string;
+  nombreFantasia: string;
   correo: string;
   clave: string;
 }
