@@ -15,6 +15,7 @@ import {
   RegisterEmpresaDto,
   RegisterOrganizacionDto,
   RegisterUsuarioDto,
+  AuthResponse,
 } from './dto/auth.dto';
 import {
   ApiTags,
@@ -31,20 +32,49 @@ import { AuthService } from './auth.service';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('login')
-  @HttpCode(202)
-  @ApiOperation({ summary: 'Iniciar Sesión' })
+  // Endpoint específico para login de usuario
+  @Post('login/usuario')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Login de Usuario' })
   @ApiBody({ type: LoginRequestBody })
   @ApiResponse({
     status: 200,
-    description: 'Login Exitoso',
-    type: LoginRequestBody,
+    description: 'Login de Usuario Exitoso',
+    type: AuthResponse, // tu DTO de respuesta
   })
-  async login(@Body() LoginRequestBody: LoginRequestBody) {
-    return this.authService.login(LoginRequestBody);
+  async loginUsuario(@Body() data: LoginRequestBody) {
+    return await this.authService.loginUsuario(data);
   }
 
-  // Endpoint específico para usuario
+  // Endpoint específico para login de empresa
+  @Post('login/empresa')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Login de Empresa' })
+  @ApiBody({ type: LoginRequestBody })
+  @ApiResponse({
+    status: 200,
+    description: 'Login de Empresa Exitoso',
+    type: AuthResponse,
+  })
+  async loginEmpresa(@Body() data: LoginRequestBody) {
+    return await this.authService.loginEmpresa(data);
+  }
+
+  // Endpoint específico para login de organización
+  @Post('login/organizacion')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Login de Organización' })
+  @ApiBody({ type: LoginRequestBody })
+  @ApiResponse({
+    status: 200,
+    description: 'Login de Organización Exitoso',
+    type: AuthResponse,
+  })
+  async loginOrganizacion(@Body() data: LoginRequestBody) {
+    return await this.authService.loginOrganizacion(data);
+  }
+
+  // Endpoint específico para registrar usuario
   @Post('register/usuario')
   @ApiOperation({ summary: 'Registro de Usuario' })
   @ApiBody({

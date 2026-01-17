@@ -193,3 +193,8 @@ export class RegisterOrganizacionDto {
   @IsEmail()
   correo: string;
 }
+
+export class AuthResponse {
+  @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6...' })
+  access_token: string;
+}

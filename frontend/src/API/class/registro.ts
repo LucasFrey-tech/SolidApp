@@ -45,7 +45,6 @@ export class RegisterService {
       const errorText = await res.text();
       throw new Error(`HTTP ${res.status}: ${errorText}`);
     }
-
     return res.json();
   }
 }

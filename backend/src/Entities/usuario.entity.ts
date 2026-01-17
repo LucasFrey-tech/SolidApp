@@ -8,8 +8,6 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Donor } from './donor.entity';
-import { Organizations_user } from './organization_user.entity';
-import { Empresa_usuarios } from './empresa_usuarios.entity';
 
 @Entity('usuarios')
 export class Usuario {
@@ -87,20 +85,4 @@ export class Usuario {
   })
   @OneToOne(() => Donor, (donor) => donor.usuario)
   donor?: Donor;
-
-  @ApiProperty({
-    type: () => Organizations_user,
-    required: false,
-    description: 'Usuario de la Organización',
-  })
-  @OneToOne(() => Organizations_user, (usuario) => usuario.usuario)
-  organizationsUser: Organizations_user;
-
-  @ApiProperty({
-    type: () => Empresa_usuarios,
-    required: false,
-    description: 'Usuario de la Empresa',
-  })
-  @OneToOne(() => Empresa_usuarios, (usuario) => usuario.usuario)
-  companyUser: Empresa_usuarios[];
 }

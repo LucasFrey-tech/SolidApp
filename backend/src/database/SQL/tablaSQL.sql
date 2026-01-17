@@ -11,7 +11,9 @@ INSERT INTO empresas
     verificada,
     deshabilitado,
     fecha_registro,
-    ultimo_cambio
+    ultimo_cambio,
+    correo,
+    clave
 )
 VALUES
 (
@@ -26,7 +28,9 @@ VALUES
     1,
     0,
     GETDATE(),
-    GETDATE()
+    GETDATE(),
+    'malbec@gmail.com',
+    'vinotinto'
 ),
 (
     '30698765432',
@@ -40,7 +44,9 @@ VALUES
     0,
     0,
     GETDATE(),
-    GETDATE()
+    GETDATE(),
+    'icardi005@gmail.com',
+    'casabonita'
 ),
 (
     '30999888777',
@@ -54,7 +60,9 @@ VALUES
     1,
     0,
     GETDATE(),
-    GETDATE()
+    GETDATE(),
+    'miguela@gmail.com',
+    '123455abc'
 );
 
 
@@ -110,5 +118,5 @@ VALUES
     30,
     55,
     GETDATE(),
-    GETDATE()
+    GETDATE(),
 );

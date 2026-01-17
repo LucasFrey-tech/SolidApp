@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class CreateOrganizationDto {
   @ApiProperty({
@@ -36,4 +37,26 @@ export class CreateOrganizationDto {
     description: 'Sitio web oficial de la organización',
   })
   web: string;
+
+  @ApiProperty({
+    example: 'correo@dominio.com',
+    description: 'Correo electronico del usuario de la empresa.',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'El correo es obligatorio.' })
+  @MaxLength(255, {
+    message: 'El correo no puede superar los 255 caracteres.',
+  })
+  correo: string;
+
+  @ApiProperty({
+    example: 'password123',
+    description: 'Contraseña del usuario de la empresa.',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'El correo es Oligatorio.' })
+  @MaxLength(255, {
+    message: 'El correo no puede superar los 255 caracteres',
+  })
+  clave: string;
 }

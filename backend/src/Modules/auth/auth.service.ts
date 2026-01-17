@@ -20,8 +20,6 @@ import {
   RegisterOrganizacionDto,
 } from './dto/auth.dto';
 import { Usuario } from '../../Entities/usuario.entity';
-import { Empresa_usuarios } from '../../Entities/empresa_usuarios.entity';
-import { Organizations_user } from '../../Entities/organization_user.entity'; // ← Cambiado a organizations_user.entity
 import { Empresa } from '../../Entities/empresa.entity';
 import { Organizations } from '../../Entities/organizations.entity'; // ← Cambiado a organizations.entity
 
@@ -33,10 +31,6 @@ export class AuthService {
     private readonly usersService: UsuarioService,
     private readonly empresasService: EmpresasService, // ← Cambiado
     private readonly organizationsService: OrganizationsService, // ← Cambiado
-    @InjectRepository(Empresa_usuarios)
-    private readonly empresaUsuarioRepository: Repository<Empresa_usuarios>,
-    @InjectRepository(Organizations_user)
-    private readonly organizacionUsuarioRepository: Repository<Organizations_user>,
     @InjectRepository(Empresa)
     private readonly empresaRepository: Repository<Empresa>,
     @InjectRepository(Organizations)
@@ -99,18 +93,7 @@ export class AuthService {
     // 2. Hashear contraseña
     const hashedPassword = await bcrypt.hash(dto.clave, 10);
 
-    // 3. Crear usuario base
-    const user = await this.usersService.create({
-      correo: dto.correo,
-      clave: hashedPassword,
-      nombre: dto.nombreFantasia,
-      apellido: '', // No aplica para empresa
-      rol: 'empresa',
-      imagen: '',
-      direccion: dto.direccion,
-    });
-
-    // 4. Crear empresa
+    // 3. Crear empresa
     const empresa = await this.empresasService.create({
       nroDocumento: dto.documento,
       razon_social: dto.razonSocial,
@@ -121,21 +104,12 @@ export class AuthService {
       direccion: dto.direccion,
       web: dto.web || '',
       verificada: false,
+      correo: dto.correo,
+      clave: hashedPassword,
     });
-
-    // 5. Crear relación empresa-usuario
-    const empresaUsuario = this.empresaUsuarioRepository.create({
-      empresa: empresa,
-      usuario: user,
-    });
-    await this.empresaUsuarioRepository.save(empresaUsuario);
-
-    this.logger.log(
-      `Empresa creada con ID ${empresa.id}, usuario ID ${user.id}`,
-    );
 
     return {
-      usuario: user,
+      usuario: dto.correo,
       empresa: empresa,
       message: 'Empresa registrada exitosamente',
     };
@@ -159,17 +133,6 @@ export class AuthService {
     // 2. Hashear contraseña
     const hashedPassword = await bcrypt.hash(dto.clave, 10);
 
-    // 3. Crear usuario base
-    const user = await this.usersService.create({
-      correo: dto.correo,
-      clave: hashedPassword,
-      nombre: dto.nombre,
-      apellido: '', // No aplica para organización
-      rol: 'organizacion',
-      imagen: '',
-      direccion: '',
-    });
-
     // 4. Crear organización
     const organizacion = await this.organizationsService.create({
       nroDocumento: dto.documento,
@@ -178,47 +141,73 @@ export class AuthService {
       descripcion: 'Organización registrada recientemente',
       telefono: '',
       web: '',
+      correo: dto.correo,
+      clave: hashedPassword,
     });
-
-    // 5. Crear relación organización-usuario
-    const organizacionUsuario = this.organizacionUsuarioRepository.create({
-      organizacion: organizacion,
-      usuario: user,
-    });
-    await this.organizacionUsuarioRepository.save(organizacionUsuario);
 
     this.logger.log(
-      `Organización creada con ID ${organizacion.id}, usuario ID ${user.id}`,
+      `Organización creada con ID ${organizacion.id}, usuario ${dto.correo}`,
     );
 
     return {
-      usuario: user,
+      usuario: dto.correo,
       organizacion: organizacion,
       message: 'Organización registrada exitosamente',
     };
   }
 
-  /**
-   * Login - Busca en usuarios
-   */
-  async login(requestBody: LoginRequestBody) {
+  /** * Login de Usuario */
+  async loginUsuario(requestBody: LoginRequestBody) {
     const user = await this.validateUser(requestBody.correo, requestBody.clave);
-
+    if (user.rol !== 'usuario') {
+      throw new UnauthorizedException('El correo no corresponde a un usuario');
+    }
     if (user.deshabilitado) {
       throw new ForbiddenException(
         'Usuario bloqueado. Contacta al administrador.',
       );
     }
+    const payload = { email: user.correo, sub: user.id, rol: user.rol };
+    const token = this.jwtService.sign(payload);
+    this.logger.log(`Usuario logueado con ID ${user.id}`);
+    return { token };
+  }
 
-    const payload = {
-      email: user.correo,
-      sub: user.id,
-      rol: user.rol,
-    };
+  /** * Login de Empresa */
+  async loginEmpresa(requestBody: LoginRequestBody) {
+    const user = await this.validateUser(requestBody.correo, requestBody.clave);
+    if (user.rol !== 'empresa') {
+      throw new UnauthorizedException('El correo no corresponde a una empresa');
+    }
+    if (user.deshabilitado) {
+      throw new ForbiddenException(
+        'Usuario bloqueado. Contacta al administrador.',
+      );
+    }
+    const payload = { email: user.correo, sub: user.id, rol: user.rol };
+    const token = this.jwtService.sign(payload);
+    this.logger.log(`Empresa logueada con ID ${user.id}`);
+    return { token };
+  }
 
-    const access_token = this.jwtService.sign(payload);
-    this.logger.log('Usuario logueado');
-    return { access_token };
+  /** * Login de Organización */ async loginOrganizacion(
+    requestBody: LoginRequestBody,
+  ) {
+    const user = await this.validateUser(requestBody.correo, requestBody.clave);
+    if (user.rol !== 'organizacion') {
+      throw new UnauthorizedException(
+        'El correo no corresponde a una organización',
+      );
+    }
+    if (user.deshabilitado) {
+      throw new ForbiddenException(
+        'Usuario bloqueado. Contacta al administrador.',
+      );
+    }
+    const payload = { email: user.correo, sub: user.id, rol: user.rol };
+    const token = this.jwtService.sign(payload);
+    this.logger.log(`Organización logueada con ID ${user.id}`);
+    return { token };
   }
 
   async validateUser(email: string, pass: string): Promise<Usuario> {

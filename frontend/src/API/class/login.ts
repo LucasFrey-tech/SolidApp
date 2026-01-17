@@ -60,4 +60,45 @@ export class Login extends Crud<LoginRequestBody>{
         }
     
     }
+
+    async loginUser(credentials: LoginRequestBody): Promise<AuthResponse> {
+        return this.post("/auth/login/usuario", credentials);
+    }
+
+    async loginEmpresa(credentials: LoginRequestBody): Promise<AuthResponse> {
+        return this.post("/auth/login/empresa", credentials);
+    }
+
+    async loginOrganizacion(credentials: LoginRequestBody): Promise<AuthResponse> {
+        return this.post("/auth/login/organizacion", credentials);
+    }
+
+    private async post(path: string, data: LoginRequestBody): Promise<AuthResponse> {
+        const url = `${this.baseUrl}${path}`;
+        console.log("POST a:", url);
+        console.log("Con:", data); 
+
+
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+            let errorMessage = "Error desconocido"; 
+            if (res.status === 401) { 
+                errorMessage = "Credenciales inválidas. Error al iniciar sesión."; } 
+            else if (res.status === 403) { 
+                errorMessage = "Usuario bloqueado. Contacte al administrador."; 
+            } else if (res.status === 404) { 
+                errorMessage = `Endpoint no encontrado: ${url}`; 
+            } else if (res.status >= 500) { 
+                errorMessage = "Error interno del servidor. Intente más tarde."; 
+            }
+
+            throw new Error(errorMessage);
+        }
+        const json = await res.json();
+        return json as AuthResponse;
+    }
 }
