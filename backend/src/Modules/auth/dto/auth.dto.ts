@@ -182,7 +182,7 @@ export class RegisterOrganizacionDto {
   @ApiProperty({ description: 'Nombre' })
   @IsString()
   @MinLength(3)
-  nombre: string;
+  nombreFantasia: string;
 
   @ApiProperty({ description: 'Contraseña' })
   @IsString()
