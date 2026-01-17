@@ -20,10 +20,7 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
     OrganizationModule,
     PassportModule,
     ConfigModule,
-    TypeOrmModule.forFeature([
-      Empresa,
-      Organizations,
-    ]),
+    TypeOrmModule.forFeature([Empresa, Organizations]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
