@@ -1,24 +1,118 @@
+/* ===== SIDEBAR CONTENEDOR ===== */
 .AccountMenu {
-    display: flex;
-    background-color: #ffffff;
-    width: 30%;
-    padding: 10%;
-    justify-content: center;
+  width: 320px;
+  background-color: #0f172a; /* azul oscuro profesional */
+  color: #ffffff;
+  padding: 30px 24px;
+  min-height: 100vh;
 }
 
-.MenuLayer {
-    border: 2px solid black;
+/* ===== CAPA INTERNA ===== */
+.MenuLayer h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 28px;
+  color: #ffffff;
 }
 
-.MenuLayer > h1{
-    padding: 0px 0px 20% 0;
-}
-
+/* ===== USUARIO ===== */
 .User {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 36px;
+}
+
+.UserName {
+  font-weight: 600;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+.Email {
+  font-size: 13px;
+  color: #cbd5f5; /* visible sobre fondo oscuro */
+}
+
+/* ===== MENÚ ===== */
+.Menu {
+  width: 100%;
+}
+
+.List {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.List li {
+  margin-bottom: 8px;
+}
+
+/* ===== BOTONES ===== */
+.List button {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  color: #e5e7eb; /* CLAVE: visible */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.List button:hover {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+/* ===== LOGOUT ===== */
+.Logout button {
+  color: #f87171;
+}
+
+.Logout button:hover {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: #fecaca;
+}
+
+/* ========================= */
+/* ===== RESPONSIVE ======== */
+/* ========================= */
+
+@media (max-width: 900px) {
+  .AccountMenu {
+    width: 100%;
+    min-height: auto;
+    padding: 20px;
+  }
+
+  .User {
+    margin-bottom: 24px;
+  }
+
+  .List {
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .List li {
+    width: 48%;
+    margin-bottom: 0;
+  }
+
+  .List button {
+    text-align: center;
+    font-size: 14px;
+    padding: 10px;
+  }
 }
 
-.Menu > ul > li {
-    padding: 5%;
+@media (max-width: 480px) {
+  .List li {
+    width: 100%;
+  }
 }
-

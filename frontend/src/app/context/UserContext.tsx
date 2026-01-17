@@ -3,26 +3,38 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
+export interface User {
+  email: string;
+  sub: number;
+  username: string;
+  admin: boolean;
+}
+
 interface UserContextType {
-  user:{ email: string , sub: number, username: string, admin: boolean,userSubscriptions?: { active: boolean }[]; } | null;
-  setUser: (user: { email: string , sub: number, username: string, admin: boolean } | null) => void;
+  user: User | null;
+  setUser: (user: User | null) => void;
   refreshUser: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<{ email: string , sub: number, username: string, admin: boolean } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
-  const refreshUser = async () => {
+  const refreshUser = () => {
     const token = localStorage.getItem('token');
+
     if (!token) {
       setUser(null);
       return;
     }
-    const decodedToken = jwtDecode<{ email: string , sub: number, username: string, admin: boolean}>(token); 
 
-    setUser(decodedToken);
+    try {
+      const decoded = jwtDecode<User>(token);
+      setUser(decoded);
+    } catch {
+      setUser(null);
+    }
   };
 
   useEffect(() => {
@@ -39,7 +51,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error('useUser must be used within UserProvider');
   }
   return context;
 };

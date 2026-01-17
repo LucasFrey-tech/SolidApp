@@ -1,35 +1,51 @@
 'use client';
+
 import styles from "@/styles/myAccountMenu.module.css";
 import Image from "next/image";
+import { useUser } from "@/app/context/UserContext";
 
 type MyAccountProps = {
-    readonly onChangeSection: (section: 'data' | 'user&pass' | 'cupons') => void
-}
+  readonly onChangeSection: (section: 'data' | 'user&pass' | 'cupons') => void;
+};
 
-// user menu
+export default function MyAccount({ onChangeSection }: MyAccountProps) {
+  const { user } = useUser();
 
-export default function MyAccount({onChangeSection}: MyAccountProps) {
-    
-    return (
-        <section className={styles.AccountMenu}> 
-            <main className={styles.MenuLayer}> 
-                <h1>Mi cuenta</h1>
-                <div className={styles.User}>
-                    <Image src="/logos/user_logo.svg" alt="Icono de Usuario" width={48} height={48}/>
-                    <p className={styles.UserName}></p>
-                    <p className={styles.Email}></p>
-                </div>
+  return (
+    <section className={styles.AccountMenu}>
+      <main className={styles.MenuLayer}>
+        <h1>Mi cuenta</h1>
 
-                <div className={styles.Menu}>
-                    <ul className={styles.List}>
-                        <li><button onClick={() => onChangeSection('cupons')}>Mis Cupones</button></li>
-                        <li><button onClick={() => onChangeSection('data')}>Mis Datos</button></li>
-                        <li><button onClick={() => onChangeSection('user&pass')}>Usuario y Contraseña</button></li>
-                        <li>Ayuda</li>
-                        <li>Cerrar Sesion</li>
-                    </ul>
-                </div>
-            </main>
-        </section>
-    )
+        {/* PERFIL */}
+        <div className={styles.User}>
+          <Image
+            src="/logos/user_logo.svg"
+            alt="Usuario"
+            width={48}
+            height={48}
+          />
+
+          <div>
+            <p className={styles.UserName}>
+              {user ? user.username || user.email.split("@")[0] : "Cargando..."}
+            </p>
+
+            <p className={styles.Email}>
+              {user?.email}
+            </p>
+          </div>
+        </div>
+
+        {/* MENÚ */}
+        <nav className={styles.Menu}>
+          <ul className={styles.List}>
+            <li><button onClick={() => onChangeSection('cupons')}>Mis Cupones</button></li>
+            <li><button onClick={() => onChangeSection('data')}>Mis Datos</button></li>
+            <li><button onClick={() => onChangeSection('user&pass')}>Usuario y Contraseña</button></li>
+            <li className={styles.Logout}><button>Cerrar Sesión</button></li>
+          </ul>
+        </nav>
+      </main>
+    </section>
+  );
 }
