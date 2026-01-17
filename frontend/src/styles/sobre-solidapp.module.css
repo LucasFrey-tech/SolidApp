@@ -1,0 +1,165 @@
+/* ===== CONTENEDOR GENERAL ===== */
+.container {
+  width: 100%;
+  font-family: "Segoe UI", sans-serif;
+  color: #1f2937;
+}
+
+/* ===== HERO ===== */
+.hero {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 4% 6% 80px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 800;
+  color: #001a33;
+
+}
+
+.hero p {
+  font-size: clamp(17px, 1.5vw, 20px);
+  color: #374151;
+  line-height: 1.7;
+}
+
+/* ===== INFO (QUIÉNES SOMOS) ===== */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px;
+  padding: 0 6%;
+  margin-bottom: 4%;
+}
+
+.infoCard {
+  background-color: #f3db9d;
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.infoCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.infoCard h2 {
+  font-size: clamp(22px, 2vw, 28px);
+  color: #000000;
+  margin-bottom: 2%;
+}
+
+.infoCard p {
+  font-size: clamp(15px, 1.2vw, 17px);
+  color: #374151;
+}
+
+/* ===== QUÉ HACEMOS ===== */
+.stepsSection {
+  padding: 0 6% 120px;
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: clamp(50px, 4vw, 36px);
+  font-weight: 600;
+  margin-bottom: 2%;
+  color: #000000;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+}
+
+.stepCard {
+  background: #e4d6b4;
+  border-radius: 20px;
+  padding: 40px 25px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.stepCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.15);
+}
+
+.icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background-color: #ffd000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  color: #001a33;
+}
+
+.stepCard h3 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 14px;
+}
+
+.stepCard p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+/* ===== CIERRE ===== */
+.closing {
+  background-color: #003366;
+  color: white;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.closing h3 {
+  font-size: clamp(22px, 4vw, 34px);
+  margin-bottom: 2%;
+}
+
+.closing p {
+  max-width: 700px;
+  margin: 0 auto;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+  .infoGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stepsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-top: 100px;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
+}
