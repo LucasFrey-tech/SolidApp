@@ -1,11 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-import styles from "../../styles/navbar.module.css";
+import { useRouter } from "next/navigation";
+import styles from "@/styles/navbar.module.css";
 
 interface UserInfo {
   email: string;
@@ -14,26 +13,27 @@ interface UserInfo {
 
 export default function Navbar() {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement | null>(null);
+
   const [mounted, setMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     checkAuthStatus();
-    
-    window.addEventListener('storage', checkAuthStatus);
-    return () => window.removeEventListener('storage', checkAuthStatus);
+    window.addEventListener("storage", checkAuthStatus);
+    return () => window.removeEventListener("storage", checkAuthStatus);
   }, []);
 
   const checkAuthStatus = () => {
     const token = localStorage.getItem("token");
-    const userType = localStorage.getItem("user_type");
     const userEmail = localStorage.getItem("user_email");
-    
-    if (token && userType && userEmail) {
+    const userType = localStorage.getItem("user_type");
+
+    if (token && userEmail && userType) {
       setIsLoggedIn(true);
       setUserInfo({ email: userEmail, type: userType });
     } else {
@@ -43,126 +43,120 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user_type");
-    localStorage.removeItem("user_email");
-    setIsLoggedIn(false);
-    setUserInfo(null);
-    setDropdownOpen(false);
+    localStorage.clear();
+    setProfileOpen(false);
+    setMenuOpen(false);
     router.push("/inicio");
   };
 
-  const handleNavigation = (path: string) => {
-    setMenuOpen(false);
-    setDropdownOpen(false);
-    router.push(path);
-  };
+  // cerrar dropdown perfil al click afuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
+    };
+
+    if (profileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [profileOpen]);
 
   if (!mounted) return null;
 
   return (
     <nav className={styles.navbar}>
-      <div className={styles.logoSection} onClick={() => handleNavigation("/")}>
+      {/* LOGO */}
+      <div className={styles.logoSection}>
         <Image
           src="/logos/SolidApp_logo.svg"
-          alt="Logo SolidAPP"
-          width={180}
-          height={70}
+          alt="Logo SolidApp"
+          width={160}
+          height={60}
           priority
         />
       </div>
 
-      <button className={styles.menuToggle} onClick={() => setMenuOpen(!menuOpen)}>
+      {/* HAMBURGER */}
+      <button
+        className={styles.hamburger}
+        onClick={() => setMenuOpen(!menuOpen)}
+      >
         ☰
       </button>
 
-      <ul className={`${styles.navLinks} ${menuOpen ? styles.open : ""}`}>
-        <li><Link href="/">Inicio</Link></li>
-        <li><Link href="/tienda">Tienda</Link></li>
-        <li><Link href="/novedades">Novedades</Link></li>
-        <li><Link href="/como-participar">Cómo participar</Link></li>
-        <li><Link href="/quienes-somos">Quiénes somos</Link></li>         
-
-        {isLoggedIn && userInfo && (
-          <li className={`${styles.mobileActions} ${styles.mobileUserInfo}`}>
-            <div className={styles.userDisplayMobile}>
-              {/* Opción 1: Emoji */}
-              <span className={styles.icon}>👤</span>
-              {/* Opción 2: SVG si tienes */}
-              {/* <Image src="/icons/user.svg" alt="Usuario" width={20} height={20} /> */}
-              <span className={styles.userName}>
-                {userInfo.email.split('@')[0]}
-              </span>
-              <button className={styles.logoutBtnMobile} onClick={handleLogout}>
-                🚪
-              </button>
-            </div>
-          </li>
-        )}
-
-        {!isLoggedIn && (
-          <li className={styles.mobileActions}>
-            <button className={styles.donateBtn} onClick={() => handleNavigation("/donaciones-catalogo")}>
-              Donar aquí
-            </button>
-            <button className={styles.loginBtn} onClick={() => handleNavigation("/login")}>
-              Ingresar
-            </button>
-          </li>
-        )}
+      {/* LINKS */}
+      <ul
+        className={`${styles.navLinks} ${
+          menuOpen ? styles.navLinksOpen : ""
+        }`}
+      >
+        <li><Link href="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
+        <li><Link href="/tienda" onClick={() => setMenuOpen(false)}>Tienda</Link></li>
+        <li><Link href="/novedades" onClick={() => setMenuOpen(false)}>Novedades</Link></li>
+        <li><Link href="/como-participar" onClick={() => setMenuOpen(false)}>Cómo participar</Link></li>
+        <li><Link href="/quienes-somos" onClick={() => setMenuOpen(false)}>Quiénes somos</Link></li>
       </ul>
 
-      <div className={styles.actions}>
-        <button className={styles.donateBtn} onClick={() => handleNavigation("/donaciones-catalogo")}>
-          Donar aquí
-        </button>
-
-        {isLoggedIn && userInfo ? (
-          <div className={styles.userSection}>
-            <div 
-              className={styles.userDisplay}
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              {/* Icono de usuario */}
-              <span className={styles.icon}>👤</span>
-              {/* <Image src="/icons/user.svg" alt="Usuario" width={20} height={20} /> */}
-              
-              <span className={styles.userName}>
-                {userInfo.email.split('@')[0]}
-              </span>
-              <span className={styles.userType}>
-                ({userInfo.type})
-              </span>
-            </div>
-            
-            {dropdownOpen && (
-              <div className={styles.dropdownMenu}>
-                <div className={styles.dropdownItem}>
-                  <Link href={`/dashboard/${userInfo.type}`} onClick={() => setDropdownOpen(false)}>
-                    Mi perfil
-                  </Link>
-                </div>
-                <div className={styles.dropdownItem}>
-                  <Link href="/configuracion" onClick={() => setDropdownOpen(false)}>
-                    Configuración
-                  </Link>
-                </div>
-                <div className={styles.dropdownDivider}></div>
-                <div className={styles.dropdownItem}>
-                  <button className={styles.logoutBtn} onClick={handleLogout}>
-                    <span className={styles.icon}>🚪</span>
-                    Cerrar sesión
-                  </button>
-                </div>
-              </div>
-            )}
+      {/* PERFIL */}
+      {isLoggedIn && userInfo && (
+        <div
+          ref={profileRef}
+          className={styles.profileWrapper}
+          onClick={(e) => {
+            e.stopPropagation();
+            setProfileOpen(!profileOpen);
+          }}
+        >
+          <div className={styles.profileButton}>
+            👤 {userInfo.email.split("@")[0]}
           </div>
-        ) : (
-          <button className={styles.loginBtn} onClick={() => handleNavigation("/login")}>
-            Ingresar
-          </button>
-        )}
-      </div>
+
+          <div
+            className={`${styles.profileDropdown} ${
+              profileOpen ? styles.open : ""
+            }`}
+          >
+            <Link
+              href="/userPanel"
+              className={styles.dropdownItem}
+              onClick={() => {
+                setProfileOpen(false);
+                setMenuOpen(false);
+              }}
+            >
+              Mi cuenta
+            </Link>
+
+            <Link
+              href="/configuracion"
+              className={styles.dropdownItem}
+              onClick={() => {
+                setProfileOpen(false);
+                setMenuOpen(false);
+              }}
+            >
+              Configuración
+            </Link>
+
+            <div className={styles.dropdownDivider} />
+
+            <button
+              className={styles.dropdownItem}
+              onClick={handleLogout}
+            >
+              Cerrar sesión
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

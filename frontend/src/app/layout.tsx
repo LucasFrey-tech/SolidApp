@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import DynamicLayout from "./DynamicLayout";
+import { UserProvider } from "@/app/context/UserContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,13 +21,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <DynamicLayout>{children}</DynamicLayout>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <UserProvider>
+          <DynamicLayout>
+            {children}
+          </DynamicLayout>
+        </UserProvider>
       </body>
     </html>
   );

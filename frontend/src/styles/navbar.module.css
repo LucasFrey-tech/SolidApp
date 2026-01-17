@@ -1,28 +1,27 @@
+/* NAVBAR */
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: #fff9ea;
   border-top: 3px solid #003366;
-  padding: 10px 40px;
-  font-family: "Segoe UI", sans-serif;
+  padding: 10px 30px;
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 9999;
-
 }
 
-/* Logo */
+/* LOGO */
 .logoSection {
   cursor: pointer;
 }
 
-/* Links */
+/* LINKS */
 .navLinks {
-  list-style: none;
   display: flex;
   gap: 25px;
+  list-style: none;
   margin: 0;
   padding: 0;
 }
@@ -32,101 +31,101 @@
   color: #001a33;
   font-weight: 500;
 }
+
 .navLinks a:hover {
   color: #ff0000;
+}
+
+/* PERFIL */
+.profileWrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.profileButton {
   font-weight: 500;
+  color: #001a33;
 }
 
-/* Acciones desktop */
-.actions {
-  display: flex;
-  gap: 20px;
+.profileButton:hover {
+  color: #ff0000;
 }
 
-/* Botones */
-.donateBtn {
-  background-color: #b3312d;
-  color: white;
-  padding: 14px 28px;
+/* DROPDOWN PERFIL */
+.profileDropdown {
+  position: absolute;
+  top: 130%;
+  right: 0;
+  background-color: #ffffff;
+  border-radius: 10px;
+  min-width: 220px;
+  padding: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.profileDropdown.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdownItem {
+  display: block;
+  padding: 8px 0;
+  color: #001a33;
+  background: none;
   border: none;
-  border-radius: 6px;
-  font-weight: 600;
+  width: 100%;
+  text-align: left;
   cursor: pointer;
+  font-size: 15px;
+  text-decoration: none;
 }
 
-.donateBtn:hover {
-  background-color: #8e2523;
+.dropdownItem:hover {
+  color: #ff0000;
 }
 
-.loginBtn {
-  background: transparent;
-  color: black;
-  border: 1px solid #001a33;
-  padding: 12px 22px;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
+.dropdownDivider {
+  height: 1px;
+  background-color: #ddd;
+  margin: 8px 0;
 }
 
-.loginBtn:hover{
-  color: white;
-  background-color: black;
-}
-
-/* Hamburger */
-.menuToggle {
+/* HAMBURGER */
+.hamburger {
   display: none;
-  color: black;
-  font-size: 28px;
+  font-size: 26px;
   background: none;
   border: none;
   cursor: pointer;
 }
 
-/* MOBILE ACTIONS – OCULTAS POR DEFECTO */
-.mobileActions {
-  display: none;
-}
-
-/* ===== MOBILE ===== */
+/* RESPONSIVE */
 @media (max-width: 900px) {
-  .menuToggle {
+  .hamburger {
     display: block;
   }
 
   .navLinks {
     position: absolute;
+    text-align: center;
     top: 100%;
     left: 0;
-    right: 0;
+    width: 100%;
     background-color: #fff9ea;
     flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding: 20px 0;
-    display: none;
-    border-bottom: 2px solid #003366;
-  }
-
-  .navLinks.open {
-    display: flex;
-  }
-
-  .actions {
-    display: none;
-  }
-
-  .mobileActions {
-    display: flex;
-    flex-direction: column;
     gap: 15px;
-    width: 100%;
-    align-items: center;
+    padding: 20px;
+    display: none;
   }
 
-  .donateBtn,
-  .loginBtn {
-    width: 80%;
-    text-align: center;
+  .navLinksOpen {
+    display: flex;
   }
 }

@@ -14,10 +14,11 @@ export default function Panel() {
         <div className={styles.PanelLayout}>
             <main className={styles.Panel}>
                 <section className={styles.Content}>
-                    {activeSection === 'data' && <Data/>}
-                    {activeSection === 'user&pass' && <UserAndPass/>}
+                    {activeSection === 'data' && <Data />}
+                    {activeSection === 'user&pass' && <UserAndPass />}
                 </section>
-                <MyAccount onChangeSection={setActiveSection}/>
+
+                <MyAccount onChangeSection={setActiveSection} />
             </main>
         </div>
     )
