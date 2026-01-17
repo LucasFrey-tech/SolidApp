@@ -34,17 +34,6 @@
   margin-bottom: 20px;
 }
 
-.buttonBanner {
-  width: fit-content;
-  padding: 14px 30px;
-  font-size: clamp(14px, 1.2vw, 18px);
-  font-weight: 600;
-  color: white;
-  background-color: #000;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
 /* ============== PASOS DONAR ============== */
 
 .pasosDonar {
@@ -53,23 +42,38 @@
   gap: 30px;
   padding: 0 5%;
   margin: 80px 0;
-  cursor: pointer;
+  text-align: center;
 }
+
+.linkCard {
+  text-decoration: none;
+  color: inherit;
+}
+
 .iconosDonar {
   border: 0.7px solid #c0b4b4;
   border-radius: 20px;
   padding: 30px;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
+
 .iconosDonar:hover {
   transform: translateY(-8px);
   box-shadow: 0 0 18px 6px rgba(255, 208, 0, 0.897);
 }
 
+.iconoImagen {
+  display: block;
+  margin: 0 auto;
+}
 
 .tituloIcono {
   font-size: clamp(20px, 2vw, 26px);
+  color: black;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
   font-weight: bold;
   margin: 16px 0 8px;
 }
