@@ -47,7 +47,7 @@ export default function Login() {
         return;
       }  
       
-      const token = res.data.access_token
+      const token = res.data.token
       localStorage.setItem("token", token);
 
       type JwtPayload = { sub: string };

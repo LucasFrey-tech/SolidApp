@@ -54,9 +54,9 @@ export class CreateOrganizationDto {
     description: 'Contraseña del usuario de la empresa.',
   })
   @IsString()
-  @IsNotEmpty({ message: 'El correo es Oligatorio.' })
+  @IsNotEmpty({ message: 'La contraseña es obligatoria.' })
   @MaxLength(255, {
-    message: 'El correo no puede superar los 255 caracteres',
+    message: 'La contraseña no puede superar los 255 caracteres',
   })
   clave: string;
 }

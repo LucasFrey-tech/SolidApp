@@ -120,7 +120,9 @@ export class AuthService {
 
     // 1. Verificar si ya existe el email
     try {
-      const existingUser = await this.usersService.findByEmail(dto.correo);
+      const existingUser = await this.organizationsService.findByEmail(
+        dto.correo,
+      );
       if (existingUser) {
         throw new BadRequestException('El correo ya está registrado');
       }
@@ -137,7 +139,7 @@ export class AuthService {
     const organizacion = await this.organizationsService.create({
       nroDocumento: dto.documento,
       razonSocial: dto.razonSocial,
-      nombreFantasia: dto.nombre,
+      nombreFantasia: dto.nombreFantasia,
       descripcion: 'Organización registrada recientemente',
       telefono: '',
       web: '',
@@ -175,36 +177,33 @@ export class AuthService {
 
   /** * Login de Empresa */
   async loginEmpresa(requestBody: LoginRequestBody) {
-    const user = await this.validateUser(requestBody.correo, requestBody.clave);
-    if (user.rol !== 'empresa') {
-      throw new UnauthorizedException('El correo no corresponde a una empresa');
-    }
+    const user = await this.validateEmpresa(
+      requestBody.correo,
+      requestBody.clave,
+    );
     if (user.deshabilitado) {
       throw new ForbiddenException(
         'Usuario bloqueado. Contacta al administrador.',
       );
     }
-    const payload = { email: user.correo, sub: user.id, rol: user.rol };
+    const payload = { email: user.correo, sub: user.id };
     const token = this.jwtService.sign(payload);
     this.logger.log(`Empresa logueada con ID ${user.id}`);
     return { token };
   }
 
-  /** * Login de Organización */ async loginOrganizacion(
-    requestBody: LoginRequestBody,
-  ) {
-    const user = await this.validateUser(requestBody.correo, requestBody.clave);
-    if (user.rol !== 'organizacion') {
-      throw new UnauthorizedException(
-        'El correo no corresponde a una organización',
-      );
-    }
+  /** * Login de Organización */
+  async loginOrganizacion(requestBody: LoginRequestBody) {
+    const user = await this.validateOrganizacion(
+      requestBody.correo,
+      requestBody.clave,
+    );
     if (user.deshabilitado) {
       throw new ForbiddenException(
         'Usuario bloqueado. Contacta al administrador.',
       );
     }
-    const payload = { email: user.correo, sub: user.id, rol: user.rol };
+    const payload = { email: user.correo, sub: user.id };
     const token = this.jwtService.sign(payload);
     this.logger.log(`Organización logueada con ID ${user.id}`);
     return { token };
@@ -218,5 +217,29 @@ export class AuthService {
     if (!isMatch) throw new UnauthorizedException('Contraseña incorrecta');
 
     return user;
+  }
+
+  async validateEmpresa(email: string, pass: string): Promise<Empresa> {
+    const empresa = await this.empresasService.findByEmail(email);
+    if (!empresa) throw new UnauthorizedException('Empresa no encontrada');
+
+    const isMatch = await bcrypt.compare(pass, empresa.clave);
+    if (!isMatch) throw new UnauthorizedException('Contraseña incorrecta');
+
+    return empresa;
+  }
+
+  async validateOrganizacion(
+    email: string,
+    pass: string,
+  ): Promise<Organizations> {
+    const organizacion = await this.organizationsService.findByEmail(email);
+    if (!organizacion)
+      throw new UnauthorizedException('organizacion no encontrada');
+
+    const isMatch = await bcrypt.compare(pass, organizacion.clave);
+    if (!isMatch) throw new UnauthorizedException('Contraseña incorrecta');
+
+    return organizacion;
   }
 }
