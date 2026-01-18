@@ -8,7 +8,7 @@ import styles from "@/styles/navbar.module.css";
 
 interface UserInfo {
   email: string;
-  type: string;
+  type?: string;
 }
 
 export default function Navbar() {
@@ -30,26 +30,33 @@ export default function Navbar() {
 
   const checkAuthStatus = () => {
     const token = localStorage.getItem("token");
-    const userEmail = localStorage.getItem("user_email");
-    const userType = localStorage.getItem("user_type");
 
-    if (token && userEmail && userType) {
+    if (!token) {
+      setIsLoggedIn(false);
+      setUserInfo(null);
+      return;
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
       setIsLoggedIn(true);
-      setUserInfo({ email: userEmail, type: userType });
-    } else {
+      setUserInfo({ email: payload.email });
+    } catch {
       setIsLoggedIn(false);
       setUserInfo(null);
     }
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    setUserInfo(null);
     setProfileOpen(false);
     setMenuOpen(false);
     router.push("/inicio");
   };
 
-  // cerrar dropdown perfil al click afuera
+  // cerrar dropdown al click afuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -78,8 +85,8 @@ export default function Navbar() {
         <Image
           src="/logos/SolidApp_logo.svg"
           alt="Logo SolidApp"
-          width={160}
-          height={60}
+          width={200}
+          height={150}
           priority
         />
       </div>
@@ -105,19 +112,22 @@ export default function Navbar() {
         <li><Link href="/quienes-somos" onClick={() => setMenuOpen(false)}>Quiénes somos</Link></li>
       </ul>
 
-      {/* PERFIL */}
-      {isLoggedIn && userInfo && (
+      {/* ACCIÓN DERECHA */}
+      {!isLoggedIn ? (
+        <Link href="/login" className={styles.loginButton}>
+          Iniciar sesión
+        </Link>
+      ) : (
         <div
           ref={profileRef}
           className={styles.profileWrapper}
-          onClick={(e) => {
-            e.stopPropagation();
-            setProfileOpen(!profileOpen);
-          }}
         >
-          <div className={styles.profileButton}>
-            👤 {userInfo.email.split("@")[0]}
-          </div>
+          <button
+            className={styles.profileButton}
+            onClick={() => setProfileOpen(!profileOpen)}
+          >
+            👤 {userInfo?.email.split("@")[0]}
+          </button>
 
           <div
             className={`${styles.profileDropdown} ${
@@ -127,23 +137,9 @@ export default function Navbar() {
             <Link
               href="/userPanel"
               className={styles.dropdownItem}
-              onClick={() => {
-                setProfileOpen(false);
-                setMenuOpen(false);
-              }}
+              onClick={() => setProfileOpen(false)}
             >
               Mi cuenta
-            </Link>
-
-            <Link
-              href="/configuracion"
-              className={styles.dropdownItem}
-              onClick={() => {
-                setProfileOpen(false);
-                setMenuOpen(false);
-              }}
-            >
-              Configuración
             </Link>
 
             <div className={styles.dropdownDivider} />
