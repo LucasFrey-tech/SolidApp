@@ -10,79 +10,97 @@ import { RegisterEmpresaStrategy } from "@/API/class/register/empresa";
 import { RegisterOrganizacionStrategy } from "@/API/class/register/organizacion";
 
 // ==================== ESQUEMAS ZOD ====================
-const usuarioSchema = z.object({
-  correo: z
-    .string()
-    .min(1, "El email es obligatorio")
-    .email({ message: "Email inválido" }),
-  clave: z
-    .string()
-    .min(1, "La contraseña es obligatoria")
-    .min(6, "La contraseña debe tener al menos 6 caracteres"),
-  nombre: z
-    .string()
-    .min(1, "El nombre es obligatorio")
-    .min(2, "El nombre debe tener al menos 2 caracteres"),
-  apellido: z
-    .string()
-    .min(1, "El apellido es obligatorio")
-    .min(2, "El apellido debe tener al menos 2 caracteres"),
-});
+const usuarioSchema = z
+  .object({
+    correo: z
+      .string()
+      .min(1, "El email es obligatorio")
+      .email({ message: "Email inválido" }),
+    clave: z
+      .string()
+      .min(1, "La contraseña es obligatoria")
+      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    confirmarClave: z.string().min(1, "Repetí la contraseña"),
+    nombre: z
+      .string()
+      .min(1, "El nombre es obligatorio")
+      .min(2, "El nombre debe tener al menos 2 caracteres"),
+    apellido: z
+      .string()
+      .min(1, "El apellido es obligatorio")
+      .min(2, "El apellido debe tener al menos 2 caracteres"),
+  })
+  .refine((data) => data.clave === data.confirmarClave, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmarClave"],
+  });
 
-const empresaSchema = z.object({
-  documento: z
-    .string()
-    .min(1, "El documento es obligatorio")
-    .min(3, "El documento debe tener al menos 3 caracteres"),
-  razonSocial: z
-    .string()
-    .min(1, "La razón social es obligatoria")
-    .min(3, "La razón social debe tener al menos 3 caracteres"),
-  nombreFantasia: z
-    .string()
-    .min(1, "El nombre de fantasía es obligatorio")
-    .min(3, "El nombre de fantasía debe tener al menos 3 caracteres"),
-  clave: z
-    .string()
-    .min(1, "La contraseña es obligatoria")
-    .min(6, "La contraseña debe tener al menos 6 caracteres"),
-  telefono: z
-    .string()
-    .min(1, "El teléfono es obligatorio")
-    .min(8, "El teléfono debe tener al menos 8 caracteres"),
-  direccion: z
-    .string()
-    .min(1, "La dirección es obligatoria")
-    .min(5, "La dirección debe tener al menos 5 caracteres"),
-  correo: z
-    .string()
-    .min(1, "El correo es obligatorio")
-    .email("El correo debe tener un formato válido"),
-  web: z.string().optional(),
-});
+const empresaSchema = z
+  .object({
+    documento: z
+      .string()
+      .min(1, "El documento es obligatorio")
+      .min(3, "El documento debe tener al menos 3 caracteres"),
+    razonSocial: z
+      .string()
+      .min(1, "La razón social es obligatoria")
+      .min(3, "La razón social debe tener al menos 3 caracteres"),
+    nombreFantasia: z
+      .string()
+      .min(1, "El nombre de fantasía es obligatorio")
+      .min(3, "El nombre de fantasía debe tener al menos 3 caracteres"),
+    clave: z
+      .string()
+      .min(1, "La contraseña es obligatoria")
+      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    confirmarClave: z.string().min(1, "Repetí la contraseña"),
+    telefono: z
+      .string()
+      .min(1, "El teléfono es obligatorio")
+      .min(8, "El teléfono debe tener al menos 8 caracteres"),
+    direccion: z
+      .string()
+      .min(1, "La dirección es obligatoria")
+      .min(5, "La dirección debe tener al menos 5 caracteres"),
+    correo: z
+      .string()
+      .min(1, "El correo es obligatorio")
+      .email("El correo debe tener un formato válido"),
+    web: z.string().optional(),
+  })
+  .refine((data) => data.clave === data.confirmarClave, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmarClave"],
+  });
 
-const organizacionSchema = z.object({
-  documento: z
-    .string()
-    .min(1, "El documento es obligatorio")
-    .min(3, "El documento debe tener al menos 3 caracteres"),
-  razonSocial: z
-    .string()
-    .min(1, "La razón social es obligatoria")
-    .min(3, "La razón social debe tener al menos 3 caracteres"),
-  nombreFantasia: z
-    .string()
-    .min(1, "El nombre es obligatorio")
-    .min(3, "El nombre debe tener al menos 3 caracteres"),
-  clave: z
-    .string()
-    .min(1, "La contraseña es obligatoria")
-    .min(6, "La contraseña debe tener al menos 6 caracteres"),
-  correo: z
-    .string()
-    .min(1, "El correo es obligatorio")
-    .email("El correo debe tener un formato válido"),
-});
+const organizacionSchema = z
+  .object({
+    documento: z
+      .string()
+      .min(1, "El documento es obligatorio")
+      .min(3, "El documento debe tener al menos 3 caracteres"),
+    razonSocial: z
+      .string()
+      .min(1, "La razón social es obligatoria")
+      .min(3, "La razón social debe tener al menos 3 caracteres"),
+    nombreFantasia: z
+      .string()
+      .min(1, "El nombre es obligatorio")
+      .min(3, "El nombre debe tener al menos 3 caracteres"),
+    clave: z
+      .string()
+      .min(1, "La contraseña es obligatoria")
+      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    confirmarClave: z.string().min(1, "Repetí la contraseña"),
+    correo: z
+      .string()
+      .min(1, "El correo es obligatorio")
+      .email("El correo debe tener un formato válido"),
+  })
+  .refine((data) => data.clave === data.confirmarClave, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmarClave"],
+  });
 
 // ==================== TIPOS ====================
 type FormType = "usuario" | "empresa" | "organizacion";
@@ -116,6 +134,12 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
     {
       field: "clave",
       label: "Contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "confirmarClave",
+      label: "Repetir contraseña",
       type: "password",
       placeholder: "••••••••",
     },
@@ -154,6 +178,12 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
     {
       field: "clave",
       label: "Contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "confirmarClave",
+      label: "Repetir contraseña",
       type: "password",
       placeholder: "••••••••",
     },
@@ -209,6 +239,12 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
       placeholder: "••••••••",
     },
     {
+      field: "confirmarClave",
+      label: "Repetir contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
       field: "correo",
       label: "Correo electrónico",
       type: "email",
@@ -226,6 +262,7 @@ export default function Registro() {
   const [usuarioData, setUsuarioData] = useState<UsuarioData>({
     correo: "",
     clave: "",
+    confirmarClave: "",
     nombre: "",
     apellido: "",
   });
@@ -235,6 +272,7 @@ export default function Registro() {
     razonSocial: "",
     nombreFantasia: "",
     clave: "",
+    confirmarClave: "",
     telefono: "",
     direccion: "",
     web: "",
@@ -246,6 +284,7 @@ export default function Registro() {
     razonSocial: "",
     nombreFantasia: "",
     clave: "",
+    confirmarClave: "",
     correo: "",
   });
 
@@ -296,7 +335,7 @@ export default function Registro() {
   const validateField = (
     field: string,
     value: string,
-    isBlur = false
+    isBlur = false,
   ): string | null => {
     if (!isBlur && !touchedFields[field]) return null;
 
@@ -417,21 +456,27 @@ export default function Registro() {
       // Type-safe casting basado en el tipo actual
       let response;
       switch (step) {
-        case "usuario":
+        case "usuario": {
+          const { confirmarClave, ...dataToSend } = data as UsuarioData;
           response = await (strategy as RegisterUsuarioStrategy).register(
-            data as UsuarioData
+            dataToSend as UsuarioData,
           );
           break;
-        case "empresa":
+        }
+        case "empresa": {
+          const { confirmarClave, ...dataToSend } = data as EmpresaData;
           response = await (strategy as RegisterEmpresaStrategy).register(
-            data as EmpresaData
+            dataToSend as EmpresaData,
           );
           break;
-        case "organizacion":
+        }
+        case "organizacion": {
+          const { confirmarClave, ...dataToSend } = data as OrganizacionData;
           response = await (strategy as RegisterOrganizacionStrategy).register(
-            data as OrganizacionData
+            dataToSend as OrganizacionData,
           );
           break;
+        }
         default:
           throw new Error("Tipo de formulario no soportado");
       }
@@ -448,6 +493,7 @@ export default function Registro() {
       setUsuarioData({
         correo: "",
         clave: "",
+        confirmarClave: "",
         nombre: "",
         apellido: "",
       });
@@ -456,6 +502,7 @@ export default function Registro() {
         razonSocial: "",
         nombreFantasia: "",
         clave: "",
+        confirmarClave: "",
         telefono: "",
         direccion: "",
         web: "",
@@ -466,6 +513,7 @@ export default function Registro() {
         razonSocial: "",
         nombreFantasia: "",
         clave: "",
+        confirmarClave: "",
         correo: "",
       });
     } catch (error) {
@@ -492,7 +540,7 @@ export default function Registro() {
     type = "text",
     placeholder: string,
     options: { optional?: boolean } = {},
-    key: string // ← Agregar parámetro key
+    key: string, // ← Agregar parámetro key
   ) => {
     const optional = options.optional ?? false;
     const showError = touchedFields[field] && errors[field];
@@ -549,8 +597,8 @@ export default function Registro() {
                   type,
                   placeholder,
                   { optional },
-                  `${formType}-${field}-${index}` // ← Pasar key única
-                )
+                  `${formType}-${field}-${index}`, // ← Pasar key única
+                ),
             )}
           </div>
 
