@@ -13,11 +13,7 @@ export default function Data() {
           <div className={styles.Grid}>
             <div className={styles.Field}>
               <label className={styles.Label}>Número de DNI</label>
-              <input
-                className={styles.Input}
-                type="number"
-                inputMode="numeric"
-              />
+              <input className={styles.Input} type="number" />
             </div>
 
             <div className={styles.Field}>
@@ -44,11 +40,7 @@ export default function Data() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Número</label>
-              <input
-                className={styles.Input}
-                type="number"
-                inputMode="numeric"
-              />
+              <input className={styles.Input} type="number" />
             </div>
 
             <div className={styles.Field}>
@@ -60,25 +52,17 @@ export default function Data() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Código Postal</label>
-              <input
-                className={styles.Input}
-                type="number"
-                inputMode="numeric"
-              />
+              <input className={styles.Input} type="number" />
             </div>
 
             <div className={styles.Field}>
               <label className={styles.Label}>Provincia</label>
-              <select className={styles.Select}>
-                <option>Seleccionar</option>
-              </select>
+              <input className={styles.Input} type="text" />
             </div>
 
             <div className={styles.Field}>
               <label className={styles.Label}>Ciudad</label>
-              <select className={styles.Select}>
-                <option>Seleccionar</option>
-              </select>
+              <input className={styles.Input} type="text" />
             </div>
           </div>
         </section>
@@ -90,20 +74,12 @@ export default function Data() {
           <div className={styles.Grid}>
             <div className={styles.Field}>
               <label className={styles.Label}>Prefijo</label>
-              <input
-                className={styles.Input}
-                type="number"
-                inputMode="numeric"
-              />
+              <input className={styles.Input} type="number" />
             </div>
 
             <div className={styles.Field}>
               <label className={styles.Label}>Teléfono</label>
-              <input
-                className={styles.Input}
-                type="number"
-                inputMode="numeric"
-              />
+              <input className={styles.Input} type="number" />
             </div>
           </div>
         </section>
