@@ -118,5 +118,5 @@ VALUES
     30,
     55,
     GETDATE(),
-    GETDATE(),
+    GETDATE()
 );
