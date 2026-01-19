@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import styles from '@/styles/empresa.module.css';
 
@@ -9,17 +8,15 @@ import { Empresa, EmpresaImagen } from '@/API/types/empresas';
 import { BaseApi } from '@/API/baseApi';
 import BeneficiosPanel from '@/components/pages/Beneficios';
 
-export default function EmpresaPage() {
+export default function Empresas() {
   const api = new BaseApi();
 
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [logos, setLogos] = useState<Record<number, string>>({});
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [empresaActiva, setEmpresaActiva] = useState<number | null>(null);
 
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const empresaId = searchParams.get('empresa');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   /**
    * Cargar empresas
@@ -29,7 +26,7 @@ export default function EmpresaPage() {
       try {
         const data = await api.empresa.getAll();
         setEmpresas(data);
-      } catch (err) {
+      } catch {
         setError('No se pudieron cargar las empresas');
       } finally {
         setLoading(false);
@@ -40,33 +37,23 @@ export default function EmpresaPage() {
   }, []);
 
   /**
-   * Cargar imágenes usando BaseApi
+   * Cargar imágenes
    */
   useEffect(() => {
     const fetchLogos = async () => {
       try {
         const images: EmpresaImagen[] = await api.empresa.getImages();
-
         const map = Object.fromEntries(
           images.map((img) => [img.empresaId, img.logo]),
         );
-
         setLogos(map);
       } catch (err) {
-        console.error('Error cargando imágenes de empresas', err);
+        console.error('Error cargando imágenes', err);
       }
     };
 
     fetchLogos();
   }, []);
-
-  const handleEmpresaClick = (id: number) => {
-    router.push(`/empresa?empresa=${id}`, { scroll: false });
-  };
-
-  const handleClosePanel = () => {
-    router.push('/empresa', { scroll: false });
-  };
 
   if (loading) return <p>Cargando empresas...</p>;
   if (error) return <p>{error}</p>;
@@ -82,7 +69,7 @@ export default function EmpresaPage() {
             <button
               key={empresa.id}
               className={styles.card}
-              onClick={() => handleEmpresaClick(empresa.id)}
+              onClick={() => setEmpresaActiva(empresa.id)}
               aria-label={empresa.razon_social}
             >
               <Image
@@ -97,11 +84,11 @@ export default function EmpresaPage() {
         </div>
       </section>
 
-      {/* PANEL DE BENEFICIOS (OVERLAY) */}
-      {empresaId && (
+      {/* PANEL DE BENEFICIOS */}
+      {empresaActiva !== null && (
         <BeneficiosPanel
-          idEmpresa={Number(empresaId)}
-          onClose={handleClosePanel}
+          idEmpresa={empresaActiva}
+          onClose={() => setEmpresaActiva(null)}
         />
       )}
     </>
