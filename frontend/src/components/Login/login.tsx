@@ -1,20 +1,24 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
 import styles from "../../styles/login.module.css";
 import Swal from "sweetalert2";
 import { BaseApi } from "@/API/baseApi";
 import { jwtDecode } from "jwt-decode";
 
-// ==================== TIPOS ====================
 interface LoginFormData {
   correo: string;
   clave: string;
 }
 
 export default function Login() {
-  const router = useRouter();
+  console.log("LOGIN MONTADO");
+
+  useEffect(() => {
+    Swal.fire("TEST", "SweetAlert funciona", "success");
+    console.log("USE EFFECT EJECUTADO");
+  }, []);
+
   const api = useMemo(() => new BaseApi(), []);
 
   const [formData, setFormData] = useState<LoginFormData>({
@@ -33,47 +37,36 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await api.log.login({
-        correo: formData.correo,
-        clave: formData.clave,
-      });
+      const res = await api.log.login(formData);
 
-      if (!res.success) {
-        if (res.status === 403) {
-          Swal.fire("Login fallido", "Usuario bloqueado", "error");
-          return;
-        }
-        Swal.fire("Login fallido", "Correo o contraseña incorrectos", "error");
-        return;
-      }  
-      
-      const token = res.data.token
+      if (!res.success) throw new Error(res.error);
+
+      const token = res.data.token;
       localStorage.setItem("token", token);
 
-      type JwtPayload = { sub: string };
-      const decoded = jwtDecode<JwtPayload>(token);
+      const decoded = jwtDecode<{ sub: string }>(token);
       localStorage.setItem("userId", decoded.sub);
 
-      Swal.fire({
-        title: "Iniciando sesión",
+      await Swal.fire({
+        title: "Login exitoso",
         text: "Redirigiendo...",
         icon: "success",
-        timer: 3000,
+        timer: 2000,
         showConfirmButton: false,
       });
 
-      console.log("Login exitoso");
-
-      setTimeout(() => {
-        router.push("/inicio");
-      }, 3000);
-      
     } catch (error) {
-      console.error("Error en login", error);
-      alert("Correo o contraseña incorrectos");
+      Swal.fire({
+        title: "Login fallido",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Error al iniciar sesión",
+        icon: "error",
+      });
     }
   };
-  
+
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <h2 className={styles.title}>Iniciar sesión</h2>
@@ -85,6 +78,7 @@ export default function Login() {
         name="correo"
         value={formData.correo}
         onChange={handleChange}
+        required
       />
 
       <input
@@ -94,6 +88,7 @@ export default function Login() {
         name="clave"
         value={formData.clave}
         onChange={handleChange}
+        required
       />
 
       <button className={styles.submitBtn} type="submit">

@@ -60,6 +60,10 @@
 }
 
 /* ===== INPUTS ===== */
+.Input{
+  color: black;
+}
+
 .Input,
 .Select {
   padding: 12px 14px;
@@ -76,6 +80,13 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
+/* ===== QUITAR FLECHAS INPUT NUMBER ===== */
+
+.Input[type='number']::-webkit-inner-spin-button,
+.Input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 /* ===== BOTÓN ===== */
 .SubmitButton {
   margin-top: 20px;
