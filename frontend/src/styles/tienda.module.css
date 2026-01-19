@@ -146,6 +146,31 @@
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
 }
 
+
+.pagination {
+  color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.pagination button {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #c7d2fe;
+  cursor: not-allowed;
+}
+
+
 /* ===== MOBILE ADJUST ===== */
 @media (max-width: 480px) {
   .container {

@@ -3,6 +3,7 @@
 }
 
 .tabs {
+  justify-content: center;
   display: flex;
   gap: 12px;
   padding: 16px;
@@ -13,7 +14,7 @@
   padding: 10px 20px;
   border-radius: 8px;
   border: none;
-  background: #f3f4f6;
+  background: #6b73856c;
   cursor: pointer;
   font-weight: 500;
 }

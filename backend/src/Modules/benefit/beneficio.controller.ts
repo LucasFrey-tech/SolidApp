@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -93,6 +94,17 @@ export class BeneficioController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<BeneficiosResponseDTO> {
     return this.beneficiosService.findOne(id);
+  }
+
+  @Get()
+  async findAllPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    return this.beneficiosService.findAllPaginated(
+      Number(page),
+      Number(limit),
+    );
   }
 
   /**
