@@ -97,6 +97,13 @@ export class RegisterEmpresaDto {
   @MinLength(6)
   clave: string;
 
+  @ApiProperty({
+    description: 'Rubro o sector de la empresa',
+    example: 'Tecnología',
+  })
+  @IsString()
+  rubro: string;
+
   @ApiProperty({ description: 'Teléfono' })
   @IsString()
   @MinLength(8)
