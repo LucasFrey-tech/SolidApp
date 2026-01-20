@@ -3,7 +3,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
-  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
@@ -90,7 +89,7 @@ export class Empresa {
   })
   @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
-  
+
   @ApiProperty({
     example: 'correo@dominio.com',
     description: 'Correo electronico del usuario de la empresa.',
