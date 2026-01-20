@@ -28,9 +28,11 @@ export default function Panel() {
 
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                console.log("Tipo de usuario encontrado:", payload.userType || payload.type);
+
+                const tipo = payload.userType || 'usuario';
+                console.log(`Tipo de usuario desde token: ${tipo}`);
                 
-                setUserType(payload.userType || payload.type || 'usuario');
+                setUserType(tipo);
             } catch (error) {
                 console.error("Error al decodificar token:", error);
             } finally {
