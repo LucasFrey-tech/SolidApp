@@ -1,5 +1,6 @@
 'use client';
 
+import { NumericInput } from '../Utils/NumericInputProp';
 import styles from '@/styles/data.module.css';
 
 export default function Data() {
@@ -13,7 +14,7 @@ export default function Data() {
           <div className={styles.Grid}>
             <div className={styles.Field}>
               <label className={styles.Label}>Número de DNI</label>
-              <input className={styles.Input} type="number" />
+              <NumericInput className={styles.Input} />
             </div>
 
             <div className={styles.Field}>
@@ -40,7 +41,7 @@ export default function Data() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Número</label>
-              <input className={styles.Input} type="number" />
+              <NumericInput className={styles.Input} />
             </div>
 
             <div className={styles.Field}>
@@ -52,7 +53,7 @@ export default function Data() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Código Postal</label>
-              <input className={styles.Input} type="number" />
+              <NumericInput className={styles.Input} />
             </div>
 
             <div className={styles.Field}>
@@ -74,12 +75,12 @@ export default function Data() {
           <div className={styles.Grid}>
             <div className={styles.Field}>
               <label className={styles.Label}>Prefijo</label>
-              <input className={styles.Input} type="number" />
+              <NumericInput className={styles.Input} />
             </div>
 
             <div className={styles.Field}>
               <label className={styles.Label}>Teléfono</label>
-              <input className={styles.Input} type="number" />
+              <NumericInput className={styles.Input} />
             </div>
           </div>
         </section>

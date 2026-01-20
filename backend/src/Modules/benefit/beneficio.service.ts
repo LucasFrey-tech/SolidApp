@@ -60,6 +60,36 @@ export class BeneficioService {
   }
 
   /**
+   * Obtengo todos los beneficios con paginación
+   * @param page 
+   * @param limit 
+   * @returns 
+   */
+  async findAllPaginated(
+    page = 1,
+    limit = 10,
+  ): Promise<{
+    items: BeneficiosResponseDTO[];
+    total: number;
+  }> {
+    const skip = (page - 1) * limit;
+
+    const [beneficios, total] =
+      await this.beneficiosRepository.findAndCount({
+        relations: ['empresa'],
+        where: { empresa: { deshabilitado: false } },
+        skip,
+        take: limit,
+        order: { fecha_registro: 'DESC' },
+      });
+
+    return {
+      items: beneficios.map(this.mapToResponseDto),
+      total,
+    };
+  }
+
+  /**
    * Crea un nuevo beneficio.
    */
   async create(createDto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO> {
