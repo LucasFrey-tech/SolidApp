@@ -169,7 +169,6 @@ export default function Login() {
 
       // Guardar datos en localStorage
       localStorage.setItem("token", token);
-      localStorage.setItem("user_type", step);
       localStorage.setItem("user_email", loginData.correo);
 
       // Mostrar mensaje de éxito
