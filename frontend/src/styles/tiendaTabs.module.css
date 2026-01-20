@@ -4,8 +4,9 @@
 
 .tabs {
   justify-content: center;
+  background-color: white;
   display: flex;
-  gap: 12px;
+  gap: 3%;
   padding: 16px;
   border-bottom: 1px solid #e5e7eb;
 }
@@ -14,20 +15,21 @@
   padding: 10px 20px;
   border-radius: 8px;
   border: none;
-  background: #6b73856c;
+  background: #0000006c;
   cursor: pointer;
   font-weight: 500;
 }
 
 .tab:hover {
-  background: #e5e7eb;
+  background: #000000;
+  color: white;
 }
 
 .active {
-  background: #111827;
+  background: #000000;
   color: white;
 }
 
 .content {
-  margin-top: 16px;
+  padding: 20px;
 }

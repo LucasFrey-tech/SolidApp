@@ -1,0 +1,142 @@
+.container {
+  padding: clamp(24px, 5vw, 40px) clamp(16px, 4vw, 24px);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===== TITLE ===== */
+.title {
+  position: relative;
+  text-align: center;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 800;
+  margin-bottom: clamp(28px, 6vw, 40px);
+  color: #111;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(48px, 14vw, 80px);
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #d4af37, #ffd700, #d4af37);
+}
+
+/* ===== GRID ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(16px, 4vw, 24px);
+  justify-items: center;
+}
+
+/* ===== CARD (ESTILO TIENDA) ===== */
+.card {
+  position: relative;
+  width: 100%;
+  height: clamp(90px, 18vw, 120px);
+  border-radius: 14px;
+  background: #0f3d3a;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  overflow: hidden;
+  border: none;
+}
+
+/* Borde dorado animado */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 18px;
+  background: linear-gradient(
+    120deg,
+    #d4af37,
+    #ffd700,
+    #fff1a8,
+    #ffd700,
+    #d4af37
+  );
+  background-size: 500% 500%;
+  animation: goldFlow 4s linear infinite;
+  z-index: 0;
+}
+
+/* Capa interna */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: #0f3d3a;
+  border-radius: 12px;
+  z-index: 1;
+}
+
+/* Contenido arriba */
+.card > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Hover */
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card:focus-visible {
+  outline: 2px solid #ffd700;
+  outline-offset: 4px;
+}
+
+/* ===== IMAGE ===== */
+.image {
+  max-width: clamp(90px, 25vw, 120px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+/* ===== STATES ===== */
+.loading,
+.error {
+  text-align: center;
+  padding: 40px 0;
+  font-size: 1rem;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .card {
+    height: 80px;
+    border-radius: 12px;
+  }
+}
+
+/* ===== ANIMATION ===== */
+@keyframes goldFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import styles from '@/styles/empresa.module.css';
+import styles from '@/styles/empresaTienda.module.css';
 
 import { Empresa, EmpresaImagen } from '@/API/types/empresas';
 import { BaseApi } from '@/API/baseApi';
