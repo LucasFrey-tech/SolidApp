@@ -132,6 +132,102 @@
   cursor: not-allowed;
 }
 
+/* ===== CLASES NUEVAS PARA EMPRESA ===== */
+
+/* Loading y error states */
+.loading {
+  padding: 2rem;
+  text-align: center;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #666;
+}
+
+.error {
+  padding: 2rem;
+  text-align: center;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e74c3c;
+  background-color: #ffeaea;
+  border-radius: 8px;
+  margin: 1rem;
+  font-weight: 500;
+}
+
+/* Textarea específica para descripción */
+.Textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.Textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Estado de la empresa */
+.Status {
+  padding: 0.5rem 1rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: #374151;
+  border: 1px solid #e2e8f0;
+}
+
+/* Para campos de solo lectura con estilo diferente */
+.ReadOnlyField {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* Campos readOnly diferentes */
+.Input[readonly] {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* Grid de 2 columnas para estado */
+.StatusGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* ===== RESPONSIVE ADICIONAL ===== */
+@media (max-width: 768px) {
+  .StatusGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .Textarea {
+    min-height: 80px;
+  }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
   .Grid {
