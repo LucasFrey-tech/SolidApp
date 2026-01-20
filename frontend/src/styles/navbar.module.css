@@ -140,6 +140,21 @@
   transform: translateY(-1px);
 }
 
+.profileButton {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* separación icono - texto */
+}
+
+.profileIcon {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profileName {
+  font-weight: 600;
+}
+
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {

@@ -101,9 +101,8 @@ export default function Navbar() {
 
       {/* LINKS */}
       <ul
-        className={`${styles.navLinks} ${
-          menuOpen ? styles.navLinksOpen : ""
-        }`}
+        className={`${styles.navLinks} ${menuOpen ? styles.navLinksOpen : ""
+          }`}
       >
         <li><Link href="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
         <li><Link href="/tienda" onClick={() => setMenuOpen(false)}>Tienda</Link></li>
@@ -126,13 +125,21 @@ export default function Navbar() {
             className={styles.profileButton}
             onClick={() => setProfileOpen(!profileOpen)}
           >
-            👤 {userInfo?.email.split("@")[0]}
+            <Image
+              src="/img/perfil.svg"
+              alt="Perfil de usuario"
+              width={41}
+              height={41}
+              className={styles.profileIcon}
+            />
+            <span className={styles.profileName}>
+              {userInfo?.email.split("@")[0]}
+            </span>
           </button>
 
           <div
-            className={`${styles.profileDropdown} ${
-              profileOpen ? styles.open : ""
-            }`}
+            className={`${styles.profileDropdown} ${profileOpen ? styles.open : ""
+              }`}
           >
             <Link
               href="/userPanel"
