@@ -98,7 +98,7 @@ export class AuthService {
       razon_social: dto.razonSocial,
       nombre_fantasia: dto.nombreFantasia,
       descripcion: 'Empresa registrada recientemente',
-      rubro: 'General',
+      rubro: dto.rubro,
       telefono: dto.telefono,
       direccion: dto.direccion,
       web: dto.web || '',
@@ -168,7 +168,12 @@ export class AuthService {
         'Usuario bloqueado. Contacta al administrador.',
       );
     }
-    const payload = { email: user.correo, sub: user.id, rol: user.rol };
+    const payload = {
+      email: user.correo,
+      sub: user.id,
+      rol: user.rol,
+      userType: 'usuario',
+    };
     const token = this.jwtService.sign(payload);
     this.logger.log(`Usuario logueado con ID ${user.id}`);
     return { token };
@@ -185,7 +190,7 @@ export class AuthService {
         'Usuario bloqueado. Contacta al administrador.',
       );
     }
-    const payload = { email: user.correo, sub: user.id };
+    const payload = { email: user.correo, sub: user.id, userType: 'empresa' };
     const token = this.jwtService.sign(payload);
     this.logger.log(`Empresa logueada con ID ${user.id}`);
     return { token };
@@ -202,7 +207,11 @@ export class AuthService {
         'Usuario bloqueado. Contacta al administrador.',
       );
     }
-    const payload = { email: user.correo, sub: user.id };
+    const payload = {
+      email: user.correo,
+      sub: user.id,
+      userType: 'organizacion',
+    };
     const token = this.jwtService.sign(payload);
     this.logger.log(`Organización logueada con ID ${user.id}`);
     return { token };
