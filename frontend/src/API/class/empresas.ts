@@ -97,7 +97,7 @@ export class EmpresasService extends Crud<Empresa> {
     const res = await fetch(
       `${this.baseUrl}${this.endpoint}/${id}`,
       {
-        method: 'PATCH',
+        method: 'PUT',
         headers: this.getHeaders(),
         body: JSON.stringify(data),
       },
