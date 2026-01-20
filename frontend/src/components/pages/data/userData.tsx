@@ -2,7 +2,7 @@
 
 import { BaseApi } from '@/API/baseApi';
 import { NumericInput } from '../../Utils/NumericInputProp';
-import styles from '@/styles/data.module.css';
+import styles from '@/styles/data/userData.module.css';
 import { useCallback, useEffect, useState } from 'react';
 import { User } from '@/API/types/user';
 
