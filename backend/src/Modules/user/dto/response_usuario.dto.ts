@@ -8,6 +8,12 @@ export class ResponseUsuarioDto {
   id: number;
 
   @ApiProperty({
+    example: '12345678',
+    description: 'Documento del Usuario',
+  })
+  documento: string;
+
+  @ApiProperty({
     example: 'usuario@email.com',
     description: 'Correo electrónico del usuario',
   })
@@ -32,10 +38,16 @@ export class ResponseUsuarioDto {
   imagen: string;
 
   @ApiProperty({
-    example: 'Av. Siempre Viva 742',
-    description: 'Dirección del usuario',
+    description: 'Nombre de la calle del domicilio del usuario',
+    example: 'Av. Siempre Viva',
   })
-  direccion: string;
+  calle?: string;
+
+  @ApiProperty({
+    description: 'Número de la dirección del usuario',
+    example: '742',
+  })
+  numero?: string;
 
   @ApiProperty({
     example: 'USER',
@@ -48,6 +60,7 @@ export class ResponseUsuarioDto {
     description: 'Indica si el usuario está deshabilitado',
   })
   deshabilitado: boolean;
+
   @ApiProperty({
     example: '2025-05-15T10:30:00.000Z',
     description: 'Fecha en la que el usuario fue registrado en el sistema',

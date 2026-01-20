@@ -28,75 +28,19 @@ export class LoginRequestBody {
   }
 }
 
-export class RegisterRequestBody {
-  /**
-   * Nombre del usuario
-   * @type {string}
-   */
-  @ApiProperty({ example: 'Lucas' })
-  @IsString()
-  nombre: string;
-
-  /**
-   * Apellido del usuario
-   * @type {string}
-   */
-  @ApiProperty({ example: 'Frey' })
-  @IsString()
-  apellido: string;
-
-  /**
-   * Email del usuario
-   * @type {string}
-   */
-  @ApiProperty({ example: 'sarasa@gmail.com' })
-  @IsEmail()
-  correo: string;
-
-  /**
-   * Contraseña del usuario
-   * @type {string}
-   */
-  @ApiProperty({ example: '123456' })
-  @IsString()
-  @MinLength(6)
-  clave: string;
-
-  /** * Imagen de perfil del usuario * @type {string} */ @ApiProperty({
-    example: 'https://miapp.com/imagenes/avatar.png',
-  })
-  @IsString()
-  imagen: string;
-  /** * Dirección del usuario * @type {string} */ @ApiProperty({
-    example: 'Av. Siempre Viva 742',
-  })
-  @IsString()
-  direccion: string;
-  /** * Rol del usuario * @type {string} */ @ApiProperty({ example: 'admin' })
-  @IsString()
-  rol: string;
-  /** * Constructor del DTO. */ constructor(
-    nombre: string,
-    apellido: string,
-    correo: string,
-    clave: string,
-    imagen: string,
-    direccion: string,
-    rol: string,
-  ) {
-    this.nombre = nombre;
-    this.apellido = apellido;
-    this.correo = correo;
-    this.clave = clave;
-    this.imagen = imagen;
-    this.direccion = direccion;
-    this.rol = rol;
-  }
-}
-
-// En auth.dto.ts, actualiza los DTOs:
-
 export class RegisterUsuarioDto {
+  @ApiProperty({
+    example: 12,
+    description: 'Identificador único del usuario',
+  })
+  id: number;
+
+  @ApiProperty({
+    example: '12345678',
+    description: 'Documento del Usuario',
+  })
+  documento: string;
+
   @ApiProperty({ description: 'Email del usuario' })
   @IsEmail()
   correo: string;
@@ -121,10 +65,15 @@ export class RegisterUsuarioDto {
   @IsOptional()
   imagen?: string;
 
-  @ApiProperty({ description: 'Dirección', required: false })
+  @ApiProperty({ description: 'Nombre de la Calle', required: false })
   @IsString()
   @IsOptional()
-  direccion?: string;
+  calle?: string;
+
+  @ApiProperty({ description: 'Número de la calle', required: false })
+  @IsString()
+  @IsOptional()
+  numero?: string;
 }
 
 export class RegisterEmpresaDto {

@@ -62,13 +62,12 @@ export class AuthService {
 
     // Crear usuario
     const user = await this.usersService.create({
+      documento: dto.documento,
       correo: dto.correo,
       clave: hashedPassword,
       nombre: dto.nombre,
       apellido: dto.apellido,
       rol: 'usuario',
-      imagen: dto.imagen || '',
-      direccion: dto.direccion || '',
     });
 
     this.logger.log(`Usuario creado con ID ${user.id}`);

@@ -2,6 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUsuarioDto {
   @ApiProperty({
+    example: '12345678',
+    description: 'Documento del Usuario',
+  })
+  documento: string;
+
+  @ApiProperty({
     example: 'usuario@email.com',
     description: 'Correo electrónico del usuario',
   })
@@ -24,18 +30,6 @@ export class CreateUsuarioDto {
     description: 'Apellido del usuario',
   })
   apellido: string;
-
-  @ApiProperty({
-    example: 'https://misitio.com/avatar.png',
-    description: 'Imagen de perfil del usuario',
-  })
-  imagen: string;
-
-  @ApiProperty({
-    example: 'Av. Siempre Viva 742',
-    description: 'Dirección del usuario',
-  })
-  direccion: string;
 
   @ApiProperty({
     example: 'USER',

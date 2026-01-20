@@ -15,6 +15,13 @@ export class Usuario {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ApiProperty({
+    description: 'Número de documento del usuario',
+    example: '12345678',
+  })
+  @Column({ type: 'varchar', length: 20, unique: true, nullable: false })
+  documento: string;
+
   @ApiProperty({ example: 'Lucas', description: 'Nombre del Usuario' })
   @Column({ type: 'varchar', length: 100 })
   nombre: string;
@@ -42,11 +49,61 @@ export class Usuario {
   rol: string;
 
   @ApiProperty({
-    example: 'calle falsa 123',
-    description: 'Dirección del domicilio del usuarios',
+    description: 'Nombre de la calle del domicilio del usuario',
+    example: 'Av. Siempre Viva',
   })
-  @Column({ type: 'varchar', length: 255 })
-  direccion: string;
+  @Column({ type: 'varchar', length: 80, nullable: true })
+  calle?: string;
+
+  @ApiProperty({
+    description: 'Número de la dirección del usuario',
+    example: '742',
+  })
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  numero?: string;
+
+  @ApiProperty({
+    description: 'Departamento, piso o unidad del domicilio del usuario',
+    example: 'Depto 3B',
+    required: false,
+  })
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  departamento?: string;
+
+  @ApiProperty({
+    description: 'Código postal del domicilio del usuario',
+    example: '1638',
+  })
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  codigoPostal?: string;
+
+  @ApiProperty({
+    description: 'Ciudad del domicilio del usuario',
+    example: 'Vicente López',
+  })
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  ciudad?: string;
+
+  @ApiProperty({
+    description: 'Prefijo telefónico del usuario',
+    example: '+54',
+  })
+  @Column({ type: 'varchar', length: 5, nullable: true })
+  prefijo?: string;
+
+  @ApiProperty({
+    description: 'Número de teléfono del usuario',
+    example: '11-1234-5678',
+  })
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  telefono?: string;
+
+  @ApiProperty({
+    description: 'Provincia del domicilio del usuario',
+    example: 'Buenos Aires',
+  })
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  provincia?: string;
 
   @ApiProperty({ example: 'profile.jpg', description: 'Imagen del Usuario' })
   @Column({ type: 'varchar', length: 255, nullable: true })

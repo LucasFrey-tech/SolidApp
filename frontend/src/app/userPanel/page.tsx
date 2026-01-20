@@ -17,7 +17,6 @@ export default function Panel() {
                     {activeSection === 'data' && <Data />}
                     {activeSection === 'user&pass' && <UserAndPass />}
                 </section>
-
                 <MyAccount onChangeSection={setActiveSection} />
             </main>
         </div>

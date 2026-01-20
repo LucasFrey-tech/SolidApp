@@ -1,5 +1,6 @@
 // Usuario
 export interface RegisterUsuarioRequest {
+  documento: string;
   nombre: string;
   apellido: string;
   correo: string;
@@ -28,5 +29,5 @@ export interface RegisterOrganizacionRequest {
 }
 
 export interface AuthResponse {
-  access_token: string;
+  token: string;
 }

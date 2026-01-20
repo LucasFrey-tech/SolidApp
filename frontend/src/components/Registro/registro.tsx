@@ -12,6 +12,10 @@ import { RegisterOrganizacionStrategy } from "@/API/class/register/organizacion"
 // ==================== ESQUEMAS ZOD ====================
 const usuarioSchema = z
   .object({
+    documento: z
+      .string()
+      .min(1, "El documento es obligatorio")
+      .min(7, "El documento debe tener al menos 7 caracteres"),
     correo: z
       .string()
       .min(1, "El email es obligatorio")
@@ -125,6 +129,12 @@ type FieldConfig = {
 
 const fieldConfigs: Record<FormType, FieldConfig[]> = {
   usuario: [
+    {
+      field: "documento",
+      label: "Documento",
+      type: "text",
+      placeholder: "DNI",
+    },
     {
       field: "correo",
       label: "Correo electrónico",
@@ -260,6 +270,7 @@ export default function Registro() {
 
   // ==================== ESTADOS INDEPENDIENTES ====================
   const [usuarioData, setUsuarioData] = useState<UsuarioData>({
+    documento: "",
     correo: "",
     clave: "",
     confirmarClave: "",
@@ -491,6 +502,7 @@ export default function Registro() {
 
       // Resetear cada formulario
       setUsuarioData({
+        documento: "",
         correo: "",
         clave: "",
         confirmarClave: "",
