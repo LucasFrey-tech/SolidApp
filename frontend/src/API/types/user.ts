@@ -5,5 +5,13 @@ export interface User {
   correo: string;
   nombre: string;
   apellido: string;
+  calle: string;
+  numero: string
+  prefijo: string;
+  telefono: string;
+  departamento?: string;
+  codigoPostal: string;
+  provincia: string;
+  ciudad: string;
   deshabilitado: boolean; 
 }

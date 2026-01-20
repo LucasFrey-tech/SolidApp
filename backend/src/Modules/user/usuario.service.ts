@@ -141,5 +141,11 @@ export class UsuarioService {
     rol: usuario.rol,
     deshabilitado: usuario.deshabilitado,
     fechaRegistro: usuario.fecha_registro,
+    departamento: usuario.departamento,
+    codigoPostal: usuario.codigoPostal,
+    provincia: usuario.provincia,
+    ciudad: usuario.ciudad,
+    prefijo: usuario.prefijo,
+    telefono: usuario.telefono,
   });
 }
