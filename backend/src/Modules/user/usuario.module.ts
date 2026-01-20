@@ -7,11 +7,11 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
 
 @Module({
   imports: [
-  TypeOrmModule.forFeature([Usuario]),
-  CommonMulterModule //Files upload module
-],
+    TypeOrmModule.forFeature([Usuario]),
+    CommonMulterModule, //Files upload module
+  ],
   controllers: [UsuarioController],
-  providers: [UsuarioService,],
+  providers: [UsuarioService],
   exports: [UsuarioService],
 })
 export class UserModule {}
