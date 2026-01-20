@@ -49,6 +49,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem('user_email');
     setIsLoggedIn(false);
     setUserInfo(null);
     setProfileOpen(false);
