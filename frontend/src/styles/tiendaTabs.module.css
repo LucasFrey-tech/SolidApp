@@ -2,34 +2,81 @@
   width: 100%;
 }
 
+/* ===== TABS WRAPPER ===== */
 .tabs {
-  justify-content: center;
-  background-color: white;
   display: flex;
-  gap: 3%;
+  justify-content: center;
+  gap: 24px;
   padding: 16px;
+  background-color: white;
   border-bottom: 1px solid #e5e7eb;
 }
 
+/* ===== TAB BUTTON ===== */
 .tab {
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: 10px 24px;
+  border-radius: 15px;
+  font-size: 1.3rem;
   border: none;
   background: #0000006c;
+  color: #ffffff;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .tab:hover {
   background: #000000;
-  color: white;
+  transform: translateY(-1px);
 }
 
 .active {
   background: #000000;
-  color: white;
+  color: #ffffff;
 }
 
+/* ===== CONTENT ===== */
 .content {
-  padding: 20px;
+  padding: 24px;
+}
+
+/* ======================
+   TABLET
+====================== */
+@media (max-width: 768px) {
+  .tabs {
+    gap: 16px;
+    padding: 14px;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+
+  .content {
+    padding: 20px;
+  }
+}
+
+/* ======================
+   MOBILE
+====================== */
+@media (max-width: 480px) {
+  .tabs {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    font-size: 0.9rem;
+    border-radius: 12px;
+  }
+
+  .content {
+    padding: 16px;
+  }
 }

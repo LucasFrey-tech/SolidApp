@@ -142,13 +142,18 @@
 /* ===== PAGINATION ===== */
 .pagination {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: clamp(10px, 4vw, 16px);
-  margin-top: clamp(24px, 6vw, 32px);
-  color: #000;
+  gap: 16px;
+  margin-top: 32px;
 }
+
+.pagination span {
+  color: #000000;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
 
 .pagination button {
   padding: clamp(8px, 2.5vw, 10px) clamp(14px, 4vw, 18px);
@@ -163,6 +168,7 @@
   background-color: #c7d2fe;
   cursor: not-allowed;
 }
+
 
 /* ===== MOBILE EXTRA ===== */
 @media (max-width: 480px) {
