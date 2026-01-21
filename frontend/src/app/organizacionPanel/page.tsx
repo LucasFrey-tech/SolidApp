@@ -15,6 +15,7 @@ type Campaign = {
   titulo: string;
   descripcion: string;
   objetivo: number;
+  puntosCampaña: number;
 };
 
 type Donation = {
@@ -49,12 +50,14 @@ export default function OrganizationCampaignsPage() {
         titulo: "Campaña 1",
         descripcion: "Descripción 1",
         objetivo: 100,
+        puntosCampaña: 250,
       },
       {
         id: "2",
         titulo: "Campaña 2",
         descripcion: "Descripción 2",
         objetivo: 200,
+        puntosCampaña: 400,
       },
     ]);
 
@@ -92,6 +95,7 @@ export default function OrganizationCampaignsPage() {
           titulo: data.titulo!,
           descripcion: data.descripcion!,
           objetivo: data.objetivo!,
+          puntosCampaña: data.puntosCampaña || 0,
         },
       ]);
     }
@@ -193,7 +197,7 @@ export default function OrganizationCampaignsPage() {
             <li key={c.id} className={styles.card}>
               <div>
                 <strong>{c.titulo}</strong> — {c.descripcion} —
-                Objetivo: {c.objetivo}
+                Objetivo: {c.objetivo} - Puntos: {c.puntosCampaña}
               </div>
               <Edit2
                 className={styles.editIcon}
