@@ -1,0 +1,250 @@
+/* ===== CONTENEDOR ===== */
+.Content {
+  width: 100%;
+  padding: 20px;
+}
+
+/* ===== TITULOS ===== */
+.Title {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 32px;
+  color: #0f172a;
+}
+
+.Subtitle {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+/* ===== FORM ===== */
+.Form {
+  max-width: 900px;
+  background-color: #ffffff;
+  padding: 32px;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== SECCIONES ===== */
+.Section {
+  margin-bottom: 40px;
+}
+
+/* ===== GRID ===== */
+.Grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* ===== CAMPOS ===== */
+.Field {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== LABELS ===== */
+.Label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.Optional {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ===== INPUTS ===== */
+.Input{
+  color: black;
+}
+
+.Input,
+.Select {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.Input:focus,
+.Select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* ===== QUITAR FLECHAS INPUT NUMBER ===== */
+
+.Input[type='number']::-webkit-inner-spin-button,
+.Input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* ===== BOTÓN ===== */
+.SubmitButton {
+  margin-top: 20px;
+  padding: 14px 26px;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.SubmitButton:hover {
+  background-color: #1e40af;
+}
+
+.SubmitButton:active {
+  transform: scale(0.97);
+}
+
+.SuccessMessage {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  border: 1px solid #c3e6cb;
+}
+
+.ErrorMessage {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  border: 1px solid #f5c6cb;
+}
+
+.SubmitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== CLASES NUEVAS PARA EMPRESA ===== */
+
+/* Loading y error states */
+.loading {
+  padding: 2rem;
+  text-align: center;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #666;
+}
+
+.error {
+  padding: 2rem;
+  text-align: center;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e74c3c;
+  background-color: #ffeaea;
+  border-radius: 8px;
+  margin: 1rem;
+  font-weight: 500;
+}
+
+/* Textarea específica para descripción */
+.Textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.Textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Estado de la empresa */
+.Status {
+  padding: 0.5rem 1rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: #374151;
+  border: 1px solid #e2e8f0;
+}
+
+/* Para campos de solo lectura con estilo diferente */
+.ReadOnlyField {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* Campos readOnly diferentes */
+.Input[readonly] {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* Grid de 2 columnas para estado */
+.StatusGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* ===== RESPONSIVE ADICIONAL ===== */
+@media (max-width: 768px) {
+  .StatusGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .Textarea {
+    min-height: 80px;
+  }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .Grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .Grid {
+    grid-template-columns: 1fr;
+  }
+
+  .Form {
+    padding: 24px;
+  }
+
+  .Title {
+    font-size: 22px;
+  }
+}
