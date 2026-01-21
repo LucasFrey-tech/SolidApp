@@ -54,4 +54,6 @@ export class EmpresaResponseDTO {
     description: 'Fecha de última modificación',
   })
   ultimo_cambio: Date;
+
+  imagen: string;
 }
