@@ -109,7 +109,7 @@ export class BeneficiosService extends Crud<Beneficio> {
 
   /**
    * Beneficios por empresa
-   * (si decidís exponer /beneficios/empresa/:id)
+   * GET /beneficios/empresa/:id
    */
   async getByEmpresa(idEmpresa: number): Promise<Beneficio[]> {
     const res = await fetch(
@@ -121,6 +121,25 @@ export class BeneficiosService extends Crud<Beneficio> {
 
     if (!res.ok) {
       throw new Error('Error al obtener beneficios por empresa');
+    }
+
+    return res.json();
+  }
+
+  /**
+   * Beneficios generales (TIENDA)
+   * GET /beneficios/general
+   */
+  async getGenerales(): Promise<Beneficio[]> {
+    const res = await fetch(
+      `${this.baseUrl}${this.endpoint}/general`,
+      {
+        headers: this.getHeaders(),
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error('Error al obtener beneficios generales');
     }
 
     return res.json();

@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/tienda.module.css';
 
-import { BeneficiosService } from '@/API/class/beneficios';
 import { BaseApi } from '@/API/baseApi';
-
 import { Beneficio } from '@/API/types/beneficios';
 import { EmpresaImagen } from '@/API/types/empresas';
+
+import CanjeModal from '@/components/pages/CanjeModal';
 
 const LIMIT = 10;
 
@@ -22,17 +22,22 @@ export default function Tienda() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 👇 NUEVO: beneficio seleccionado para canje
+  const [beneficioSeleccionado, setBeneficioSeleccionado] =
+    useState<Beneficio | null>(null);
+
   /**
-   * Cargar beneficios paginados
+   * =========================
+   * CARGAR BENEFICIOS
+   * =========================
    */
   useEffect(() => {
     const fetchBeneficios = async () => {
       try {
         setLoading(true);
-        // const service = new BeneficiosService();
-        const api = new BaseApi();
+        setError(null);
 
-        // const res = await service.getAllPaginated(page, LIMIT);
+        const api = new BaseApi();
         const res = await api.beneficio.getAllPaginated(page, LIMIT);
 
         const items = Array.isArray(res.items)
@@ -43,9 +48,11 @@ export default function Tienda() {
 
         setBeneficios(items);
 
-        setTotalPages(Math.ceil((res.total ?? items.length) / LIMIT));
-
-      } catch {
+        setTotalPages(
+          Math.ceil((res.total ?? items.length) / LIMIT),
+        );
+      } catch (err) {
+        console.error(err);
         setError('Error al cargar beneficios');
       } finally {
         setLoading(false);
@@ -56,7 +63,9 @@ export default function Tienda() {
   }, [page]);
 
   /**
-   * Cargar imágenes de empresas (una sola vez)
+   * =========================
+   * CARGAR LOGOS
+   * =========================
    */
   useEffect(() => {
     const fetchLogos = async () => {
@@ -71,10 +80,7 @@ export default function Tienda() {
 
         setLogos(map);
       } catch (err) {
-        console.error(
-          'Error cargando imágenes de empresas',
-          err,
-        );
+        console.error('Error cargando imágenes', err);
       }
     };
 
@@ -82,25 +88,28 @@ export default function Tienda() {
   }, []);
 
   return (
-    <main className={styles.container}>
-      <h1 className={styles.title}>Tienda</h1>
+    <>
+      <main className={styles.container}>
+        <h1 className={styles.title}>Tienda</h1>
 
-      {loading && <p>Cargando beneficios...</p>}
-      {error && <p>{error}</p>}
+        {loading && <p>Cargando beneficios...</p>}
+        {error && <p>{error}</p>}
 
-      {!loading && !error && (
-        <>
-          {/* GRID */}
-          <section className={styles.grid}>
-            {Array.isArray(beneficios) &&
-              beneficios.map((beneficio) => (
+        {!loading && !error && (
+          <>
+            {/* ===== GRID ===== */}
+            <section className={styles.grid}>
+              {beneficios.map((beneficio) => (
                 <div key={beneficio.id} className={styles.card}>
                   <Image
                     src={
-                      logos[beneficio.empresa.id] ??
+                      logos[beneficio.empresa?.id] ??
                       '/empresas/default.png'
                     }
-                    alt={beneficio.empresa.nombre_fantasia}
+                    alt={
+                      beneficio.empresa?.nombre_fantasia ??
+                      'Empresa'
+                    }
                     width={120}
                     height={120}
                     className={styles.image}
@@ -115,35 +124,50 @@ export default function Tienda() {
                     <span>{beneficio.cantidad}</span>
                   </p>
 
-                  <button className={styles.button}>
+                  {/* 👇 CLICK PARA CANJEAR */}
+                  <button
+                    className={styles.button}
+                    onClick={() =>
+                      setBeneficioSeleccionado(beneficio)
+                    }
+                  >
                     Reclamar
                   </button>
                 </div>
               ))}
-          </section>
+            </section>
 
-          {/* PAGINACIÓN */}
-          <div className={styles.pagination}>
-            <button
-              onClick={() => setPage((p) => p - 1)}
-              disabled={page === 1}
-            >
-              Anterior
-            </button>
+            {/* ===== PAGINACIÓN ===== */}
+            <div className={styles.pagination}>
+              <button
+                onClick={() => setPage((p) => p - 1)}
+                disabled={page === 1}
+              >
+                Anterior
+              </button>
 
-            <span>
-              Página {page} de {totalPages}
-            </span>
+              <span>
+                Página {page} de {totalPages}
+              </span>
 
-            <button
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page === totalPages}
-            >
-              Siguiente
-            </button>
-          </div>
-        </>
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page === totalPages}
+              >
+                Siguiente
+              </button>
+            </div>
+          </>
+        )}
+      </main>
+
+      {/* ===== MODAL DE CANJE ===== */}
+      {beneficioSeleccionado && (
+        <CanjeModal
+          beneficio={beneficioSeleccionado}
+          onClose={() => setBeneficioSeleccionado(null)}
+        />
       )}
-    </main>
+    </>
   );
 }

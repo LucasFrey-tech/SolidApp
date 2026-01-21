@@ -83,13 +83,16 @@ export default function Navbar() {
     <nav className={styles.navbar}>
       {/* LOGO */}
       <div className={styles.logoSection}>
-        <Image
-          src="/logos/SolidApp_logo.svg"
-          alt="Logo SolidApp"
-          width={200}
-          height={150}
-          priority
-        />
+        <Link href="/" aria-label="Ir al inicio">
+          <Image
+            src="/logos/SolidApp_logo.svg"
+            alt="Logo SolidApp"
+            width={200}
+            height={150}
+            priority
+            style={{ cursor: "pointer" }}
+          />
+        </Link>
       </div>
 
       {/* HAMBURGER */}
@@ -102,14 +105,35 @@ export default function Navbar() {
 
       {/* LINKS */}
       <ul
-        className={`${styles.navLinks} ${menuOpen ? styles.navLinksOpen : ""
-          }`}
+        className={`${styles.navLinks} ${
+          menuOpen ? styles.navLinksOpen : ""
+        }`}
       >
-        <li><Link href="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
-        <li><Link href="/tienda" onClick={() => setMenuOpen(false)}>Tienda</Link></li>
-        <li><Link href="/novedades" onClick={() => setMenuOpen(false)}>Novedades</Link></li>
-        <li><Link href="/como-participar" onClick={() => setMenuOpen(false)}>Cómo participar</Link></li>
-        <li><Link href="/quienes-somos" onClick={() => setMenuOpen(false)}>Quiénes somos</Link></li>
+        <li>
+          <Link href="/" onClick={() => setMenuOpen(false)}>
+            Inicio
+          </Link>
+        </li>
+        <li>
+          <Link href="/tienda" onClick={() => setMenuOpen(false)}>
+            Tienda
+          </Link>
+        </li>
+        <li>
+          <Link href="/ranking" onClick={() => setMenuOpen(false)}>
+            Ranking
+          </Link>
+        </li>
+        <li>
+          <Link href="/como-participar" onClick={() => setMenuOpen(false)}>
+            Cómo participar
+          </Link>
+        </li>
+        <li>
+          <Link href="/quienes-somos" onClick={() => setMenuOpen(false)}>
+            Quiénes somos
+          </Link>
+        </li>
       </ul>
 
       {/* ACCIÓN DERECHA */}
@@ -118,10 +142,7 @@ export default function Navbar() {
           Iniciar sesión
         </Link>
       ) : (
-        <div
-          ref={profileRef}
-          className={styles.profileWrapper}
-        >
+        <div ref={profileRef} className={styles.profileWrapper}>
           <button
             className={styles.profileButton}
             onClick={() => setProfileOpen(!profileOpen)}
@@ -139,8 +160,9 @@ export default function Navbar() {
           </button>
 
           <div
-            className={`${styles.profileDropdown} ${profileOpen ? styles.open : ""
-              }`}
+            className={`${styles.profileDropdown} ${
+              profileOpen ? styles.open : ""
+            }`}
           >
             <Link
               href="/userPanel"

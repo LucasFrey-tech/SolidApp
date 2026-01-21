@@ -12,7 +12,7 @@ export default function Footer() {
 
     const siteMapLinks: FooterLink[] = [
         { label: "Inicio", href: "/" },
-        { label: "Novedades", href: "/novedades" },
+        { label: "Ranking", href: "/ranking" },
         { label: "Formación", href: "/formacion" },
         { label: "Participá", href: "/como-participar" },
         { label: "Contacto", href: "/contacto" },

@@ -3,7 +3,7 @@ import { ArgumentMetadata, Injectable, PipeTransform } from "@nestjs/common";
 @Injectable()
 export class ImageValidationPipe implements PipeTransform {
     readonly maxSize: number = 2500;
-    readonly allowedTypes: RegExp = /\.(jpg|jpeg|png)$/;
+    readonly allowedTypes: RegExp = /\.(jpg|jpeg|png|svg)$/;
     
     transform(value: any, metadata: ArgumentMetadata) {
         if (!value) {
@@ -15,7 +15,7 @@ export class ImageValidationPipe implements PipeTransform {
         }
 
         if (!this.allowedTypes.test(value.originalname)) {
-            throw new Error('Only jpg, jpeg, and png files are allowed');
+            throw new Error('Only jpg, jpeg, svg and png files are allowed');
         }
 
         return value;
@@ -25,7 +25,7 @@ export class ImageValidationPipe implements PipeTransform {
 @Injectable()
 export class NullableImageValidationPipe implements PipeTransform {
     readonly maxSize: number = 2500;
-    readonly allowedTypes: RegExp = /\.(jpg|jpeg|png)$/;
+    readonly allowedTypes: RegExp = /\.(jpg|jpeg|png|svg)$/;
     
     transform(value: any, metadata: ArgumentMetadata) {
         if (value.size > this.maxSize) {
@@ -33,7 +33,7 @@ export class NullableImageValidationPipe implements PipeTransform {
         }
 
         if (!this.allowedTypes.test(value.originalname)) {
-            throw new Error('Only jpg, jpeg, and png files are allowed');
+            throw new Error('Only jpg, jpeg, svg and png files are allowed');
         }
 
         return value;

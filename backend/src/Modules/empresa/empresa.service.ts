@@ -13,6 +13,7 @@ import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
 import { Empresa_imagenes } from '../../Entities/empresa_imagenes.entity';
+import { SettingsService } from '../../common/settings/settings.service';
 
 @Injectable()
 export class EmpresasService {
@@ -34,8 +35,15 @@ export class EmpresasService {
       where: { deshabilitado: false },
     });
 
+    const imagen = await this.empresasImagenRepository.find({
+      where: { id_empresa: { id: empresas[0].id } },
+    });
+
     this.logger.log(`Se obtuvieron ${empresas.length} Empresas`);
-    return empresas.map(this.mapToResponseDto);
+    let res = empresas.map(this.mapToResponseDto);
+    // res.forEach((empresa) => empresa.imagen = imagen[0].logo);
+    res.forEach((empresa) => empresa.imagen = SettingsService.getStaticResourceUrl('servo.png'));
+    return res;
   }
 
   /**
@@ -55,6 +63,7 @@ export class EmpresasService {
 
     return images.map((img) => ({
       id_empresa: img.id_empresa.id,
+      nombre: img.id_empresa.razon_social,
       logo: img.logo,
     }));
   }
@@ -179,7 +188,7 @@ export class EmpresasService {
   }
 
   private readonly mapToResponseDto = (
-    empresa: Empresa,
+    empresa: Empresa
   ): EmpresaResponseDTO => {
     return {
       id: empresa.id,
@@ -195,6 +204,7 @@ export class EmpresasService {
       deshabilitado: empresa.deshabilitado,
       fecha_registro: empresa.fecha_registro,
       ultimo_cambio: empresa.ultimo_cambio,
+      imagen: ""
     };
   };
 }

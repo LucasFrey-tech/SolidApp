@@ -45,18 +45,19 @@ export class EmpresasService extends Crud<Empresa> {
   }
 
   async getImages(): Promise<EmpresaImagen[]> {
-    const res = await fetch(
+    const resQuery = await fetch(
       `${this.baseUrl}${this.endpoint}/imagenes`,
       {
         headers: this.getHeaders(),
       },
     );
-
-    if (!res.ok) {
+    
+    if (!resQuery.ok) {
       throw new Error('Error al obtener imágenes de empresas');
     }
 
-    return res.json();
+    const res = await resQuery.json();
+    return res;
   }
 
   async getOne(id: number): Promise<Empresa> {

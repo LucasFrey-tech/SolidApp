@@ -9,11 +9,16 @@ import { Beneficio } from '@/API/types/beneficios';
 import CanjeModal from '@/components/pages/CanjeModal';
 
 interface Props {
-  idEmpresa: number;
+  idEmpresa?: number; // opcional
+  modo?: 'empresa' | 'general';
   onClose: () => void;
 }
 
-export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
+export default function BeneficiosPanel({
+  idEmpresa,
+  modo = 'empresa',
+  onClose,
+}: Props) {
   const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -24,7 +29,12 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
     const fetchBeneficios = async () => {
       try {
         const service = new BeneficiosService();
-        const data = await service.getByEmpresa(idEmpresa);
+
+        const data =
+          modo === 'general'
+            ? await service.getGenerales()
+            : await service.getByEmpresa(idEmpresa!);
+
         setBeneficios(data);
       } finally {
         setLoading(false);
@@ -32,7 +42,7 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
     };
 
     fetchBeneficios();
-  }, [idEmpresa]);
+  }, [idEmpresa, modo]);
 
   return (
     <>
@@ -43,13 +53,18 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
             <button onClick={onClose} className={styles.backBtn}>
               Volver
             </button>
-            <h2 className={styles.titleBeneficios}>Beneficios</h2>
+
+            <h2 className={styles.titleBeneficios}>
+              {modo === 'general'
+                ? 'Beneficios generales'
+                : 'Beneficios'}
+            </h2>
           </header>
 
           {loading && <p>Cargando beneficios...</p>}
 
           {!loading && beneficios.length === 0 && (
-            <p>Esta empresa no tiene beneficios</p>
+            <p>No hay beneficios disponibles</p>
           )}
 
           {/* LISTA */}
@@ -61,13 +76,19 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
                 </div>
 
                 <div className={styles.mainInfo}>
-                  <div className={styles.discount}>{beneficio.titulo}</div>
-                  <div className={styles.subtitle}>{beneficio.tipo}</div>
+                  <div className={styles.discount}>
+                    {beneficio.titulo}
+                  </div>
+                  <div className={styles.subtitle}>
+                    {beneficio.tipo}
+                  </div>
                 </div>
 
-                <div className={styles.detail}>{beneficio.detalle}</div>
+                <div className={styles.detail}>
+                  {beneficio.detalle}
+                </div>
 
-                {/* PUNTOS (ESTÁTICOS) */}
+                {/* PUNTOS */}
                 <div className={styles.valor}>
                   <span>Puntos</span>
                   <strong>{beneficio.valor}</strong>
@@ -77,7 +98,9 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
                 <div className={styles.action}>
                   <button
                     className={styles.canjearBtn}
-                    onClick={() => setBeneficioSeleccionado(beneficio)}
+                    onClick={() =>
+                      setBeneficioSeleccionado(beneficio)
+                    }
                   >
                     Canjear
                   </button>
