@@ -3,11 +3,11 @@ import { DonationsController } from './donation.controller';
 import { DonationsService } from './donation.service';
 import { Donations } from '../../Entities/donations.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DonorModule } from '../donor/donor.module';
 import { Campaigns } from '../../Entities/campaigns.entity';
+import { Usuario } from '../../Entities/usuario.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Donations, Campaigns]), DonorModule],
+  imports: [TypeOrmModule.forFeature([Donations, Campaigns, Usuario])],
   controllers: [DonationsController],
   providers: [DonationsService],
   exports: [DonationsService],

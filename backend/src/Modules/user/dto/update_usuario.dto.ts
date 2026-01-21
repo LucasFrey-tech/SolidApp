@@ -1,6 +1,6 @@
 // update_usuario.dto.ts - VERSIÓN CORREGIDA
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEmail } from 'class-validator';
+import { IsOptional, IsString, IsEmail, IsInt, Min } from 'class-validator';
 
 export class UpdateUsuarioDto {
   @ApiPropertyOptional({ example: 'nuevo@email.com' })
@@ -72,4 +72,10 @@ export class UpdateUsuarioDto {
   @IsOptional()
   @IsString()
   rol?: string;
+
+  @ApiPropertyOptional({ example: 200 })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  puntos?: number;
 }

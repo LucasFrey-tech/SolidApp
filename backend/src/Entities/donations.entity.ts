@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
-import { Donor } from './donor.entity';
+import { Usuario } from './usuario.entity';
 
 @Entity('donaciones')
 export class Donations {
@@ -57,8 +57,7 @@ export class Donations {
   @JoinColumn({ name: 'id_campaña' })
   campaña: Campaigns;
 
-  @ApiProperty({ example: 1, description: 'Clave Foranea del Donador' })
-  @ManyToOne(() => Donor)
-  @JoinColumn({ name: 'id_donador' })
-  donador: Donor;
+  @ManyToOne(() => Usuario)
+  usuario: Usuario;
+
 }

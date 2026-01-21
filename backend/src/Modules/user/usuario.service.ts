@@ -147,5 +147,6 @@ export class UsuarioService {
     ciudad: usuario.ciudad,
     prefijo: usuario.prefijo,
     telefono: usuario.telefono,
+    puntos: usuario.puntos,
   });
 }

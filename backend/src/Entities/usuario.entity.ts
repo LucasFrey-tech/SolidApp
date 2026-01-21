@@ -3,11 +3,9 @@ import {
   Column,
   CreateDateColumn,
   PrimaryGeneratedColumn,
-  OneToOne,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Donor } from './donor.entity';
 
 @Entity('usuarios')
 export class Usuario {
@@ -135,11 +133,9 @@ export class Usuario {
   deshabilitado: boolean;
 
   @ApiProperty({
-    type: () => Donor,
-    required: false,
-    description:
-      'Información del Donador asociada al Usuario (opcional - No todo Usuario es Donador)',
+    example: 150,
+    description: 'Puntos acumulados del usuario',
   })
-  @OneToOne(() => Donor, (donor) => donor.usuario)
-  donor?: Donor;
+  @Column({ type: 'int', default: 0 })
+  puntos: number;
 }

@@ -9,7 +9,6 @@ import { AppConfig } from '../private/app.config.interface';
 import { UserModule } from './Modules/user/usuario.module';
 import { OrganizationModule } from './Modules/organization/organization.module';
 import { DonationModule } from './Modules/donation/donation.module';
-import { DonorModule } from './Modules/donor/donor.module';
 import { EmpresaModule } from './Modules/empresa/empresa.module';
 import { CampaignModule } from './Modules/campaign/campaign.module';
 import { BeneficioModule } from './Modules/benefit/beneficio.module';
@@ -53,7 +52,6 @@ import { SettingsService } from './common/settings/settings.service';
     UserModule,
     OrganizationModule,
     DonationModule,
-    DonorModule,
     EmpresaModule,
     CampaignModule,
     BeneficioModule,

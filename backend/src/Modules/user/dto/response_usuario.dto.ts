@@ -60,4 +60,7 @@ export class ResponseUsuarioDto {
     description: 'Fecha de registro',
   })
   fechaRegistro: Date;
+
+  @ApiProperty({ example: 150, description: 'Puntos del usuario' })
+  puntos: number;
 }
