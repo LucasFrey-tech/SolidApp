@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 //import Login from "@/components/Login/login";
-import Login from "@/components/testNewLogin/login";
+import Login from "@/components/pages/login/login";
 import Registro from "@/components/Registro/registro";
 
 import styles from "@/styles/login.module.css";

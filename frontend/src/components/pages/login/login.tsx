@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Image from "next/image";
-import styles from "../../styles/registro.module.css";
+import styles from "@/styles/registro.module.css";
 import { BaseApi } from "@/API/baseApi";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
