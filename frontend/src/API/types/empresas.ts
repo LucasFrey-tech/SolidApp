@@ -65,4 +65,5 @@ export interface EmpresaSummary {
 export interface EmpresaImagen {
   empresaId: number
   logo: string;
+  nombre: string;
 }

@@ -1,3 +1,4 @@
+import * as express from 'express';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
@@ -7,12 +8,19 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { Log } from './logger/logger';
 import { AppConfig } from '../private/app.config.interface';
+import { existsSync, mkdirSync } from 'fs';
+import { SettingsService } from './common/settings/settings.service';
 
 async function bootstrap() {
   /**
    * Logger principal (Winston)
    */
   const logger = Log.getLogger();
+
+  // Setup users image directory
+  if (!existsSync(SettingsService.getStaticResourcesPath())) {
+    mkdirSync(SettingsService.getStaticResourcesPath());
+  }
 
   /**
    * Creación de la app NestJS
@@ -22,6 +30,8 @@ async function bootstrap() {
       instance: logger,
     }),
   });
+
+  app.use(SettingsService.getStaticResourcesPrefix(), express.static(SettingsService.getStaticResourcesPath()));
 
   /**
    * Acceso a configuración tipada
@@ -43,7 +53,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
     }),
-  );
+  );  
+
 
   /**
    * Swagger

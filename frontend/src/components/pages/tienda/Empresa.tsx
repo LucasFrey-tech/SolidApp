@@ -7,12 +7,12 @@ import styles from '@/styles/empresaTienda.module.css';
 import { Empresa, EmpresaImagen } from '@/API/types/empresas';
 import { BaseApi } from '@/API/baseApi';
 import BeneficiosPanel from '@/components/pages/Beneficios';
+import { Images } from 'lucide-react';
 
 export default function Empresas() {
   const api = new BaseApi();
 
-  const [empresas, setEmpresas] = useState<Empresa[]>([]);
-  const [logos, setLogos] = useState<Record<number, string>>({});
+  const [empresasImagen, setEmpresasImagen] = useState<EmpresaImagen[]>([]);
   const [empresaActiva, setEmpresaActiva] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -22,37 +22,16 @@ export default function Empresas() {
    * Cargar empresas
    */
   useEffect(() => {
-    const fetchEmpresas = async () => {
-      try {
-        const data = await api.empresa.getAll();
-        setEmpresas(data);
-      } catch {
-        setError('No se pudieron cargar las empresas');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEmpresas();
-  }, []);
-
-  /**
-   * Cargar imágenes
-   */
-  useEffect(() => {
     const fetchLogos = async () => {
       try {
         const images: EmpresaImagen[] = await api.empresa.getImages();
-        const map = Object.fromEntries(
-          images.map((img) => [img.empresaId, img.logo]),
-        );
-        setLogos(map);
+        setEmpresasImagen(images);
       } catch (err) {
         console.error('Error cargando imágenes', err);
       }
     };
-
     fetchLogos();
+    setLoading(false);
   }, []);
 
   if (loading) return <p>Cargando empresas...</p>;
@@ -65,16 +44,16 @@ export default function Empresas() {
         <h2 className={styles.title}>Empresas</h2>
 
         <div className={styles.grid}>
-          {empresas.map((empresa) => (
+          {empresasImagen.map((empresa) => (
             <button
-              key={empresa.id}
+              key={empresa.empresaId}
               className={styles.card}
-              onClick={() => setEmpresaActiva(empresa.id)}
-              aria-label={empresa.razon_social}
+              onClick={() => setEmpresaActiva(empresa.empresaId)}
+              aria-label={empresa.nombre}
             >
               <Image
-                src={logos[empresa.id] ?? '/logos/default.svg'}
-                alt={empresa.razon_social}
+                src={empresa.logo ?? 'http://localhost:3001/resources/404.png'}
+                alt={empresa.nombre}
                 width={120}
                 height={50}
                 className={styles.image}
