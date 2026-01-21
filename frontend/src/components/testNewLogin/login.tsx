@@ -2,13 +2,15 @@ import { useState } from "react";
 import Image from "next/image";
 import styles from "../../styles/registro.module.css";
 import { BaseApi } from "@/API/baseApi";
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 
 // ==================== Estrategias =====================
 
 import { LoginUsuarioStrategy } from "@/API/class/login/usuario";
 import { LoginEmpresaStrategy } from "@/API/class/login/empresa";
 import { LoginOrganizacionStrategy } from "@/API/class/login/organizacion";
-import { useRouter } from "next/navigation";
 
 
 // ==================== TIPOS ====================
@@ -44,9 +46,17 @@ const validatePassword = (password: string): string => {
   return "";
 };
 
+interface DecodedToken {
+  email: string;
+  sub: number;
+  username: string;
+  admin: boolean;
+}
+
 // ==================== COMPONENTE ====================
 export default function Login() {
   const router = useRouter();
+  const { setUser, refreshUser } = useUser();
   const [step, setStep] = useState<Step>("select");
   const [api] = useState(() => new BaseApi());
   
@@ -167,23 +177,37 @@ export default function Login() {
         throw new Error("Error del servidor: No se recibió token");
       }
 
-      // Guardar datos en localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("user_email", loginData.correo);
 
-      // Mostrar mensaje de éxito
+      const decoded = jwtDecode<DecodedToken>(token);
+      console.log("Token decodificador: ", decoded);
+
+      setUser({
+        email: decoded.email || loginData.correo,
+        sub: decoded.sub,
+        username: decoded.username || loginData.correo.split('@')[0],
+        admin: decoded.admin || false
+      });
+
+      
+      refreshUser();
+      
+      window.dispatchEvent(new Event('custom-storage-change'));
+      
+      router.refresh();
+
       setErrors({ general: `¡Bienvenido! Redirigiendo...` });
 
-      // Redirigir después de un breve delay
       setTimeout(() => {
-        // router.push(`/dashboard/${step}`); El dashboard todavía no existe
-        router.push('/inicio')
+        router.replace('/inicio')
       }, 1500);
 
       alert(`¡Bienvenido! Has iniciado sesión como ${step}`);
 
     } catch (error) {
       console.error("Error en login:", error);
+      setErrors({ general: "Error al iniciar sesión. Verifica tus credenciales." });
       alert("Error al iniciar sesión. Verifica tus credenciales.");
     } finally {
       setIsLoading(false);

@@ -14,18 +14,21 @@ interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
   refreshUser: () => void;
+  loading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const refreshUser = () => {
     const token = localStorage.getItem('token');
 
     if (!token) {
       setUser(null);
+      setLoading(false);
       return;
     }
 
@@ -34,6 +37,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setUser(decoded);
     } catch {
       setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,7 +47,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, refreshUser }}>
+    <UserContext.Provider value={{ user, setUser, refreshUser, loading }}>
       {children}
     </UserContext.Provider>
   );

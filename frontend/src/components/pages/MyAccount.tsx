@@ -3,13 +3,26 @@
 import styles from "@/styles/myAccountMenu.module.css";
 import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
+import { useRouter } from "next/navigation";
 
 type MyAccountProps = {
   readonly onChangeSection: (section: 'data' | 'user&pass' | 'cupons') => void;
 };
 
 export default function MyAccount({ onChangeSection }: MyAccountProps) {
-  const { user } = useUser();
+  const { user, setUser, loading } = useUser();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user_email');
+
+    setUser(null);
+    
+    router.push('/inicio');
+
+    router.refresh();
+  };
 
   return (
     <section className={styles.AccountMenu}>
@@ -19,7 +32,7 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
         {/* PERFIL */}
         <div className={styles.User}>
           <Image
-            src="/logos/user_logo.svg"
+            src="/img/perfil.svg"
             alt="Usuario"
             width={48}
             height={48}
@@ -27,7 +40,9 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
 
           <div>
             <p className={styles.UserName}>
-              {user ? user.username || user.email.split("@")[0] : "Cargando..."}
+              {loading ? "Cargando..." : 
+               user ? user.username || user.email?.split("@")[0] || "Usuario" : 
+               "Invitado"}
             </p>
 
             <p className={styles.Email}>
@@ -42,7 +57,9 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
             <li><button onClick={() => onChangeSection('cupons')}>Mis Cupones</button></li>
             <li><button onClick={() => onChangeSection('data')}>Mis Datos</button></li>
             <li><button onClick={() => onChangeSection('user&pass')}>Usuario y Contraseña</button></li>
-            <li className={styles.Logout}><button>Cerrar Sesión</button></li>
+            <li className={styles.Logout}>
+              <button onClick={handleLogout}>Cerrar Sesión</button>
+            </li>
           </ul>
         </nav>
       </main>
