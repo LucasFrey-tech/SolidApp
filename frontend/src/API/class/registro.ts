@@ -10,24 +10,15 @@ export class RegisterService {
   }
 
   async registerUser(data: RegisterUsuarioRequest): Promise<AuthResponse> {
-    return this.post("/auth/register/usuario", {
-      ...data,
-      tipo: "usuario"
-    });
+    return this.post("/auth/register/usuario", data );
   }
 
   async registerEmpresa(data: RegisterEmpresaRequest): Promise<AuthResponse> {
-    return this.post("/auth/register/empresa", {
-      ...data,
-      tipo: "empresa"
-    });
+    return this.post("/auth/register/empresa", data );
   }
 
   async registerOrganizacion(data: RegisterOrganizacionRequest): Promise<AuthResponse> {
-    return this.post("/auth/register/organizacion", {
-      ...data,
-      tipo: "organizacion"
-    });
+    return this.post("/auth/register/organizacion", data );
   }
 
   private async post<T>(path: string, data: unknown): Promise<T> {
