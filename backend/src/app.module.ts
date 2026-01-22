@@ -14,6 +14,7 @@ import { CampaignModule } from './Modules/campaign/campaign.module';
 import { BeneficioModule } from './Modules/benefit/beneficio.module';
 import { AuthModule } from './Modules/auth/auth.module';
 import { SettingsService } from './common/settings/settings.service';
+import { RankingModule } from './Modules/ranking/ranking.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { SettingsService } from './common/settings/settings.service';
     CampaignModule,
     BeneficioModule,
     AuthModule,
+    RankingModule,
   ],
   providers: [SettingsService],
 })
