@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNumber, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class LoginRequestBody {
   /**
@@ -30,15 +30,11 @@ export class LoginRequestBody {
 
 export class RegisterUsuarioDto {
   @ApiProperty({
-    example: 12,
-    description: 'Identificador único del usuario',
-  })
-  id: number;
-
-  @ApiProperty({
     example: '12345678',
     description: 'Documento del Usuario',
   })
+  @IsString()
+  @MinLength(8)
   documento: string;
 
   @ApiProperty({ description: 'Email del usuario' })
