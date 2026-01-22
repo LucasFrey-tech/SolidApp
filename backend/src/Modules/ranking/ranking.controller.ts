@@ -5,8 +5,6 @@ import { RankingService } from './ranking.service';
 import { RankingDTO } from './dto/ranking.dto';
 
 @ApiTags('Ranking')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('ranking')
 export class RankingController {
     constructor(private readonly rankingService: RankingService) {}
