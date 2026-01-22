@@ -10,6 +10,7 @@ type FormData = {
   titulo: string;
   descripcion: string;
   objetivo: number;
+  puntosCampaña: number;
 };
 
 export function CampaignForm({
@@ -21,8 +22,17 @@ export function CampaignForm({
   onClose: () => void;
   onSuccess: (data: FormData) => void;
 }) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    defaultValues: campaign || { titulo: "", descripcion: "", objetivo: 0 },
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: campaign || {
+      titulo: "",
+      descripcion: "",
+      objetivo: 0,
+      puntosCampaña: 0,
+    },
   });
 
   const submit = (data: FormData) => {
@@ -34,10 +44,10 @@ export function CampaignForm({
     <form className={styles.form} onSubmit={handleSubmit(submit)}>
       <div className={styles.field}>
         <label>Título</label>
-        <Input
-          {...register("titulo", { required: "Obligatorio" })}
-        />
-        {errors.titulo && <span className={styles.error}>{errors.titulo.message}</span>}
+        <Input {...register("titulo", { required: "Obligatorio" })} />
+        {errors.titulo && (
+          <span className={styles.error}>{errors.titulo.message}</span>
+        )}
       </div>
 
       <div className={styles.field}>
@@ -46,26 +56,52 @@ export function CampaignForm({
           rows={3}
           {...register("descripcion", { required: "Obligatorio" })}
         />
-        {errors.descripcion && <span className={styles.error}>{errors.descripcion.message}</span>}
+        {errors.descripcion && (
+          <span className={styles.error}>
+            {errors.descripcion.message}
+          </span>
+        )}
       </div>
 
       <div className={styles.field}>
         <label>Objetivo</label>
         <Input
           type="number"
-          inputMode="numeric"
           {...register("objetivo", {
             required: "Obligatorio",
             valueAsNumber: true,
             min: { value: 1, message: "Debe ser mayor a 0" },
           })}
         />
-        {errors.objetivo && <span className={styles.error}>{errors.objetivo.message}</span>}
+        {errors.objetivo && (
+          <span className={styles.error}>{errors.objetivo.message}</span>
+        )}
+      </div>
+
+      <div className={styles.field}>
+        <label>Puntos de la campaña (c/u item)</label>
+        <Input
+          type="number"
+          {...register("puntosCampaña", {
+            required: "Obligatorio",
+            valueAsNumber: true,
+            min: { value: 0, message: "No puede ser negativo" },
+          })}
+        />
+        {errors.puntosCampaña && (
+          <span className={styles.error}>
+            {errors.puntosCampaña.message}
+          </span>
+        )}
       </div>
 
       <div className={styles.actions}>
-        <Button variant="outline" type="button" onClick={onClose}>Cancelar</Button>
-        <Button type="submit">{campaign ? "Guardar cambios" : "Agregar"}</Button>
+        <Button variant="outline" type="button" onClick={onClose}>
+          Cancelar
+        </Button>
+        <Button type="submit">
+          {campaign ? "Guardar cambios" : "Agregar"}
+        </Button>
       </div>
     </form>
   );
