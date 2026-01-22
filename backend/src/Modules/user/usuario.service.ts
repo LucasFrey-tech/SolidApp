@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,6 +12,8 @@ import { Usuario } from '../../Entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create_usuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 import { ResponseUsuarioDto } from './dto/response_usuario.dto';
+import { UpdateCredentialsDto } from './dto/panelUsuario.dto';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsuarioService {
@@ -125,6 +128,57 @@ export class UsuarioService {
     await this.usuarioRepository.save(usuario);
 
     this.logger.log(`Usuario ${id} restaurado`);
+  }
+
+  async updateCredentials(id: number, dto: UpdateCredentialsDto) {
+    const usuario = await this.usuarioRepository.findOne({ where: { id } });
+
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    let cambiosRealizados = false;
+
+    if (dto.correo && dto.correo !== usuario.correo) {
+      const usuarioExistente = await this.usuarioRepository.findOne({
+        where: { correo: dto.correo },
+      });
+
+      if (usuarioExistente && usuarioExistente.id !== id) {
+        throw new ConflictException('El email ya está en uso por otro usuario');
+      }
+
+      usuario.correo = dto.correo;
+      cambiosRealizados = true;
+    }
+
+    if (dto.passwordNueva) {
+      if (!dto.passwordActual) {
+        throw new UnauthorizedException(
+          'Para cambiar la contraseña debés ingresar la contraseña actual',
+        );
+      }
+
+      const passwordValida = await bcrypt.compare(
+        dto.passwordActual,
+        usuario.clave,
+      );
+
+      if (!passwordValida) {
+        throw new UnauthorizedException('Contraseña actual incorrecta');
+      }
+
+      const hash = await bcrypt.hash(dto.passwordNueva, 10);
+      usuario.clave = hash;
+      cambiosRealizados = true;
+    }
+
+    if (cambiosRealizados) {
+      usuario.ultimo_cambio = new Date();
+      await this.usuarioRepository.save(usuario);
+    }
+
+    return this.mapToResponseDto(usuario);
   }
 
   private readonly mapToResponseDto = (

@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,6 +12,8 @@ import { Organizations } from '../../Entities/organizations.entity';
 import { CreateOrganizationDto } from './dto/create_organization.dto';
 import { UpdateOrganizationDto } from './dto/update_organization.dto';
 import { ResponseOrganizationDto } from './dto/response_organization.dto';
+import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class OrganizationsService {
@@ -133,6 +136,35 @@ export class OrganizationsService {
     this.logger.log(`Organización ${id} restaurada`);
   }
 
+  async updateCredentials(id: number, dto: UpdateCredentialsDto) {
+    const organizacion = await this.organizationRepository.findOne({
+      where: { id },
+    });
+
+    if (!organizacion) {
+      throw new NotFoundException('Organización no encontrada');
+    }
+
+    const passwordValida = await bcrypt.compare(
+      dto.passwordActual,
+      organizacion.clave,
+    );
+
+    if (!passwordValida) {
+      throw new UnauthorizedException('Contraseña actual incorrecta');
+    }
+
+    if (dto.correo) {
+      organizacion.correo = dto.correo;
+    }
+
+    if (dto.passwordNueva) {
+      organizacion.clave = await bcrypt.hash(dto.passwordNueva, 10);
+    }
+
+    return this.organizationRepository.save(organizacion);
+  }
+
   private readonly mapToResponseDto = (
     organization: Organizations,
   ): ResponseOrganizationDto => ({
@@ -146,5 +178,6 @@ export class OrganizationsService {
     verificada: organization.verificada,
     deshabilitado: organization.deshabilitado,
     fechaRegistro: organization.fecha_registro,
+    correo: organization.correo,
   });
 }

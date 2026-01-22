@@ -14,6 +14,12 @@ export class ResponseOrganizationDto {
   nroDocumento: string;
 
   @ApiProperty({
+    example: 'organizacion@ejemplo.com',
+    description: 'Correo electrónico de la organización',
+  })
+  correo: string;
+
+  @ApiProperty({
     example: 'Fundación Ayudar',
     description: 'Razón social de la organización',
   })

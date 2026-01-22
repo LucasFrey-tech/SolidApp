@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -14,6 +15,8 @@ import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
 import { Empresa_imagenes } from '../../Entities/empresa_imagenes.entity';
 import { SettingsService } from '../../common/settings/settings.service';
+import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class EmpresasService {
@@ -42,7 +45,10 @@ export class EmpresasService {
     this.logger.log(`Se obtuvieron ${empresas.length} Empresas`);
     let res = empresas.map(this.mapToResponseDto);
     // res.forEach((empresa) => empresa.imagen = imagen[0].logo);
-    res.forEach((empresa) => empresa.imagen = SettingsService.getStaticResourceUrl('servo.png'));
+    res.forEach(
+      (empresa) =>
+        (empresa.imagen = SettingsService.getStaticResourceUrl('servo.png')),
+    );
     return res;
   }
 
@@ -187,8 +193,37 @@ export class EmpresasService {
     this.logger.log(`Empresa ${id} restaurada`);
   }
 
+  async updateCredentials(id: number, dto: UpdateCredentialsDto) {
+    const empresa = await this.empresasRepository.findOne({
+      where: { id },
+    });
+
+    if (!empresa) {
+      throw new NotFoundException('Empresa no encontrada');
+    }
+
+    const passwordValida = await bcrypt.compare(
+      dto.passwordActual,
+      empresa.clave,
+    );
+
+    if (!passwordValida) {
+      throw new UnauthorizedException('Contraseña actual incorrecta');
+    }
+
+    if (dto.correo) {
+      empresa.correo = dto.correo;
+    }
+
+    if (dto.passwordNueva) {
+      empresa.clave = await bcrypt.hash(dto.passwordNueva, 10);
+    }
+
+    return this.empresasRepository.save(empresa);
+  }
+
   private readonly mapToResponseDto = (
-    empresa: Empresa
+    empresa: Empresa,
   ): EmpresaResponseDTO => {
     return {
       id: empresa.id,
@@ -204,7 +239,8 @@ export class EmpresasService {
       deshabilitado: empresa.deshabilitado,
       fecha_registro: empresa.fecha_registro,
       ultimo_cambio: empresa.ultimo_cambio,
-      imagen: ""
+      imagen: '',
+      correo: empresa.correo,
     };
   };
 }

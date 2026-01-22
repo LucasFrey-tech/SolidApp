@@ -8,6 +8,12 @@ export class EmpresaResponseDTO {
   nroDocumento: string;
 
   @ApiProperty({
+    example: 'empresa@ejemplo.com',
+    description: 'Correo electrónico de la empresa',
+  })
+  correo: string;
+
+  @ApiProperty({
     example: 'Supermercados Unidos S.A.',
     description: 'Razón social',
   })

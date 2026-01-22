@@ -14,6 +14,7 @@ import { OrganizationsService } from './organization.service';
 import { CreateOrganizationDto } from './dto/create_organization.dto';
 import { UpdateOrganizationDto } from './dto/update_organization.dto';
 import { ResponseOrganizationDto } from './dto/response_organization.dto';
+import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 
 @ApiTags('Organizaciones')
 @Controller('organizations')
@@ -71,9 +72,20 @@ export class OrganizationsController {
     return this.organizationService.delete(id);
   }
 
-  @Patch(':id/restore')
+  @Patch(':id/restaurar')
   @ApiOperation({ summary: 'Restaurar una organización' })
   restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.organizationService.restore(id);
+  }
+
+  @Patch(':id/credenciales')
+  @ApiOperation({
+    summary: 'Actualizar correo y/o contraseña de la organización',
+  })
+  updateCredentials(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateCredentialsDto,
+  ) {
+    return this.organizationService.updateCredentials(id, dto);
   }
 }

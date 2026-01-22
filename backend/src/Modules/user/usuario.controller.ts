@@ -17,6 +17,7 @@ import { CreateUsuarioDto } from './dto/create_usuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 import { ResponseUsuarioDto } from './dto/response_usuario.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateCredentialsDto } from './dto/panelUsuario.dto';
 /*import {
   ImageValidationPipe,
   NullableImageValidationPipe,
@@ -80,9 +81,20 @@ export class UsuarioController {
     return this.userService.delete(id);
   }
 
-  @Patch(':id/restore')
+  @Patch(':id/restaurar')
   @ApiOperation({ summary: 'Restaurar un usuario' })
   restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.userService.restore(id);
+  }
+
+  @Patch(':id/credentials')
+  @ApiOperation({
+    summary: 'Actualizar correo y/o contraseña del usuario',
+  })
+  updateCredentials(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateCredentialsDto,
+  ) {
+    return this.userService.updateCredentials(id, dto);
   }
 }

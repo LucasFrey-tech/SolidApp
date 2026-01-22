@@ -24,11 +24,12 @@ import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
+import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: EmpresasService) { }
+  constructor(private readonly empresasService: EmpresasService) {}
 
   /**
    * Obtener todas las empresas activas
@@ -159,7 +160,7 @@ export class EmpresaController {
   /**
    * Restaurar una empresa deshabilitada
    */
-  @Patch(':id/restore')
+  @Patch(':id/restaurar')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Restaurar una empresa deshabilitada' })
   @ApiParam({
@@ -181,5 +182,16 @@ export class EmpresaController {
   })
   async restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.empresasService.restore(id);
+  }
+
+  @Patch(':id/credenciales')
+  @ApiOperation({
+    summary: 'Actualizar correo y/o contraseña de la empresa',
+  })
+  updateCredentials(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateCredentialsDto,
+  ) {
+    return this.empresasService.updateCredentials(id, dto);
   }
 }

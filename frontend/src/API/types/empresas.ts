@@ -6,6 +6,7 @@ export interface Empresa {
   nroDocumento: string;
   razon_social: string;
   nombre_fantasia: string;
+  correo: string;
   descripcion: string;
   rubro: string;
   telefono: string;
@@ -24,6 +25,7 @@ export interface EmpresaCreateRequest {
   nroDocumento: string;
   razon_social: string;
   nombre_fantasia?: string;
+  correo: string;
   descripcion: string;
   rubro: string;
   telefono: string;

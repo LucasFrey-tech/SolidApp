@@ -6,16 +6,17 @@ import {
   OrganizacionSummary,
   OrganizacionImagen,
 } from '../types/organizaciones';
+import { UpdateCredentialsPayload } from '../types/panelUsuario/updateCredenciales';
 
 export class OrganizacionesService extends Crud<Organizacion> {
-  protected endpoint = '/organizations';
+  protected endPoint = '/organizations';
 
   constructor(token?: string) {
     super(token);
   }
 
   async getAll(): Promise<Organizacion[]> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
       headers: this.getHeaders(),
     });
 
@@ -31,7 +32,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     limit = 10,
   ): Promise<PaginatedResponse<Organizacion>> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}?page=${page}&limit=${limit}`,
+      `${this.baseUrl}${this.endPoint}?page=${page}&limit=${limit}`,
       {
         headers: this.getHeaders(),
       },
@@ -45,7 +46,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async getOne(id: number): Promise<Organizacion> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
       headers: this.getHeaders(),
     });
 
@@ -57,7 +58,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async create(data: OrganizacionCreateRequest): Promise<Organizacion> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify(data),
@@ -70,11 +71,8 @@ export class OrganizacionesService extends Crud<Organizacion> {
     return res.json();
   }
 
-  async update(
-    id: number,
-    data: OrganizacionUpdateRequest,
-  ): Promise<Organizacion> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/${id}`, {
+  async update(id: number, data: OrganizacionUpdateRequest): Promise<Organizacion> {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
       method: 'PUT',
       headers: this.getHeaders(),
       body: JSON.stringify(data),
@@ -87,8 +85,26 @@ export class OrganizacionesService extends Crud<Organizacion> {
     return res.json();
   }
 
+  async updateCredentials(id: number, data: UpdateCredentialsPayload): Promise<Organizacion> {
+      const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/credentials`, {
+          method: "PATCH",
+          headers: this.getHeaders(),
+          body: JSON.stringify(data),
+        },
+      );
+  
+      if (!res.ok) {
+        const errorDetails = await res.text();
+        throw new Error(
+          `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
+        );
+      }
+  
+      return res.json();
+    }
+
   async delete(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
       method: 'DELETE',
       headers: this.getHeaders(),
     });
@@ -99,7 +115,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async restore(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/${id}/restore`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/restore`, {
       method: 'PATCH',
       headers: this.getHeaders(),
     });
@@ -110,7 +126,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async getImages(): Promise<OrganizacionImagen[]> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/imagenes`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/imagenes`, {
       headers: this.getHeaders(),
     });
 
@@ -122,7 +138,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async getSummaries(): Promise<OrganizacionSummary[]> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/summary`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/summary`, {
       headers: this.getHeaders(),
     });
 
@@ -135,7 +151,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
 
   async getCampaigns(organizacionId: number): Promise<any[]> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}/${organizacionId}/campaigns`,
+      `${this.baseUrl}${this.endPoint}/${organizacionId}/campaigns`,
       {
         headers: this.getHeaders(),
       },

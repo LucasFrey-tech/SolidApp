@@ -6,16 +6,17 @@ import {
   EmpresaSummary,
   EmpresaImagen,
 } from '../types/empresas';
+import { UpdateCredentialsPayload } from '../types/panelUsuario/updateCredenciales';
 
 export class EmpresasService extends Crud<Empresa> {
-  protected endpoint = '/empresas';
+  protected endPoint = '/empresas';
 
   constructor(token?: string) {
     super(token);
   }
 
   async getAll(): Promise<Empresa[]> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
       headers: this.getHeaders(),
     });
 
@@ -31,7 +32,7 @@ export class EmpresasService extends Crud<Empresa> {
     limit = 10,
   ): Promise<PaginatedResponse<Empresa>> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}?page=${page}&limit=${limit}`,
+      `${this.baseUrl}${this.endPoint}?page=${page}&limit=${limit}`,
       {
         headers: this.getHeaders(),
       },
@@ -46,7 +47,7 @@ export class EmpresasService extends Crud<Empresa> {
 
   async getImages(): Promise<EmpresaImagen[]> {
     const resQuery = await fetch(
-      `${this.baseUrl}${this.endpoint}/imagenes`,
+      `${this.baseUrl}${this.endPoint}/imagenes`,
       {
         headers: this.getHeaders(),
       },
@@ -62,7 +63,7 @@ export class EmpresasService extends Crud<Empresa> {
 
   async getOne(id: number): Promise<Empresa> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}/${id}`,
+      `${this.baseUrl}${this.endPoint}/${id}`,
       {
         headers: this.getHeaders(),
       },
@@ -78,7 +79,7 @@ export class EmpresasService extends Crud<Empresa> {
   async create(
     data: EmpresaCreateRequest,
   ): Promise<Empresa> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify(data),
@@ -96,7 +97,7 @@ export class EmpresasService extends Crud<Empresa> {
     data: EmpresaUpdateRequest,
   ): Promise<Empresa> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}/${id}`,
+      `${this.baseUrl}${this.endPoint}/${id}`,
       {
         method: 'PUT',
         headers: this.getHeaders(),
@@ -111,9 +112,27 @@ export class EmpresasService extends Crud<Empresa> {
     return res.json();
   }
 
+  async updateCredentials(id: number, data: UpdateCredentialsPayload): Promise<Empresa> {
+      const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/credentials`, {
+          method: "PATCH",
+          headers: this.getHeaders(),
+          body: JSON.stringify(data),
+        },
+      );
+  
+      if (!res.ok) {
+        const errorDetails = await res.text();
+        throw new Error(
+          `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
+        );
+      }
+  
+      return res.json();
+    }
+
   async delete(id: number): Promise<void> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}/${id}`,
+      `${this.baseUrl}${this.endPoint}/${id}`,
       {
         method: 'DELETE',
         headers: this.getHeaders(),
@@ -130,7 +149,7 @@ export class EmpresasService extends Crud<Empresa> {
    */
   async restore(id: number): Promise<void> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}/${id}/restore`,
+      `${this.baseUrl}${this.endPoint}/${id}/restore`,
       {
         method: 'PATCH',
         headers: this.getHeaders(),
@@ -148,7 +167,7 @@ export class EmpresasService extends Crud<Empresa> {
    */
   async getSummaries(): Promise<EmpresaSummary[]> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}/summary`,
+      `${this.baseUrl}${this.endPoint}/summary`,
       {
         headers: this.getHeaders(),
       },

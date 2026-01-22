@@ -1,11 +1,177 @@
-'use client';
+"use client";
 
-import styles from '@/styles/user&pass.module.css';
+import styles from "@/styles/user&pass.module.css";
+import { useEffect, useState, useMemo } from "react";
+import { BaseApi } from "@/API/baseApi";
+
+type UserType = "usuario" | "empresa" | "organizacion";
+
+type AuthData = {
+  userId: number;
+  userType: UserType;
+};
+
+type UpdateCredentialsPayload = {
+  correo?: string;
+  passwordActual: string;
+  passwordNueva?: string;
+};
 
 export default function UserAndPass() {
+  const [authData, setAuthData] = useState<AuthData | null>(null);
+  const [correo, setCorreo] = useState("");
+  const [correoOriginal, setCorreoOriginal] = useState("");
+  const [passwordActual, setPasswordActual] = useState("");
+  const [passwordNueva, setPasswordNueva] = useState("");
+  const [passwordConfirmacion, setPasswordConfirmacion] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const api = useMemo(() => {
+    const token = localStorage.getItem("token");
+    return new BaseApi(token || undefined);
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const payload = JSON.parse(atob(token.split(".")[1]));
+
+    setAuthData({
+      userId: payload.sub,
+      userType: payload.userType as UserType,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!authData) return;
+
+    const fetchCorreo = async () => {
+      try {
+        let response;
+
+        switch (authData.userType) {
+          case "usuario":
+            response = await api.users.getOne(authData.userId);
+            break;
+          case "empresa":
+            response = await api.empresa.getOne(authData.userId);
+            break;
+          case "organizacion":
+            response = await api.organizacion.getOne(authData.userId);
+            break;
+          default:
+            return;
+        }
+
+        setCorreo(response.correo);
+        setCorreoOriginal(response.correo);
+      } catch {
+        setError("No se pudo cargar el correo actual");
+      }
+    };
+
+    fetchCorreo();
+  }, [authData]);
+
+  if (!authData) {
+    return <p>Cargando...</p>;
+  }
+
+  const validateForm = () => {
+    if (!passwordActual) return "Debés ingresar tu contraseña actual";
+    if (passwordNueva && passwordNueva !== passwordConfirmacion)
+      return "Las contraseñas nuevas no coinciden";
+    return null;
+  };
+
+  const updateCredentials = (payload: UpdateCredentialsPayload) => {
+    switch (authData.userType) {
+      case "usuario":
+        return api.users.updateCredentials(authData.userId, payload);
+      case "empresa":
+        return api.empresa.updateCredentials(authData.userId, payload);
+      case "organizacion":
+        return api.organizacion.updateCredentials(authData.userId, payload);
+      default:
+        throw new Error("Tipo de usuario inválido");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    // Crear payload vacío
+    const payload: any = {};
+
+    // 1. EMAIL: Siempre enviar si es diferente
+    if (correo.trim() !== correoOriginal.trim()) {
+      payload.correo = correo.trim();
+    }
+
+    // 2. CONTRASEÑA NUEVA: Solo si se ingresa
+    if (passwordNueva) {
+      // Validar que las contraseñas coincidan
+      if (passwordNueva !== passwordConfirmacion) {
+        setError("Las contraseñas nuevas no coinciden");
+        return;
+      }
+
+      // Si hay nueva contraseña, REQUIERE passwordActual
+      if (!passwordActual) {
+        setError(
+          "Para cambiar la contraseña debés ingresar la contraseña actual",
+        );
+        return;
+      }
+
+      payload.passwordActual = passwordActual;
+      payload.passwordNueva = passwordNueva;
+    }
+
+    // 4. Verificar que haya algo para cambiar
+    if (Object.keys(payload).length === 0) {
+      setError("No hay cambios para guardar");
+      return;
+    }
+
+    try {
+      switch (authData!.userType) {
+        case "usuario":
+          await api.users.updateCredentials(authData!.userId, payload);
+          break;
+        case "empresa":
+          await api.empresa.updateCredentials(authData!.userId, payload);
+          break;
+        case "organizacion":
+          await api.organizacion.updateCredentials(authData!.userId, payload);
+          break;
+        default:
+          throw new Error("Tipo de usuario inválido");
+      }
+
+      setSuccess("Credenciales actualizadas correctamente");
+
+      // Actualizar correoOriginal si cambió el email
+      if (payload.correo) {
+        setCorreoOriginal(payload.correo);
+      }
+
+      // Limpiar campos
+      setPasswordActual("");
+      setPasswordNueva("");
+      setPasswordConfirmacion("");
+    } catch (err: any) {
+      setError(err.message || "Error al actualizar credenciales");
+    }
+  };
+
   return (
     <main className={styles.Container}>
-      <form className={styles.Form}>
+      <form className={styles.Form} onSubmit={handleSubmit}>
         <h1 className={styles.Title}>Usuario y Contraseña</h1>
 
         {/* EMAIL */}
@@ -17,6 +183,8 @@ export default function UserAndPass() {
             type="email"
             className={styles.Input}
             placeholder="tu@email.com"
+            value={correo}
+            onChange={(e) => setCorreo(e.target.value)}
           />
         </section>
 
@@ -29,6 +197,8 @@ export default function UserAndPass() {
             type="password"
             className={styles.Input}
             placeholder="••••••••"
+            value={passwordActual}
+            onChange={(e) => setPasswordActual(e.target.value)}
           />
 
           <label className={styles.Label}>Nueva contraseña</label>
@@ -36,6 +206,8 @@ export default function UserAndPass() {
             type="password"
             className={styles.Input}
             placeholder="••••••••"
+            value={passwordNueva}
+            onChange={(e) => setPasswordNueva(e.target.value)}
           />
 
           <label className={styles.Label}>Repetir nueva contraseña</label>
@@ -43,6 +215,8 @@ export default function UserAndPass() {
             type="password"
             className={styles.Input}
             placeholder="••••••••"
+            value={passwordConfirmacion}
+            onChange={(e) => setPasswordConfirmacion(e.target.value)}
           />
         </section>
 
