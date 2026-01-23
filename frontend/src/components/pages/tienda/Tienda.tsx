@@ -22,7 +22,6 @@ export default function Tienda() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 👇 NUEVO: beneficio seleccionado para canje
   const [beneficioSeleccionado, setBeneficioSeleccionado] =
     useState<Beneficio | null>(null);
 
@@ -124,7 +123,6 @@ export default function Tienda() {
                     <span>{beneficio.cantidad}</span>
                   </p>
 
-                  {/* 👇 CLICK PARA CANJEAR */}
                   <button
                     className={styles.button}
                     onClick={() =>
