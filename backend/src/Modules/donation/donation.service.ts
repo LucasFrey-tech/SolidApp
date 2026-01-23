@@ -6,6 +6,7 @@ import { Campaigns } from '../../Entities/campaigns.entity';
 import { Usuario } from '../../Entities/usuario.entity';
 import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
+import { RankingService } from '../ranking/ranking.service';
 
 @Injectable()
 export class DonationsService {
@@ -20,7 +21,9 @@ export class DonationsService {
 
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
-  ) {}
+
+    private readonly rankingService: RankingService,
+) {}
 
   /**
    * Obtener todas las Donaciones
@@ -85,6 +88,8 @@ export class DonationsService {
     // 👉 Sumar puntos (ejemplo simple)
     usuario.puntos += createDto.cantidad;
     await this.usuarioRepository.save(usuario);
+
+    await this.rankingService.sumarPuntos(usuario.id, createDto.cantidad);
 
     this.logger.log(
       `Donación ${savedDonation.id} creada | Usuario ${usuario.id} +${createDto.cantidad} puntos`,
