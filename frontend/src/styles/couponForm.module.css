@@ -1,0 +1,167 @@
+/* ===============================
+   ANIMATIONS
+================================ */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ===============================
+   PANEL (FORM)
+================================ */
+.panel {
+  background-color: #111;
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+
+  animation: modalFadeIn 0.25s ease-out;
+}
+
+/* ===============================
+   TITLE
+================================ */
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #e5e7eb;
+  text-align: center;
+}
+
+/* ===============================
+   FORM
+================================ */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===============================
+   FIELD
+================================ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===============================
+   LABELS
+================================ */
+.field label {
+  font-size: 18px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* ===============================
+   INPUTS
+================================ */
+.field input,
+.field textarea {
+  background: #1b1b1b !important;
+  border: 1px solid #2e2e2e;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e5e7eb !important;
+  font-size: 14px;
+}
+
+.field textarea {
+  resize: none;
+  min-height: 90px;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #94a3b8;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #4f8cff;
+  box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.2);
+}
+
+/* ===============================
+   ACTIONS (BOTONES)
+================================ */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.actions button {
+  min-width: 120px;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.actions button:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+/* BOTÓN CANCELAR */
+.actions button[type="button"] {
+  background-color: #000;
+  color: #fff;
+  border: 1px solid #333;
+}
+
+/* BOTÓN GUARDAR */
+.actions button[type="submit"] {
+  background-color: #000000;
+  color: #fff;
+  border: none;
+}
+
+.actions button[type="submit"]:hover {
+  background-color: #4338ca;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+@media (max-width: 768px) {
+  .panel {
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .field label {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: 16px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}
