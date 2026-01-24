@@ -5,29 +5,25 @@ import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
 
-export type AccountSection =
+type AccountSection =
   | 'data'
-  | 'credentials'
+  | 'user&pass'
   | 'cupons'
   | 'donations';
 
 type MyAccountProps = {
-  readonly activeSection: AccountSection;
   readonly onChangeSection: (section: AccountSection) => void;
 };
 
-export default function MyAccount({
-  activeSection,
-  onChangeSection,
-}: MyAccountProps) {
+export default function MyAccount({ onChangeSection }: MyAccountProps) {
   const { user, setUser, loading } = useUser();
   const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user_email');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_email");
     setUser(null);
-    router.push('/inicio');
+    router.push("/inicio");
     router.refresh();
   };
 
@@ -50,7 +46,7 @@ export default function MyAccount({
               {loading
                 ? "Cargando..."
                 : user
-                ? user.username || user.email?.split("@")[0]
+                ? user.username || user.email?.split("@")[0] || "Usuario"
                 : "Invitado"}
             </p>
 
@@ -62,44 +58,32 @@ export default function MyAccount({
         <nav className={styles.Menu}>
           <ul className={styles.List}>
             <li>
-              <button
-                className={activeSection === 'cupons' ? styles.Active : ''}
-                onClick={() => onChangeSection('cupons')}
-              >
+              <button onClick={() => onChangeSection("cupons")}>
                 Mis Cupones
               </button>
             </li>
 
             <li>
-              <button
-                className={activeSection === 'data' ? styles.Active : ''}
-                onClick={() => onChangeSection('data')}
-              >
+              <button onClick={() => onChangeSection("data")}>
                 Mis Datos
               </button>
             </li>
 
             <li>
-              <button
-                className={activeSection === 'credentials' ? styles.Active : ''}
-                onClick={() => onChangeSection('credentials')}
-              >
+              <button onClick={() => onChangeSection("user&pass")}>
                 Usuario y Contraseña
               </button>
             </li>
 
             <li>
-              <button
-                className={activeSection === 'donations' ? styles.Active : ''}
-                onClick={() => onChangeSection('donations')}
-              >
+              <button onClick={() => onChangeSection("donations")}>
                 Historial de Donaciones
               </button>
             </li>
 
             <li className={styles.Logout}>
               <button onClick={handleLogout}>
-                Cerrar sesión
+                Cerrar Sesión
               </button>
             </li>
           </ul>

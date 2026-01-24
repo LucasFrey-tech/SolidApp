@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useEffect, useState } from "react";
 import styles from "@/styles/userPanel.module.css";
@@ -10,12 +10,7 @@ import EmpresaData from "@/components/pages/data/empresaData";
 import OrganizacionData from "@/components/pages/data/organizacionData";
 import HistorialDonacionUsuario from "@/components/pages/historialDonacionUsuario";
 
-type Section =
-  | 'data'
-  | 'user&pass'
-  | 'cupons'
-  | 'donations'
-  | 'credentials';
+type Section = 'data' | 'user&pass' | 'cupons' | 'donations';
 
 export default function Panel() {
   const [activeSection, setActiveSection] = useState<Section>('data');
@@ -23,40 +18,28 @@ export default function Panel() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getUserType = () => {
-      const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        setUserType(payload.userType || 'usuario');
-      } catch (error) {
-        console.error("Error al decodificar token:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getUserType();
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      setUserType(payload.userType || 'usuario');
+    } catch (error) {
+      console.error("Error al decodificar token:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const renderDataSection = () => {
     if (loading) {
-      return (
-        <div className={styles.spinnerContainer}>
-          <div className={styles.spinner}></div>
-          <p>Cargando datos del usuario...</p>
-        </div>
-      );
+      return <p>Cargando datos...</p>;
     }
 
     switch (userType) {
-      case 'usuario':
-        return <UserData />;
       case 'empresa':
         return <EmpresaData />;
       case 'organizacion':
@@ -69,15 +52,16 @@ export default function Panel() {
   return (
     <div className={styles.PanelLayout}>
       <main className={styles.Panel}>
-        {/* CONTENIDO IZQUIERDA */}
+        {/* CONTENIDO */}
         <section className={styles.Content}>
           {activeSection === 'data' && renderDataSection()}
           {activeSection === 'user&pass' && <UserAndPass />}
+          {activeSection === 'cupons' && <p>Mis cupones</p>}
           {activeSection === 'donations' && <HistorialDonacionUsuario />}
         </section>
 
-        {/* MENÚ DERECHA */}
-        <MyAccount onChangeSection={(section) => setActiveSection(section as Section)} activeSection={"data"} />
+        {/* MENÚ */}
+        <MyAccount onChangeSection={setActiveSection} />
       </main>
     </div>
   );
