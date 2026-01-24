@@ -1,7 +1,7 @@
 /* ===== SIDEBAR CONTENEDOR ===== */
 .AccountMenu {
   width: 320px;
-  background-color: #0f172a; /* azul oscuro profesional */
+  background-color: #0f172a;
   color: #ffffff;
   padding: 30px 24px;
   min-height: 100vh;
@@ -12,7 +12,6 @@
   font-size: 22px;
   font-weight: 600;
   margin-bottom: 28px;
-  color: #ffffff;
 }
 
 /* ===== USUARIO ===== */
@@ -26,12 +25,11 @@
 .UserName {
   font-weight: 600;
   font-size: 16px;
-  color: #ffffff;
 }
 
 .Email {
   font-size: 13px;
-  color: #cbd5f5; /* visible sobre fondo oscuro */
+  color: #cbd5f5;
 }
 
 /* ===== MENÚ ===== */
@@ -59,13 +57,20 @@
   border-radius: 8px;
   font-size: 15px;
   cursor: pointer;
-  color: #e5e7eb; /* CLAVE: visible */
+  color: #e5e7eb;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .List button:hover {
   background-color: #1e293b;
   color: #ffffff;
+}
+
+/* ===== ACTIVO ===== */
+.Active {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 /* ===== LOGOUT ===== */
@@ -78,10 +83,7 @@
   color: #fecaca;
 }
 
-/* ========================= */
-/* ===== RESPONSIVE ======== */
-/* ========================= */
-
+/* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
   .AccountMenu {
     width: 100%;

@@ -1,0 +1,126 @@
+.container {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  color: #111827;
+}
+
+/* ===============================
+   TITULO
+================================ */
+.title {
+  font-size: 1.7rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #111827;
+}
+
+/* ===============================
+   GRID DE CARDS
+================================ */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+/* ===============================
+   CARD
+================================ */
+.card {
+  background-color: #000000;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: #ffffff;
+}
+
+.fecha {
+  font-size: 0.85rem;
+  color: #c7c7c7;
+}
+
+.producto {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 0.2rem;
+}
+
+.organizacion {
+  font-size: 0.9rem;
+  color: #eeff00;
+}
+
+.estado {
+  margin-top: 0.6rem;
+}
+
+/* ===============================
+   BADGES
+================================ */
+.badgeSuccess {
+  background-color: #16a34a;
+  padding: 0.35rem 0.6rem;
+  color: #ffffff;
+}
+
+.badgeWarning {
+  background-color: #facc15;
+  padding: 0.35rem 0.6rem;
+  color: #111827;
+}
+
+.badgeDanger {
+  background-color: #dc2626;
+  padding: 0.35rem 0.6rem;
+  color: #ffffff;
+}
+
+/* =================================================
+   📱 MOBILE (hasta 640px)
+================================================= */
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.4rem;
+    text-align: center;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 0.9rem;
+  }
+
+  .producto {
+    font-size: 1.05rem;
+  }
+
+  .organizacion {
+    font-size: 0.85rem;
+  }
+
+  .fecha {
+    font-size: 0.8rem;
+  }
+}
+
+/* =================================================
+   RESPONSIVE (641px a 1024px)
+================================================= */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .title {
+    font-size: 1.55rem;
+  }
+}

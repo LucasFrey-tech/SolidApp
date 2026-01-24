@@ -5,22 +5,29 @@ import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
 
+export type AccountSection =
+  | 'data'
+  | 'credentials'
+  | 'cupons'
+  | 'donations';
+
 type MyAccountProps = {
-  readonly onChangeSection: (section: 'data' | 'user&pass' | 'cupons') => void;
+  readonly activeSection: AccountSection;
+  readonly onChangeSection: (section: AccountSection) => void;
 };
 
-export default function MyAccount({ onChangeSection }: MyAccountProps) {
+export default function MyAccount({
+  activeSection,
+  onChangeSection,
+}: MyAccountProps) {
   const { user, setUser, loading } = useUser();
   const router = useRouter();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user_email');
-
     setUser(null);
-    
     router.push('/inicio');
-
     router.refresh();
   };
 
@@ -40,25 +47,60 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
 
           <div>
             <p className={styles.UserName}>
-              {loading ? "Cargando..." : 
-               user ? user.username || user.email?.split("@")[0] || "Usuario" : 
-               "Invitado"}
+              {loading
+                ? "Cargando..."
+                : user
+                ? user.username || user.email?.split("@")[0]
+                : "Invitado"}
             </p>
 
-            <p className={styles.Email}>
-              {user?.email}
-            </p>
+            <p className={styles.Email}>{user?.email}</p>
           </div>
         </div>
 
         {/* MENÚ */}
         <nav className={styles.Menu}>
           <ul className={styles.List}>
-            <li><button onClick={() => onChangeSection('cupons')}>Mis Cupones</button></li>
-            <li><button onClick={() => onChangeSection('data')}>Mis Datos</button></li>
-            <li><button onClick={() => onChangeSection('user&pass')}>Usuario y Contraseña</button></li>
+            <li>
+              <button
+                className={activeSection === 'cupons' ? styles.Active : ''}
+                onClick={() => onChangeSection('cupons')}
+              >
+                Mis Cupones
+              </button>
+            </li>
+
+            <li>
+              <button
+                className={activeSection === 'data' ? styles.Active : ''}
+                onClick={() => onChangeSection('data')}
+              >
+                Mis Datos
+              </button>
+            </li>
+
+            <li>
+              <button
+                className={activeSection === 'credentials' ? styles.Active : ''}
+                onClick={() => onChangeSection('credentials')}
+              >
+                Usuario y Contraseña
+              </button>
+            </li>
+
+            <li>
+              <button
+                className={activeSection === 'donations' ? styles.Active : ''}
+                onClick={() => onChangeSection('donations')}
+              >
+                Historial de Donaciones
+              </button>
+            </li>
+
             <li className={styles.Logout}>
-              <button onClick={handleLogout}>Cerrar Sesión</button>
+              <button onClick={handleLogout}>
+                Cerrar sesión
+              </button>
             </li>
           </ul>
         </nav>
