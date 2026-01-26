@@ -1,0 +1,183 @@
+/* ===== LAYOUT BASE (igual a tu panel) ===== */
+.PanelLayout {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #5a5a5a;
+  padding: 40px 0;
+}
+
+.Panel {
+  display: flex;
+  width: 85%;
+  max-width: 1200px;
+  background-color: #000000;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.Content {
+  flex: 1;
+  background-color: #000000;
+  padding: 32px;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+/* ===== SELECTOR ===== */
+
+.Selector {
+  display: flex;
+  justify-content: center;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  gap: 16px;
+  color: black;
+  margin-bottom: 32px;
+}
+
+.Selector button {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.Selector button:hover {
+  background: #f5f5f5;
+}
+
+.ActiveButton {
+  color: rgb(255, 0, 0);
+  border-color: #c62828;
+}
+
+.ActiveButton:hover {
+  background-color: #b71c1c;
+}
+
+
+/* ===== PLACEHOLDER ===== */
+.Placeholder {
+  text-align: center;
+  color: #777;
+}
+
+/* ===== USERS PANEL ===== */
+.UsersBox {
+  width: 100%;
+}
+
+.Title {
+  font-size: 50px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* ===== USER ROW ===== */
+.UserRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.Email {
+  font-size: 14px;
+  color: #666;
+}
+
+/* ===== ACTIONS ===== */
+.Actions {
+  display: flex;
+  gap: 8px;
+}
+
+.Check,
+.Cross {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.Check {
+  background-color: #e6f7ee;
+  color: #2e7d32;
+}
+
+.Cross {
+  background-color: #fdecea;
+  color: #c62828;
+}
+
+.Check:disabled,
+.Cross:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== PAGINATION ===== */
+.Pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+
+}
+
+.Pagination button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+    color: black;
+}
+
+.Pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.Search {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 16px;
+}
+
+.Empty {
+  text-align: center;
+  color: #777;
+  margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+  .Panel {
+    width: 95%;
+  }
+
+  .Selector {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .UserRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .Actions {
+    align-self: flex-end;
+  }
+}
