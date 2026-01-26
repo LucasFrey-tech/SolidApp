@@ -115,6 +115,11 @@ export default function Navbar() {
           </Link>
         </li>
         <li>
+          <Link href="/donaciones-catalogo" onClick={() => setMenuOpen(false)}>
+            Donar
+          </Link>
+        </li>
+        <li>
           <Link href="/tienda" onClick={() => setMenuOpen(false)}>
             Tienda
           </Link>
