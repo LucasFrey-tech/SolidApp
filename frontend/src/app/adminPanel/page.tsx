@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import styles from '@/styles/adminUsersPanel.module.css';
 
-import UsuariosAdminPanel from './UsuariosAdminPanel';
-import EmpresasAdminPanel from './EmpresasAdminPanel';
-import OrganizacionesAdminPanel from './OrganizacionesAdminPanel';
+import UsuariosAdminPanel from './usuarios/UsuariosAdminPanel';
+import EmpresasAdminPanel from './empresas/EmpresasAdminPanel';
+import OrganizacionesAdminPanel from './organizaciones/OrganizacionesAdminPanel';
 
 type View = 'usuarios' | 'empresa' | 'organizacion';
 

@@ -1,4 +1,4 @@
-/* ===== LAYOUT BASE (igual a tu panel) ===== */
+/* LAYOUT BASE */
 .PanelLayout {
   display: flex;
   justify-content: center;
