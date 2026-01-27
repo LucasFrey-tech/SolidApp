@@ -82,6 +82,7 @@ export default function DonacionesCatalogoPage() {
             paginatedDonations.map((donation) => (
               <article key={donation.id} className={styles.card}>
                 <div className={styles.cardContent}>
+
                   <h2 className={styles.cardTitle}>{donation.titulo}</h2>
 
                   <p className={styles.description}>

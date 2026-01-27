@@ -9,3 +9,9 @@ export interface Donation {
   userId: number;
   fecha_registro: string;
 }
+
+export interface DonacionImagen {
+  id_donacion:number;
+  imagen:string;
+  nombre:string;
+}

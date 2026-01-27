@@ -1,25 +1,12 @@
-import type { Donation } from "@/API/types/donaciones";
+import type { Donation, DonacionImagen } from "@/API/types/donaciones";
+import { Crud, PaginatedResponse } from "../service";
 
-export class DonationsService {
-  private baseUrl: string;
-  private token?: string;
+export class DonationsService extends Crud<Donation> {
+
+  protected endPoint = '/empresas';
 
   constructor(token?: string) {
-    this.baseUrl =
-      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-    this.token = token;
-  }
-
-  private getHeaders() {
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-
-    if (this.token) {
-      headers["Authorization"] = `Bearer ${this.token}`;
-    }
-
-    return headers;
+    super(token);
   }
 
   async getAll(): Promise<Donation[]> {
@@ -48,5 +35,37 @@ export class DonationsService {
     }
 
     return res.json();
+  }
+
+  async getImages(): Promise<DonacionImagen[]> {
+    const resQuery = await fetch(
+      `${this.baseUrl}${this.endPoint}/imagenes`,
+      {
+        headers: this.getHeaders(),
+      },
+    );
+    
+    if (!resQuery.ok) {
+      throw new Error('Error al obtener imágenes de donaciones');
+    }
+
+    const res = await resQuery.json();
+    return res;
+  }
+
+  getAllPaginated(page?: number, limit?: number): Promise<PaginatedResponse<Donation>> {
+    throw new Error("Method not implemented.");
+  }
+  getOne(_id: number): Promise<Donation> {
+    throw new Error("Method not implemented.");
+  }
+  create(_data: Partial<Donation>): Promise<Donation> {
+    throw new Error("Method not implemented.");
+  }
+  update(_id: number, data: Partial<Donation>): Promise<Donation> {
+    throw new Error("Method not implemented.");
+  }
+  delete(_id: number): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }

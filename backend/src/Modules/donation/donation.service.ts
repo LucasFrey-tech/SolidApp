@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Donations } from '../../Entities/donations.entity';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { Usuario } from '../../Entities/usuario.entity';
+import { Donation_images } from '../../Entities/donation_images.entity';
+import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { RankingService } from '../ranking/ranking.service';
@@ -22,6 +24,9 @@ export class DonationsService {
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
 
+    @InjectRepository(Donation_images)
+    private readonly donationImagenRepository: Repository<Donation_images>,
+
     private readonly rankingService: RankingService,
 ) {}
 
@@ -35,6 +40,23 @@ export class DonationsService {
 
     this.logger.log(`Se obtuvieron ${donations.length} Donaciones`);
     return donations.map(this.mapToResponseDto);
+  }
+
+  /**
+   * Obtengo las Imagenes de cada donacion
+   */
+  async findIMG(): Promise<DonacionImagenDTO[]> {
+    const images = await this.donationImagenRepository.find({
+      relations: ['id_donacion'],
+    });
+
+    this.logger.log(`Se obtuvieron ${images.length} imagenes de las donaciones`);
+
+    return images.map((img) => ({
+      id_donacion: img.id_donacion.id,
+      nombre: img.id_donacion.campaña.titulo,
+      logo: img.imagen,
+    }));
   }
 
   /**
@@ -76,7 +98,7 @@ export class DonationsService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-    // 👉 Crear donación
+    // Crear donación
     const donation = this.donationsRepository.create({
       ...createDto,
       campaña: campaign,
@@ -85,7 +107,7 @@ export class DonationsService {
 
     const savedDonation = await this.donationsRepository.save(donation);
 
-    // 👉 Sumar puntos (ejemplo simple)
+    // Sumar puntos (ejemplo simple)
     usuario.puntos += createDto.cantidad;
     await this.usuarioRepository.save(usuario);
 
@@ -110,5 +132,6 @@ export class DonationsService {
     fecha_registro: donation.fecha_registro,
     campaignId: donation.campaña?.id,
     userId: donation.usuario?.id,
+    imagen: '',
   });
 }
