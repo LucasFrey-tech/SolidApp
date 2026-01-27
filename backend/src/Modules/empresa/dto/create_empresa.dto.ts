@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsNotEmpty,
@@ -19,7 +19,7 @@ export class CreateEmpresaDTO {
   @Matches(/^\d{2}-\d{8}-\d{1}$/, {
     message: 'El CUIL debe tener el formato XX-XXXXXXXX-X',
   })
-  nroDocumento: string;
+  cuit: string;
 
   @ApiProperty({
     example: 'Supermercados Unidos S.A.',
@@ -30,7 +30,7 @@ export class CreateEmpresaDTO {
   @MaxLength(255, {
     message: 'La razon social no puede superar los 255 caracteres',
   })
-  razon_social: string;
+  razon_Social: string;
 
   @ApiProperty({
     example: 'SuperUnidos',
@@ -38,11 +38,10 @@ export class CreateEmpresaDTO {
     required: false,
   })
   @IsString()
-  @IsOptional()
   @MaxLength(50, {
     message: 'El nombre ficticio no puede superar los 50 caracteres',
   })
-  nombre_fantasia?: string;
+  nombre_Empresa: string;
 
   @ApiProperty({
     example:
@@ -74,16 +73,13 @@ export class CreateEmpresaDTO {
   @MaxLength(25, { message: 'El Telefono no puede superar los 25 caracteres' })
   telefono: string;
 
-  @ApiProperty({
-    example: 'Calle falsa 123',
-    description: 'Dirección física de la empresa',
-  })
+  @ApiPropertyOptional({ example: 'Av. Siempre Viva', description: 'Calle' })
   @IsString()
-  @IsNotEmpty({ message: 'La dirección es Oligatoria' })
-  @MaxLength(255, {
-    message: 'La dirección no puede superar los 255 caracteres',
-  })
-  direccion: string;
+  calle: string;
+
+  @ApiPropertyOptional({ example: '742', description: 'Número' })
+  @IsString()
+  numero: string;
 
   @ApiProperty({
     example: 'www.supermercadosunidos.com.ar',

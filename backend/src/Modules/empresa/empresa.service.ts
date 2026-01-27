@@ -9,25 +9,30 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Empresa } from '../../Entities/empresa.entity';
-import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
 import { Empresa_imagenes } from '../../Entities/empresa_imagenes.entity';
 import { SettingsService } from '../../common/settings/settings.service';
-import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
+import { UpdateCredentialsDto } from '../usuario/dto/panelUsuario.dto';
 import bcrypt from 'bcrypt';
+import { User } from '../../Entities/user.entity';
+import { RegisterEmpresaDto } from '../PRUEBA REFACTOR/dtos/dtos';
+import { Organizacion } from '../../Entities/organizacion.entity';
 
 @Injectable()
 export class EmpresasService {
   private readonly logger = new Logger(EmpresasService.name);
 
   constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @InjectRepository(Empresa)
     private readonly empresasRepository: Repository<Empresa>,
-
     @InjectRepository(Empresa_imagenes)
     private readonly empresasImagenRepository: Repository<Empresa_imagenes>,
+    @InjectRepository(Organizacion)
+    private readonly organizacionRepository: Repository<Organizacion>,
   ) {}
 
   /**
@@ -35,15 +40,17 @@ export class EmpresasService {
    */
   async findAll(): Promise<EmpresaResponseDTO[]> {
     const empresas = await this.empresasRepository.find({
-      where: { deshabilitado: false },
+      relations: ['users'],
+      where: { usuario: { deshabilitado: false } },
     });
 
-    const imagen = await this.empresasImagenRepository.find({
+    /*const imagen = await this.empresasImagenRepository.find({
+      relations: ['users'],
       where: { id_empresa: { id: empresas[0].id } },
-    });
+    });*/
 
     this.logger.log(`Se obtuvieron ${empresas.length} Empresas`);
-    let res = empresas.map(this.mapToResponseDto);
+    const res = empresas.map(this.mapToResponseDto);
     // res.forEach((empresa) => empresa.imagen = imagen[0].logo);
     res.forEach(
       (empresa) =>
@@ -57,10 +64,12 @@ export class EmpresasService {
    */
   async findIMG(): Promise<EmpresaImagenDTO[]> {
     const images = await this.empresasImagenRepository.find({
-      relations: ['id_empresa'],
+      relations: ['id_empresa', 'users'],
       where: {
         id_empresa: {
-          deshabilitado: false,
+          usuario: {
+            deshabilitado: false,
+          },
         },
       },
     });
@@ -69,7 +78,7 @@ export class EmpresasService {
 
     return images.map((img) => ({
       id_empresa: img.id_empresa.id,
-      nombre: img.id_empresa.razon_social,
+      nombre: img.id_empresa.razon_Social,
       logo: img.logo,
     }));
   }
@@ -79,7 +88,8 @@ export class EmpresasService {
    */
   async findOne(id: number): Promise<EmpresaResponseDTO> {
     const empresas = await this.empresasRepository.findOne({
-      where: { id, deshabilitado: false },
+      relations: ['users'],
+      where: { id, usuario: { deshabilitado: false } },
     });
 
     if (!empresas) {
@@ -97,7 +107,8 @@ export class EmpresasService {
 
   async findByEmail(correo: string): Promise<Empresa> {
     const empresa = await this.empresasRepository.findOne({
-      where: { correo },
+      relations: ['users'],
+      where: { usuario: { correo, deshabilitado: false } },
     });
 
     if (!empresa) {
@@ -107,27 +118,47 @@ export class EmpresasService {
     return empresa;
   }
 
-  /**
-   * Crea una nueva Empresa
-   */
-  async create(createDto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {
-    // Verificación de Empresa ya Registrada
-    const existente = await this.empresasRepository.findOne({
-      where: { nroDocumento: createDto.nroDocumento },
+  async create(dto: RegisterEmpresaDto): Promise<EmpresaResponseDTO> {
+    const emailExistente = await this.userRepository.findOne({
+      where: { correo: dto.correo },
     });
 
-    if (existente) {
-      throw new ConflictException('La Empresa ya esta registrada');
+    if (emailExistente) {
+      throw new ConflictException(`El correo ${dto.correo} ya está registrado`);
     }
 
-    // Creación de la Empresa
-    const empresas = this.empresasRepository.create({
-      ...createDto,
-      verificada: false,
+    // 2. Validar CUIT único (directamente)
+    const [empresaConCuit, orgConCuit] = await Promise.all([
+      this.empresasRepository.findOne({ where: { cuit: dto.cuit } }),
+      this.organizacionRepository.findOne({ where: { cuit: dto.cuit } }),
+    ]);
+
+    if (empresaConCuit || orgConCuit) {
+      throw new ConflictException(`El CUIT ${dto.cuit} ya está registrado`);
+    }
+
+    const user = this.userRepository.create({
+      type: 'empresa',
+      correo: dto.correo,
+      clave: await bcrypt.hash(dto.clave, 10),
+      telefono: dto.telefono,
+      calle: dto.calle,
+      numero: dto.numero,
+      deshabilitado: false,
     });
 
-    const savedEmpresa = await this.empresasRepository.save(empresas);
-    return this.mapToResponseDto(savedEmpresa);
+    const savedUser = await this.userRepository.save(user);
+
+    const empresa = this.empresasRepository.create({
+      usuario: savedUser,
+      cuit: dto.cuit,
+      razon_Social: dto.razon_Social,
+      nombre_Empresa: dto.nombre_Empresa,
+      web: dto.web,
+    });
+
+    await this.empresasRepository.save(empresa);
+    return this.mapToResponseDto(empresa);
   }
 
   /**
@@ -137,26 +168,29 @@ export class EmpresasService {
     id: number,
     updateDto: UpdateEmpresaDTO,
   ): Promise<EmpresaResponseDTO> {
-    const empresas = await this.empresasRepository.findOne({
+    const empresa = await this.empresasRepository.findOne({
+      relations: ['users'],
       where: { id },
     });
 
-    if (!empresas) {
+    if (!empresa) {
       throw new NotFoundException(`
         Empresa con ID ${id} no encontrada`);
     }
 
     // Aplicación de cambios
-    Object.assign(empresas, updateDto);
+    Object.assign(empresa, updateDto);
 
-    const updatedEmpresa = await this.empresasRepository.save(empresas);
+    await this.userRepository.save(empresa);
+    await this.empresasRepository.save(empresa);
     this.logger.log(`Empresa ${id} actualizada`);
 
-    return this.mapToResponseDto(updatedEmpresa);
+    return this.mapToResponseDto(empresa);
   }
 
   async delete(id: number): Promise<void> {
     const empresa = await this.empresasRepository.findOne({
+      relations: ['users'],
       where: { id },
     });
 
@@ -165,7 +199,7 @@ export class EmpresasService {
     }
 
     // Soft delete
-    empresa.deshabilitado = true;
+    empresa.usuario.deshabilitado = true;
 
     await this.empresasRepository.save(empresa);
 
@@ -181,12 +215,12 @@ export class EmpresasService {
       throw new NotFoundException(`La Empresa con ID ${id} no encontrada`);
     }
 
-    if (!empresa.deshabilitado) {
+    if (!empresa.usuario.deshabilitado) {
       throw new BadRequestException('La empresa ya se encuentra activa');
     }
 
     // Restaurar empresa
-    empresa.deshabilitado = false;
+    empresa.usuario.deshabilitado = false;
 
     await this.empresasRepository.save(empresa);
 
@@ -202,24 +236,48 @@ export class EmpresasService {
       throw new NotFoundException('Empresa no encontrada');
     }
 
-    const passwordValida = await bcrypt.compare(
-      dto.passwordActual,
-      empresa.clave,
-    );
+    let cambiosRealizados = false;
 
-    if (!passwordValida) {
-      throw new UnauthorizedException('Contraseña actual incorrecta');
-    }
+    if (dto.correo && dto.correo !== empresa.usuario.correo) {
+      const empresaExistente = await this.empresasRepository.findOne({
+        where: { usuario: { correo: dto.correo } },
+      });
 
-    if (dto.correo) {
-      empresa.correo = dto.correo;
+      if (empresaExistente && empresaExistente.id !== id) {
+        throw new ConflictException('El email ya está en uso por otro usuario');
+      }
+
+      empresa.usuario.correo = dto.correo;
+      cambiosRealizados = true;
     }
 
     if (dto.passwordNueva) {
-      empresa.clave = await bcrypt.hash(dto.passwordNueva, 10);
+      if (!dto.passwordActual) {
+        throw new UnauthorizedException(
+          'Para cambiar la contraseña debés ingresar la contraseña actual',
+        );
+      }
+
+      const passwordValida = await bcrypt.compare(
+        dto.passwordActual,
+        empresa.usuario.clave,
+      );
+
+      if (!passwordValida) {
+        throw new UnauthorizedException('Contraseña actual incorrecta');
+      }
+
+      const hash = await bcrypt.hash(dto.passwordNueva, 10);
+      empresa.usuario.clave = hash;
+      cambiosRealizados = true;
     }
 
-    return this.empresasRepository.save(empresa);
+    if (cambiosRealizados) {
+      empresa.usuario.ultimo_cambio = new Date();
+      return this.empresasRepository.save(empresa);
+    }
+
+    return this.mapToResponseDto(empresa);
   }
 
   private readonly mapToResponseDto = (
@@ -227,20 +285,21 @@ export class EmpresasService {
   ): EmpresaResponseDTO => {
     return {
       id: empresa.id,
-      nroDocumento: empresa.nroDocumento,
-      razon_social: empresa.razon_social,
-      nombre_fantasia: empresa.nombre_fantasia,
+      cuit: empresa.cuit,
+      razon_Social: empresa.razon_Social,
+      nombre_Empresa: empresa.nombre_Empresa,
       descripcion: empresa.descripcion,
       rubro: empresa.rubro,
-      telefono: empresa.telefono,
-      direccion: empresa.direccion,
+      telefono: empresa.usuario.telefono,
+      calle: empresa.usuario.calle,
+      numero: empresa.usuario.numero,
       web: empresa.web,
       verificada: empresa.verificada,
-      deshabilitado: empresa.deshabilitado,
-      fecha_registro: empresa.fecha_registro,
-      ultimo_cambio: empresa.ultimo_cambio,
+      deshabilitado: empresa.usuario.deshabilitado,
+      fecha_registro: empresa.usuario.fecha_registro,
+      ultimo_cambio: empresa.usuario.ultimo_cambio,
       imagen: '',
-      correo: empresa.correo,
+      correo: empresa.usuario.correo,
     };
   };
 }

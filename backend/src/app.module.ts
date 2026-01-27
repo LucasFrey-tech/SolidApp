@@ -6,13 +6,13 @@ import app_config from '../private/app.config.json';
 import { AppConfig } from '../private/app.config.interface';
 
 // Modulos
-import { UserModule } from './Modules/user/usuario.module';
-import { OrganizationModule } from './Modules/organization/organization.module';
-import { DonationModule } from './Modules/donation/donation.module';
+import { UserModule } from './Modules/usuario/usuario.module';
+import { OrganizacionModule } from './Modules/organizacion/organizacion.module';
+import { DonationModule } from './Modules/donacion/donacion.module';
 import { EmpresaModule } from './Modules/empresa/empresa.module';
-import { CampaignModule } from './Modules/campaign/campaign.module';
-import { BeneficioModule } from './Modules/benefit/beneficio.module';
-import { AuthModule } from './Modules/auth/auth.module';
+import { CampaignModule } from './Modules/campaña/campaña.module';
+import { BeneficioModule } from './Modules/beneficio/beneficio.module';
+import { AuthModule } from './Modules/PRUEBA REFACTOR/auth.module';
 import { SettingsService } from './common/settings/settings.service';
 import { RankingModule } from './Modules/ranking/ranking.module';
 
@@ -50,13 +50,13 @@ import { RankingModule } from './Modules/ranking/ranking.module';
       },
     }),
 
+    AuthModule,
     UserModule,
-    OrganizationModule,
+    OrganizacionModule,
     DonationModule,
     EmpresaModule,
     CampaignModule,
     BeneficioModule,
-    AuthModule,
     RankingModule,
   ],
   providers: [SettingsService],

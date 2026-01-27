@@ -24,12 +24,16 @@ import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
-import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
+import { UpdateCredentialsDto } from '../usuario/dto/panelUsuario.dto';
+import { AuthService } from '../PRUEBA REFACTOR/auth.service';
 
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: EmpresasService) {}
+  constructor(
+    private readonly empresasService: EmpresasService,
+    private readonly authService: AuthService,
+  ) {}
 
   /**
    * Obtener todas las empresas activas
@@ -43,7 +47,7 @@ export class EmpresaController {
     isArray: true,
   })
   async findAll(): Promise<EmpresaResponseDTO[]> {
-    return this.empresasService.findAll();
+    return await this.empresasService.findAll();
   }
 
   /**
@@ -58,7 +62,7 @@ export class EmpresaController {
     isArray: true,
   })
   async findIMG(): Promise<EmpresaImagenDTO[]> {
-    return this.empresasService.findIMG();
+    return await this.empresasService.findIMG();
   }
 
   /**
@@ -83,13 +87,14 @@ export class EmpresaController {
   async findOne(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<EmpresaResponseDTO> {
-    return this.empresasService.findOne(id);
+    return await this.empresasService.findOne(id);
   }
 
   /**
    * Crear una nueva empresa
    */
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear una nueva empresa' })
   @ApiBody({ type: CreateEmpresaDTO })
   @ApiResponse({
@@ -101,10 +106,11 @@ export class EmpresaController {
     status: 409,
     description: 'La empresa ya existe',
   })
-  async create(
-    @Body() createDto: CreateEmpresaDTO,
-  ): Promise<EmpresaResponseDTO> {
-    return this.empresasService.create(createDto);
+  async create(@Body() createDto: CreateEmpresaDTO) {
+    await this.authService.register({
+      tipo: 'empresa',
+      datos: createDto,
+    });
   }
 
   /**
@@ -131,7 +137,7 @@ export class EmpresaController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateEmpresaDTO,
   ): Promise<EmpresaResponseDTO> {
-    return this.empresasService.update(id, updateDto);
+    return await this.empresasService.update(id, updateDto);
   }
 
   /**
@@ -154,7 +160,7 @@ export class EmpresaController {
     description: 'Empresa no encontrada',
   })
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.empresasService.delete(id);
+    return await this.empresasService.delete(id);
   }
 
   /**
@@ -188,10 +194,10 @@ export class EmpresaController {
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña de la empresa',
   })
-  updateCredentials(
+  async updateCredentials(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCredentialsDto,
   ) {
-    return this.empresasService.updateCredentials(id, dto);
+    await this.empresasService.updateCredentials(id, dto);
   }
 }

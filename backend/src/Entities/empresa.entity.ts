@@ -2,10 +2,13 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
+  OneToMany,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Beneficios } from './beneficio.entity';
+import { User } from './user.entity';
 
 @Entity('empresas')
 export class Empresa {
@@ -15,18 +18,18 @@ export class Empresa {
 
   @ApiProperty({ example: '20-04856975-3', description: 'Cuil de la Empresa' })
   @Column({ type: 'varchar', length: 13 })
-  nroDocumento: string;
+  cuit: string;
 
   @ApiProperty({
     example: 'Supermercados Unidos S.A.',
     description: 'El nombre legal registrado de la empresa colaboradora',
   })
   @Column({ type: 'varchar', length: 255 })
-  razon_social: string;
+  razon_Social: string;
 
   @ApiProperty({ example: 'INSERT-NOMBRE', description: '...' })
   @Column({ type: 'varchar', length: 50 })
-  nombre_fantasia: string; // Hace falta realmente ¿? Reemplazar por mail ¿?
+  nombre_Empresa: string;
 
   @ApiProperty({
     example:
@@ -40,20 +43,6 @@ export class Empresa {
   @ApiProperty({ example: 'Supermercado', description: 'Rubro de la Empresa' })
   @Column({ type: 'varchar', length: 15 })
   rubro: string;
-
-  @ApiProperty({
-    example: '+54 11 4567-8900',
-    description: 'Telefono de la Empresa',
-  })
-  @Column({ type: 'varchar', length: 25 })
-  telefono: string;
-
-  @ApiProperty({
-    example: 'Calle falsa 123',
-    description: 'La dirección donde reside la Empresa',
-  })
-  @Column({ type: 'varchar', length: 150 })
-  direccion: string;
 
   @ApiProperty({
     example: 'www.supermercadosunidos.com.ar',
@@ -70,37 +59,14 @@ export class Empresa {
   verificada: boolean;
 
   @ApiProperty({
-    example: false,
-    description: 'Indica si la Empresa esta deshabilitada en el sitio',
+    type: () => Beneficios,
+    isArray: true,
+    description: 'Cupones asociadas a la organización',
   })
-  @Column({ type: 'bit', default: false })
-  deshabilitado: boolean;
+  @OneToMany(() => Beneficios, (cupon) => cupon.empresa)
+  cupones: Beneficios[];
 
-  @ApiProperty({
-    example: '2025-12-15T10:30:45Z',
-    description: 'Fecha del Registro de la Empresa en el sitio',
-  })
-  @CreateDateColumn({ type: 'datetime2' })
-  fecha_registro: Date;
-
-  @ApiProperty({
-    example: '2025-12-15T10:30:45Z',
-    description: 'Fecha del ultimo cambio de información de la Empresa',
-  })
-  @UpdateDateColumn({ type: 'datetime2' })
-  ultimo_cambio: Date;
-
-  @ApiProperty({
-    example: 'correo@dominio.com',
-    description: 'Correo electronico del usuario de la empresa.',
-  })
-  @Column({ type: 'varchar', length: 255 })
-  correo: string;
-
-  @ApiProperty({
-    example: 'password123',
-    description: 'Contraseña del usuario de la empresa.',
-  })
-  @Column({ type: 'varchar', length: 255 })
-  clave: string;
+  @OneToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  usuario: User;
 }

@@ -5,7 +5,7 @@ export class EmpresaResponseDTO {
   id: number;
 
   @ApiProperty({ example: '20-04856975-3', description: 'CUIL de la Empresa' })
-  nroDocumento: string;
+  cuit: string;
 
   @ApiProperty({
     example: 'empresa@ejemplo.com',
@@ -17,10 +17,10 @@ export class EmpresaResponseDTO {
     example: 'Supermercados Unidos S.A.',
     description: 'Razón social',
   })
-  razon_social: string;
+  razon_Social: string;
 
   @ApiProperty({ example: 'SuperUnidos', description: 'Nombre de fantasía' })
-  nombre_fantasia: string;
+  nombre_Empresa: string;
 
   @ApiProperty({
     example: 'Supermercados Unidos impulsa la solidaridad...',
@@ -32,22 +32,31 @@ export class EmpresaResponseDTO {
   rubro: string;
 
   @ApiProperty({ example: '+54 11 4567-8900', description: 'Teléfono' })
-  telefono: string;
+  telefono?: string;
 
-  @ApiProperty({ example: 'Calle falsa 123', description: 'Dirección' })
-  direccion: string;
+  @ApiProperty({
+    description: 'Nombre de la calle del domicilio del usuario',
+    example: 'Av. Siempre Viva',
+  })
+  calle?: string;
+
+  @ApiProperty({
+    description: 'Número de la dirección del usuario',
+    example: '742',
+  })
+  numero?: string;
 
   @ApiProperty({
     example: 'www.supermercadosunidos.com.ar',
     description: 'Sitio web',
   })
-  web: string;
+  web?: string;
 
   @ApiProperty({ example: true, description: 'Empresa verificada' })
-  verificada: boolean;
+  verificada?: boolean;
 
   @ApiProperty({ example: false, description: 'Empresa deshabilitada' })
-  deshabilitado: boolean;
+  deshabilitado?: boolean;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
