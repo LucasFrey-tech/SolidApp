@@ -44,7 +44,7 @@ export class DonationsService extends Crud<Donation> {
         headers: this.getHeaders(),
       },
     );
-    
+
     if (!resQuery.ok) {
       throw new Error('Error al obtener imágenes de donaciones');
     }
@@ -53,9 +53,26 @@ export class DonationsService extends Crud<Donation> {
     return res;
   }
 
-  getAllPaginated(page?: number, limit?: number): Promise<PaginatedResponse<Donation>> {
-    throw new Error("Method not implemented.");
+  async getAllPaginated(
+    page = 1,
+    limit = 6,
+  ): Promise<PaginatedResponse<Donation>> {
+    return fetch(
+      `${this.baseUrl}/donations/paginated?page=${page}&limit=${limit}`,
+      {
+        method: 'GET',
+        headers: this.getHeaders(),
+      },
+    ).then(async (res) => {
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error);
+      }
+      return res.json();
+    });
   }
+
+
   getOne(_id: number): Promise<Donation> {
     throw new Error("Method not implemented.");
   }

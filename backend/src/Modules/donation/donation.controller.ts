@@ -6,6 +6,7 @@ import {
   Body,
   ParseIntPipe,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
@@ -82,6 +83,18 @@ export class DonationsController {
   })
   async findIMG(): Promise<DonacionImagenDTO[]> {
     return this.donationsService.findIMG();
+  }
+
+  @Get('paginated')
+  @ApiOperation({ summary: 'Listar donaciones paginadas' })
+  findAllPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 6,
+  ) {
+    return this.donationsService.findAllPaginated(
+      Number(page),
+      Number(limit),
+    );
   }
 
   /**

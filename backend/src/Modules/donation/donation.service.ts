@@ -28,7 +28,7 @@ export class DonationsService {
     private readonly donationImagenRepository: Repository<Donation_images>,
 
     private readonly rankingService: RankingService,
-) {}
+  ) { }
 
   /**
    * Obtener todas las Donaciones
@@ -74,6 +74,35 @@ export class DonationsService {
 
     return this.mapToResponseDto(donation);
   }
+
+  async findAllPaginated(
+    page = 1,
+    limit = 6,
+  ): Promise<{
+    data: ResponseDonationDto[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const [donations, total] = await this.donationsRepository.findAndCount({
+      relations: ['campaña', 'usuario'],
+      order: { fecha_registro: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    this.logger.log(
+      `Se obtuvieron ${donations.length} donaciones (page ${page})`,
+    );
+
+    return {
+      data: donations.map(this.mapToResponseDto),
+      total,
+      page,
+      limit,
+    };
+  }
+
 
   /**
    * Crear una Donación
