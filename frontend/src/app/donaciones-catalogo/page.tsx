@@ -1,51 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { BaseApi } from "@/API/baseApi";
+import type { Donation } from "@/API/types/donaciones";
 import styles from "@/styles/donar.module.css";
-
-const mockCauses = [
-  {
-    id: 1,
-    title: "Comedor Comunitario",
-    description: "Ayudá a que más familias puedan acceder a una comida diaria.",
-    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
-  },
-  {
-    id: 2,
-    title: "Refugio de Animales",
-    description:
-      "Donaciones destinadas a rescate, alimento y atención veterinaria.",
-    image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b",
-  },
-  {
-    id: 3,
-    title: "Educación Solidaria",
-    description:
-      "Apoyá a estudiantes con útiles, becas y materiales educativos.",
-    image: "https://images.unsplash.com/photo-1588072432836-e10032774350",
-  },
-];
 
 const ITEMS_PER_PAGE = 3;
 
 export default function DonacionesCatalogoPage() {
+  const [donations, setDonations] = useState<Donation[]>([]);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredCauses = mockCauses.filter((cause) => {
+  useEffect(() => {
+    const fetchDonations = async () => {
+      try {
+        const api = new BaseApi();
+        const data = await api.donation.getAll();
+        setDonations(data);
+      } catch (err) {
+        console.error(err);
+        setError("Error al cargar las donaciones");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDonations();
+  }, []);
+
+  const filteredDonations = donations.filter((donation) => {
     const value = search.toLowerCase();
     return (
-      cause.title.toLowerCase().includes(value) ||
-      cause.description.toLowerCase().includes(value)
+      donation.titulo.toLowerCase().includes(value) ||
+      donation.detalle.toLowerCase().includes(value)
     );
   });
 
-  const totalPages = Math.ceil(filteredCauses.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredDonations.length / ITEMS_PER_PAGE);
 
-  const paginatedCauses = filteredCauses.slice(
+  const paginatedDonations = filteredDonations.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  if (loading) {
+    return <p className={styles.loading}>Cargando donaciones...</p>;
+  }
+
+  if (error) {
+    return <p className={styles.error}>{error}</p>;
+  }
 
   return (
     <main className={styles.page}>
@@ -53,7 +60,7 @@ export default function DonacionesCatalogoPage() {
         <header className={styles.header}>
           <h1 className={styles.title}>Donar</h1>
           <p className={styles.subtitle}>
-            Elegí una causa y ayudá a generar un impacto real
+            Elegí una donación y ayudá a generar un impacto real
           </p>
         </header>
 
@@ -61,7 +68,7 @@ export default function DonacionesCatalogoPage() {
           <input
             type="text"
             className={styles.search}
-            placeholder="Buscar causa para donar..."
+            placeholder="Buscar donación..."
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -71,16 +78,24 @@ export default function DonacionesCatalogoPage() {
         </div>
 
         <div className={styles.grid}>
-          {paginatedCauses.length > 0 ? (
-            paginatedCauses.map((cause) => (
-              <article key={cause.id} className={styles.card}>
-                <div className={styles.imageWrapper}>
-                  <img src={cause.image} alt={cause.title} />
-                </div>
-
+          {paginatedDonations.length > 0 ? (
+            paginatedDonations.map((donation) => (
+              <article key={donation.id} className={styles.card}>
                 <div className={styles.cardContent}>
-                  <h2 className={styles.cardTitle}>{cause.title}</h2>
-                  <p className={styles.description}>{cause.description}</p>
+                  <h2 className={styles.cardTitle}>{donation.titulo}</h2>
+
+                  <p className={styles.description}>
+                    {donation.detalle}
+                  </p>
+
+                  <div className={styles.meta}>
+                    <span>
+                      <strong>Tipo:</strong> {donation.tipo}
+                    </span>
+                    <span>
+                      <strong>Cantidad:</strong> {donation.cantidad}
+                    </span>
+                  </div>
                 </div>
 
                 <button className={styles.button}>
@@ -89,11 +104,13 @@ export default function DonacionesCatalogoPage() {
               </article>
             ))
           ) : (
-            <p className={styles.noResults}>No se encontraron resultados</p>
+            <p className={styles.noResults}>
+              No se encontraron donaciones
+            </p>
           )}
         </div>
 
-        {filteredCauses.length > 0 && totalPages > 1 && (
+        {filteredDonations.length > 0 && totalPages > 1 && (
           <div className={styles.pagination}>
             <button
               className={styles.pageButton}
