@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import styles from "@/styles/donar.module.css";
 
 const mockCauses = [
@@ -80,16 +81,24 @@ export default function DonacionesCatalogoPage() {
 
                 <div className={styles.cardContent}>
                   <h2 className={styles.cardTitle}>{cause.title}</h2>
-                  <p className={styles.description}>{cause.description}</p>
+                  <p className={styles.description}>
+                    {cause.description}
+                  </p>
                 </div>
 
-                <button className={styles.button}>
+                {/* LINK CORRECTO */}
+                <Link
+                  href={`/donaciones-catalogo/${cause.id}`}
+                  className={styles.button}
+                >
                   Ver más información
-                </button>
+                </Link>
               </article>
             ))
           ) : (
-            <p className={styles.noResults}>No se encontraron resultados</p>
+            <p className={styles.noResults}>
+              No se encontraron resultados
+            </p>
           )}
         </div>
 
