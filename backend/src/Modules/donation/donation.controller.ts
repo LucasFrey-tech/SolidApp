@@ -6,6 +6,7 @@ import {
   Body,
   ParseIntPipe,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
@@ -20,12 +21,13 @@ import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt-payload.interface';
+import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 @ApiTags('Donaciones')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('donations')
 export class DonationsController {
-  constructor(private readonly donationsService: DonationsService) {}
+  constructor(private readonly donationsService: DonationsService) { }
 
   /**
    * Crear una Donación
@@ -66,6 +68,33 @@ export class DonationsController {
   })
   findAll(): Promise<ResponseDonationDto[]> {
     return this.donationsService.findAll();
+  }
+
+  /**
+   * Obtener las imagenes de las donaciones
+   */
+  @Get('imagenes')
+  @ApiOperation({ summary: 'Listar las imagenes de las campañas' })
+  @ApiResponse({
+    status: 200,
+    description: 'Listado de imagenes de campañas',
+    type: DonacionImagenDTO,
+    isArray: true,
+  })
+  async findIMG(): Promise<DonacionImagenDTO[]> {
+    return this.donationsService.findIMG();
+  }
+
+  @Get('paginated')
+  @ApiOperation({ summary: 'Listar donaciones paginadas' })
+  findAllPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 6,
+  ) {
+    return this.donationsService.findAllPaginated(
+      Number(page),
+      Number(limit),
+    );
   }
 
   /**

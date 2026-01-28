@@ -29,7 +29,7 @@ export class RankingService extends Crud<RankingItem> {
     }
 
     async getTop10(): Promise<RankingItem[]> {
-        const res = await fetch(`${this.baseUrl}/${this.endPoint}/top10`, {
+        const res = await fetch(`${this.baseUrl}/${this.endPoint}/top`, {
             method: 'GET',
             headers: this.getHeaders(),
         });

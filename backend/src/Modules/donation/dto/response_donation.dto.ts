@@ -56,4 +56,6 @@ export class ResponseDonationDto {
     format: 'date-time',
   })
   fecha_registro: Date;
+
+  imagen: string;
 }

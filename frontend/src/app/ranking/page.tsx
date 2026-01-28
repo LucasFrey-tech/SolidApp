@@ -27,7 +27,7 @@ export default function RankingPage() {
       <ul>
         {ranking.map((item, i) => (
           <li key={item.id_usuario}  className={styles.list_item}>
-            #{i + 1} - Usuario {item.id_usuario} - {item.puntos} pts
+            #{i + 1} - {item.nombre} {item.apellido} - {item.puntos} pts
           </li>
         ))}
       </ul>

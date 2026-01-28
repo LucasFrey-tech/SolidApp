@@ -6,4 +6,10 @@ export class RankingDTO {
 
   @ApiProperty({ example: 1500 })
   puntos: number;
+
+  @ApiProperty({ example: "Pepe" })
+  nombre: string;
+
+  @ApiProperty({ example: "Argento" })
+  apellido: string;
 }
