@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
-import { BaseApi } from "@/API/baseApi";
-import type { Donation, DonacionImagen } from "@/API/types/donaciones";
 import styles from "@/styles/donar.module.css";
+import { DonacionImagen, Donation } from "@/API/types/donaciones";
+import { BaseApi } from "@/API/baseApi";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -20,6 +21,8 @@ export default function DonacionesCatalogoPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
+
         const api = new BaseApi();
 
         const [donationsRes, imagesRes] = await Promise.all([
@@ -46,12 +49,26 @@ export default function DonacionesCatalogoPage() {
   const getImageByDonationId = (id: number) =>
     images.find((img) => img.id_donacion === id)?.imagen;
 
+  /* ===== LOADING ===== */
   if (loading) {
-    return <p className={styles.loading}>Cargando campañas...</p>;
+    return (
+      <main className={styles.page}>
+        <p className={styles.loading}>Cargando campañas...</p>
+      </main>
+    );
   }
 
+  /* ===== ERROR ===== */
   if (error) {
-    return <p className={styles.error}>{error}</p>;
+    return (
+      <main className={styles.page}>
+        <section className={styles.container}>
+          <div className={styles.noResults}>
+            {error}
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -65,54 +82,71 @@ export default function DonacionesCatalogoPage() {
         </header>
 
         <div className={styles.grid}>
-          {donations.map((donation) => {
-            const image = getImageByDonationId(donation.id);
+          {donations.length === 0 ? (
+            <div className={styles.noResults}>
+              No hay campañas disponibles ahora
+            </div>
+          ) : (
+            donations.map((donation) => {
+              const image = getImageByDonationId(donation.id);
 
-            return (
-              <article key={donation.id} className={styles.card}>
-                {image && (
-                  <div className={styles.imageWrapper}>
-                    <Image
-                      src={image}
-                      alt={donation.titulo}
-                      fill
-                      className={styles.image}
-                    />
+              return (
+                <article key={donation.id} className={styles.card}>
+                  {image && (
+                    <div className={styles.imageWrapper}>
+                      <Image
+                        src={image}
+                        alt={donation.titulo}
+                        fill
+                        className={styles.image}
+                      />
+                    </div>
+                  )}
+
+                  <div className={styles.cardContent}>
+                    <h2 className={styles.cardTitle}>
+                      {donation.titulo}
+                    </h2>
+
+                    <p className={styles.description}>
+                      {donation.detalle}
+                    </p>
+
+                    <div className={styles.meta}>
+                      <span>
+                        {donation.cantidad} | ${donation.cantidad}
+                      </span>
+                    </div>
                   </div>
-                )}
 
-                <div className={styles.cardContent}>
-                  <h2 className={styles.cardTitle}>{donation.titulo}</h2>
-
-                  <p className={styles.description}>
-                    {donation.detalle}
-                  </p>
-
-                  <div className={styles.meta}>
-                    <span>
-                      {donation.cantidad} | ${donation.cantidad}
-                    </span>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+                  <Link
+                    href={`/donaciones-catalogo/${donation.id}`}
+                    className={styles.button}
+                  >
+                    Ver más información
+                  </Link>
+                </article>
+              );
+            })
+          )}
         </div>
 
         {totalPages > 1 && (
           <div className={styles.pagination}>
             <button
+              className={styles.pageButton}
               onClick={() => setCurrentPage((p) => p - 1)}
               disabled={currentPage === 1}
             >
               ←
             </button>
 
-            <span>
+            <span className={styles.pageInfo}>
               Página {currentPage} de {totalPages}
             </span>
 
             <button
+              className={styles.pageButton}
               onClick={() => setCurrentPage((p) => p + 1)}
               disabled={currentPage === totalPages}
             >
