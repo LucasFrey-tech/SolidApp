@@ -3,18 +3,13 @@
 import styles from "@/styles/user&pass.module.css";
 import { useEffect, useState, useMemo } from "react";
 import { BaseApi } from "@/API/baseApi";
+import { useUser } from "@/app/context/UserContext";
 
 type UserType = "usuario" | "empresa" | "organizacion";
 
 type AuthData = {
   userId: number;
   userType: UserType;
-};
-
-type UpdateCredentialsPayload = {
-  correo?: string;
-  passwordActual: string;
-  passwordNueva?: string;
 };
 
 export default function UserAndPass() {
@@ -26,6 +21,8 @@ export default function UserAndPass() {
   const [passwordConfirmacion, setPasswordConfirmacion] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const { setUser } = useUser();
 
   const api = useMemo(() => {
     const token = localStorage.getItem("token");
@@ -78,26 +75,6 @@ export default function UserAndPass() {
   if (!authData) {
     return <p>Cargando...</p>;
   }
-
-  const validateForm = () => {
-    if (!passwordActual) return "Debés ingresar tu contraseña actual";
-    if (passwordNueva && passwordNueva !== passwordConfirmacion)
-      return "Las contraseñas nuevas no coinciden";
-    return null;
-  };
-
-  const updateCredentials = (payload: UpdateCredentialsPayload) => {
-    switch (authData.userType) {
-      case "usuario":
-        return api.users.updateCredentials(authData.userId, payload);
-      case "empresa":
-        return api.empresa.updateCredentials(authData.userId, payload);
-      case "organizacion":
-        return api.organizacion.updateCredentials(authData.userId, payload);
-      default:
-        throw new Error("Tipo de usuario inválido");
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,6 +135,12 @@ export default function UserAndPass() {
       // Actualizar correoOriginal si cambió el email
       if (payload.correo) {
         setCorreoOriginal(payload.correo);
+        setUser({
+          email: payload.correo,
+          sub: authData!.userId,
+          username: payload.correo.split("@")[0],
+          admin: false,
+        });
       }
 
       // Limpiar campos
@@ -219,6 +202,14 @@ export default function UserAndPass() {
             onChange={(e) => setPasswordConfirmacion(e.target.value)}
           />
         </section>
+
+        {success && (
+          <div className={styles.SuccessMessage}>
+            ¡Cambios guardados exitosamente!
+          </div>
+        )}
+
+        {error && <div className={styles.ErrorMessage}>Error: {error}</div>}
 
         <button type="submit" className={styles.SubmitButton}>
           Guardar cambios

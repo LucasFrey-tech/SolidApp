@@ -4,54 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 import styles from "@/styles/navbar.module.css";
-
-interface UserInfo {
-  email: string;
-  type?: string;
-}
 
 export default function Navbar() {
   const router = useRouter();
   const profileRef = useRef<HTMLDivElement | null>(null);
+  const { user, setUser, loading } = useUser();
 
-  const [mounted, setMounted] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    checkAuthStatus();
-    window.addEventListener("storage", checkAuthStatus);
-    return () => window.removeEventListener("storage", checkAuthStatus);
-  }, []);
-
-  const checkAuthStatus = () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setIsLoggedIn(false);
-      setUserInfo(null);
-      return;
-    }
-
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setIsLoggedIn(true);
-      setUserInfo({ email: payload.email });
-    } catch {
-      setIsLoggedIn(false);
-      setUserInfo(null);
-    }
-  };
-
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem('user_email');
-    setIsLoggedIn(false);
-    setUserInfo(null);
+    localStorage.removeItem("user_email");
+    setUser(null);
     setProfileOpen(false);
     setMenuOpen(false);
     router.push("/inicio");
@@ -77,7 +44,7 @@ export default function Navbar() {
     };
   }, [profileOpen]);
 
-  if (!mounted) return null;
+  if (loading) return null;
 
   return (
     <nav className={styles.navbar}>
@@ -109,40 +76,16 @@ export default function Navbar() {
           menuOpen ? styles.navLinksOpen : ""
         }`}
       >
-        <li>
-          <Link href="/" onClick={() => setMenuOpen(false)}>
-            Inicio
-          </Link>
-        </li>
-        <li>
-          <Link href="/donaciones-catalogo" onClick={() => setMenuOpen(false)}>
-            Donar
-          </Link>
-        </li>
-        <li>
-          <Link href="/tienda" onClick={() => setMenuOpen(false)}>
-            Tienda
-          </Link>
-        </li>
-        <li>
-          <Link href="/ranking" onClick={() => setMenuOpen(false)}>
-            Ranking
-          </Link>
-        </li>
-        <li>
-          <Link href="/como-participar" onClick={() => setMenuOpen(false)}>
-            Cómo participar
-          </Link>
-        </li>
-        <li>
-          <Link href="/quienes-somos" onClick={() => setMenuOpen(false)}>
-            Quiénes somos
-          </Link>
-        </li>
+        <li><Link href="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
+        <li><Link href="/donaciones-catalogo" onClick={() => setMenuOpen(false)}>Donar</Link></li>
+        <li><Link href="/tienda" onClick={() => setMenuOpen(false)}>Tienda</Link></li>
+        <li><Link href="/ranking" onClick={() => setMenuOpen(false)}>Ranking</Link></li>
+        <li><Link href="/como-participar" onClick={() => setMenuOpen(false)}>Cómo participar</Link></li>
+        <li><Link href="/quienes-somos" onClick={() => setMenuOpen(false)}>Quiénes somos</Link></li>
       </ul>
 
       {/* ACCIÓN DERECHA */}
-      {!isLoggedIn ? (
+      {!user ? (
         <Link href="/login" className={styles.loginButton}>
           Iniciar sesión
         </Link>
@@ -160,7 +103,7 @@ export default function Navbar() {
               className={styles.profileIcon}
             />
             <span className={styles.profileName}>
-              {userInfo?.email.split("@")[0]}
+              {user.username}
             </span>
           </button>
 
