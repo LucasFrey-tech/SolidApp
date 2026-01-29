@@ -61,9 +61,9 @@ export class CreateEmpresaDTO {
     description: 'Rubro principal de la empresa',
   })
   @IsString()
-  @IsNotEmpty({ message: 'El Rubro es Obligatorio' })
+  @IsOptional()
   @MaxLength(15, { message: 'El Rubro no puede superar los 15 caracteres' })
-  rubro: string;
+  rubro?: string;
 
   @ApiProperty({
     example: '+54 11 4567-8900',

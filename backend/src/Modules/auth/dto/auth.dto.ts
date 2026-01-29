@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNumber, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class LoginRequestBody {
   /**
@@ -92,13 +92,6 @@ export class RegisterEmpresaDto {
   @IsString()
   @MinLength(6)
   clave: string;
-
-  @ApiProperty({
-    description: 'Rubro o sector de la empresa',
-    example: 'Tecnología',
-  })
-  @IsString()
-  rubro: string;
 
   @ApiProperty({ description: 'Teléfono' })
   @IsString()
