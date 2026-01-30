@@ -1,15 +1,11 @@
-'use client';
+"use client";
 
 import styles from "@/styles/myAccountMenu.module.css";
 import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
 
-type AccountSection =
-  | 'data'
-  | 'user&pass'
-  | 'cupons'
-  | 'donations';
+type AccountSection = "data" | "user&pass" | "cupons" | "donations";
 
 type MyAccountProps = {
   readonly onChangeSection: (section: AccountSection) => void;
@@ -21,7 +17,6 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("user_email");
     setUser(null);
     router.push("/inicio");
     router.refresh();
@@ -34,20 +29,15 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
 
         {/* PERFIL */}
         <div className={styles.User}>
-          <Image
-            src="/img/perfil.svg"
-            alt="Usuario"
-            width={48}
-            height={48}
-          />
+          <Image src="/img/perfil.svg" alt="Usuario" width={48} height={48} />
 
           <div>
             <p className={styles.UserName}>
               {loading
                 ? "Cargando..."
                 : user
-                ? user.username || user.email?.split("@")[0] || "Usuario"
-                : "Invitado"}
+                  ? user.username || user.email?.split("@")[0] || "Usuario"
+                  : "Invitado"}
             </p>
 
             <p className={styles.Email}>{user?.email}</p>
@@ -57,16 +47,22 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
         {/* MENÚ */}
         <nav className={styles.Menu}>
           <ul className={styles.List}>
-            <li>
-              <button onClick={() => onChangeSection("cupons")}>
-                Mis Cupones
-              </button>
-            </li>
+            {(user?.userType === 'usuario' || user?.userType === 'empresa') && (
+              <li>
+                <button onClick={() => {
+                  if (user.userType === 'usuario') {
+                    onChangeSection('cupons');
+                  } else if (user.userType === 'empresa'){
+                    router.push('/empresaPanel');
+                  } 
+                }}>
+                  Mis Cupones
+                </button>
+              </li>
+            )}
 
             <li>
-              <button onClick={() => onChangeSection("data")}>
-                Mis Datos
-              </button>
+              <button onClick={() => onChangeSection("data")}>Mis Datos</button>
             </li>
 
             <li>
@@ -82,9 +78,7 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
             </li>
 
             <li className={styles.Logout}>
-              <button onClick={handleLogout}>
-                Cerrar Sesión
-              </button>
+              <button onClick={handleLogout}>Cerrar Sesión</button>
             </li>
           </ul>
         </nav>
