@@ -3,6 +3,7 @@ import { z } from "zod";
 import Image from "next/image";
 import styles from "../../styles/registro.module.css";
 import { BaseApi } from "@/API/baseApi";
+import { NumericInput } from "../Utils/NumericInputProp";
 
 // ==================== Estrategias =====================
 import { RegisterUsuarioStrategy } from "@/API/class/register/usuario";
@@ -117,6 +118,8 @@ type Step = "select" | FormType;
 
 type Errors = Record<string, string | undefined>;
 type Touched = Record<string, boolean>;
+
+const numericFields = ["documento", "telefono"];
 
 // ==================== CONFIGURACIÓN DE CAMPOS ====================
 type FieldConfig = {
@@ -552,7 +555,7 @@ export default function Registro() {
     type = "text",
     placeholder: string,
     options: { optional?: boolean } = {},
-    key: string, // ← Agregar parámetro key
+    key: string,
   ) => {
     const optional = options.optional ?? false;
     const showError = touchedFields[field] && errors[field];
@@ -560,22 +563,36 @@ export default function Registro() {
     const data = getCurrentData();
     const value = data ? (data as Record<string, string>)[field] || "" : "";
 
+    const isNumeric = numericFields.includes(field);
+
     return (
       <div key={key} className={styles.fieldGroup}>
-        {" "}
-        {/* ← Agregar key aquí */}
         <label className={`${styles.label} ${optional ? styles.optional : ""}`}>
           {label} {!optional && "*"}
         </label>
-        <input
-          className={getInputClass(field)}
-          type={type}
-          placeholder={placeholder}
-          value={value}
-          onChange={(e) => handleChange(field, e.target.value)}
-          onBlur={() => handleBlur(field)}
-        />
-        {showError && <span className={styles.errorText}>{errors[field]}</span>}
+
+        {isNumeric ? (
+          <NumericInput
+            className={getInputClass(field)}
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => handleChange(field, e.target.value)}
+            onBlur={() => handleBlur(field)}
+          />
+        ) : (
+          <input
+            className={getInputClass(field)}
+            type={type}
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => handleChange(field, e.target.value)}
+            onBlur={() => handleBlur(field)}
+          />
+        )}
+
+        {showError && (
+          <span className={styles.errorText}>{errors[field]}</span>
+        )}
       </div>
     );
   };
