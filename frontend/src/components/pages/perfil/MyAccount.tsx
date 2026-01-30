@@ -46,8 +46,8 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               {loading
                 ? "Cargando..."
                 : user
-                ? user.username || user.email?.split("@")[0] || "Usuario"
-                : "Invitado"}
+                  ? user.username || user.email?.split("@")[0] || "Usuario"
+                  : "Invitado"}
             </p>
 
             <p className={styles.Email}>{user?.email}</p>
@@ -57,21 +57,22 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
         {/* MENÚ */}
         <nav className={styles.Menu}>
           <ul className={styles.List}>
+            
+            <li>
+              <button onClick={() => onChangeSection("user&pass")}>
+                Usuario y Contraseña
+              </button>
+            </li>
+
             <li>
               <button onClick={() => onChangeSection("cupons")}>
                 Mis Cupones
               </button>
             </li>
 
-            <li>
+              <li>
               <button onClick={() => onChangeSection("data")}>
                 Mis Datos
-              </button>
-            </li>
-
-            <li>
-              <button onClick={() => onChangeSection("user&pass")}>
-                Usuario y Contraseña
               </button>
             </li>
 

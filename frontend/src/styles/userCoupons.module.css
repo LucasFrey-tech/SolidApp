@@ -1,0 +1,154 @@
+/* ===============================
+   CONTAINER
+================================ */
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  text-align: center;
+}
+
+/* ===============================
+   TITLE
+================================ */
+.title {
+  margin-bottom: 24px;
+  color: #ff0000;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+
+/* ===============================
+   EMPTY STATE
+================================ */
+.empty {
+  color: #777;
+  font-size: 0.95rem;
+}
+
+/* ===============================
+   CARD
+================================ */
+.card {
+  background-color: #ffffff;
+  border: 1px solid #dde4e3;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+
+  box-shadow: 0 5px 11px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.card:hover {
+  box-shadow: 0 12px 30px rgba(3, 3, 3, 0.12);
+  transform: translateY(-3px);
+}
+
+/* ===============================
+   TEXT
+================================ */
+.couponTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #0f3d3a;
+}
+
+.detail {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.5;
+  max-width: 480px;
+}
+
+.amount {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.amount strong {
+  color: #e09b3d; /* acento dorado */
+}
+
+/* ===============================
+   BUTTON
+================================ */
+.button {
+  margin-top: 6px;
+
+  background-color: #0f3d3a;
+  color: #ffffff;
+  border: none;
+  padding: 9px 22px;
+  border-radius: 8px;
+
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+
+  cursor: pointer;
+  transition: background-color 0.2s ease,
+              transform 0.15s ease,
+              box-shadow 0.15s ease;
+}
+
+.button:hover {
+  background-color: #fbff00;
+  color: black;
+  box-shadow: 0 4px 10px rgba(15, 61, 58, 0.25);
+}
+
+.button:active {
+  transform: scale(0.96);
+}
+
+.buttonDisabled {
+  margin-top: 6px;
+
+  background-color: #d1d1d1;
+  color: #777;
+  border: none;
+  padding: 9px 22px;
+  border-radius: 8px;
+
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  cursor: not-allowed;
+}
+
+/* ===============================
+   TRANSICIÓN DE SECCIONES
+================================ */
+.sectionWrapper {
+  animation: fadeSlideIn 0.35s ease;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+@media (max-width: 640px) {
+  .container {
+    padding: 12px;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .button,
+  .buttonDisabled {
+    width: 100%;
+  }
+}
