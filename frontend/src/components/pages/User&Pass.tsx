@@ -22,7 +22,7 @@ export default function UserAndPass() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { setUser } = useUser();
+  const { setUser, refreshUser } = useUser();
 
   const api = useMemo(() => {
     const token = localStorage.getItem("token");
@@ -116,21 +116,27 @@ export default function UserAndPass() {
     }
 
     try {
+      let response;
       switch (authData!.userType) {
         case "usuario":
-          await api.users.updateCredentials(authData!.userId, payload);
+          response = await api.users.updateCredentials(authData!.userId, payload);
           break;
         case "empresa":
-          await api.empresa.updateCredentials(authData!.userId, payload);
+          response = await api.empresa.updateCredentials(authData!.userId, payload);
           break;
         case "organizacion":
-          await api.organizacion.updateCredentials(authData!.userId, payload);
+          response = await api.organizacion.updateCredentials(authData!.userId, payload);
           break;
         default:
           throw new Error("Tipo de usuario inválido");
       }
 
       setSuccess("Credenciales actualizadas correctamente");
+
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+        refreshUser();
+      }
 
       // Actualizar correoOriginal si cambió el email
       if (payload.correo) {
@@ -139,7 +145,6 @@ export default function UserAndPass() {
           email: payload.correo,
           sub: authData!.userId,
           username: payload.correo.split("@")[0],
-          admin: false,
         });
       }
 
