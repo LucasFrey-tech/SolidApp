@@ -13,6 +13,7 @@ export interface User {
   email: string;
   sub: number;
   username: string;
+  userType: string;
 }
 
 interface UserContextType {
@@ -43,7 +44,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         email: decoded.email,
         sub: decoded.sub,
         username: decoded.username || decoded.email.split("@")[0],
-        
+        userType: decoded.userType,
       };
       setUser(safeUser);
     } catch {
