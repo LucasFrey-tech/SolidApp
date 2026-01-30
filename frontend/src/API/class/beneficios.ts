@@ -62,7 +62,10 @@ export class BeneficiosService extends Crud<Beneficio> {
   ): Promise<Beneficio> {
     const res = await fetch(`${this.baseUrl}${this.endpoint}`, {
       method: 'POST',
-      headers: this.getHeaders(),
+      headers: {
+        ...this.getHeaders(),
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(data),
     });
 
@@ -73,25 +76,28 @@ export class BeneficiosService extends Crud<Beneficio> {
     return res.json();
   }
 
-  async update(
-    id: number,
-    data: BeneficioUpdateRequest,
-  ): Promise<Beneficio> {
+  async update(id: number, data: any) {
     const res = await fetch(
       `${this.baseUrl}${this.endpoint}/${id}`,
       {
-        method: 'PATCH',
-        headers: this.getHeaders(),
+        method: "PATCH",
+        headers: {
+          ...this.getHeaders(),
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
-      },
+      }
     );
 
     if (!res.ok) {
-      throw new Error('Error al actualizar beneficio');
+      const error = await res.text();
+      throw new Error(error);
     }
 
     return res.json();
   }
+
+
 
   async delete(id: number): Promise<void> {
     const res = await fetch(

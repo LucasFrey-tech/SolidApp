@@ -9,24 +9,27 @@ type Coupon = {
   titulo: string;
   detalle: string;
   cantidad: number;
+  valor: number;
 };
 
 type Props = {
   coupon?: Coupon;
   onClose: () => void;
-  onSuccess: (data: Partial<Coupon>) => void;
+  onSuccess: (data: Partial<Coupon>) => Promise<void>;
 };
 
 export function CouponForm({ coupon, onClose, onSuccess }: Props) {
   const [titulo, setTitulo] = useState("");
   const [detalle, setDetalle] = useState("");
-  const [cantidad, setCantidad] = useState<number>(0);
+  const [cantidad, setCantidad] = useState<number>(1);
+  const [valor, setValor] = useState<number>(0);
 
   useEffect(() => {
     if (coupon) {
       setTitulo(coupon.titulo);
       setDetalle(coupon.detalle);
       setCantidad(coupon.cantidad);
+      setValor(coupon.valor);
     }
   }, [coupon]);
 
@@ -35,7 +38,7 @@ export function CouponForm({ coupon, onClose, onSuccess }: Props) {
 
     const result = await Swal.fire({
       title: "¿Estás seguro?",
-      text: "¿Querés guardar los cambios realizados?",
+      text: "¿Querés guardar los cambios?",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Sí",
@@ -43,19 +46,26 @@ export function CouponForm({ coupon, onClose, onSuccess }: Props) {
       reverseButtons: true,
     });
 
-    if (result.isConfirmed) {
-      onSuccess({
+    if (!result.isConfirmed) return;
+
+    try {
+      await onSuccess({
         titulo,
         detalle,
         cantidad,
+        valor,
       });
 
       Swal.fire({
-        title: "¡Cambios enviados!",
+        title: "¡Guardado!",
         icon: "success",
         timer: 1500,
         showConfirmButton: false,
       });
+
+      onClose();
+    } catch {
+      Swal.fire("Error", "No se pudo guardar el cupón", "error");
     }
   };
 
@@ -66,43 +76,51 @@ export function CouponForm({ coupon, onClose, onSuccess }: Props) {
       </h3>
 
       <form className={styles.form} onSubmit={handleSubmit}>
-        {/* NOMBRE */}
         <div className={styles.field}>
           <label>Nombre</label>
           <input
             type="text"
-            placeholder="Ej: Descuento 20%"
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
+            required
           />
         </div>
 
-        {/* DETALLE */}
         <div className={styles.field}>
           <label>Detalle</label>
           <textarea
-            placeholder="Descripción del beneficio"
             value={detalle}
             onChange={(e) => setDetalle(e.target.value)}
+            required
           />
         </div>
 
-        {/* CANTIDAD */}
         <div className={styles.field}>
-          <label>Cantidad disponible</label>
+          <label>Cantidad</label>
           <input
             type="number"
+            min={1}
             value={cantidad}
             onChange={(e) => setCantidad(Number(e.target.value))}
+            required
           />
         </div>
 
-        {/* ACTIONS */}
+        <div className={styles.field}>
+          <label>Puntos para canjear</label>
+          <input
+            type="number"
+            min={0}
+            value={valor}
+            onChange={(e) => setValor(Number(e.target.value))}
+            required
+          />
+        </div>
+
         <div className={styles.actions}>
           <button type="button" onClick={onClose}>
             Cancelar
           </button>
-
           <button type="submit">Guardar</button>
         </div>
       </form>

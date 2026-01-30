@@ -62,6 +62,13 @@ export class Beneficios {
   @Column({ type: 'int' })
   valor: number;
 
+  @ApiProperty({
+    example: 'pendiente',
+    description: 'Estado del Beneficio',
+  })
+  @Column({ type: 'varchar', length: 20, default: 'pendiente' }) 
+  estado: 'pendiente' | 'aprobado' | 'rechazado';
+
   @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })
   @ManyToOne(() => Empresa, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_empresa' })

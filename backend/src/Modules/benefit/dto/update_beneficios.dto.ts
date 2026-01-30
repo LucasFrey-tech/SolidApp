@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateBeneficiosDTO } from './create_beneficios.dto';
-import { IsOptional, Min } from 'class-validator';
+import { IsOptional, Min, IsIn } from 'class-validator';
 
 export class UpdateBeneficiosDTO extends PartialType(CreateBeneficiosDTO) {
   @ApiProperty({
@@ -20,4 +20,14 @@ export class UpdateBeneficiosDTO extends PartialType(CreateBeneficiosDTO) {
   @IsOptional()
   @Min(0)
   valor?: number;
+
+  @ApiProperty({
+    example: 'pendiente',
+    description: 'Estado del beneficio',
+    enum: ['pendiente', 'aprobado', 'rechazado'],
+    required: false,
+  })
+  @IsOptional()
+  @IsIn(['pendiente', 'aprobado', 'rechazado'])
+  estado?: 'pendiente' | 'aprobado' | 'rechazado';
 }

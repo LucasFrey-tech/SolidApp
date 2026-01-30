@@ -13,9 +13,6 @@ import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { EmpresaSummaryDTO } from '../empresa/dto/summary_empresa.dto';
 
-/**
- * Servicio que maneja la lógica de negocio de los Beneficios.
- */
 @Injectable()
 export class BeneficioService {
   private readonly logger = new Logger(BeneficioService.name);
@@ -26,25 +23,23 @@ export class BeneficioService {
 
     @InjectRepository(Empresa)
     private readonly empresasRepository: Repository<Empresa>,
-  ) { }
+  ) {}
 
-  /**
-   * Obtiene todos los beneficios.
-   */
+  // ===============================
+  // LISTAR TODOS
+  // ===============================
   async findAll(): Promise<BeneficiosResponseDTO[]> {
     const beneficios = await this.beneficiosRepository.find({
       relations: ['empresa'],
-      where: { empresa: { deshabilitado: false } }, // Solo empresas activas
+      where: { empresa: { deshabilitado: false } },
     });
 
-    this.logger.log(`Se obtuvieron ${beneficios.length} beneficios`);
     return beneficios.map(this.mapToResponseDto);
   }
 
-  /**
-   * Obtiene un beneficio por ID.
-   * @throws NotFoundException
-   */
+  // ===============================
+  // OBTENER UNO
+  // ===============================
   async findOne(id: number): Promise<BeneficiosResponseDTO> {
     const beneficio = await this.beneficiosRepository.findOne({
       where: { id },
@@ -55,23 +50,13 @@ export class BeneficioService {
       throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
     }
 
-    this.logger.log(`Beneficio ${id} obtenido`);
     return this.mapToResponseDto(beneficio);
   }
 
-  /**
-   * Obtengo todos los beneficios con paginación
-   * @param page 
-   * @param limit 
-   * @returns 
-   */
-  async findAllPaginated(
-    page = 1,
-    limit = 10,
-  ): Promise<{
-    items: BeneficiosResponseDTO[];
-    total: number;
-  }> {
+  // ===============================
+  // PAGINADO
+  // ===============================
+  async findAllPaginated(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
     const [beneficios, total] =
@@ -89,50 +74,44 @@ export class BeneficioService {
     };
   }
 
-  /**
-   * Crea un nuevo beneficio.
-   */
-  async create(createDto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO> {
-    // Validar que la empresa existe y está activa
+  // ===============================
+  // CREAR
+  // ===============================
+  async create(
+    createDto: CreateBeneficiosDTO,
+  ): Promise<BeneficiosResponseDTO> {
     const empresa = await this.empresasRepository.findOne({
       where: { id: createDto.id_empresa, deshabilitado: false },
     });
 
     if (!empresa) {
       throw new NotFoundException(
-        `Empresa con ID ${createDto.id_empresa} no encontrada o está deshabilitada`,
+        `Empresa con ID ${createDto.id_empresa} no encontrada o deshabilitada`,
       );
     }
 
-    // Validar que la cantidad sea positiva
     if (createDto.cantidad <= 0) {
       throw new BadRequestException('La cantidad debe ser mayor a 0');
     }
 
-    // Validar que el valor sea positivo
     if (createDto.valor < 0) {
       throw new BadRequestException('El valor no puede ser negativo');
     }
 
-    // Crear el beneficio
     const beneficio = this.beneficiosRepository.create({
-      titulo: createDto.titulo,
-      tipo: createDto.tipo,
-      detalle: createDto.detalle,
-      cantidad: createDto.cantidad,
-      valor: createDto.valor,
+      ...createDto,
       empresa,
     });
 
-    const savedBenefit = await this.beneficiosRepository.save(beneficio);
-    this.logger.log(`Beneficio creado con ID: ${savedBenefit.id}`);
+    const saved = await this.beneficiosRepository.save(beneficio);
+    this.logger.log(`Beneficio creado ID ${saved.id}`);
 
-    return this.mapToResponseDto(savedBenefit);
+    return this.mapToResponseDto(saved);
   }
 
-  /**
- * Obtiene beneficios por empresa
- */
+  // ===============================
+  // POR EMPRESA
+  // ===============================
   async findByEmpresa(idEmpresa: number): Promise<BeneficiosResponseDTO[]> {
     const empresa = await this.empresasRepository.findOne({
       where: { id: idEmpresa, deshabilitado: false },
@@ -145,89 +124,82 @@ export class BeneficioService {
     }
 
     const beneficios = await this.beneficiosRepository.find({
-      where: {
-        empresa: { id: idEmpresa },
-      },
+      where: { empresa: { id: idEmpresa } },
       relations: ['empresa'],
     });
-
-    this.logger.log(
-      `Se obtuvieron ${beneficios.length} beneficios para empresa ${idEmpresa}`,
-    );
 
     return beneficios.map(this.mapToResponseDto);
   }
 
+  // ===============================
+// UPDATE
+// ===============================
+async update(
+  id: number,
+  updateDto: UpdateBeneficiosDTO,
+): Promise<BeneficiosResponseDTO> {
+  const beneficio = await this.beneficiosRepository.findOne({
+    where: { id },
+    relations: ['empresa'],
+  });
 
-  /**
-   * Actualiza un beneficio existente.
-   */
-  async update(
-    id: number,
-    updateDto: UpdateBeneficiosDTO,
-  ): Promise<BeneficiosResponseDTO> {
-    const beneficio = await this.beneficiosRepository.findOne({
-      where: { id },
-      relations: ['empresa'],
-    });
-
-    if (!beneficio) {
-      throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
-    }
-
-    // Si se actualiza la empresa, validar que existe
-    if (updateDto.id_empresa) {
-      const empresa = await this.empresasRepository.findOne({
-        where: { id: updateDto.id_empresa, deshabilitado: false },
-      });
-
-      if (!empresa) {
-        throw new NotFoundException(
-          `Empresa con ID ${updateDto.id_empresa} no encontrada o está deshabilitada`,
-        );
-      }
-      beneficio.empresa = empresa;
-    }
-
-    // Actualizar campos
-    Object.keys(updateDto).forEach((key) => {
-      if (key !== 'id_empresa' && updateDto[key] !== undefined) {
-        beneficio[key as keyof Omit<Beneficios, 'empresa'>] = updateDto[
-          key as keyof UpdateBeneficiosDTO
-        ] as never;
-      }
-    });
-
-    // Actualizar fecha de modificación
-    beneficio.ultimo_cambio = new Date();
-
-    // Validar cantidad si se actualiza
-    if (updateDto.cantidad !== undefined && updateDto.cantidad < 0) {
-      throw new BadRequestException('La cantidad no puede ser negativa');
-    }
-
-    const updatedBenefit = await this.beneficiosRepository.save(beneficio);
-    this.logger.log(`Beneficio ${id} actualizado`);
-
-    return this.mapToResponseDto(updatedBenefit);
+  if (!beneficio) {
+    throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
   }
 
-  /**
-   * Elimina un beneficio (hard delete).
-   */
+  // Validaciones
+  if (updateDto.cantidad !== undefined && updateDto.cantidad < 0) {
+    throw new BadRequestException('La cantidad no puede ser negativa');
+  }
+
+  if (updateDto.valor !== undefined && updateDto.valor < 0) {
+    throw new BadRequestException('El valor no puede ser negativo');
+  }
+
+  // 👇 asignamos SOLO campos simples
+  if (updateDto.titulo !== undefined) {
+    beneficio.titulo = updateDto.titulo;
+  }
+
+  if (updateDto.tipo !== undefined) {
+    beneficio.tipo = updateDto.tipo;
+  }
+
+  if (updateDto.detalle !== undefined) {
+    beneficio.detalle = updateDto.detalle;
+  }
+
+  if (updateDto.cantidad !== undefined) {
+    beneficio.cantidad = updateDto.cantidad;
+  }
+
+  if (updateDto.valor !== undefined) {
+    beneficio.valor = updateDto.valor;
+  }
+
+  const updated = await this.beneficiosRepository.save(beneficio);
+  this.logger.log(`Beneficio ${id} actualizado`);
+
+  return this.mapToResponseDto(updated);
+}
+
+
+  // ===============================
+  // DELETE
+  // ===============================
   async delete(id: number): Promise<void> {
-    const beneficio = await this.beneficiosRepository.findOne({
-      where: { id },
-    });
+    const beneficio = await this.beneficiosRepository.findOne({ where: { id } });
 
     if (!beneficio) {
       throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
     }
 
     await this.beneficiosRepository.remove(beneficio);
-    this.logger.log(`Beneficio ${id} eliminado`);
   }
 
+  // ===============================
+  // MAPPER
+  // ===============================
   private readonly mapToResponseDto = (
     beneficio: Beneficios,
   ): BeneficiosResponseDTO => {
