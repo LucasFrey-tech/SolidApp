@@ -141,5 +141,5 @@ export class RegisterOrganizacionDto {
 
 export class AuthResponse {
   @ApiProperty({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6...' })
-  access_token: string;
+  token: string;
 }
