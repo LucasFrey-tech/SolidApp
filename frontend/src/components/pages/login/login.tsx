@@ -178,7 +178,6 @@ export default function Login() {
       }
 
       localStorage.setItem("token", token);
-      localStorage.setItem("user_email", loginData.correo);
 
       const decoded = jwtDecode<DecodedToken>(token);
       console.log("Token decodificador: ", decoded);
@@ -187,7 +186,6 @@ export default function Login() {
         email: decoded.email || loginData.correo,
         sub: decoded.sub,
         username: decoded.username || loginData.correo.split('@')[0],
-        admin: decoded.admin || false
       });
 
       
