@@ -31,7 +31,10 @@ async function bootstrap() {
     }),
   });
 
-  app.use(SettingsService.getStaticResourcesPrefix(), express.static(SettingsService.getStaticResourcesPath()));
+  app.use(
+    SettingsService.getStaticResourcesPrefix(),
+    express.static(SettingsService.getStaticResourcesPath()),
+  );
 
   /**
    * Acceso a configuración tipada
@@ -53,8 +56,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
     }),
-  );  
-
+  );
 
   /**
    * Swagger
