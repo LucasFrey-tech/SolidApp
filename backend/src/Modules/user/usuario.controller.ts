@@ -91,10 +91,10 @@ export class UsuarioController {
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña del usuario',
   })
-  updateCredentials(
+  async updateCredentials(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCredentialsDto,
   ) {
-    return this.userService.updateCredentials(id, dto);
+    return await this.userService.updateCredentials(id, dto);
   }
 }

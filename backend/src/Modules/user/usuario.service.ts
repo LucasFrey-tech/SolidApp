@@ -14,14 +14,15 @@ import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 import { ResponseUsuarioDto } from './dto/response_usuario.dto';
 import { UpdateCredentialsDto } from './dto/panelUsuario.dto';
 import bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsuarioService {
   private readonly logger = new Logger(UsuarioService.name);
-
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async findAll(): Promise<ResponseUsuarioDto[]> {
@@ -178,7 +179,20 @@ export class UsuarioService {
       await this.usuarioRepository.save(usuario);
     }
 
-    return this.mapToResponseDto(usuario);
+    const updated = await this.usuarioRepository.save(usuario);
+
+    const payload = {
+      sub: updated.id,
+      email: updated.correo,
+      userType: 'usuario',
+    };
+
+    const newToken = this.jwtService.sign(payload);
+
+    return {
+      user: updated,
+      token: newToken,
+    };
   }
 
   private readonly mapToResponseDto = (

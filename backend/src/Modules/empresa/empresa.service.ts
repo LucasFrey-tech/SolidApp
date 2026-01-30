@@ -17,17 +17,20 @@ import { Empresa_imagenes } from '../../Entities/empresa_imagenes.entity';
 import { SettingsService } from '../../common/settings/settings.service';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 import bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class EmpresasService {
   private readonly logger = new Logger(EmpresasService.name);
-
+  
   constructor(
     @InjectRepository(Empresa)
     private readonly empresasRepository: Repository<Empresa>,
-
+    
     @InjectRepository(Empresa_imagenes)
     private readonly empresasImagenRepository: Repository<Empresa_imagenes>,
+    
+    private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -202,24 +205,61 @@ export class EmpresasService {
       throw new NotFoundException('Empresa no encontrada');
     }
 
-    const passwordValida = await bcrypt.compare(
-      dto.passwordActual,
-      empresa.clave,
-    );
+    let cambiosRealizados = false;
 
-    if (!passwordValida) {
-      throw new UnauthorizedException('Contraseña actual incorrecta');
-    }
+    if (dto.correo && dto.correo !== empresa.correo) {
+      const empresaExistente = await this.empresasRepository.findOne({
+        where: { correo: dto.correo },
+      });
 
-    if (dto.correo) {
+      if (empresaExistente && empresaExistente.id !== id) {
+        throw new ConflictException('El email ya está en uso por otro usuario');
+      }
+
       empresa.correo = dto.correo;
+      cambiosRealizados = true;
     }
 
     if (dto.passwordNueva) {
-      empresa.clave = await bcrypt.hash(dto.passwordNueva, 10);
+      if (!dto.passwordNueva) {
+        throw new UnauthorizedException(
+          'Para cambiar la contraseña debés ingresar la contraseña actual',
+        );
+      }
+
+      const passwordValida = await bcrypt.compare(
+        dto.passwordActual,
+        empresa.clave,
+      );
+
+      if (!passwordValida) {
+        throw new UnauthorizedException('Contraseña actual incorrecta');
+      }
+
+      const hash = await bcrypt.hash(dto.passwordNueva, 10);
+      empresa.clave = hash;
+      cambiosRealizados = true;
     }
 
-    return this.empresasRepository.save(empresa);
+    if (cambiosRealizados) {
+      empresa.ultimo_cambio = new Date();
+      await this.empresasRepository.save(empresa);
+    }
+
+    const updated = await this.empresasRepository.save(empresa);
+
+    const payload = {
+      sub: updated.id,
+      email: updated.correo,
+      userType: 'empresa',
+    };
+
+    const newToken = this.jwtService.sign(payload);
+
+    return {
+      user: updated,
+      token: newToken,
+    };
   }
 
   private readonly mapToResponseDto = (

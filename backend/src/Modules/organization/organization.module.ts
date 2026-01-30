@@ -3,9 +3,16 @@ import { OrganizationsController } from './organization.controller';
 import { OrganizationsService } from './organization.service';
 import { Organizations } from '../../Entities/organizations.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Organizations])],
+  imports: [
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'defaultSecret',
+      signOptions: { expiresIn: '2h' },
+    }),
+    TypeOrmModule.forFeature([Organizations]),
+  ],
   controllers: [OrganizationsController],
   providers: [OrganizationsService],
   exports: [OrganizationsService],

@@ -95,7 +95,7 @@ export class Users extends Crud<User> {
     return res.json();
   }
 
-  async updateCredentials(id: number, data: UpdateCredentialsPayload): Promise<User> {
+  async updateCredentials(id: number, data: UpdateCredentialsPayload): Promise<{ user:User; token: string }> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/credentials`, {
         method: "PATCH",
         headers: this.getHeaders(),

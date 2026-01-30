@@ -15,11 +15,15 @@ import { CreateOrganizationDto } from './dto/create_organization.dto';
 import { UpdateOrganizationDto } from './dto/update_organization.dto';
 import { ResponseOrganizationDto } from './dto/response_organization.dto';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @ApiTags('Organizaciones')
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(private readonly organizationService: OrganizationsService) {}
+  constructor(
+    private readonly organizationService: OrganizationsService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Listar organizaciones activas' })
@@ -74,18 +78,18 @@ export class OrganizationsController {
 
   @Patch(':id/restaurar')
   @ApiOperation({ summary: 'Restaurar una organización' })
-  restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.organizationService.restore(id);
+  async restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return await this.organizationService.restore(id);
   }
 
   @Patch(':id/credenciales')
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña de la organización',
   })
-  updateCredentials(
+  async updateCredentials(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCredentialsDto,
   ) {
-    return this.organizationService.updateCredentials(id, dto);
+    return await this.organizationService.updateCredentials(id, dto);
   }
 }

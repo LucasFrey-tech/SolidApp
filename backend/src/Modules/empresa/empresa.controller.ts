@@ -188,10 +188,10 @@ export class EmpresaController {
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña de la empresa',
   })
-  updateCredentials(
+  async updateCredentials(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateCredentialsDto,
   ) {
-    return this.empresasService.updateCredentials(id, dto);
+    return await this.empresasService.updateCredentials(id, dto);
   }
 }
