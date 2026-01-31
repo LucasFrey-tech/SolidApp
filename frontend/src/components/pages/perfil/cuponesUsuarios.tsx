@@ -1,38 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '../../../styles/userCoupons.module.css';
-
-type Coupon = {
-  id: number;
-  titulo: string;
-  detalle: string;
-  cantidad: number;
-};
+import { useUser } from '@/app/context/UserContext';
+import { getUserCoupons, useCoupon, UsuarioBeneficio } from '@/API/class/usuarioBeneficios.api';
 
 export default function UserCoupons() {
-  const [coupons, setCoupons] = useState<Coupon[]>([
-    {
-      id: 1,
-      titulo: 'Descuento del 15%',
-      detalle: 'Descuento en artículos de supermercado',
-      cantidad: 2,
-    },
-    {
-      id: 2,
-      titulo: '2x1 en Cine',
-      detalle: 'Válido de lunes a jueves',
-      cantidad: 1,
-    },
-  ]);
+  const { user, loading } = useUser();
+  const [coupons, setCoupons] = useState<UsuarioBeneficio[]>([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(true);
 
-  const handleUseCoupon = async (coupon: Coupon) => {
-    if (coupon.cantidad <= 0) return;
+  // Traer cupones del usuario al montar
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchCoupons = async () => {
+      setLoadingCoupons(true);
+      try {
+        const data = await getUserCoupons(user.sub);
+        setCoupons(data);
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'No se pudieron cargar los cupones', 'error');
+      } finally {
+        setLoadingCoupons(false);
+      }
+    };
+
+    fetchCoupons();
+  }, [user]);
+
+  // Manejar uso de un cupón
+  const handleUseCoupon = async (coupon: UsuarioBeneficio) => {
+    const restantes = coupon.cantidad - coupon.usados;
+    if (restantes <= 0) return;
 
     const result = await Swal.fire({
       title: '¿Estás seguro?',
-      text: `¿Querés usar el cupón "${coupon.titulo}"?`,
+      text: `¿Querés usar el cupón "${coupon.beneficio.titulo}"?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, usar',
@@ -41,22 +47,36 @@ export default function UserCoupons() {
     });
 
     if (result.isConfirmed) {
-      setCoupons((prev) =>
-        prev.map((c) =>
-          c.id === coupon.id
-            ? { ...c, cantidad: c.cantidad - 1 }
-            : c,
-        ),
-      );
+      try {
+        await useCoupon(coupon.id);
+        // Actualizo la cantidad usada en el estado
+        setCoupons((prev) =>
+          prev.map((c) =>
+            c.id === coupon.id
+              ? { ...c, usados: c.usados + 1, estado: c.usados + 1 === c.cantidad ? 'usado' : 'activo' }
+              : c
+          )
+        );
 
-      Swal.fire({
-        title: 'Cupón usado',
-        text: 'La información del cupón fue enviada a tu mail',
-        icon: 'success',
-        confirmButtonText: 'OK',
-      });
+        Swal.fire(
+          'Cupón usado',
+          'La información del cupón fue enviada a tu mail',
+          'success'
+        );
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'No se pudo usar el cupón', 'error');
+      }
     }
   };
+
+  if (loading || loadingCoupons) {
+    return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Cargando cupones...</p>;
+  }
+
+  if (!user) {
+    return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Debes iniciar sesión para ver tus cupones</p>;
+  }
 
   return (
     <div className={styles.container}>
@@ -66,28 +86,27 @@ export default function UserCoupons() {
         <p className={styles.empty}>No tenés cupones disponibles</p>
       )}
 
-      {coupons.map((coupon) => (
-        <div key={coupon.id} className={styles.card}>
-          <h4 className={styles.couponTitle}>{coupon.titulo}</h4>
-          <p className={styles.detail}>{coupon.detalle}</p>
+      {coupons.map((coupon) => {
+        const restantes = coupon.cantidad - coupon.usados;
+        return (
+          <div key={coupon.id} className={styles.card}>
+            <h4 className={styles.couponTitle}>{coupon.beneficio.titulo}</h4>
+            <p className={styles.detail}>{coupon.beneficio.detalle}</p>
 
-          <p className={styles.amount}>
-            Cantidad: <strong>{coupon.cantidad}</strong>
-          </p>
+            <p className={styles.amount}>
+              Cantidad restante: <strong>{restantes}</strong>
+            </p>
 
-          <button
-            className={
-              coupon.cantidad === 0
-                ? styles.buttonDisabled
-                : styles.button
-            }
-            onClick={() => handleUseCoupon(coupon)}
-            disabled={coupon.cantidad === 0}
-          >
-            Usar
-          </button>
-        </div>
-      ))}
+            <button
+              className={restantes <= 0 ? styles.buttonDisabled : styles.button}
+              onClick={() => handleUseCoupon(coupon)}
+              disabled={restantes <= 0}
+            >
+              Usar
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }

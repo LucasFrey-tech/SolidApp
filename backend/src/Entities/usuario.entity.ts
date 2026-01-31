@@ -4,8 +4,10 @@ import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { UsuarioBeneficio } from './usuario-beneficio.entity';
 
 @Entity('usuarios')
 export class Usuario {
@@ -138,4 +140,11 @@ export class Usuario {
   })
   @Column({ type: 'int', default: 0 })
   puntos: number;
+
+  @OneToMany(() => UsuarioBeneficio, ub => ub.beneficio)
+  usuarios: UsuarioBeneficio[];
+
+
 }
+
+
