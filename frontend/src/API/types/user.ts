@@ -15,3 +15,8 @@ export interface User {
   ciudad: string;
   deshabilitado: boolean; 
 }
+
+export interface UserPoints {
+  id: number;
+  puntos: number;
+}

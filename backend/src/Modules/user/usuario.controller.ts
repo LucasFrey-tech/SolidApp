@@ -26,7 +26,7 @@ import { UpdateCredentialsDto } from './dto/panelUsuario.dto';
 @ApiTags('Usuarios')
 @Controller('users')
 export class UsuarioController {
-  constructor(private readonly userService: UsuarioService) {}
+  constructor(private readonly userService: UsuarioService) { }
 
   @Get()
   @ApiOperation({ summary: 'Listar usuarios activos' })
@@ -48,6 +48,22 @@ export class UsuarioController {
   })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ResponseUsuarioDto> {
     return this.userService.findOne(id);
+  }
+
+  @Get(':id/points')
+  @ApiOperation({ summary: 'Obtener puntos del usuario' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiResponse({
+    status: 200,
+    schema: {
+      example: {
+        id: 1,
+        puntos: 150,
+      },
+    },
+  })
+  getPoints(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.getPoints(id);
   }
 
   @Post()

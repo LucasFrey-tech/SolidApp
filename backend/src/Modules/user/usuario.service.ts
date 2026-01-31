@@ -23,7 +23,7 @@ export class UsuarioService {
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async findAll(): Promise<ResponseUsuarioDto[]> {
     const usuarios = await this.usuarioRepository.find({
@@ -56,6 +56,23 @@ export class UsuarioService {
 
     return usuario;
   }
+
+  async getPoints(id: number): Promise<{ id: number; puntos: number }> {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id, deshabilitado: false },
+      select: ['id', 'puntos'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    return {
+      id: usuario.id,
+      puntos: usuario.puntos ?? 0,
+    };
+  }
+
 
   async create(createDto: CreateUsuarioDto): Promise<ResponseUsuarioDto> {
     const existente = await this.usuarioRepository.findOne({

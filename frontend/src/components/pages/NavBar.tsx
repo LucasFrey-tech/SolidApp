@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import styles from "@/styles/navbar.module.css";
+import { BaseApi } from "@/API/baseApi";
 
 export default function Navbar() {
   const router = useRouter();
@@ -14,6 +15,8 @@ export default function Navbar() {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const [points, setPoints] = useState<number | null>(null);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -44,6 +47,27 @@ export default function Navbar() {
     };
   }, [profileOpen]);
 
+  //traer los puntos
+  useEffect(() => {
+    if (!user || user.userType !== "usuario") return;
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const api = new BaseApi(token);
+
+    api.users
+      .getPoints(user.sub)
+      .then((res) => {
+        setPoints(res.puntos);
+      })
+      .catch((err) => {
+        console.error("Error al obtener puntos:", err);
+        setPoints(0);
+      });
+  }, [user]);
+
+
   if (loading) return null;
 
   return (
@@ -72,9 +96,8 @@ export default function Navbar() {
 
       {/* LINKS */}
       <ul
-        className={`${styles.navLinks} ${
-          menuOpen ? styles.navLinksOpen : ""
-        }`}
+        className={`${styles.navLinks} ${menuOpen ? styles.navLinksOpen : ""
+          }`}
       >
         <li><Link href="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
         <li><Link href="/donaciones-catalogo" onClick={() => setMenuOpen(false)}>Donar</Link></li>
@@ -91,6 +114,18 @@ export default function Navbar() {
         </Link>
       ) : (
         <div ref={profileRef} className={styles.profileWrapper}>
+          {user.userType === "usuario" && points !== null && (
+            <div className={styles.points}>
+              <span>{points}</span>
+              <Image
+                src="/img/img_coin.png"
+                alt="Puntos del usuario"
+                width={50}
+                height={50}
+                className={styles.pointsIcon}
+              />
+            </div>
+          )}
           <button
             className={styles.profileButton}
             onClick={() => setProfileOpen(!profileOpen)}
@@ -108,9 +143,8 @@ export default function Navbar() {
           </button>
 
           <div
-            className={`${styles.profileDropdown} ${
-              profileOpen ? styles.open : ""
-            }`}
+            className={`${styles.profileDropdown} ${profileOpen ? styles.open : ""
+              }`}
           >
             <Link
               href="/userPanel"
