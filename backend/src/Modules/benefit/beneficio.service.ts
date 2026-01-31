@@ -14,6 +14,7 @@ import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { EmpresaSummaryDTO } from '../empresa/dto/summary_empresa.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
 import { Usuario } from '../../Entities/usuario.entity';
+import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
 
 @Injectable()
 export class BeneficioService {
@@ -162,6 +163,7 @@ export class BeneficioService {
     return this.dataSource.transaction(async (manager) => {
       const beneficioRepo = manager.getRepository(Beneficios);
       const usuarioRepo = manager.getRepository(Usuario);
+      const usuarioBeneficioRepo = manager.getRepository(UsuarioBeneficio);
 
       const beneficio = await beneficioRepo.findOne({
         where: { id: beneficioId },
@@ -196,6 +198,30 @@ export class BeneficioService {
 
       await usuarioRepo.save(usuario);
       await beneficioRepo.save(beneficio);
+
+      const existente = await usuarioBeneficioRepo.findOne({
+        where: {
+          usuario: { id: userId },
+          beneficio: { id: beneficioId },
+          estado: 'activo',
+        },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (existente) {
+        existente.cantidad += cantidad;
+        await usuarioBeneficioRepo.save(existente);
+      } else {
+        const nuevo = usuarioBeneficioRepo.create({
+          usuario: { id: userId } as Usuario,
+          beneficio: { id: beneficioId } as Beneficios,
+          cantidad,
+          usados: 0,
+          estado: 'activo',
+        });
+
+        await usuarioBeneficioRepo.save(nuevo);
+      }
 
       return {
         success: true,
