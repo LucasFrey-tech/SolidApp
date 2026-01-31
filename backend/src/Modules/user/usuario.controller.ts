@@ -66,7 +66,7 @@ export class UsuarioController {
 
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar un usuario' })
-  @UseInterceptors(FileInterceptor('file'))
+  //@UseInterceptors(FileInterceptor('file'))
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateUsuarioDto,

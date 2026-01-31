@@ -178,7 +178,7 @@ export default function UserData() {
           <div className={styles.Grid}>
             <div className={styles.Field}>
               <label className={styles.Label}>Prefijo</label>
-              <NumericInput className={styles.Input} value={editableData?.prefijo || ''} onChange={(e) => handleInputChange('prefijo', e.target.value)} placeholder="11" />
+              <NumericInput className={styles.Input} value={editableData?.prefijo || ''} maxLength={5} onChange={(e) => handleInputChange('prefijo', e.target.value)} placeholder="11" />
             </div>
 
             <div className={styles.Field}>
