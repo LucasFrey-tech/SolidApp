@@ -15,6 +15,7 @@ import { BeneficioModule } from './Modules/benefit/beneficio.module';
 import { AuthModule } from './Modules/auth/auth.module';
 import { SettingsService } from './common/settings/settings.service';
 import { RankingModule } from './Modules/ranking/ranking.module';
+import { UsuarioBeneficioModule } from './Modules/user/usuario-beneficio/usuario-beneficio.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { RankingModule } from './Modules/ranking/ranking.module';
     BeneficioModule,
     AuthModule,
     RankingModule,
+    UsuarioBeneficioModule,
   ],
   providers: [SettingsService],
 })
