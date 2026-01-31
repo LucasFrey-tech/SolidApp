@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Beneficios } from '../../Entities/beneficio.entity';
 import { Empresa } from '../../Entities/empresa.entity';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
@@ -13,6 +13,7 @@ import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { EmpresaSummaryDTO } from '../empresa/dto/summary_empresa.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
+import { Usuario } from '../../Entities/usuario.entity';
 
 @Injectable()
 export class BeneficioService {
@@ -24,7 +25,9 @@ export class BeneficioService {
 
     @InjectRepository(Empresa)
     private readonly empresasRepository: Repository<Empresa>,
-  ) {}
+
+    private readonly dataSource: DataSource,
+  ) { }
 
   // ===============================
   // LISTAR TODOS
@@ -149,6 +152,62 @@ export class BeneficioService {
   }
 
   // ===============================
+  // CANJEAR PUNTOS
+  // ===============================
+  async canjear(
+    beneficioId: number,
+    userId: number,
+    cantidad: number,
+  ) {
+    return this.dataSource.transaction(async (manager) => {
+      const beneficioRepo = manager.getRepository(Beneficios);
+      const usuarioRepo = manager.getRepository(Usuario);
+
+      const beneficio = await beneficioRepo.findOne({
+        where: { id: beneficioId },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!beneficio) {
+        throw new NotFoundException('Beneficio no encontrado');
+      }
+
+      if (beneficio.cantidad < cantidad) {
+        throw new BadRequestException('Stock insuficiente');
+      }
+
+      const usuario = await usuarioRepo.findOne({
+        where: { id: userId, deshabilitado: false },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!usuario) {
+        throw new NotFoundException('Usuario no encontrado');
+      }
+
+      const totalPuntos = beneficio.valor * cantidad;
+
+      if (usuario.puntos < totalPuntos) {
+        throw new BadRequestException('Puntos insuficientes');
+      }
+
+      usuario.puntos -= totalPuntos;
+      beneficio.cantidad -= cantidad;
+
+      await usuarioRepo.save(usuario);
+      await beneficioRepo.save(beneficio);
+
+      return {
+        success: true,
+        cantidadCanjeada: cantidad,
+        puntosGastados: totalPuntos,
+        puntosRestantes: usuario.puntos,
+        stockRestante: beneficio.cantidad,
+      };
+    });
+  }
+
+  // ===============================
   // UPDATE
   // ===============================
   async update(
@@ -199,6 +258,7 @@ export class BeneficioService {
 
     return this.mapToResponseDto(updated);
   }
+
 
   // ===============================
   // DELETE

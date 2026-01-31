@@ -11,17 +11,18 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { BeneficioService } from './beneficio.service';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
+import { CanjearBeneficioDto } from './dto/canjear_beneficio.dto';
 
 @ApiTags('Beneficios')
 @Controller('beneficios')
 export class BeneficioController {
-  constructor(private readonly beneficiosService: BeneficioService) {}
+  constructor(private readonly beneficiosService: BeneficioService) { }
 
   @Get()
   async findAll(): Promise<BeneficiosResponseDTO[]> {
@@ -68,6 +69,16 @@ export class BeneficioController {
     return this.beneficiosService.create(dto);
   }
 
+  @Post(':id/canjear')
+  @ApiOperation({ summary: 'Canjear beneficio por puntos' })
+  @ApiParam({ name: 'id', type: Number })
+  canjear(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CanjearBeneficioDto,
+  ) {
+    return this.beneficiosService.canjear(id, dto.userId, dto.cantidad,);
+  }
+
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -75,6 +86,7 @@ export class BeneficioController {
   ): Promise<BeneficiosResponseDTO> {
     return this.beneficiosService.update(id, dto);
   }
+
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

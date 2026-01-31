@@ -6,6 +6,10 @@ import styles from '@/styles/canjeModal.module.css';
 
 import { Beneficio } from '@/API/types/beneficios';
 
+import { BaseApi } from '@/API/baseApi';
+import { useUser } from '@/app/context/UserContext';
+
+
 interface Props {
   beneficio: Beneficio;
   onClose: () => void;
@@ -13,6 +17,7 @@ interface Props {
 
 export default function CanjeModal({ beneficio, onClose }: Props) {
   const [cantidad, setCantidad] = useState<number>(1);
+  const { user } = useUser();
 
   const incrementar = () => {
     setCantidad((prev) => prev + 1);
@@ -24,22 +29,48 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
 
   const totalPuntos = cantidad * beneficio.valor;
 
+  if (!user) {
+    Swal.fire('Error', 'Debes iniciar sesión', 'error');
+    return;
+  }
+
+  if (cantidad > beneficio.cantidad) {
+    Swal.fire(
+      'Stock insuficiente',
+      'No hay suficientes cupones disponibles',
+      'warning',
+    );
+    return;
+  }
+
+
   const handleCanjear = async () => {
+    if (!user) return;
+
     const result = await Swal.fire({
       title: '¿Confirmar canje?',
       html: `
-        <p><strong>${beneficio.titulo}</strong></p>
-        <p>Cantidad: <strong>${cantidad}</strong></p>
-        <p>Total a canjear: <strong>${totalPuntos} pts</strong></p>
-      `,
+      <p><strong>${beneficio.titulo}</strong></p>
+      <p>Cantidad: <strong>${cantidad}</strong></p>
+      <p>Total a canjear: <strong>${totalPuntos} pts</strong></p>
+    `,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Sí, canjear',
       cancelButtonText: 'Cancelar',
     });
 
-    if (result.isConfirmed) {
-      // 🔗 backend más adelante
+    if (!result.isConfirmed) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const api = new BaseApi(token ?? undefined);
+
+      await api.beneficio.canjear(beneficio.id, {
+        userId: user.sub,
+        cantidad,
+      });
+
       await Swal.fire({
         icon: 'success',
         title: 'Canje realizado',
@@ -47,8 +78,15 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
       });
 
       onClose();
+    } catch (error: any) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'No se pudo realizar el canje',
+        text: error.message,
+      });
     }
   };
+
 
   return (
     <div className={styles.overlay}>
