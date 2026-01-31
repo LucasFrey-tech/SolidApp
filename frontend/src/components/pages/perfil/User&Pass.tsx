@@ -145,6 +145,7 @@ export default function UserAndPass() {
           email: payload.correo,
           sub: authData!.userId,
           username: payload.correo.split("@")[0],
+          userType: payload.userType,
         });
       }
 
