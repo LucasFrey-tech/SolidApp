@@ -47,6 +47,12 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
         {/* MENÚ */}
         <nav className={styles.Menu}>
           <ul className={styles.List}>
+            <li>
+              <button onClick={() => onChangeSection("user&pass")}>
+                Usuario y Contraseña
+              </button>
+            </li>
+
             {(user?.userType === 'usuario' || user?.userType === 'empresa') && (
               <li>
                 <button onClick={() => {
@@ -62,12 +68,8 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
             )}
 
             <li>
-              <button onClick={() => onChangeSection("data")}>Mis Datos</button>
-            </li>
-
-            <li>
-              <button onClick={() => onChangeSection("user&pass")}>
-                Usuario y Contraseña
+              <button onClick={() => onChangeSection("data")}>
+                Mis Datos
               </button>
             </li>
 

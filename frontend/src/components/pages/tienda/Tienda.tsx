@@ -103,7 +103,7 @@ export default function Tienda() {
                   <Image
                     src={
                       logos[beneficio.empresa?.id] ??
-                      '/empresas/default.png'
+                      '/img/placeholder.svg'
                     }
                     alt={
                       beneficio.empresa?.nombre_fantasia ??

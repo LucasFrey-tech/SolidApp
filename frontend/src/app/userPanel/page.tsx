@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import styles from "@/styles/userPanel.module.css";
 
-import MyAccount from "@/components/pages/MyAccount";
-import UserAndPass from "@/components/pages/User&Pass";
+import MyAccount from "@/components/pages/perfil/MyAccount";
+import UserAndPass from "@/components/pages/perfil/User&Pass";
 import UserData from "@/components/pages/data/userData";
 import EmpresaData from "@/components/pages/data/empresaData";
 import OrganizacionData from "@/components/pages/data/organizacionData";
-import HistorialDonacionUsuario from "@/components/pages/historialDonacionUsuario";
+import HistorialDonacionUsuario from "@/components/pages/perfil/historialDonacionUsuario";
+import UserCoupons from "@/components/pages/perfil/cuponesUsuarios";
 
 type Section = 'data' | 'user&pass' | 'cupons' | 'donations';
 
@@ -56,7 +57,7 @@ export default function Panel() {
         <section className={styles.Content}>
           {activeSection === 'data' && renderDataSection()}
           {activeSection === 'user&pass' && <UserAndPass />}
-          {activeSection === 'cupons' && <p>Mis cupones</p>}
+          {activeSection === 'cupons' && <UserCoupons />}
           {activeSection === 'donations' && <HistorialDonacionUsuario />}
         </section>
 

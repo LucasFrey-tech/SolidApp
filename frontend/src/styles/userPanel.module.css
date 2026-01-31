@@ -1,51 +1,82 @@
+/* ===============================
+   PAGE LAYOUT (fondo general)
+================================ */
 .PanelLayout {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    min-height: 100vh;
-    background-color: #ffffff;
-    padding: 40px 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 100vh;
+
+  background-color: #dadbdb; 
+  padding: 48px 0;
 }
 
+/* ===============================
+   MAIN PANEL
+================================ */
 .Panel {
-    display: flex;
-    width: 85%;
-    max-width: 1200px;
-    background-color: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+  display: flex;
+  width: 90%;
+  max-width: 1200px;
+
+  background-color: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+
+  box-shadow: 0 25px 40px rgba(15, 61, 58, 0.12);
 }
 
+/* ===============================
+   CONTENT AREA
+================================ */
 .Content {
   flex: 1;
+  padding: 40px;
   background-color: #ffffff;
-  padding: 32px;
-  border-radius: 18px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+/* ===============================
+   LOADING / SPINNER
+================================ */
+.spinnerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  width: 100%;
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #3498db;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 2rem auto;
-}
-
-.spinnerContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 300px;
-    width: 100%;
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e0e0e0;
+  border-top: 4px solid #0f3d3a;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+@media (max-width: 1024px) {
+  .Panel {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .PanelLayout {
+    padding: 24px 0;
+  }
+
+  .Content {
+    padding: 24px 18px;
+  }
 }
