@@ -114,6 +114,12 @@ export default function Navbar() {
         </Link>
       ) : (
         <div ref={profileRef} className={styles.profileWrapper}>
+          {user.userType === "organizacion" && (
+            <div className={styles.points}>
+              <Link href="/organizacionPanel" onClick={() => setMenuOpen(false)}>Papanel Organisazion</Link>
+            </div>
+          )}
+
           {user.userType === "usuario" && points !== null && (
             <div className={styles.points}>
               <span>{points}</span>
