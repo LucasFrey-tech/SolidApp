@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import styles from "@/styles/navbar.module.css";
 import { BaseApi } from "@/API/baseApi";
+import { USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
 
 export default function Navbar() {
   const router = useRouter();
@@ -114,24 +115,41 @@ export default function Navbar() {
         </Link>
       ) : (
         <div ref={profileRef} className={styles.profileWrapper}>
-          {user.userType === "organizacion" && (
-            <div className={styles.points}>
-              <Link href="/organizacionPanel" onClick={() => setMenuOpen(false)}>Papanel Organisazion</Link>
-            </div>
-          )}
+          {(() => {
+            const config = USER_NAVBAR_CONFIG[user.userType as keyof typeof USER_NAVBAR_CONFIG];
 
-          {user.userType === "usuario" && points !== null && (
-            <div className={styles.points}>
-              <span>{points}</span>
-              <Image
-                src="/img/img_coin.png"
-                alt="Puntos del usuario"
-                width={50}
-                height={50}
-                className={styles.pointsIcon}
-              />
-            </div>
-          )}
+            return (
+              <>
+                {/* Panel según tipo de usuario */}
+                {config.panelLink && (
+                  <div className={styles.points}>
+                    <Link
+                      href={config.panelLink.href}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {config.panelLink.label}
+                    </Link>
+                  </div>
+                )}
+
+                {/* Puntos solo para usuarios */}
+                {config.showPoints && points !== null && (
+                  <div className={styles.points}>
+                    <span>{points}</span>
+                    <Image
+                      src="/img/img_coin.png"
+                      alt="Puntos del usuario"
+                      width={50}
+                      height={50}
+                      className={styles.pointsIcon}
+                    />
+                  </div>
+                )}
+              </>
+            );
+          })()}
+
+          {/* Botón perfil */}
           <button
             className={styles.profileButton}
             onClick={() => setProfileOpen(!profileOpen)}
@@ -148,6 +166,7 @@ export default function Navbar() {
             </span>
           </button>
 
+          {/* Dropdown */}
           <div
             className={`${styles.profileDropdown} ${profileOpen ? styles.open : ""
               }`}
@@ -170,6 +189,7 @@ export default function Navbar() {
             </button>
           </div>
         </div>
+
       )}
     </nav>
   );
