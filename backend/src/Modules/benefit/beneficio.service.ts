@@ -187,6 +187,12 @@ export class BeneficioService {
         throw new NotFoundException('Usuario no encontrado');
       }
 
+      if (usuario.rol !== 'usuario') {
+        throw new BadRequestException(
+          'Solo los usuarios pueden canjear beneficios',
+        );
+      }
+
       const totalPuntos = beneficio.valor * cantidad;
 
       if (usuario.puntos < totalPuntos) {

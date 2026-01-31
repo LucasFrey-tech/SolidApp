@@ -29,23 +29,30 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
 
   const totalPuntos = cantidad * beneficio.valor;
 
-  if (!user) {
-    Swal.fire('Error', 'Debes iniciar sesión', 'error');
-    return;
-  }
-
-  if (cantidad > beneficio.cantidad) {
-    Swal.fire(
-      'Stock insuficiente',
-      'No hay suficientes cupones disponibles',
-      'warning',
-    );
-    return;
-  }
-
 
   const handleCanjear = async () => {
-    if (!user) return;
+    if (!user) {
+      Swal.fire('Error', 'Debes iniciar sesión', 'error');
+      return;
+    }
+
+    if (user.userType !== 'usuario') {
+      Swal.fire(
+        'Acción no permitida',
+        'Solo los usuarios pueden canjear beneficios',
+        'warning',
+      );
+      return;
+    }
+
+    if (cantidad > beneficio.cantidad) {
+      Swal.fire(
+        'Stock insuficiente',
+        'No hay suficientes cupones disponibles',
+        'warning',
+      );
+      return;
+    }
 
     const result = await Swal.fire({
       title: '¿Confirmar canje?',
@@ -71,19 +78,10 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
         cantidad,
       });
 
-      await Swal.fire({
-        icon: 'success',
-        title: 'Canje realizado',
-        text: 'El beneficio fue canjeado correctamente',
-      });
-
+      Swal.fire('Canje realizado', 'Beneficio canjeado correctamente', 'success');
       onClose();
     } catch (error: any) {
-      await Swal.fire({
-        icon: 'error',
-        title: 'No se pudo realizar el canje',
-        text: error.message,
-      });
+      Swal.fire('Error', error.message, 'error');
     }
   };
 
