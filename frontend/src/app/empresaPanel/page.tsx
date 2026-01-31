@@ -33,24 +33,25 @@ const api = new BeneficiosService();
 ================================ */
 export default function OrganizationCouponsPage() {
   const { user } = useUser();
-  const empresaId = user?.sub; // 🔹 usar el ID del usuario logueado (empresa)
+  const empresaId = user?.sub;
 
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [open, setOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   /* ===============================
      CARGAR CUPONES
   ================================ */
   const loadCoupons = async () => {
-    if (!empresaId) return; // si no hay empresaId no hacemos nada
+    if (!empresaId) return;
     try {
       setLoading(true);
-      const data = await api.getByEmpresa(empresaId);
+      const {items, total } = await api.getByEmpresaPaginated(empresaId, page, 5);
 
-      // 🔹 Transformar datos para que siempre tengan 'estado'
-      const couponsWithEstado: Coupon[] = data.map((b: any) => ({
+      const couponsWithEstado: Coupon[] = items.map((b: any) => ({
         id: b.id,
         titulo: b.titulo,
         detalle: b.detalle,
@@ -60,6 +61,7 @@ export default function OrganizationCouponsPage() {
       }));
 
       setCoupons(couponsWithEstado);
+      setTotalPages(Math.ceil(total / 5));
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "No se pudieron cargar los cupones", "error");
@@ -70,7 +72,7 @@ export default function OrganizationCouponsPage() {
 
   useEffect(() => {
     loadCoupons();
-  }, [empresaId]); // 🔹 Dependencia para recargar si cambia empresaId
+  }, [empresaId, page]);
 
   /* ===============================
      CREATE / UPDATE
@@ -109,7 +111,7 @@ export default function OrganizationCouponsPage() {
       Swal.fire(
         "Error",
         "No se pudo guardar el cupón. Verificá los datos.",
-        "error"
+        "error",
       );
     }
   };
@@ -142,7 +144,7 @@ export default function OrganizationCouponsPage() {
           <li key={c.id} className={styles.card}>
             <div>
               <strong>{c.titulo}</strong> — {c.detalle} <br />
-              <strong>Cantidad:</strong> {c.cantidad} — {" "}
+              <strong>Cantidad:</strong> {c.cantidad} —{" "}
               <strong>
                 {c.valor === 0 ? "Gratis" : `Puntos: ${c.valor} `}
               </strong>{" "}
@@ -153,8 +155,8 @@ export default function OrganizationCouponsPage() {
                     c.estado === "pendiente"
                       ? "blue"
                       : c.estado === "rechazado"
-                      ? "red"
-                      : "green",
+                        ? "red"
+                        : "green",
                 }}
               >
                 {c.estado}
@@ -172,11 +174,26 @@ export default function OrganizationCouponsPage() {
         ))}
       </ul>
 
-      {open && (
-        <div
-          className={formStyles.modalOverlay}
-          onClick={() => setOpen(false)}
+      {/* ===== PAGINACIÓN ===== */}
+      <div className={styles.pagination}>
+        <button onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+          Anterior
+        </button>
+
+        <span>
+          Página {page} de {totalPages}
+        </span>
+
+        <button
+          onClick={() => setPage((p) => p + 1)}
+          disabled={page === totalPages}
         >
+          Siguiente
+        </button>
+      </div>
+
+      {open && (
+        <div className={formStyles.modalOverlay} onClick={() => setOpen(false)}>
           <div
             className={formStyles.modal}
             onClick={(e) => e.stopPropagation()}

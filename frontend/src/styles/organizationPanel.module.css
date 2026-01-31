@@ -2,8 +2,8 @@
    CONTENEDOR
 ================================ */
 .container {
-  background: #000;
-  color: #fff;
+  background: #e0f2f1;
+  color: #0f3d3a;
   padding: 32px;
   max-width: 960px;
   margin: 56px auto;
@@ -89,7 +89,7 @@
    BOTÓN
 ================================ */
 .button {
-  background-color: #4f46e5;
+  background-color: #e09b3d;
   margin-bottom: 1%;
   color: white;
   padding: 8px 16px;
@@ -151,6 +151,36 @@
 .accept:hover,
 .reject:hover {
   transform: scale(1.2);
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.pagination span {
+  color: #000000;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+
+.pagination button {
+  padding: clamp(8px, 2.5vw, 10px) clamp(14px, 4vw, 18px);
+  border-radius: 10px;
+  border: none;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #c7d2fe;
+  cursor: not-allowed;
 }
 
 /* ===============================

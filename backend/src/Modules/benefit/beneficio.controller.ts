@@ -11,11 +11,12 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { BeneficioService } from './beneficio.service';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
+import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
 
 @ApiTags('Beneficios')
 @Controller('beneficios')
@@ -28,13 +29,20 @@ export class BeneficioController {
   }
 
   @Get('paginated')
-  async findAllPaginated(
+  async findAllPaginated(@Query('page') page = 1, @Query('limit') limit = 10) {
+    return this.beneficiosService.findAllPaginated(Number(page), Number(limit));
+  }
+
+  @Get('empresa/:idEmpresa/paginated')
+  async findByEmpresaPaginated(
+    @Param('idEmpresa', ParseIntPipe) idEmpresa: number,
     @Query('page') page = 1,
-    @Query('limit') limit = 10,
-  ) {
-    return this.beneficiosService.findAllPaginated(
-      Number(page),
-      Number(limit),
+    @Query('limit') limit = 5,
+  ): Promise<PaginatedBeneficiosResponseDTO> {
+    return await this.beneficiosService.findByEmpresaPaginated(
+      idEmpresa,
+      page,
+      limit,
     );
   }
 
@@ -60,7 +68,6 @@ export class BeneficioController {
     return this.beneficiosService.create(dto);
   }
 
-  // ✅ PATCH (NO PUT)
   @Patch(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
