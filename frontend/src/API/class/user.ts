@@ -4,6 +4,7 @@ import { User, UserPoints } from "../types/user";
 
 export class Users extends Crud<User> {
   private endPoint: string;
+
   constructor(token?: string) {
     super(token);
     this.endPoint = "users";
@@ -119,8 +120,7 @@ export class Users extends Crud<User> {
       method: "PATCH",
       headers: this.getHeaders(),
       body: JSON.stringify(data),
-    },
-    );
+    });
 
     if (!res.ok) {
       const errorDetails = await res.text();
@@ -140,7 +140,22 @@ export class Users extends Crud<User> {
     if (!res.ok) {
       const errorDetails = await res.text();
       throw new Error(
-        `Error al eliminar usuario (${res.status}): ${errorDetails}`,
+        `Error al deshabilitar usuario (${res.status}): ${errorDetails}`,
+      );
+    }
+  }
+
+  // ← MÉTODO QUE FALTABA: ahora implementado correctamente
+  async restore(id: number): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/restaurar`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+    });
+
+    if (!res.ok) {
+      const errorDetails = await res.text().catch(() => 'Error desconocido');
+      throw new Error(
+        `Error al restaurar/habilitar usuario (${res.status}): ${errorDetails}`,
       );
     }
   }
