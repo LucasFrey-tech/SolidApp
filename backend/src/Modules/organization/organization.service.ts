@@ -35,27 +35,29 @@ export class OrganizationsService {
   }
 
   async findPaginated(page: number, limit: number, search: string) {
-    const startIndex = (page - 1) * limit;
-        const [organizacion, total] = await this.organizationRepository.findAndCount({
-          skip: startIndex,
-          take: limit,
-          order: { id: 'ASC' },
-          where: [
-            { razon_social: Like(`%${search}%`), deshabilitado: false },
-            { nombre_fantasia: Like(`%${search}%`), deshabilitado: false }
-          ],
-        });
-    
-    
-        return {
-          items: organizacion.map(this.mapToResponseDto),
-          total
-        };
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await this.organizationRepository.findAndCount({
+      skip,
+      take: limit,
+      order: { id: 'ASC' },
+      where: search
+        ? [
+            { razon_social: Like(`%${search}%`) },
+            { nombre_fantasia: Like(`%${search}%`) },
+          ]
+        : undefined,
+    });
+
+    return {
+      items: items.map(this.mapToResponseDto),
+      total,
+    };
   }
 
   async findOne(id: number): Promise<ResponseOrganizationDto> {
     const organization = await this.organizationRepository.findOne({
-      where: { id, deshabilitado: false },
+      where: { id },
     });
 
     if (!organization) {
@@ -182,7 +184,7 @@ export class OrganizationsService {
     }
 
     if (dto.passwordNueva) {
-      if (!dto.passwordNueva) {
+      if (!dto.passwordActual) {
         throw new UnauthorizedException(
           'Para cambiar la contraseña debés ingresar la contraseña actual',
         );

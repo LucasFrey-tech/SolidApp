@@ -126,13 +126,14 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async restore(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/restore`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/restaurar`, {
       method: "PATCH",
       headers: this.getHeaders(),
     });
 
     if (!res.ok) {
-      throw new Error("Error al restaurar organización");
+      const errorDetails = await res.text().catch(() => '');
+      throw new Error(errorDetails || "Error al restaurar organización");
     }
   }
 
