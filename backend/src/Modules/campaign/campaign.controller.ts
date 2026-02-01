@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 
 import {
@@ -73,6 +74,17 @@ export class CampaignsController {
   ): Promise<ResponseCampaignsDto> {
     return this.campaignService.findOne(id);
   }
+
+  @Get('/list/paginated/')
+    @ApiOperation({ summary: 'Listar usuarios paginados' })
+    @ApiResponse({
+      status: 200,
+      type: ResponseCampaignsDto,
+      isArray: true,
+    })
+    findPaginated(@Query('page') page = 1, @Query('limit') limit = 10, @Query('search') search = "") {
+      return this.campaignService.findPaginated(page, limit, search);
+    }
 
   /**
    * Crea una Nueva Campaña Solidaria

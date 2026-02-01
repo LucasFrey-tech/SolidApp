@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/adminUsersPanel.module.css';
+import { BaseApi } from '@/API/baseApi';
 
 type User = {
   id: number;
@@ -18,32 +19,40 @@ const MOCK_USERS: User[] = Array.from({ length: 18 }).map((_, i) => ({
   enabled: i % 3 !== 0,
 }));
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
+
 
 export default function UsuariosAdminPanel() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [loading, setLoading] = useState(true);
+  const [usersCount, setUsersCount] = useState(0);
 
-  /* ===============================
-     FILTRO
-  ================================ */
-  const filteredUsers = useMemo(() => {
-    const value = search.toLowerCase();
-
-    return users.filter(
-      user =>
-        user.name.toLowerCase().includes(value) ||
-        user.email.toLowerCase().includes(value)
-    );
-  }, [users, search]);
 
   /* ===============================
      PAGINACIÓN
   ================================ */
-  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE) || 1;
-  const start = (page - 1) * PAGE_SIZE;
-  const currentUsers = filteredUsers.slice(start, start + PAGE_SIZE);
+  const totalPages = Math.ceil(usersCount / PAGE_SIZE) || 1;
+
+  useEffect(() => {
+    async function fetchUsers() {
+      const api = new BaseApi();
+      const res = await api.users.getAllPaginated(page, PAGE_SIZE, search);
+      const usersFormated = res.items.map((u: any) => ({
+        id: u.id,
+        name: u.nombre,
+        email: u.correo,
+        enabled: !u.deshabilitado,
+      }));
+      
+      setUsers(usersFormated);
+      setUsersCount(res.total);
+      setLoading(false);
+    }
+
+    fetchUsers();
+  }, [page, search]);
 
   /* ===============================
      TOGGLE USER
@@ -84,6 +93,8 @@ export default function UsuariosAdminPanel() {
     setPage(1);
   };
 
+  if (loading) return <p>Cargando usuarios...</p>;
+
   return (
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Usuarios</h2>
@@ -98,35 +109,36 @@ export default function UsuariosAdminPanel() {
       />
 
       {/* 👤 LISTA */}
-      {currentUsers.length === 0 && (
-        <p className={styles.Empty}>No se encontraron usuarios</p>
-      )}
+      {
+        users.length === 0? 
+          (<p className={styles.Empty}>No se encontraron usuarios</p>)
+        :
+          users.map(user => (
+            <div key={user.id} className={styles.UserRow}>
+              <div>
+                <strong>{user.name}</strong>
+                <div className={styles.Email}>{user.email}</div>
+              </div>
 
-      {currentUsers.map(user => (
-        <div key={user.id} className={styles.UserRow}>
-          <div>
-            <strong>{user.name}</strong>
-            <div className={styles.Email}>{user.email}</div>
-          </div>
-
-          <div className={styles.Actions}>
-            <button
-              className={styles.Check}
-              disabled={user.enabled}
-              onClick={() => confirmToggleUser(user)}
-            >
-              ✓
-            </button>
-            <button
-              className={styles.Cross}
-              disabled={!user.enabled}
-              onClick={() => confirmToggleUser(user)}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      ))}
+              <div className={styles.Actions}>
+                <button
+                  className={styles.Check}
+                  disabled={user.enabled}
+                  onClick={() => confirmToggleUser(user)}
+                >
+                  ✓
+                </button>
+                <button
+                  className={styles.Cross}
+                  disabled={!user.enabled}
+                  onClick={() => confirmToggleUser(user)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))
+      }
 
       {/* 📄 PAGINACIÓN */}
       <div className={styles.Pagination}>

@@ -9,7 +9,7 @@ import {
 import { UpdateCredentialsPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class OrganizacionesService extends Crud<Organizacion> {
-  protected endPoint = "/organizations";
+  protected endPoint = "organizations";
 
   constructor(token?: string) {
     super(token);
@@ -30,23 +30,26 @@ export class OrganizacionesService extends Crud<Organizacion> {
   async getAllPaginated(
     page = 1,
     limit = 10,
+    search: string = "",
   ): Promise<PaginatedResponse<Organizacion>> {
     const res = await fetch(
-      `${this.baseUrl}${this.endPoint}?page=${page}&limit=${limit}`,
+      `${this.baseUrl}/${this.endPoint}/list/paginated?page=${page}&limit=${limit}&search=${search}`,
       {
+        method: "GET",
         headers: this.getHeaders(),
       },
     );
-
     if (!res.ok) {
-      throw new Error("Error al obtener organizaciones paginadas");
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener usuarios paginados (${res.status}): ${errorDetails}`,
+      );
     }
-
     return res.json();
   }
 
   async getOne(id: number): Promise<Organizacion> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       headers: this.getHeaders(),
     });
 
@@ -58,7 +61,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async create(data: OrganizacionCreateRequest): Promise<Organizacion> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify(data),
@@ -75,7 +78,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     id: number,
     data: OrganizacionUpdateRequest,
   ): Promise<Organizacion> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       method: "PUT",
       headers: this.getHeaders(),
       body: JSON.stringify(data),
@@ -112,7 +115,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async delete(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       method: "DELETE",
       headers: this.getHeaders(),
     });
@@ -123,7 +126,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async restore(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/restore`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/restore`, {
       method: "PATCH",
       headers: this.getHeaders(),
     });
@@ -134,7 +137,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async getImages(): Promise<OrganizacionImagen[]> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/imagenes`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/imagenes`, {
       headers: this.getHeaders(),
     });
 
@@ -146,7 +149,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async getSummaries(): Promise<OrganizacionSummary[]> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/summary`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/summary`, {
       headers: this.getHeaders(),
     });
 
@@ -159,7 +162,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
 
   async getCampaigns(organizacionId: number): Promise<any[]> {
     const res = await fetch(
-      `${this.baseUrl}${this.endPoint}/${organizacionId}/campaigns`,
+      `${this.baseUrl}/campaigns/${organizacionId}/campaigns`,
       {
         headers: this.getHeaders(),
       },
@@ -169,6 +172,27 @@ export class OrganizacionesService extends Crud<Organizacion> {
       throw new Error("Error al obtener campañas de la organización");
     }
 
+    return res.json();
+  }
+
+  async getCampaignsPaginated(
+    page = 1,
+    limit = 10,
+    search: string = "",
+  ) {
+    const res = await fetch(
+      `${this.baseUrl}/campaigns/list/paginated?page=${page}&limit=${limit}&search=${search}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      },
+    );
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener usuarios paginados (${res.status}): ${errorDetails}`,
+      );
+    }
     return res.json();
   }
 }

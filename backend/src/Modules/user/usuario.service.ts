@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { Usuario } from '../../Entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create_usuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
@@ -18,6 +18,7 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsuarioService {
+
   private readonly logger = new Logger(UsuarioService.name);
   constructor(
     @InjectRepository(Usuario)
@@ -31,6 +32,24 @@ export class UsuarioService {
     });
 
     return usuarios.map(this.mapToResponseDto);
+  }
+
+  async findPaginated(page: number, limit: number, search: string) {
+    const startIndex = (page - 1) * limit;
+    const [usuarios,total] = await this.usuarioRepository.findAndCount({
+      skip: startIndex,
+      take: limit,
+      order: { id: 'ASC' },
+      where: {
+        nombre: Like(`%${search}%`),
+        deshabilitado: false
+      },
+    });
+
+    return {
+      items: usuarios.map(this.mapToResponseDto),
+      total
+    };
   }
 
   async findOne(id: number): Promise<ResponseUsuarioDto> {

@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Like, Repository } from 'typeorm';
 import { Beneficios } from '../../Entities/beneficio.entity';
 import { Empresa } from '../../Entities/empresa.entity';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
@@ -75,6 +75,26 @@ export class BeneficioService {
     return {
       items: beneficios.map(this.mapToResponseDto),
       total,
+    };
+  }
+
+  async findPaginated(page: number, limit: number, search: string) {
+    const startIndex = (page - 1) * limit;
+    const [beneficios, total] = await this.beneficiosRepository.findAndCount({
+      skip: startIndex,
+      relations: ['empresa'],
+      take: limit,
+      order: { id: 'ASC' },
+      where: [
+        { titulo: Like(`%${search}%`)},
+        { detalle: Like(`%${search}%`)}
+      ],
+    });
+
+
+    return {
+      items: beneficios.map(this.mapToResponseDto),
+      total
     };
   }
 
@@ -332,6 +352,7 @@ export class BeneficioService {
       fecha_registro: beneficio.fecha_registro,
       ultimo_cambio: beneficio.ultimo_cambio,
       empresa: empresaSummary,
+      estado: beneficio.estado,
     };
   };
 }

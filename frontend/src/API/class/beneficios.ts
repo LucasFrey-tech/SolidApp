@@ -6,14 +6,14 @@ import {
 } from "../types/beneficios";
 
 export class BeneficiosService extends Crud<Beneficio> {
-  protected endpoint = "/beneficios";
+  protected endpoint = "beneficios";
 
   constructor(token?: string) {
     super(token);
   }
 
   async getAll(): Promise<Beneficio[]> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endpoint}`, {
       headers: this.getHeaders(),
     });
 
@@ -27,23 +27,26 @@ export class BeneficiosService extends Crud<Beneficio> {
   async getAllPaginated(
     page = 1,
     limit = 10,
+    search: string = "",
   ): Promise<PaginatedResponse<Beneficio>> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}?page=${page}&limit=${limit}`,
+      `${this.baseUrl}/${this.endpoint}/list/paginated?page=${page}&limit=${limit}&search=${search}`,
       {
+        method: "GET",
         headers: this.getHeaders(),
       },
     );
-
     if (!res.ok) {
-      throw new Error("Error al obtener beneficios paginados");
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener usuarios paginados (${res.status}): ${errorDetails}`,
+      );
     }
-
     return res.json();
   }
 
   async getOne(id: number): Promise<Beneficio> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}`, {
       headers: this.getHeaders(),
     });
 
@@ -55,7 +58,7 @@ export class BeneficiosService extends Crud<Beneficio> {
   }
 
   async create(data: BeneficioCreateRequest): Promise<Beneficio> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endpoint}`, {
       method: "POST",
       headers: {
         ...this.getHeaders(),
@@ -76,7 +79,7 @@ export class BeneficiosService extends Crud<Beneficio> {
     data: { userId: number; cantidad: number },
   ) {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}/${beneficioId}/canjear`,
+      `${this.baseUrl}/${this.endpoint}/${beneficioId}/canjear`,
       {
         method: 'POST',
         headers: this.getHeaders(),
@@ -93,7 +96,7 @@ export class BeneficiosService extends Crud<Beneficio> {
   }
 
   async update(id: number, data: any) {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}`, {
       method: "PATCH",
       headers: {
         ...this.getHeaders(),
@@ -111,7 +114,7 @@ export class BeneficiosService extends Crud<Beneficio> {
   }
 
   async delete(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}`, {
       method: "DELETE",
       headers: this.getHeaders(),
     });
@@ -127,7 +130,7 @@ export class BeneficiosService extends Crud<Beneficio> {
    */
   async getByEmpresa(idEmpresa: number): Promise<Beneficio[]> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}/empresa/${idEmpresa}`,
+      `${this.baseUrl}/${this.endpoint}/empresa/${idEmpresa}`,
       {
         headers: this.getHeaders(),
       },
@@ -150,7 +153,7 @@ export class BeneficiosService extends Crud<Beneficio> {
     limit: number,
   ): Promise<PaginatedResponse<Beneficio>> {
     const res = await fetch(
-      `${this.baseUrl}${this.endpoint}/empresa/${idEmpresa}/paginated?page=${page}&limit=${limit}`,
+      `${this.baseUrl}/${this.endpoint}/empresa/${idEmpresa}/paginated?page=${page}&limit=${limit}`,
       {
         headers: this.getHeaders(),
       },
@@ -168,7 +171,7 @@ export class BeneficiosService extends Crud<Beneficio> {
    * GET /beneficios/general
    */
   async getGenerales(): Promise<Beneficio[]> {
-    const res = await fetch(`${this.baseUrl}${this.endpoint}/general`, {
+    const res = await fetch(`${this.baseUrl}/${this.endpoint}/general`, {
       headers: this.getHeaders(),
     });
 

@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { Empresa } from '../../Entities/empresa.entity';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
@@ -22,16 +22,16 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class EmpresasService {
   private readonly logger = new Logger(EmpresasService.name);
-  
+
   constructor(
     @InjectRepository(Empresa)
     private readonly empresasRepository: Repository<Empresa>,
-    
+
     @InjectRepository(Empresa_imagenes)
     private readonly empresasImagenRepository: Repository<Empresa_imagenes>,
-    
+
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   /**
    *  Obtener todas las Empresas
@@ -53,6 +53,25 @@ export class EmpresasService {
         (empresa.imagen = SettingsService.getStaticResourceUrl('servo.png')),
     );
     return res;
+  }
+
+  async findPaginated(page: number, limit: number, search: string) {
+    const startIndex = (page - 1) * limit;
+    const [empresas, total] = await this.empresasRepository.findAndCount({
+      skip: startIndex,
+      take: limit,
+      order: { id: 'ASC' },
+      where: [
+        { razon_social: Like(`%${search}%`), deshabilitado: false },
+        { nombre_fantasia: Like(`%${search}%`), deshabilitado: false }
+      ],
+    });
+
+
+    return {
+      items: empresas.map(this.mapToResponseDto),
+      total
+    };
   }
 
   /**

@@ -15,7 +15,7 @@ export class Users extends Crud<User> {
     search: string = "",
   ): Promise<PaginatedResponse<User>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/paginated?page=${page}&limit=${limit}&search=${search}`,
+      `${this.baseUrl}/${this.endPoint}/list/paginated?page=${page}&limit=${limit}&search=${search}`,
       {
         method: "GET",
         headers: this.getHeaders(),
