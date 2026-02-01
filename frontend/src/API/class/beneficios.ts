@@ -2,6 +2,7 @@ import { Crud, PaginatedResponse } from "../service";
 import {
   Beneficio,
   BeneficioCreateRequest,
+  BeneficioUpdateEstadoRequest,
   BeneficioUpdateRequest,
 } from "../types/beneficios";
 
@@ -122,6 +123,26 @@ export class BeneficiosService extends Crud<Beneficio> {
     if (!res.ok) {
       throw new Error("Error al eliminar beneficio");
     }
+  }
+
+  async updateEstado(
+    id: number,
+    body: BeneficioUpdateEstadoRequest,
+  ) {
+    const res = await fetch(
+      `${this.baseUrl}/beneficios/${id}/estado`,
+      {
+        method: 'PATCH',
+        headers: this.getHeaders(),
+        body: JSON.stringify(body),
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error('Error al actualizar estado del beneficio');
+    }
+
+    return res.json();
   }
 
   /**

@@ -42,8 +42,8 @@ export default function Tienda() {
         const items = Array.isArray(res.items)
           ? res.items
           : Array.isArray(res)
-            ? res
-            : [];
+          ? res
+          : [];
 
         setBeneficios(items);
 
@@ -98,41 +98,56 @@ export default function Tienda() {
           <>
             {/* ===== GRID ===== */}
             <section className={styles.grid}>
-              {beneficios.map((beneficio) => (
-                <div key={beneficio.id} className={styles.card}>
-                  <Image
-                    src={
-                      logos[beneficio.empresa?.id] ??
-                      '/img/placeholder.svg'
-                    }
-                    alt={
-                      beneficio.empresa?.nombre_fantasia ??
-                      'Empresa'
-                    }
-                    width={120}
-                    height={120}
-                    className={styles.image}
-                  />
-
-                  <h3 className={styles.cardTitle}>
-                    {beneficio.titulo}
-                  </h3>
-
-                  <p className={styles.stock}>
-                    Restantes:{' '}
-                    <span>{beneficio.cantidad}</span>
-                  </p>
-
-                  <button
-                    className={styles.button}
-                    onClick={() =>
-                      setBeneficioSeleccionado(beneficio)
-                    }
+              {beneficios
+                .filter(
+                  (b) =>
+                    b.estado?.toLowerCase() === 'aprobado',
+                )
+                .map((beneficio) => (
+                  <div
+                    key={beneficio.id}
+                    className={styles.card}
                   >
-                    Reclamar
-                  </button>
-                </div>
-              ))}
+                    <Image
+                      src={
+                        logos[beneficio.empresa?.id] ??
+                        '/img/placeholder.svg'
+                      }
+                      alt={
+                        beneficio.empresa?.nombre_fantasia ??
+                        'Empresa'
+                      }
+                      width={120}
+                      height={120}
+                      className={styles.image}
+                    />
+
+                    <h3 className={styles.cardTitle}>
+                      {beneficio.titulo}
+                    </h3>
+
+                    <p className={styles.stock}>
+                      Restantes:{' '}
+                      <span>{beneficio.cantidad}</span>
+                    </p>
+
+                    <button
+                      className={styles.button}
+                      disabled={
+                        beneficio.cantidad === 0
+                      }
+                      onClick={() =>
+                        setBeneficioSeleccionado(
+                          beneficio,
+                        )
+                      }
+                    >
+                      {beneficio.cantidad === 0
+                        ? 'Sin stock'
+                        : 'Reclamar'}
+                    </button>
+                  </div>
+                ))}
             </section>
 
             {/* ===== PAGINACIÓN ===== */}
@@ -163,7 +178,9 @@ export default function Tienda() {
       {beneficioSeleccionado && (
         <CanjeModal
           beneficio={beneficioSeleccionado}
-          onClose={() => setBeneficioSeleccionado(null)}
+          onClose={() =>
+            setBeneficioSeleccionado(null)
+          }
         />
       )}
     </>

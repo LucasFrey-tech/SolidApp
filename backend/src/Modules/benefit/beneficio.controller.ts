@@ -18,6 +18,7 @@ import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
 import { CanjearBeneficioDto } from './dto/canjear_beneficio.dto';
+import { UpdateEstadoBeneficioDTO } from './dto/update_estado_beneficio.dto';
 
 @ApiTags('Beneficios')
 @Controller('beneficios')
@@ -96,6 +97,14 @@ export class BeneficioController {
     @Body() dto: UpdateBeneficiosDTO,
   ): Promise<BeneficiosResponseDTO> {
     return this.beneficiosService.update(id, dto);
+  }
+
+  @Patch(':id/estado')
+  updateEstado(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateEstadoBeneficioDTO,
+  ) {
+    return this.beneficiosService.updateEstado(id, dto.estado);
   }
 
 

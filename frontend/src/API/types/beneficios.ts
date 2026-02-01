@@ -1,24 +1,32 @@
 import { EmpresaSummary } from "./empresas";
 
+/* ===============================
+   TIPOS DE ESTADO
+================================ */
+export type BeneficioEstado =
+  | 'pendiente'
+  | 'aprobado'
+  | 'rechazado';
 
-/**
- * Respuesta de Beneficio (BeneficiosResponseDTO)
- */
+/* ===============================
+   RESPUESTA BENEFICIO
+================================ */
 export interface Beneficio {
   id: number;
   titulo: string;
   tipo: string;
   detalle: string;
   cantidad: number;
-  valor: number;
   fecha_registro: string;
   ultimo_cambio: string;
+  valor: number;
   empresa: EmpresaSummary;
+  estado: BeneficioEstado;
 }
 
-/**
- * Crear beneficio (CreateBeneficiosDTO)
- */
+/* ===============================
+   CREAR BENEFICIO
+================================ */
 export interface BeneficioCreateRequest {
   titulo: string;
   tipo: string;
@@ -28,14 +36,21 @@ export interface BeneficioCreateRequest {
   id_empresa: number;
 }
 
-/**
- * Actualizar beneficio (UpdateBeneficiosDTO)
- */
+/* ===============================
+   UPDATE BENEFICIO (DATOS)
+================================ */
 export interface BeneficioUpdateRequest {
   titulo?: string;
   tipo?: string;
   detalle?: string;
   cantidad?: number;
-  valor?: number,
+  valor?: number;
   id_empresa?: number;
+}
+
+/* ===============================
+   🔥 UPDATE ESTADO BENEFICIO
+================================ */
+export interface BeneficioUpdateEstadoRequest {
+  estado: BeneficioEstado;
 }
