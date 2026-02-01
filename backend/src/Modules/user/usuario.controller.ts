@@ -10,8 +10,11 @@ import {
   ParseIntPipe,
   //UploadedFile,
   UseInterceptors,
+  Query,
+  DefaultValuePipe,
+  Search,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { UsuarioService } from './usuario.service';
 import { CreateUsuarioDto } from './dto/create_usuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
@@ -48,6 +51,17 @@ export class UsuarioController {
   })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ResponseUsuarioDto> {
     return this.userService.findOne(id);
+  }
+
+  @Get('/list/paginated/')
+  @ApiOperation({ summary: 'Listar usuarios paginados' })
+  @ApiResponse({
+    status: 200,
+    type: ResponseUsuarioDto,
+    isArray: true,
+  })
+  findPaginated(@Query('page') page = 1, @Query('limit') limit = 10,@Query('search') search = "") {
+    return this.userService.findPaginated(page,limit,search);
   }
 
   @Get(':id/points')
