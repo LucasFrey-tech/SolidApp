@@ -8,6 +8,7 @@ import {
   Param,
   Body,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { OrganizationsService } from './organization.service';
@@ -48,6 +49,17 @@ export class OrganizationsController {
   ): Promise<ResponseOrganizationDto> {
     return this.organizationService.findOne(id);
   }
+
+  @Get('/list/paginated/')
+    @ApiOperation({ summary: 'Listar usuarios paginados' })
+    @ApiResponse({
+      status: 200,
+      type: ResponseOrganizationDto,
+      isArray: true,
+    })
+    findPaginated(@Query('page') page = 1, @Query('limit') limit = 10, @Query('search') search = "") {
+      return this.organizationService.findPaginated(page, limit, search);
+    }
 
   @Post()
   @ApiOperation({ summary: 'Crear una organización' })

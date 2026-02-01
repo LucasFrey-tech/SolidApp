@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { Organizations } from '../../Entities/organizations.entity';
 import { CreateOrganizationDto } from './dto/create_organization.dto';
 import { UpdateOrganizationDto } from './dto/update_organization.dto';
@@ -32,6 +32,25 @@ export class OrganizationsService {
     });
 
     return organizations.map(this.mapToResponseDto);
+  }
+
+  async findPaginated(page: number, limit: number, search: string) {
+    const startIndex = (page - 1) * limit;
+        const [organizacion, total] = await this.organizationRepository.findAndCount({
+          skip: startIndex,
+          take: limit,
+          order: { id: 'ASC' },
+          where: [
+            { razon_social: Like(`%${search}%`), deshabilitado: false },
+            { nombre_fantasia: Like(`%${search}%`), deshabilitado: false }
+          ],
+        });
+    
+    
+        return {
+          items: organizacion.map(this.mapToResponseDto),
+          total
+        };
   }
 
   async findOne(id: number): Promise<ResponseOrganizationDto> {

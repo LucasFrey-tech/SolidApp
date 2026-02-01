@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -29,7 +30,7 @@ import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: EmpresasService) {}
+  constructor(private readonly empresasService: EmpresasService) { }
 
   /**
    * Obtener todas las empresas activas
@@ -44,6 +45,17 @@ export class EmpresaController {
   })
   async findAll(): Promise<EmpresaResponseDTO[]> {
     return this.empresasService.findAll();
+  }
+
+  @Get('/list/paginated/')
+  @ApiOperation({ summary: 'Listar usuarios paginados' })
+  @ApiResponse({
+    status: 200,
+    type: EmpresaResponseDTO,
+    isArray: true,
+  })
+  findPaginated(@Query('page') page = 1, @Query('limit') limit = 10, @Query('search') search = "") {
+    return this.empresasService.findPaginated(page, limit, search);
   }
 
   /**

@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
@@ -41,6 +41,25 @@ export class CampaignsService {
     this.logger.log(`Se obtuvieron ${campaigns.length} Campañas Solidarias`);
     return campaigns.map(this.mapToResponseDto);
   }
+
+  async findPaginated(page: number, limit: number, search: string) {
+      const startIndex = (page - 1) * limit;
+      const [campaings, total] = await this.campaignsRepository.findAndCount({
+        skip: startIndex,
+        take: limit,
+        order: { id: 'ASC' },
+        where: [
+          { titulo: Like(`%${search}%`)},
+          { descripcion: Like(`%${search}%`)}
+        ],
+      });
+  
+  
+      return {
+        items: campaings.map(this.mapToResponseDto),
+        total
+      };
+    }
 
   /**
    * Obtiene una campaña por ID

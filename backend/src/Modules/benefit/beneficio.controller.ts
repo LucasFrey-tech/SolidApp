@@ -11,7 +11,7 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BeneficioService } from './beneficio.service';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
@@ -32,6 +32,17 @@ export class BeneficioController {
   @Get('paginated')
   async findAllPaginated(@Query('page') page = 1, @Query('limit') limit = 10) {
     return this.beneficiosService.findAllPaginated(Number(page), Number(limit));
+  }
+
+  @Get('/list/paginated/')
+  @ApiOperation({ summary: 'Listar usuarios paginados' })
+  @ApiResponse({
+    status: 200,
+    type: BeneficiosResponseDTO,
+    isArray: true,
+  })
+  findPaginated(@Query('page') page = 1, @Query('limit') limit = 10, @Query('search') search = "") {
+    return this.beneficiosService.findPaginated(page, limit, search);
   }
 
   @Get('empresa/:idEmpresa/paginated')
