@@ -9,14 +9,14 @@ import {
 import { UpdateCredentialsPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class EmpresasService extends Crud<Empresa> {
-  protected endPoint = "/empresas";
+  protected endPoint = "empresas";
 
   constructor(token?: string) {
     super(token);
   }
 
   async getAll(): Promise<Empresa[]> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
       headers: this.getHeaders(),
     });
 
@@ -30,23 +30,26 @@ export class EmpresasService extends Crud<Empresa> {
   async getAllPaginated(
     page = 1,
     limit = 10,
+    search: string = "",
   ): Promise<PaginatedResponse<Empresa>> {
     const res = await fetch(
-      `${this.baseUrl}${this.endPoint}?page=${page}&limit=${limit}`,
+      `${this.baseUrl}/${this.endPoint}/list/paginated?page=${page}&limit=${limit}&search=${search}`,
       {
+        method: "GET",
         headers: this.getHeaders(),
       },
     );
-
     if (!res.ok) {
-      throw new Error("Error al obtener empresas paginadas");
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener usuarios paginados (${res.status}): ${errorDetails}`,
+      );
     }
-
     return res.json();
   }
 
   async getImages(): Promise<EmpresaImagen[]> {
-    const resQuery = await fetch(`${this.baseUrl}${this.endPoint}/imagenes`, {
+    const resQuery = await fetch(`${this.baseUrl}/${this.endPoint}/imagenes`, {
       headers: this.getHeaders(),
     });
 
@@ -59,7 +62,7 @@ export class EmpresasService extends Crud<Empresa> {
   }
 
   async getOne(id: number): Promise<Empresa> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       headers: this.getHeaders(),
     });
 
@@ -71,7 +74,7 @@ export class EmpresasService extends Crud<Empresa> {
   }
 
   async create(data: EmpresaCreateRequest): Promise<Empresa> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify(data),
@@ -85,7 +88,7 @@ export class EmpresasService extends Crud<Empresa> {
   }
 
   async update(id: number, data: EmpresaUpdateRequest): Promise<Empresa> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       method: "PUT",
       headers: this.getHeaders(),
       body: JSON.stringify(data),
@@ -122,7 +125,7 @@ export class EmpresasService extends Crud<Empresa> {
   }
 
   async delete(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       method: "DELETE",
       headers: this.getHeaders(),
     });
@@ -136,7 +139,7 @@ export class EmpresasService extends Crud<Empresa> {
    * Restaurar empresa deshabilitada
    */
   async restore(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/restore`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/restore`, {
       method: "PATCH",
       headers: this.getHeaders(),
     });
@@ -151,7 +154,7 @@ export class EmpresasService extends Crud<Empresa> {
    * Solo si el backend expone /empresas/summary
    */
   async getSummaries(): Promise<EmpresaSummary[]> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/summary`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/summary`, {
       headers: this.getHeaders(),
     });
 

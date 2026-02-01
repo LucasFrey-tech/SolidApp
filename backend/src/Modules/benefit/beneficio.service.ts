@@ -82,6 +82,7 @@ export class BeneficioService {
     const startIndex = (page - 1) * limit;
     const [beneficios, total] = await this.beneficiosRepository.findAndCount({
       skip: startIndex,
+      relations: ['empresa'],
       take: limit,
       order: { id: 'ASC' },
       where: [
@@ -351,6 +352,7 @@ export class BeneficioService {
       fecha_registro: beneficio.fecha_registro,
       ultimo_cambio: beneficio.ultimo_cambio,
       empresa: empresaSummary,
+      estado: beneficio.estado,
     };
   };
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/adminUsersPanel.module.css';
+import { BaseApi } from '@/API/baseApi';
 
 type Empresa = {
   id: number;
@@ -19,19 +20,19 @@ const MOCK_EMPRESAS: Empresa[] = Array.from({ length: 15 }).map((_, i) => ({
   enabled: i % 3 !== 0,
 }));
 
+const PAGE_SIZE = 10;
+
 export default function EmpresasList() {
+  const [page, setPage] = useState(1);
   const [empresas, setEmpresas] = useState<Empresa[]>(MOCK_EMPRESAS);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [empresasCount, setEmpresasCount] = useState(0);
 
   /* ===============================
-     FILTRO
+     PAGINACIÓN
   ================================ */
-  const filteredEmpresas = useMemo(() => {
-    const value = search.toLowerCase();
-    return empresas.filter(e =>
-      e.name.toLowerCase().includes(value)
-    );
-  }, [empresas, search]);
+  const totalPages = Math.ceil(empresasCount / PAGE_SIZE) || 1;
 
   /* ===============================
      TOGGLE
@@ -66,6 +67,34 @@ export default function EmpresasList() {
     });
   };
 
+  useEffect(() => {
+      async function fetchUsers() {
+        const api = new BaseApi();
+        const res = await api.empresa.getAllPaginated(page, PAGE_SIZE, search);
+        const empresasFormated = res.items.map((u: any) => ({
+          id: u.id,
+          name: u.razon_social,
+          enabled: !u.deshabilitado,
+        }));
+        console.log(res);
+        setEmpresas(empresasFormated);
+        setEmpresasCount(res.total);
+        setLoading(false);
+      }
+  
+      fetchUsers();
+    }, [page, search]);
+
+  /* ===============================
+     RESET PAGE AL BUSCAR
+  ================================ */
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  if (loading) return <p>Cargando empresas...</p>;
+
   return (
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Empresas</h2>
@@ -76,35 +105,54 @@ export default function EmpresasList() {
         className={styles.Search}
         placeholder="Buscar empresa..."
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={(e) => handleSearch(e.target.value)}
       />
 
-      {filteredEmpresas.length === 0 && (
-        <p className={styles.Empty}>No se encontraron empresas</p>
-      )}
+      {
+        empresas.length === 0 ? 
+          <p className={styles.Empty}>No se encontraron empresas</p>
+        :
+          empresas.map(empresa => (
+            <div key={empresa.id} className={styles.UserRow}>
+              <strong>{empresa.name}</strong>
 
-      {filteredEmpresas.map(empresa => (
-        <div key={empresa.id} className={styles.UserRow}>
-          <strong>{empresa.name}</strong>
+              <div className={styles.Actions}>
+                <button
+                  className={styles.Check}
+                  disabled={empresa.enabled}
+                  onClick={() => toggleEmpresa(empresa)}
+                >
+                  ✓
+                </button>
+                <button
+                  className={styles.Cross}
+                  disabled={!empresa.enabled}
+                  onClick={() => toggleEmpresa(empresa)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+        ))
+      }
 
-          <div className={styles.Actions}>
-            <button
-              className={styles.Check}
-              disabled={empresa.enabled}
-              onClick={() => toggleEmpresa(empresa)}
-            >
-              ✓
-            </button>
-            <button
-              className={styles.Cross}
-              disabled={!empresa.enabled}
-              onClick={() => toggleEmpresa(empresa)}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      ))}
+      {/* 📄 PAGINACIÓN */}
+      <div className={styles.Pagination}>
+        <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+          Anterior
+        </button>
+
+        <span>
+          Página {page} de {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage(p => p + 1)}
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   );
 }

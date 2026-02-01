@@ -37,4 +37,7 @@ export class BeneficiosResponseDTO {
     description: 'Información resumida de la empresa',
   })
   empresa: EmpresaSummaryDTO;
+
+  @ApiProperty({ example: 'Estado del Descuento', description: 'Estado' })
+  estado: string;
 }

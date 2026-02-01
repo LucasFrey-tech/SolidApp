@@ -19,7 +19,7 @@ const MOCK_USERS: User[] = Array.from({ length: 18 }).map((_, i) => ({
   enabled: i % 3 !== 0,
 }));
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 
 export default function UsuariosAdminPanel() {
@@ -34,7 +34,6 @@ export default function UsuariosAdminPanel() {
      PAGINACIÓN
   ================================ */
   const totalPages = Math.ceil(usersCount / PAGE_SIZE) || 1;
-  const start = (page - 1) * PAGE_SIZE;
 
   useEffect(() => {
     async function fetchUsers() {
@@ -94,7 +93,7 @@ export default function UsuariosAdminPanel() {
     setPage(1);
   };
 
-  if (loading) return <p>Cargando ranking...</p>;
+  if (loading) return <p>Cargando usuarios...</p>;
 
   return (
     <div className={styles.UsersBox}>
