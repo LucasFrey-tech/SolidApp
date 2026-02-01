@@ -47,6 +47,7 @@ export class CampaignsService {
       const [campaings, total] = await this.campaignsRepository.findAndCount({
         skip: startIndex,
         take: limit,
+        relations: ['organizacion'],
         order: { id: 'ASC' },
         where: [
           { titulo: Like(`%${search}%`)},

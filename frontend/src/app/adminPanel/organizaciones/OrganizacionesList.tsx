@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/adminUsersPanel.module.css';
+import { BaseApi } from '@/API/baseApi';
 
 type Organizacion = {
   id: number;
@@ -21,20 +22,37 @@ const MOCK_ORGANIZACIONES: Organizacion[] = Array.from({ length: 14 }).map(
   })
 );
 
+const PAGE_SIZE = 10;
+
 export default function OrganizacionesList() {
-  const [organizaciones, setOrganizaciones] =
-    useState<Organizacion[]>(MOCK_ORGANIZACIONES);
+  const [page, setPage] = useState(1);
+  const [organizaciones, setOrganizaciones] = useState<Organizacion[]>(MOCK_ORGANIZACIONES);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [organizacionesCount, setOrganizacionesCount] = useState(0);
 
   /* ===============================
-     FILTRO
-  ================================ */
-  const filtered = useMemo(() => {
-    const value = search.toLowerCase();
-    return organizaciones.filter(o =>
-      o.name.toLowerCase().includes(value)
-    );
-  }, [organizaciones, search]);
+       PAGINACIÓN
+    ================================ */
+    const totalPages = Math.ceil(organizacionesCount / PAGE_SIZE) || 1;
+  
+    useEffect(() => {
+      async function fetchUsers() {
+        const api = new BaseApi();
+        const res = await api.organizacion.getAllPaginated(page, PAGE_SIZE, search);
+        const usersFormated = res.items.map((u: any) => ({
+          id: u.id,
+          name: u.razonSocial,
+          enabled: !u.deshabilitado,
+        }));
+        
+        setOrganizaciones(usersFormated);
+        setOrganizacionesCount(res.total);
+        setLoading(false);
+      }
+  
+      fetchUsers();
+    }, [page, search]);
 
   /* ===============================
      TOGGLE
@@ -67,6 +85,14 @@ export default function OrganizacionesList() {
     });
   };
 
+  /* ===============================
+     RESET PAGE AL BUSCAR
+  ================================ */
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
   return (
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Organizaciones</h2>
@@ -77,35 +103,55 @@ export default function OrganizacionesList() {
         className={styles.Search}
         placeholder="Buscar organización..."
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={(e) => handleSearch(e.target.value)}
       />
 
-      {filtered.length === 0 && (
-        <p className={styles.Empty}>No se encontraron organizaciones</p>
-      )}
+      {/* LISTA DE ORGANIZACIONES */}
+      {
+        organizaciones.length === 0?
+            <p className={styles.Empty}>No se encontraron organizaciones</p>
+          :
+            organizaciones.map(org => (
+              <div key={org.id} className={styles.UserRow}>
+                <strong>{org.name}</strong>
 
-      {filtered.map(org => (
-        <div key={org.id} className={styles.UserRow}>
-          <strong>{org.name}</strong>
+                <div className={styles.Actions}>
+                  <button
+                    className={styles.Check}
+                    disabled={org.enabled}
+                    onClick={() => toggleOrganizacion(org)}
+                  >
+                    ✓
+                  </button>
+                  <button
+                    className={styles.Cross}
+                    disabled={!org.enabled}
+                    onClick={() => toggleOrganizacion(org)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))
+      }
 
-          <div className={styles.Actions}>
-            <button
-              className={styles.Check}
-              disabled={org.enabled}
-              onClick={() => toggleOrganizacion(org)}
-            >
-              ✓
-            </button>
-            <button
-              className={styles.Cross}
-              disabled={!org.enabled}
-              onClick={() => toggleOrganizacion(org)}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      ))}
+      {/* 📄 PAGINACIÓN */}
+      <div className={styles.Pagination}>
+        <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+          Anterior
+        </button>
+
+        <span>
+          Página {page} de {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage(p => p + 1)}
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   );
 }
