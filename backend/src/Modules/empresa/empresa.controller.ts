@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -206,4 +207,22 @@ export class EmpresaController {
   ) {
     return await this.empresasService.updateCredentials(id, dto);
   }
+  @Patch(':id/estado')
+  async updateEstado(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateEmpresaDTO,
+  ) {
+    if (dto.deshabilitado === undefined) {
+      throw new BadRequestException(
+        'El campo deshabilitado es obligatorio',
+      );
+    }
+
+    return this.empresasService.updateEstado(
+      id,
+      dto.deshabilitado,
+    );
+  }
+
+
 }

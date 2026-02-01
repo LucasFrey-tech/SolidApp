@@ -11,20 +11,11 @@ type Empresa = {
   enabled: boolean;
 };
 
-/* ===============================
-   MOCK
-================================ */
-const MOCK_EMPRESAS: Empresa[] = Array.from({ length: 15 }).map((_, i) => ({
-  id: i + 1,
-  name: `Empresa ${i + 1}`,
-  enabled: i % 3 !== 0,
-}));
-
 const PAGE_SIZE = 10;
 
 export default function EmpresasList() {
   const [page, setPage] = useState(1);
-  const [empresas, setEmpresas] = useState<Empresa[]>(MOCK_EMPRESAS);
+  const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [empresasCount, setEmpresasCount] = useState(0);
@@ -37,35 +28,48 @@ export default function EmpresasList() {
   /* ===============================
      TOGGLE
   ================================ */
-  const toggleEmpresa = (empresa: Empresa) => {
-    Swal.fire({
-      title: empresa.enabled
-        ? '¿Deshabilitar empresa?'
-        : '¿Habilitar empresa?',
-      text: empresa.name,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'Cancelar',
-    }).then(res => {
-      if (res.isConfirmed) {
-        setEmpresas(prev =>
-          prev.map(e =>
-            e.id === empresa.id
-              ? { ...e, enabled: !e.enabled }
-              : e
-          )
-        );
+const toggleEmpresa = async (empresa: Empresa) => {
+  const api = new BaseApi();
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Actualizado',
-          timer: 1200,
-          showConfirmButton: false,
-        });
-      }
-    });
-  };
+  const nuevoEstado = empresa.enabled; 
+
+  Swal.fire({
+    title: empresa.enabled
+      ? '¿Deshabilitar empresa?'
+      : '¿Habilitar empresa?',
+    text: empresa.name,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí',
+    cancelButtonText: 'Cancelar',
+  }).then(async (res) => {
+    if (!res.isConfirmed) return;
+
+    try {
+      await api.empresa.update(empresa.id, {
+        deshabilitado: nuevoEstado,
+      });
+
+      setEmpresas(prev =>
+        prev.map(e =>
+          e.id === empresa.id
+            ? { ...e, enabled: !e.enabled }
+            : e
+        )
+      );
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Actualizado',
+        timer: 1200,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire('Error', 'No se pudo actualizar la empresa', 'error');
+    }
+  });
+};
+
 
   useEffect(() => {
       async function fetchUsers() {
