@@ -30,7 +30,7 @@ import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: EmpresasService) { }
+  constructor(private readonly empresasService: EmpresasService) {}
 
   /**
    * Obtener todas las empresas activas
@@ -54,8 +54,12 @@ export class EmpresaController {
     type: EmpresaResponseDTO,
     isArray: true,
   })
-  findPaginated(@Query('page') page = 1, @Query('limit') limit = 10, @Query('search') search = "") {
-    return this.empresasService.findPaginated(page, limit, search);
+  async findPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+  ) {
+    return await this.empresasService.findPaginated(page, limit, search);
   }
 
   /**
