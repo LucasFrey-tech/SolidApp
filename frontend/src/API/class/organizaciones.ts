@@ -175,11 +175,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     return res.json();
   }
 
-  async getCampaignsPaginated(
-    page = 1,
-    limit = 10,
-    search: string = "",
-  ) {
+  async getCampaignsPaginated(page = 1, limit = 10, search: string = "") {
     const res = await fetch(
       `${this.baseUrl}/campaigns/list/paginated?page=${page}&limit=${limit}&search=${search}`,
       {
@@ -191,6 +187,27 @@ export class OrganizacionesService extends Crud<Organizacion> {
       const errorDetails = await res.text();
       throw new Error(
         `Error al obtener usuarios paginados (${res.status}): ${errorDetails}`,
+      );
+    }
+    return res.json();
+  }
+
+  async getOrganizationCampaignsPaginated(
+    organizacionId: number,
+    page = 1,
+    limit = 10,
+  ) {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/${organizacionId}/campaigns/paginated?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      },
+    );
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener campañas de organización (${res.status}): ${errorDetails}`,
       );
     }
     return res.json();
