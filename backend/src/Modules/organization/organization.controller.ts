@@ -17,6 +17,8 @@ import { UpdateOrganizationDto } from './dto/update_organization.dto';
 import { ResponseOrganizationDto } from './dto/response_organization.dto';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 import { JwtService } from '@nestjs/jwt';
+import { ResponseOrganizationPaginatedDto } from './dto/response_organization_paginated.dto';
+import { ResponseCampaignsPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
 
 @ApiTags('Organizaciones')
 @Controller('organizations')
@@ -51,15 +53,37 @@ export class OrganizationsController {
   }
 
   @Get('/list/paginated/')
-    @ApiOperation({ summary: 'Listar usuarios paginados' })
-    @ApiResponse({
-      status: 200,
-      type: ResponseOrganizationDto,
-      isArray: true,
-    })
-    findPaginated(@Query('page') page = 1, @Query('limit') limit = 10, @Query('search') search = "") {
-      return this.organizationService.findPaginated(page, limit, search);
-    }
+  @ApiOperation({ summary: 'Listar organizaciones paginadas' })
+  @ApiResponse({
+    status: 200,
+    type: ResponseOrganizationPaginatedDto,
+    isArray: true,
+  })
+  async findPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+  ) {
+    return await this.organizationService.findPaginated(page, limit, search);
+  }
+
+  @Get(':id/campaigns/paginated/')
+  @ApiOperation({ summary: 'Listar campañas de la organizacion' })
+  @ApiResponse({
+    status: 200,
+    type: ResponseCampaignsPaginatedDto,
+  })
+  async findOrganizationCampaignsPaginated(
+    @Param('id') organizacionId: number,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    return await this.organizationService.findOrganizationCampaignsPaginated(
+      organizacionId,
+      page,
+      limit,
+    );
+  }
 
   @Post()
   @ApiOperation({ summary: 'Crear una organización' })
