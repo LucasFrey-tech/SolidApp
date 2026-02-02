@@ -11,6 +11,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Organizations } from './organizations.entity';
 import { Donations } from './donations.entity';
+import { CampaignEstado } from '../Modules/campaign/enum';
 
 @Entity('campañas')
 export class Campaigns {
@@ -22,8 +23,8 @@ export class Campaigns {
     example: 'Activa',
     description: 'Indica si la Campaña esta activa',
   })
-  @Column({ type: 'varchar', length: 10 })
-  estado: string;
+  @Column({ type: 'varchar', length: 20 })
+  estado?: CampaignEstado;
 
   @ApiProperty({
     example: 'Doná y Ganá: Tu Compra se Convierte en Ayuda',
@@ -43,22 +44,22 @@ export class Campaigns {
     example: '2025-12-15',
     description: 'Fecha de Inicio de la Campaña Solidaria',
   })
-  @CreateDateColumn({ type: 'date' })
-  fecha_inicio: Date;
+  @Column({ type: 'date' })
+  fecha_Inicio: Date;
 
   @ApiProperty({
     example: '2025-12-15',
     description: 'Fecha de Finalización de la Campaña Solidaria',
   })
-  @CreateDateColumn({ type: 'date' })
-  fecha_fin: Date;
+  @Column({ type: 'date' })
+  fecha_Fin: Date;
 
   @ApiProperty({
     example: '2025-12-15',
     description: 'Fecha de la Creación de la Campaña Solidaria',
   })
   @CreateDateColumn({ type: 'datetime2' })
-  fecha_registro: Date;
+  fecha_Registro: Date;
 
   @ApiProperty({
     example: 50,
