@@ -1,7 +1,7 @@
 import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { CreateCampaignsDto } from './create_campaigns.dto';
 import {
-  IsDate,
+  IsDateString,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -35,7 +35,17 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
   @IsNotEmpty()
   @IsString()
   @MaxLength(255)
-  description?: string;
+  descripcion?: string;
+
+  @ApiPropertyOptional({
+    example: '2025-09-15',
+    description: 'Nueva fecha de Inicio de la campaña',
+    type: String,
+    format: 'date',
+  })
+  @IsNotEmpty()
+  @IsDateString()
+  fecha_Inicio?: Date;
 
   @ApiPropertyOptional({
     example: '2025-09-15',
@@ -44,8 +54,8 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
     format: 'date',
   })
   @IsNotEmpty()
-  @IsDate()
-  fechaFin?: Date;
+  @IsDateString()
+  fecha_Fin?: Date;
 
   @ApiPropertyOptional({
     example: 750000,
