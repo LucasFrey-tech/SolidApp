@@ -24,7 +24,7 @@ export class ResponseCampaignsDto {
     example: 'ACTIVA',
     description: 'Estado actual de la campaña solidaria',
   })
-  estado: string;
+  estado?: string;
 
   @ApiProperty({
     example: 'Campaña destinada a la recolección de ropa de abrigo',
@@ -38,7 +38,7 @@ export class ResponseCampaignsDto {
     type: String,
     format: 'date',
   })
-  fechaInicio: Date;
+  fecha_Inicio: Date;
 
   @ApiProperty({
     example: '2025-08-31',
@@ -46,7 +46,7 @@ export class ResponseCampaignsDto {
     type: String,
     format: 'date',
   })
-  fechaFin: Date;
+  fecha_Fin: Date;
 
   @ApiProperty({
     example: '2025-05-15',
@@ -54,7 +54,7 @@ export class ResponseCampaignsDto {
     type: String,
     format: 'date',
   })
-  fechaRegistro: Date;
+  fecha_Registro: Date;
 
   @ApiProperty({
     example: 500000,
