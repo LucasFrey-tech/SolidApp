@@ -76,15 +76,19 @@ export class CampaignsController {
   }
 
   @Get('/list/paginated/')
-    @ApiOperation({ summary: 'Listar usuarios paginados' })
-    @ApiResponse({
-      status: 200,
-      type: ResponseCampaignsDto,
-      isArray: true,
-    })
-    findPaginated(@Query('page') page = 1, @Query('limit') limit = 10, @Query('search') search = "") {
-      return this.campaignService.findPaginated(page, limit, search);
-    }
+  @ApiOperation({ summary: 'Listar campañas solidarias dela organizacion' })
+  @ApiResponse({
+    status: 200,
+    type: ResponseCampaignsDto,
+    isArray: true,
+  })
+  findPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+  ) {
+    return this.campaignService.findPaginated(page, limit, search);
+  }
 
   /**
    * Crea una Nueva Campaña Solidaria
