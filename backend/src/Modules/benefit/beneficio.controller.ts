@@ -22,7 +22,7 @@ import { CanjearBeneficioDto } from './dto/canjear_beneficio.dto';
 @ApiTags('Beneficios')
 @Controller('beneficios')
 export class BeneficioController {
-  constructor(private readonly beneficiosService: BeneficioService) { }
+  constructor(private readonly beneficiosService: BeneficioService) {}
 
   @Get()
   async findAll(): Promise<BeneficiosResponseDTO[]> {
@@ -41,8 +41,12 @@ export class BeneficioController {
     type: BeneficiosResponseDTO,
     isArray: true,
   })
-  findPaginated(@Query('page') page = 1, @Query('limit') limit = 10, @Query('search') search = "") {
-    return this.beneficiosService.findPaginated(page, limit, search);
+  async findPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+  ) {
+    return await this.beneficiosService.findPaginated(page, limit, search);
   }
 
   @Get('empresa/:idEmpresa/paginated')
@@ -87,7 +91,7 @@ export class BeneficioController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CanjearBeneficioDto,
   ) {
-    return this.beneficiosService.canjear(id, dto.userId, dto.cantidad,);
+    return this.beneficiosService.canjear(id, dto.userId, dto.cantidad);
   }
 
   @Patch(':id')
@@ -97,7 +101,6 @@ export class BeneficioController {
   ): Promise<BeneficiosResponseDTO> {
     return this.beneficiosService.update(id, dto);
   }
-
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
