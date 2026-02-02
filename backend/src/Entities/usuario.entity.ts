@@ -141,10 +141,6 @@ export class Usuario {
   @Column({ type: 'int', default: 0 })
   puntos: number;
 
-  @OneToMany(() => UsuarioBeneficio, ub => ub.beneficio)
+  @OneToMany(() => UsuarioBeneficio, (ub) => ub.beneficio)
   usuarios: UsuarioBeneficio[];
-
-
 }
-
-
