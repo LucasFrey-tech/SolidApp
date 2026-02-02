@@ -100,7 +100,7 @@
 }
 
 /* ===============================
-   DATE BUTTON
+   FECHA
 ================================ */
 .dateButton {
   background: #1b1b1b;
@@ -115,12 +115,20 @@
 }
 
 /* ===============================
-   CALENDAR
+   CALENDARIO
 ================================ */
 .calendarWrapper {
   background: #111;
   border-radius: 10px;
   padding: 8px;
+}
+
+/* ===============================
+   ESTADO
+================================ */
+.select {
+  color: white;
+  background-color: black;
 }
 
 /* ===============================
