@@ -15,6 +15,7 @@ import { ResponseOrganizationDto } from './dto/response_organization.dto';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
+import { Campaigns } from '../../Entities/campaigns.entity';
 
 @Injectable()
 export class OrganizationsService {
@@ -23,6 +24,8 @@ export class OrganizationsService {
   constructor(
     @InjectRepository(Organizations)
     private readonly organizationRepository: Repository<Organizations>,
+    @InjectRepository(Campaigns)
+    private readonly campaignRepository: Repository<Campaigns>,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -36,21 +39,38 @@ export class OrganizationsService {
 
   async findPaginated(page: number, limit: number, search: string) {
     const startIndex = (page - 1) * limit;
-        const [organizacion, total] = await this.organizationRepository.findAndCount({
-          skip: startIndex,
-          take: limit,
-          order: { id: 'ASC' },
-          where: [
-            { razon_social: Like(`%${search}%`), deshabilitado: false },
-            { nombre_fantasia: Like(`%${search}%`), deshabilitado: false }
-          ],
-        });
-    
-    
-        return {
-          items: organizacion.map(this.mapToResponseDto),
-          total
-        };
+    const [organizacion, total] =
+      await this.organizationRepository.findAndCount({
+        skip: startIndex,
+        take: limit,
+        order: { id: 'ASC' },
+        where: [
+          { razon_social: Like(`%${search}%`), deshabilitado: false },
+          { nombre_fantasia: Like(`%${search}%`), deshabilitado: false },
+        ],
+      });
+
+    return {
+      items: organizacion.map(this.mapToResponseDto),
+      total,
+    };
+  }
+
+  async findOrganizationCampaignsPaginated(
+    organizacionId: number,
+    page: number,
+    limit: number,
+  ) {
+    const [campaigns, total] = await this.campaignRepository.findAndCount({
+      where: { organizacion: { id: organizacionId } },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      items: campaigns,
+      total,
+    };
   }
 
   async findOne(id: number): Promise<ResponseOrganizationDto> {
