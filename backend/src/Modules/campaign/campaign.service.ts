@@ -12,6 +12,7 @@ import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { OrganizationSummaryDto } from '../organization/dto/summary_organization.dto';
 import { Organizations } from '../../Entities/organizations.entity';
+import { CampaignEstado } from './enum';
 
 /**
  * Servicio que maneja la lógica de negocio de las Campañas Solidarias
@@ -43,24 +44,39 @@ export class CampaignsService {
   }
 
   async findPaginated(page: number, limit: number, search: string) {
-      const startIndex = (page - 1) * limit;
-      const [campaings, total] = await this.campaignsRepository.findAndCount({
-        skip: startIndex,
-        take: limit,
-        relations: ['organizacion'],
-        order: { id: 'ASC' },
-        where: [
-          { titulo: Like(`%${search}%`)},
-          { descripcion: Like(`%${search}%`)}
-        ],
-      });
-  
-  
-      return {
-        items: campaings.map(this.mapToResponseDto),
-        total
-      };
-    }
+    const startIndex = (page - 1) * limit;
+    const [campaings, total] = await this.campaignsRepository.findAndCount({
+      skip: startIndex,
+      take: limit,
+      relations: ['organizacion'],
+      order: { id: 'ASC' },
+      where: [
+        { titulo: Like(`%${search}%`) },
+        { descripcion: Like(`%${search}%`) },
+      ],
+    });
+
+    return {
+      items: campaings.map(this.mapToResponseDto),
+      total,
+    };
+  }
+
+  async findByOrganizationPaginated(
+    organizacionId: number,
+    page: number,
+    limit: number,
+  ) {
+    const [campaigns, total] = await this.campaignsRepository.findAndCount({
+      where: { organizacion: { id: organizacionId } },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    return {
+      items: campaigns.map(this.mapToResponseDto),
+      total,
+    };
+  }
 
   /**
    * Obtiene una campaña por ID
@@ -100,12 +116,18 @@ export class CampaignsService {
       throw new BadRequestException('El Objetivo tiene que ser mayor a 0');
     }
 
+    // El estado depende de la fecha de inicio y de fin
+
+    const estado = this.setEstado(createDto.fecha_Inicio, createDto.fecha_Fin);
+
     // Creación de la Campaña Solidaria
     const campaign = this.campaignsRepository.create({
       titulo: createDto.titulo,
-      estado: createDto.estado,
-      descripcion: createDto.description,
+      descripcion: createDto.descripcion,
+      fecha_Inicio: createDto.fecha_Inicio,
+      fecha_Fin: createDto.fecha_Fin,
       objetivo: createDto.objetivo,
+      estado: estado,
       organizacion,
     });
 
@@ -156,13 +178,26 @@ export class CampaignsService {
       }
     });
 
-    // Actualizar fecha de modificación
-    campaign.ultimo_cambio = new Date();
-
     // Validar cantidad si se actualiza
     if (updateDto.objetivo != undefined && updateDto.objetivo < 0) {
       throw new BadRequestException('El objetivo no puede ser negativo');
     }
+
+    console.log('UPDATE DTO:', updateDto.estado);
+
+    if (
+      updateDto.estado === undefined &&
+      updateDto.fecha_Inicio &&
+      updateDto.fecha_Fin
+    ) {
+      campaign.estado = this.setEstado(
+        updateDto.fecha_Inicio,
+        updateDto.fecha_Fin,
+      );
+    }
+
+    // Actualizar fecha de modificación
+    campaign.ultimo_cambio = new Date();
 
     const updatedCampaign = await this.campaignsRepository.save(campaign);
     this.logger.log(`Campaña Solidaria ${id} actualizada`);
@@ -199,11 +234,21 @@ export class CampaignsService {
       titulo: campaign.titulo,
       description: campaign.descripcion,
       estado: campaign.estado,
-      fechaRegistro: campaign.fecha_registro,
-      fechaInicio: campaign.fecha_inicio,
-      fechaFin: campaign.fecha_fin,
+      fecha_Registro: campaign.fecha_Registro,
+      fecha_Inicio: campaign.fecha_Inicio,
+      fecha_Fin: campaign.fecha_Fin,
       objetivo: campaign.objetivo,
       organizacion: organizationSummary,
     };
   };
+
+  private setEstado(inicio: Date, fin: Date) {
+    const hoy = new Date();
+
+    if (hoy < inicio) return CampaignEstado.PENDIENTE;
+
+    if (fin < hoy) return CampaignEstado.FINALIZADA;
+
+    return CampaignEstado.ACTIVA;
+  }
 }
