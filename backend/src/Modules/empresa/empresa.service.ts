@@ -22,6 +22,7 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class EmpresasService {
   private readonly logger = new Logger(EmpresasService.name);
+  empresaRepo: any;
 
   constructor(
     @InjectRepository(Empresa)
@@ -56,23 +57,24 @@ export class EmpresasService {
   }
 
   async findPaginated(page: number, limit: number, search: string) {
-    const startIndex = (page - 1) * limit;
-    const [empresas, total] = await this.empresasRepository.findAndCount({
-      skip: startIndex,
-      take: limit,
-      order: { id: 'ASC' },
-      where: [
-        { razon_social: Like(`%${search}%`), deshabilitado: false },
-        { nombre_fantasia: Like(`%${search}%`), deshabilitado: false }
-      ],
-    });
+  const startIndex = (page - 1) * limit;
 
+  const where = search
+    ? [
+        { razon_social: Like(`%${search}%`) },
+        { nombre_fantasia: Like(`%${search}%`) },
+      ]
+    : {};
 
-    return {
-      items: empresas.map(this.mapToResponseDto),
-      total
-    };
-  }
+  const [empresas, total] = await this.empresasRepository.findAndCount({
+    skip: startIndex,
+    take: limit,
+    order: { id: 'ASC' },
+    where,
+  });
+
+  return { items: empresas, total };
+}
 
   /**
    * Obtengo las Imagenes de cada empresa
@@ -176,6 +178,19 @@ export class EmpresasService {
 
     return this.mapToResponseDto(updatedEmpresa);
   }
+
+async updateEstado(id: number, deshabilitado: boolean) {
+  const empresa = await this.empresaRepo.findOne({ where: { id } });
+
+  if (!empresa) {
+    throw new NotFoundException('Empresa no encontrada');
+  }
+
+  empresa.deshabilitado = deshabilitado;
+  return this.empresaRepo.save(empresa);
+}
+
+
 
   async delete(id: number): Promise<void> {
     const empresa = await this.empresasRepository.findOne({

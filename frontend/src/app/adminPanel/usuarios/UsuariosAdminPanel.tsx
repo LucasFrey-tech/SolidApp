@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/adminUsersPanel.module.css';
 import { BaseApi } from '@/API/baseApi';
@@ -12,94 +12,104 @@ type User = {
   enabled: boolean;
 };
 
-const MOCK_USERS: User[] = Array.from({ length: 18 }).map((_, i) => ({
-  id: i + 1,
-  name: `Usuario ${i + 1}`,
-  email: `usuario${i + 1}@mail.com`,
-  enabled: i % 3 !== 0,
-}));
-
 const PAGE_SIZE = 10;
-
 
 export default function UsuariosAdminPanel() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [usersCount, setUsersCount] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-
-  /* ===============================
-     PAGINACIÓN
-  ================================ */
-  const totalPages = Math.ceil(usersCount / PAGE_SIZE) || 1;
+  const api = new BaseApi();
 
   useEffect(() => {
     async function fetchUsers() {
-      const api = new BaseApi();
-      const res = await api.users.getAllPaginated(page, PAGE_SIZE, search);
-      const usersFormated = res.items.map((u: any) => ({
-        id: u.id,
-        name: u.nombre,
-        email: u.correo,
-        enabled: !u.deshabilitado,
-      }));
-      
-      setUsers(usersFormated);
-      setUsersCount(res.total);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const res = await api.users.getAllPaginated(page, PAGE_SIZE, search);
+
+        const formatted = res.items.map((u: any) => ({
+          id: u.id,
+          name: `${u.nombre || ''} ${u.apellido || ''}`.trim() || 'Sin nombre',
+          email: u.correo,
+          enabled: !u.deshabilitado,
+        }));
+
+        setUsers(formatted);
+        setUsersCount(res.total);
+      } catch (err) {
+        console.error('Error al cargar usuarios:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los usuarios',
+        });
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchUsers();
-  }, [page, search]);
+  }, [page, search, refreshTrigger]);
 
-  /* ===============================
-     TOGGLE USER
-  ================================ */
-  const confirmToggleUser = (user: User) => {
-    Swal.fire({
-      title: user.enabled
-        ? '¿Deshabilitar usuario?'
-        : '¿Habilitar usuario?',
-      text: `Usuario: ${user.name}`,
+  const totalPages = Math.ceil(usersCount / PAGE_SIZE) || 1;
+
+  const toggleUser = async (user: User) => {
+    const quiereHabilitar = !user.enabled;
+    const title = quiereHabilitar ? '¿Habilitar usuario?' : '¿Deshabilitar usuario?';
+
+    const confirmed = await Swal.fire({
+      title,
+      text: `${user.name} (${user.email})`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí',
       cancelButtonText: 'Cancelar',
-    }).then(result => {
-      if (result.isConfirmed) {
-        setUsers(prev =>
-          prev.map(u =>
-            u.id === user.id ? { ...u, enabled: !u.enabled } : u
-          )
-        );
+    }).then(res => res.isConfirmed);
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Actualizado',
-          timer: 1200,
-          showConfirmButton: false,
-        });
+    if (!confirmed) return;
+
+    try {
+      if (quiereHabilitar) {
+        // Habilitar
+        await api.users.restore(user.id);
+      } else {
+        // Deshabilitar
+        await api.users.delete(user.id);
       }
-    });
+
+      // Recargar datos
+      setRefreshTrigger(prev => prev + 1);
+
+      Swal.fire({
+        icon: 'success',
+        title: quiereHabilitar ? 'Habilitado' : 'Deshabilitado',
+        timer: 1400,
+        showConfirmButton: false,
+      });
+    } catch (err: any) {
+      console.error('Error al cambiar estado del usuario:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err.message || 'No se pudo cambiar el estado del usuario',
+      });
+    }
   };
 
-  /* ===============================
-     RESET PAGE AL BUSCAR
-  ================================ */
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
   };
 
-  if (loading) return <p>Cargando usuarios...</p>;
+  if (loading) return <p className={styles.Empty}>Cargando usuarios...</p>;
 
   return (
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Usuarios</h2>
 
-      {/* 🔍 BUSCADOR */}
       <input
         type="text"
         placeholder="Buscar por nombre o email..."
@@ -108,48 +118,43 @@ export default function UsuariosAdminPanel() {
         onChange={(e) => handleSearch(e.target.value)}
       />
 
-      {/* 👤 LISTA */}
-      {
-        users.length === 0? 
-          (<p className={styles.Empty}>No se encontraron usuarios</p>)
-        :
-          users.map(user => (
-            <div key={user.id} className={styles.UserRow}>
-              <div>
-                <strong>{user.name}</strong>
-                <div className={styles.Email}>{user.email}</div>
-              </div>
-
-              <div className={styles.Actions}>
-                <button
-                  className={styles.Check}
-                  disabled={user.enabled}
-                  onClick={() => confirmToggleUser(user)}
-                >
-                  ✓
-                </button>
-                <button
-                  className={styles.Cross}
-                  disabled={!user.enabled}
-                  onClick={() => confirmToggleUser(user)}
-                >
-                  ✕
-                </button>
-              </div>
+      {users.length === 0 ? (
+        <p className={styles.Empty}>No se encontraron usuarios</p>
+      ) : (
+        users.map(user => (
+          <div key={user.id} className={styles.UserRow}>
+            <div>
+              <strong>{user.name}</strong>
+              <div className={styles.Email}>{user.email}</div>
             </div>
-          ))
-      }
 
-      {/* 📄 PAGINACIÓN */}
+            <div className={styles.Actions}>
+              <button
+                className={styles.Check}
+                disabled={user.enabled}
+                onClick={() => toggleUser(user)}
+                title={user.enabled ? 'Ya está habilitado' : 'Habilitar usuario'}
+              >
+                ✓
+              </button>
+              <button
+                className={styles.Cross}
+                disabled={!user.enabled}
+                onClick={() => toggleUser(user)}
+                title={user.enabled ? 'Deshabilitar usuario' : 'Ya está deshabilitado'}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ))
+      )}
+
       <div className={styles.Pagination}>
         <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>
           Anterior
         </button>
-
-        <span>
-          Página {page} de {totalPages}
-        </span>
-
+        <span>Página {page} de {totalPages}</span>
         <button
           disabled={page === totalPages}
           onClick={() => setPage(p => p + 1)}

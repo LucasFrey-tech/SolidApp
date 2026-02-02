@@ -18,44 +18,46 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsuarioService {
-
   private readonly logger = new Logger(UsuarioService.name);
+
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async findAll(): Promise<ResponseUsuarioDto[]> {
     const usuarios = await this.usuarioRepository.find({
       where: { deshabilitado: false },
     });
-
     return usuarios.map(this.mapToResponseDto);
   }
 
+  // Para panel admin: MOSTRAR TODOS (con y sin deshabilitar)
   async findPaginated(page: number, limit: number, search: string) {
-    const startIndex = (page - 1) * limit;
-    const [usuarios,total] = await this.usuarioRepository.findAndCount({
-      skip: startIndex,
+    const skip = (page - 1) * limit;
+
+    const [usuarios, total] = await this.usuarioRepository.findAndCount({
+      skip,
       take: limit,
       order: { id: 'ASC' },
-      where: {
-        nombre: Like(`%${search}%`),
-        deshabilitado: false
-      },
+      where: search
+        ? [
+            { nombre: Like(`%${search}%`) },
+            { apellido: Like(`%${search}%`) },
+            { correo: Like(`%${search}%`) },
+          ]
+        : undefined,  // ← sin filtro de deshabilitado → trae todos
     });
 
     return {
       items: usuarios.map(this.mapToResponseDto),
-      total
+      total,
     };
   }
 
   async findOne(id: number): Promise<ResponseUsuarioDto> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id, deshabilitado: false },
-    });
+    const usuario = await this.usuarioRepository.findOne({ where: { id } });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
@@ -65,9 +67,7 @@ export class UsuarioService {
   }
 
   async findByEmail(correo: string): Promise<Usuario> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { correo },
-    });
+    const usuario = await this.usuarioRepository.findOne({ where: { correo } });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con email ${correo} no encontrado`);
@@ -78,7 +78,7 @@ export class UsuarioService {
 
   async getPoints(id: number): Promise<{ id: number; puntos: number }> {
     const usuario = await this.usuarioRepository.findOne({
-      where: { id, deshabilitado: false },
+      where: { id },
       select: ['id', 'puntos'],
     });
 
@@ -86,12 +86,8 @@ export class UsuarioService {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    return {
-      id: usuario.id,
-      puntos: usuario.puntos ?? 0,
-    };
+    return { id: usuario.id, puntos: usuario.puntos ?? 0 };
   }
-
 
   async create(createDto: CreateUsuarioDto): Promise<ResponseUsuarioDto> {
     const existente = await this.usuarioRepository.findOne({
@@ -117,9 +113,7 @@ export class UsuarioService {
     id: number,
     updateDto: UpdateUsuarioDto,
   ): Promise<ResponseUsuarioDto> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-    });
+    const usuario = await this.usuarioRepository.findOne({ where: { id } });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
@@ -134,9 +128,7 @@ export class UsuarioService {
   }
 
   async delete(id: number): Promise<void> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-    });
+    const usuario = await this.usuarioRepository.findOne({ where: { id } });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
@@ -149,9 +141,7 @@ export class UsuarioService {
   }
 
   async restore(id: number): Promise<void> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-    });
+    const usuario = await this.usuarioRepository.findOne({ where: { id } });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
@@ -225,10 +215,7 @@ export class UsuarioService {
 
     const newToken = this.jwtService.sign(payload);
 
-    return {
-      user: updated,
-      token: newToken,
-    };
+    return { user: updated, token: newToken };
   }
 
   private readonly mapToResponseDto = (

@@ -75,7 +75,7 @@ export class OrganizationsService {
 
   async findOne(id: number): Promise<ResponseOrganizationDto> {
     const organization = await this.organizationRepository.findOne({
-      where: { id, deshabilitado: false },
+      where: { id },
     });
 
     if (!organization) {
@@ -202,7 +202,7 @@ export class OrganizationsService {
     }
 
     if (dto.passwordNueva) {
-      if (!dto.passwordNueva) {
+      if (!dto.passwordActual) {
         throw new UnauthorizedException(
           'Para cambiar la contraseña debés ingresar la contraseña actual',
         );

@@ -284,7 +284,6 @@ export class BeneficioService {
       throw new BadRequestException('El valor no puede ser negativo');
     }
 
-    // 👇 asignamos SOLO campos simples
     if (updateDto.titulo !== undefined) {
       beneficio.titulo = updateDto.titulo;
     }
@@ -310,6 +309,30 @@ export class BeneficioService {
 
     return this.mapToResponseDto(updated);
   }
+
+  async updateEstado(
+  id: number,
+  estado: 'pendiente' | 'aprobado' | 'rechazado',
+): Promise<BeneficiosResponseDTO> {
+  const beneficio = await this.beneficiosRepository.findOne({
+    where: { id },
+    relations: ['empresa'],
+  });
+
+  if (!beneficio) {
+    throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
+  }
+
+  beneficio.estado = estado;
+
+  const updated = await this.beneficiosRepository.save(beneficio);
+
+  this.logger.log(
+    `Estado del beneficio ${id} actualizado a ${estado}`,
+  );
+
+  return this.mapToResponseDto(updated);
+}
 
 
   // ===============================
