@@ -6,6 +6,7 @@ import { OrganizacionesService } from "./class/organizaciones";
 import { BeneficiosService } from "./class/beneficios";
 import { RankingService } from "./class/ranking";
 import { DonationsService } from "./class/donaciones";
+import { campaignService } from "./class/campaigns";
 
 export class BaseApi {
     public readonly log: Login;
@@ -16,11 +17,10 @@ export class BaseApi {
     public readonly beneficio: BeneficiosService;
     public readonly ranking: RankingService;
     public readonly donation: DonationsService;
+    public readonly campaign: campaignService;
 
     constructor(private token?:string){
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
-        this.register = new RegisterService(baseUrl);
+        this.register = new RegisterService();
         this.log = new Login();
         this.users = new Users(token);
         this.empresa = new EmpresasService(token);
@@ -28,5 +28,6 @@ export class BaseApi {
         this.beneficio = new BeneficiosService(token);
         this.ranking = new RankingService(token);
         this.donation = new DonationsService(token);
+        this.campaign = new campaignService(token);
     }
 }
