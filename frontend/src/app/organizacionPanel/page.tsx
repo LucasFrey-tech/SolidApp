@@ -1,25 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Edit2 } from "lucide-react";
 import Swal from "sweetalert2";
 import styles from "@/styles/organizationPanel.module.css";
 import formStyles from "@/styles/campaignPanel.module.css";
 import { CampaignForm } from "./CampainForm";
+import { BaseApi } from "@/API/baseApi";
+import { useUser } from "../context/UserContext";
+import { CampaignEstado } from "@/API/types/campañas/enum";
 
 /* ===============================
    TIPOS
 ================================ */
 type Campaign = {
-  id: string;
+  id: number;
   titulo: string;
   descripcion: string;
   objetivo: number;
-  puntosCampaña: number;
+
+  fecha_Inicio: string;
+  fecha_Fin: string;
+
+  fecha_Registro: string;
+  estado?: CampaignEstado;
+};
+
+export type CampaignFormValues = {
+  titulo: string;
+  descripcion: string;
+  objetivo: number;
+  fecha_Inicio: string;
+  fecha_Fin: string;
+  estado?: CampaignEstado;
 };
 
 type Donation = {
-  id: string;
+  id: number;
   user: string;
   description: string;
   points: number;
@@ -33,75 +50,89 @@ type ViewMode = "campaigns" | "donations";
 export default function OrganizationCampaignsPage() {
   const [view, setView] = useState<ViewMode>("campaigns");
 
+  const { user } = useUser();
+  const organizacionId = user?.sub;
+
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaignsPage, setCampaignsPage] = useState(1);
+  const [campaignsTotalPages, setCampaignsTotalPages] = useState(1);
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [donationsPage, setDonationsPage] = useState(1);
+  const [donationsTotalPages, setDonationsTotalPages] = useState(1);
 
   const [open, setOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] =
-    useState<Campaign | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+
+  const api = useMemo(() => new BaseApi(), []);
 
   /* ===============================
-     DATOS MOCK
+     CAMPAÑAS PÁGINADAS
   ================================ */
+  const fetchCampaigns = async () => {
+    if (!organizacionId) return;
+
+    const response = await api.organizacion.getOrganizationCampaignsPaginated(
+      organizacionId,
+      campaignsPage,
+      8,
+    );
+    setCampaigns(response.items);
+    setCampaignsTotalPages(response.totalPages);
+  };
+
   useEffect(() => {
-    setCampaigns([
-      {
-        id: "1",
-        titulo: "Campaña 1",
-        descripcion: "Descripción 1",
-        objetivo: 100,
-        puntosCampaña: 250,
-      },
-      {
-        id: "2",
-        titulo: "Campaña 2",
-        descripcion: "Descripción 2",
-        objetivo: 200,
-        puntosCampaña: 400,
-      },
-    ]);
-
-    setDonations([
-      {
-        id: "1",
-        user: "Juan Pérez",
-        description: "Donó ropa",
-        points: 150,
-      },
-      {
-        id: "2",
-        user: "María López",
-        description: "Donó alimentos",
-        points: 300,
-      },
-    ]);
-  }, []);
+    fetchCampaigns();
+  }, [organizacionId, campaignsPage]);
 
   /* ===============================
-     CAMPAÑAS
+     HELPERS
   ================================ */
-  const handleSaveCampaign = (data: Partial<Campaign>) => {
-    if (editingCampaign) {
-      setCampaigns((prev) =>
-        prev.map((c) =>
-          c.id === editingCampaign.id ? { ...c, ...data } : c
-        )
-      );
-    } else {
-      setCampaigns((prev) => [
-        ...prev,
-        {
-          id: (prev.length + 1).toString(),
-          titulo: data.titulo!,
-          descripcion: data.descripcion!,
-          objetivo: data.objetivo!,
-          puntosCampaña: data.puntosCampaña || 0,
-        },
-      ]);
-    }
+  const toFormValues = (campaign: Campaign): CampaignFormValues => ({
+    titulo: campaign.titulo,
+    descripcion: campaign.descripcion,
+    objetivo: campaign.objetivo,
+    fecha_Inicio: campaign.fecha_Inicio,
+    fecha_Fin: campaign.fecha_Fin,
+  });
 
-    setEditingCampaign(null);
-    setOpen(false);
+  /* ===============================
+     CREAR O ACTUALIZAR CAMPAÑAS
+  ================================ */
+  const handleSubmitCampaign = async (data: CampaignFormValues) => {
+    if (!organizacionId) return;
+
+    try {
+      if (editingCampaign) {
+        await api.campaign.update(editingCampaign.id, {
+          titulo: data.titulo,
+          descripcion: data.descripcion,
+          objetivo: data.objetivo,
+          fecha_Inicio: data.fecha_Inicio,
+          fecha_Fin: data.fecha_Fin,
+          estado: data.estado,
+        });
+
+        Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
+      } else {
+        await api.campaign.create({
+          titulo: data.titulo,
+          descripcion: data.descripcion,
+          objetivo: data.objetivo,
+          fecha_Inicio: data.fecha_Inicio,
+          fecha_Fin: data.fecha_Fin,
+          id_organizacion: organizacionId,
+        });
+
+        Swal.fire("Creada", "Campaña creada con éxito", "success");
+      }
+
+      setOpen(false);
+      setEditingCampaign(null);
+      fetchCampaigns();
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "No se pudo guardar la campaña", "error");
+    }
   };
 
   /* ===============================
@@ -118,9 +149,7 @@ export default function OrganizationCampaignsPage() {
     }).then((res) => {
       if (res.isConfirmed) {
         Swal.fire("Aceptada", "La donación fue aceptada", "success");
-        setDonations((prev) =>
-          prev.filter((d) => d.id !== donation.id)
-        );
+        setDonations((prev) => prev.filter((d) => d.id !== donation.id));
       }
     });
   };
@@ -136,9 +165,7 @@ export default function OrganizationCampaignsPage() {
     }).then((res) => {
       if (res.isConfirmed) {
         Swal.fire("Rechazada", "La donación fue rechazada", "error");
-        setDonations((prev) =>
-          prev.filter((d) => d.id !== donation.id)
-        );
+        setDonations((prev) => prev.filter((d) => d.id !== donation.id));
       }
     });
   };
@@ -196,8 +223,8 @@ export default function OrganizationCampaignsPage() {
           {campaigns.map((c) => (
             <li key={c.id} className={styles.card}>
               <div>
-                <strong>{c.titulo}</strong> — {c.descripcion} —
-                Objetivo: {c.objetivo} - Puntos: {c.puntosCampaña}
+                <strong>{c.titulo}</strong> — {c.descripcion} — Objetivo:{" "}
+                {c.objetivo} - Estado: {c.estado}
               </div>
               <Edit2
                 className={styles.editIcon}
@@ -257,21 +284,21 @@ export default function OrganizationCampaignsPage() {
           MODAL
       ================================ */}
       {open && (
-        <div
-          className={formStyles.modalOverlay}
-          onClick={() => setOpen(false)}
-        >
+        <div className={formStyles.modalOverlay} onClick={() => setOpen(false)}>
           <div
             className={formStyles.modal}
             onClick={(e) => e.stopPropagation()}
           >
             <CampaignForm
-              campaign={editingCampaign || undefined}
-              onClose={() => {
+              initialValues={editingCampaign
+                ? toFormValues(editingCampaign)
+                : undefined
+              }
+              onSubmit={handleSubmitCampaign}
+              onCancel={() => {
                 setOpen(false);
                 setEditingCampaign(null);
               }}
-              onSuccess={handleSaveCampaign}
             />
           </div>
         </div>
