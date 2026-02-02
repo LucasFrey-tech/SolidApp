@@ -4,8 +4,9 @@ import {
   IsNumber,
   MaxLength,
   IsNotEmpty,
-  IsDate,
   Min,
+  IsDateString,
+  IsOptional,
 } from 'class-validator';
 
 export class CreateCampaignsDto {
@@ -31,9 +32,9 @@ export class CreateCampaignsDto {
     description: 'Estado actual de la campaña (ACTIVA, FINALIZADA, CANCELADA)',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(20)
-  estado: string;
+  estado?: string;
 
   @ApiProperty({
     example: 'Campaña destinada a la recolección de ropa de abrigo',
@@ -42,7 +43,7 @@ export class CreateCampaignsDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  description: string;
+  descripcion: string;
 
   @ApiProperty({
     example: '2025-06-01',
@@ -50,9 +51,9 @@ export class CreateCampaignsDto {
     type: String,
     format: 'date',
   })
-  @IsDate()
+  @IsDateString()
   @IsNotEmpty()
-  fechaInicio: Date;
+  fecha_Inicio: Date;
 
   @ApiProperty({
     example: '2025-08-31',
@@ -60,19 +61,9 @@ export class CreateCampaignsDto {
     type: String,
     format: 'date',
   })
-  @IsDate()
+  @IsDateString()
   @IsNotEmpty()
-  fechaFin: Date;
-
-  @ApiProperty({
-    example: '2025-05-15',
-    description: 'Fecha de registro de la campaña en el sistema',
-    type: String,
-    format: 'date',
-  })
-  @IsDate()
-  @IsNotEmpty()
-  fechaRegistro: Date;
+  fecha_Fin: Date;
 
   @ApiProperty({
     example: 500000,
