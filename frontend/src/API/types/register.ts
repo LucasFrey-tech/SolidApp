@@ -28,6 +28,12 @@ export interface RegisterOrganizacionRequest {
   clave: string;
 }
 
+export interface Register {
+  usuario: RegisterUsuarioRequest;
+  empresa: RegisterEmpresaRequest;
+  organizacion: RegisterOrganizacionRequest;
+}
+
 export interface AuthResponse {
   token: string;
 }
