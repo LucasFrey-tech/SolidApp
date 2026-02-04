@@ -1,4 +1,4 @@
-export type UserType = "usuario" | "empresa" | "organizacion";
+export type NavbarRole = "usuario" | "admin" | "empresa" | "organizacion";
 
 interface PanelLink {
   href: string;
@@ -10,9 +10,16 @@ export interface UserNavbarConfig {
   panelLink?: PanelLink;
 }
 
-export const USER_NAVBAR_CONFIG: Record<UserType, UserNavbarConfig> = {
+export const USER_NAVBAR_CONFIG: Record<NavbarRole, UserNavbarConfig> = {
   usuario: {
     showPoints: true,
+  },
+  admin: {
+    showPoints: false,
+    panelLink: {
+      href: "/adminPanel",
+      label: "Panel Admin",
+    },
   },
   empresa: {
     showPoints: false,

@@ -160,8 +160,10 @@ export class AuthService {
   /** * Login de Usuario */
   async loginUsuario(requestBody: LoginRequestBody) {
     const user = await this.validateUser(requestBody.correo, requestBody.clave);
-    if (user.rol !== 'usuario') {
-      throw new UnauthorizedException('El correo no corresponde a un usuario');
+    if (!['usuario', 'admin'].includes(user.rol)) {
+      throw new UnauthorizedException(
+        'El correo no corresponde a un usuario válido',
+      );
     }
     if (user.deshabilitado) {
       throw new ForbiddenException(

@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import styles from "@/styles/navbar.module.css";
 import { BaseApi } from "@/API/baseApi";
-import { USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
+
+import { NavbarRole, USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
 
 export default function Navbar() {
   const router = useRouter();
@@ -27,6 +28,17 @@ export default function Navbar() {
     setMenuOpen(false);
     router.push("/inicio");
   };
+
+  const navbarKey: NavbarRole | null = user
+    ? user.rol === "admin"
+      ? "admin"
+      : user.userType
+    : null;
+
+  const navbarConfig = navbarKey
+    ? USER_NAVBAR_CONFIG[navbarKey]
+    : null;
+
 
   // cerrar dropdown al click afuera
   useEffect(() => {
@@ -50,7 +62,15 @@ export default function Navbar() {
 
   //traer los puntos
   useEffect(() => {
-    if (!user || user.userType !== "usuario") return;
+    if (!user) {
+      setPoints(null);
+      return;
+    }
+
+    if (!navbarConfig?.showPoints) {
+      setPoints(null);
+      return;
+    }
 
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -66,7 +86,8 @@ export default function Navbar() {
         console.error("Error al obtener puntos:", err);
         setPoints(0);
       });
-  }, [user]);
+  }, [user, navbarConfig]);
+
 
 
   if (loading) return null;
@@ -115,39 +136,35 @@ export default function Navbar() {
         </Link>
       ) : (
         <div ref={profileRef} className={styles.profileWrapper}>
-          {(() => {
-            const config = USER_NAVBAR_CONFIG[user.userType as keyof typeof USER_NAVBAR_CONFIG];
+          {navbarConfig && (
+            <>
+              {/* Panel según tipo de usuario */}
+              {navbarConfig.panelLink && (
+                <div className={styles.points}>
+                  <Link
+                    href={navbarConfig.panelLink.href}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {navbarConfig.panelLink.label}
+                  </Link>
+                </div>
+              )}
 
-            return (
-              <>
-                {/* Panel según tipo de usuario */}
-                {config.panelLink && (
-                  <div className={styles.points}>
-                    <Link
-                      href={config.panelLink.href}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      {config.panelLink.label}
-                    </Link>
-                  </div>
-                )}
-
-                {/* Puntos solo para usuarios */}
-                {config.showPoints && points !== null && (
-                  <div className={styles.points}>
-                    <span>{points}</span>
-                    <Image
-                      src="/img/img_coin.png"
-                      alt="Puntos del usuario"
-                      width={50}
-                      height={50}
-                      className={styles.pointsIcon}
-                    />
-                  </div>
-                )}
-              </>
-            );
-          })()}
+              {/* Puntos */}
+              {navbarConfig.showPoints && points !== null && (
+                <div className={styles.points}>
+                  <span>{points}</span>
+                  <Image
+                    src="/img/img_coin.png"
+                    alt="Puntos del usuario"
+                    width={50}
+                    height={50}
+                    className={styles.pointsIcon}
+                  />
+                </div>
+              )}
+            </>
+          )}
 
           {/* Botón perfil */}
           <button
@@ -159,7 +176,6 @@ export default function Navbar() {
               alt="Perfil de usuario"
               width={41}
               height={41}
-              className={styles.profileIcon}
             />
             <span className={styles.profileName}>
               {user.username}
@@ -189,7 +205,6 @@ export default function Navbar() {
             </button>
           </div>
         </div>
-
       )}
     </nav>
   );

@@ -8,6 +8,8 @@ import { BaseApi } from '@/API/baseApi';
 import { Beneficio } from '@/API/types/beneficios';
 import { EmpresaImagen } from '@/API/types/empresas';
 
+import { isBeneficioVisible } from '@/components/Utils/beneficiosUtils';
+
 import CanjeModal from '@/components/pages/CanjeModal';
 
 const LIMIT = 10;
@@ -99,10 +101,7 @@ export default function Tienda() {
             {/* ===== GRID ===== */}
             <section className={styles.grid}>
               {beneficios
-                .filter(
-                  (b) =>
-                    b.estado?.toLowerCase() === 'aprobado',
-                )
+                .filter(isBeneficioVisible)
                 .map((beneficio) => (
                   <div
                     key={beneficio.id}

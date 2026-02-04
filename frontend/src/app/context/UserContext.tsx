@@ -9,11 +9,16 @@ import {
 } from "react";
 import { jwtDecode } from "jwt-decode";
 
+import { UserType } from "@/config/userType";
+import { UserRole } from "@/config/userRole";
+
 export interface User {
   email: string;
   sub: number;
   username: string;
-  userType: string;
+  
+  userType: UserType;
+  rol: UserRole;
 }
 
 interface UserContextType {
@@ -45,6 +50,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         sub: decoded.sub,
         username: decoded.username || decoded.email.split("@")[0],
         userType: decoded.userType,
+        rol: decoded.rol ?? "usuario",
       };
       setUser(safeUser);
     } catch {

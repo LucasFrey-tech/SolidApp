@@ -8,12 +8,17 @@ import { Beneficio } from '@/API/types/beneficios';
 
 import CanjeModal from '@/components/pages/CanjeModal';
 
+/* ==================== HELPERS ==================== */
+import { isBeneficioVisible } from '../Utils/beneficiosUtils';
+
+/* ==================== PROPS ==================== */
 interface Props {
-  idEmpresa?: number; // opcional
+  idEmpresa?: number;
   modo?: 'empresa' | 'general';
   onClose: () => void;
 }
 
+/* ==================== COMPONENT ==================== */
 export default function BeneficiosPanel({
   idEmpresa,
   modo = 'empresa',
@@ -25,9 +30,11 @@ export default function BeneficiosPanel({
   const [beneficioSeleccionado, setBeneficioSeleccionado] =
     useState<Beneficio | null>(null);
 
+  /* ==================== FETCH ==================== */
   useEffect(() => {
     const fetchBeneficios = async () => {
       try {
+        setLoading(true);
         const service = new BeneficiosService();
 
         const data =
@@ -35,7 +42,10 @@ export default function BeneficiosPanel({
             ? await service.getGenerales()
             : await service.getByEmpresa(idEmpresa!);
 
-        setBeneficios(data);
+        setBeneficios(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error cargando beneficios', error);
+        setBeneficios([]);
       } finally {
         setLoading(false);
       }
@@ -44,6 +54,10 @@ export default function BeneficiosPanel({
     fetchBeneficios();
   }, [idEmpresa, modo]);
 
+  /* ==================== BENEFICIOS VISIBLES ==================== */
+  const beneficiosVisibles = beneficios.filter(isBeneficioVisible);
+
+  /* ==================== RENDER ==================== */
   return (
     <>
       <div className={styles.overlay}>
@@ -61,57 +75,61 @@ export default function BeneficiosPanel({
             </h2>
           </header>
 
+          {/* ESTADOS */}
           {loading && <p>Cargando beneficios...</p>}
 
-          {!loading && beneficios.length === 0 && (
+          {!loading && beneficiosVisibles.length === 0 && (
             <p>No hay beneficios disponibles</p>
           )}
 
           {/* LISTA */}
-          <div className={styles.list}>
-            {beneficios.map((beneficio: Beneficio) => (
-              <div key={beneficio.id} className={styles.card}>
-                <div className={styles.logo}>
-                  {beneficio.empresa.nombre_fantasia}
-                </div>
-
-                <div className={styles.mainInfo}>
-                  <div className={styles.discount}>
-                    {beneficio.titulo}
+          {!loading && beneficiosVisibles.length > 0 && (
+            <div className={styles.list}>
+              {beneficiosVisibles.map((beneficio) => (
+                <div key={beneficio.id} className={styles.card}>
+                  <div className={styles.logo}>
+                    {beneficio.empresa.nombre_fantasia}
                   </div>
-                  <div className={styles.subtitle}>
-                    {beneficio.tipo}
+
+                  <div className={styles.mainInfo}>
+                    <div className={styles.discount}>
+                      {beneficio.titulo}
+                    </div>
+                    <div className={styles.subtitle}>
+                      {beneficio.tipo}
+                    </div>
+                  </div>
+
+                  <div className={styles.detail}>
+                    {beneficio.detalle}
+                  </div>
+
+                  <div className={styles.valor}>
+                    <span>Puntos</span>
+                    <strong>{beneficio.valor}</strong>
+                  </div>
+
+                  <div className={styles.action}>
+                    <button
+                      className={styles.canjearBtn}
+                      disabled={beneficio.cantidad === 0}
+                      onClick={() =>
+                        setBeneficioSeleccionado(beneficio)
+                      }
+                    >
+                      {beneficio.cantidad === 0
+                        ? 'Sin stock'
+                        : 'Canjear'}
+                    </button>
                   </div>
                 </div>
-
-                <div className={styles.detail}>
-                  {beneficio.detalle}
-                </div>
-
-                {/* PUNTOS */}
-                <div className={styles.valor}>
-                  <span>Puntos</span>
-                  <strong>{beneficio.valor}</strong>
-                </div>
-
-                {/* ACCIÓN */}
-                <div className={styles.action}>
-                  <button
-                    className={styles.canjearBtn}
-                    onClick={() =>
-                      setBeneficioSeleccionado(beneficio)
-                    }
-                  >
-                    Canjear
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </aside>
       </div>
 
-      {/* MODAL DE CANJE */}
+      {/* MODAL */}
       {beneficioSeleccionado && (
         <CanjeModal
           beneficio={beneficioSeleccionado}
