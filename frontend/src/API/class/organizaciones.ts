@@ -1,4 +1,5 @@
 import { Crud, PaginatedResponse } from "../service";
+import { DonationResponse } from "../types/donaciones";
 import {
   Organizacion,
   OrganizacionCreateRequest,
@@ -126,13 +127,16 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async restore(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/restaurar`, {
-      method: "PATCH",
-      headers: this.getHeaders(),
-    });
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/${id}/restaurar`,
+      {
+        method: "PATCH",
+        headers: this.getHeaders(),
+      },
+    );
 
     if (!res.ok) {
-      const errorDetails = await res.text().catch(() => '');
+      const errorDetails = await res.text().catch(() => "");
       throw new Error(errorDetails || "Error al restaurar organización");
     }
   }
@@ -209,6 +213,27 @@ export class OrganizacionesService extends Crud<Organizacion> {
       const errorDetails = await res.text();
       throw new Error(
         `Error al obtener campañas de organización (${res.status}): ${errorDetails}`,
+      );
+    }
+    return res.json();
+  }
+
+  async getDonationsPaginatedByOrganizacion(
+    organizacionId: number,
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResponse<DonationResponse>> {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/${organizacionId}/donations/${organizacionId}/donations?page=${page}$limit=${limit}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      },
+    );
+
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(`Error al obtener las donaciones a la organizacion (${res.status}): ${errorDetails}`,
       );
     }
     return res.json();

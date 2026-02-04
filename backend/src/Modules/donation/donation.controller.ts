@@ -27,7 +27,7 @@ import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('donations')
 export class DonationsController {
-  constructor(private readonly donationsService: DonationsService) { }
+  constructor(private readonly donationsService: DonationsService) {}
 
   /**
    * Crear una Donación
@@ -71,6 +71,22 @@ export class DonationsController {
   }
 
   /**
+   * Ontener las Donaciones paginadas por Organizacion
+   */
+  @Get(':id/donations')
+  async getOrganizationDonationsPaginated(
+    @Param('id', ParseIntPipe) organizacionId: number,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    return await this.donationsService.findAllPaginatedByOrganizacion(
+      organizacionId,
+      Number(page),
+      Number(limit),
+    );
+  }
+
+  /**
    * Obtener las imagenes de las donaciones
    */
   @Get('imagenes')
@@ -87,14 +103,8 @@ export class DonationsController {
 
   @Get('paginated')
   @ApiOperation({ summary: 'Listar donaciones paginadas' })
-  findAllPaginated(
-    @Query('page') page = 1,
-    @Query('limit') limit = 6,
-  ) {
-    return this.donationsService.findAllPaginated(
-      Number(page),
-      Number(limit),
-    );
+  findAllPaginated(@Query('page') page = 1, @Query('limit') limit = 6) {
+    return this.donationsService.findAllPaginated(Number(page), Number(limit));
   }
 
   /**

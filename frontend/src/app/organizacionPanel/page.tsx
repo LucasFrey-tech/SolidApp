@@ -37,9 +37,16 @@ export type CampaignFormValues = {
 
 type Donation = {
   id: number;
-  user: string;
-  description: string;
-  points: number;
+  descripcion: string;
+  usuario: {
+    id: number;
+    nombre: string;
+    correo: string;
+  };
+  campaña: {
+    id: number;
+    titulo: string;
+  }
 };
 
 type ViewMode = "campaigns" | "donations";
@@ -56,6 +63,7 @@ export default function OrganizationCampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [campaignsPage, setCampaignsPage] = useState(1);
   const [campaignsTotalPages, setCampaignsTotalPages] = useState(1);
+
   const [donations, setDonations] = useState<Donation[]>([]);
   const [donationsPage, setDonationsPage] = useState(1);
   const [donationsTotalPages, setDonationsTotalPages] = useState(1);
@@ -93,8 +101,9 @@ export default function OrganizationCampaignsPage() {
     objetivo: campaign.objetivo,
     fecha_Inicio: campaign.fecha_Inicio,
     fecha_Fin: campaign.fecha_Fin,
+    estado: campaign.estado,
   });
-
+  
   /* ===============================
      CREAR O ACTUALIZAR CAMPAÑAS
   ================================ */
@@ -136,12 +145,12 @@ export default function OrganizationCampaignsPage() {
   };
 
   /* ===============================
-     DONACIONES
+     DONACIONES (ACCIONES)
   ================================ */
   const handleAcceptDonation = (donation: Donation) => {
     Swal.fire({
       title: "¿Aceptar donación?",
-      text: `${donation.user} - ${donation.description}`,
+      text: `${donation.usuario.correo} - ${donation.id}`,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Aceptar",
@@ -242,9 +251,11 @@ export default function OrganizationCampaignsPage() {
           DONACIONES (HORIZONTAL)
       ================================ */}
       {view === "donations" && (
+        <>
         <table className={styles.table}>
           <thead>
             <tr>
+              <th>Campaña</th>
               <th>Usuario</th>
               <th>Donación</th>
               <th>Puntos</th>
@@ -255,9 +266,12 @@ export default function OrganizationCampaignsPage() {
           <tbody>
             {donations.map((d) => (
               <tr key={d.id}>
-                <td>{d.user}</td>
-                <td>{d.description}</td>
-                <td>{d.points}</td>
+                <td>{d.campaña.titulo}</td>
+                <td>{d.usuario.nombre}</td>
+                <td>{d.descripcion}</td>
+                {
+                 // <td>{d.points}</td>
+                }
                 <td>
                   <div className={styles.actions}>
                     <button
@@ -278,6 +292,28 @@ export default function OrganizationCampaignsPage() {
             ))}
           </tbody>
         </table>
+
+        {/* PAGINADOR */}
+          <div className={styles.pagination}>
+            <button
+              disabled={donationsPage === 1}
+              onClick={() => setDonationsPage((p) => p - 1)}
+            >
+              Anterior
+            </button>
+
+            <span>
+              Página {donationsPage} de {donationsTotalPages}
+            </span>
+
+            <button
+              disabled={donationsPage === donationsTotalPages}
+              onClick={() => setDonationsPage((p) => p + 1)}
+            >
+              Siguiente
+            </button>
+          </div>
+        </>
       )}
 
       {/* ===============================

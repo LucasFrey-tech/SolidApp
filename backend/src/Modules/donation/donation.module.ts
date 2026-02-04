@@ -10,7 +10,16 @@ import { RankingDonador } from '../../Entities/ranking.entity';
 import { RankingModule } from '../ranking/ranking.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Donations, Campaigns, Usuario, RankingDonador, Donation_images]), RankingModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      Donations,
+      Campaigns,
+      Usuario,
+      RankingDonador,
+      Donation_images,
+    ]),
+    RankingModule,
+  ],
   controllers: [DonationsController],
   providers: [DonationsService],
   exports: [DonationsService],

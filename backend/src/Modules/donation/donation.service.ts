@@ -28,7 +28,7 @@ export class DonationsService {
     private readonly donationImagenRepository: Repository<Donation_images>,
 
     private readonly rankingService: RankingService,
-  ) { }
+  ) {}
 
   /**
    * Obtener todas las Donaciones
@@ -50,7 +50,9 @@ export class DonationsService {
       relations: ['id_donacion'],
     });
 
-    this.logger.log(`Se obtuvieron ${images.length} imagenes de las donaciones`);
+    this.logger.log(
+      `Se obtuvieron ${images.length} imagenes de las donaciones`,
+    );
 
     return images.map((img) => ({
       id_donacion: img.id_donacion.id,
@@ -103,6 +105,32 @@ export class DonationsService {
     };
   }
 
+  /**
+   * Paginar las Donaciones por Organización
+   */
+  async findAllPaginatedByOrganizacion(
+    organizacionId: number,
+    page = 1,
+    limit = 10,
+  ) {
+    const startIndex = (page - 1) * limit;
+    const [donations, total] = await this.donationsRepository.findAndCount({
+      where: {
+        campaña: {
+          organizacion: { id: organizacionId },
+        },
+      },
+      relations: { campaña: true, usuario: true },
+      order: { id: 'DESC' },
+      skip: startIndex,
+      take: limit,
+    });
+
+    return {
+      items: donations.map((d) => this.mapToDonationsResponse(d)),
+      total,
+    };
+  }
 
   /**
    * Crear una Donación
@@ -163,4 +191,23 @@ export class DonationsService {
     userId: donation.usuario?.id,
     imagen: '',
   });
+
+  private mapToDonationsResponse(donation: Donations) {
+    return {
+      id: donation.id,
+      //puntos: donation.puntos,
+      descripcion: donation.detalle,
+
+      usuario: {
+        id: donation.usuario.id,
+        nombre: donation.usuario.nombre,
+        correo: donation.usuario.correo,
+      },
+
+      campaña: {
+        id: donation.campaña.id,
+        titulo: donation.campaña.titulo,
+      },
+    };
+  }
 }

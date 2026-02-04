@@ -76,7 +76,7 @@ export class CampaignsController {
   }
 
   @Get('/list/paginated/')
-  @ApiOperation({ summary: 'Listar campañas solidarias dela organizacion' })
+  @ApiOperation({ summary: 'Listar campañas solidarias de la organizacion' })
   @ApiResponse({
     status: 200,
     type: ResponseCampaignsDto,

@@ -59,5 +59,4 @@ export class Donations {
 
   @ManyToOne(() => Usuario)
   usuario: Usuario;
-
 }

@@ -3,14 +3,14 @@ import { Crud, PaginatedResponse } from "../service";
 
 export class DonationsService extends Crud<Donation> {
 
-  protected endPoint = '/empresas';
+  protected endPoint = '/donations';
 
   constructor(token?: string) {
     super(token);
   }
 
   async getAll(): Promise<Donation[]> {
-    const res = await fetch(`${this.baseUrl}/donations`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
       method: "GET",
       headers: this.getHeaders(),
     });
@@ -24,7 +24,7 @@ export class DonationsService extends Crud<Donation> {
   }
 
   async getById(id: number): Promise<Donation> {
-    const res = await fetch(`${this.baseUrl}/donations/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       method: "GET",
       headers: this.getHeaders(),
     });
@@ -58,7 +58,7 @@ export class DonationsService extends Crud<Donation> {
     limit = 6,
   ): Promise<PaginatedResponse<Donation>> {
     return fetch(
-      `${this.baseUrl}/donations/paginated?page=${page}&limit=${limit}`,
+      `${this.baseUrl}/${this.endPoint}/paginated?page=${page}&limit=${limit}`,
       {
         method: 'GET',
         headers: this.getHeaders(),
