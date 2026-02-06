@@ -4,10 +4,7 @@ import {
   Organizacion,
   OrganizacionCreateRequest,
   OrganizacionUpdateRequest,
-  OrganizacionSummary,
-  OrganizacionImagen,
 } from "../types/organizaciones";
-import { UpdateCredentialsPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class OrganizacionesService extends Crud<Organizacion> {
   protected endPoint = "organizations";
@@ -17,13 +14,12 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async getAll(): Promise<Organizacion[]> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
       headers: this.getHeaders(),
+      cache: "no-store",
     });
 
-    if (!res.ok) {
-      throw new Error("Error al obtener organizaciones");
-    }
+    if (!res.ok) throw new Error("Error al obtener organizaciones");
 
     return res.json();
   }
@@ -31,32 +27,59 @@ export class OrganizacionesService extends Crud<Organizacion> {
   async getAllPaginated(
     page = 1,
     limit = 10,
-    search: string = "",
+    search = "",
+    includeDisabled = true
   ): Promise<PaginatedResponse<Organizacion>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/list/paginated?page=${page}&limit=${limit}&search=${search}`,
+      `${this.baseUrl}/${this.endPoint}/list/paginated?page=${page}&limit=${limit}&search=${search}&includeDisabled=${includeDisabled}`,
       {
         method: "GET",
         headers: this.getHeaders(),
-      },
+        cache: "no-store", // ⭐ SOLUCIÓN
+      }
     );
+
     if (!res.ok) {
       const errorDetails = await res.text();
       throw new Error(
-        `Error al obtener usuarios paginados (${res.status}): ${errorDetails}`,
+        `Error al obtener organizaciones paginadas (${res.status}): ${errorDetails}`
       );
     }
+
+    return res.json();
+  }
+
+  async getCampaignsPaginatedByOrganizacion(
+    organizacionId: number,
+    page = 1,
+    limit = 10
+  ) {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/${organizacionId}/campaigns?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+        cache: "no-store",
+      }
+    );
+
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener campañas (${res.status}): ${errorDetails}`
+      );
+    }
+
     return res.json();
   }
 
   async getOne(id: number): Promise<Organizacion> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       headers: this.getHeaders(),
+      cache: "no-store",
     });
 
-    if (!res.ok) {
-      throw new Error("Organización no encontrada");
-    }
+    if (!res.ok) throw new Error("Organización no encontrada");
 
     return res.json();
   }
@@ -68,16 +91,14 @@ export class OrganizacionesService extends Crud<Organizacion> {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) {
-      throw new Error("Error al crear organización");
-    }
+    if (!res.ok) throw new Error("Error al crear organización");
 
     return res.json();
   }
 
   async update(
     id: number,
-    data: OrganizacionUpdateRequest,
+    data: OrganizacionUpdateRequest
   ): Promise<Organizacion> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       method: "PUT",
@@ -85,32 +106,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
       body: JSON.stringify(data),
     });
 
-    if (!res.ok) {
-      throw new Error("Error al actualizar organización");
-    }
-
-    return res.json();
-  }
-
-  async updateCredentials(
-    id: number,
-    data: UpdateCredentialsPayload,
-  ): Promise<{ user: Organizacion; token: string }> {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${id}/credentials`,
-      {
-        method: "PATCH",
-        headers: this.getHeaders(),
-        body: JSON.stringify(data),
-      },
-    );
-
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      throw new Error(
-        `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
-      );
-    }
+    if (!res.ok) throw new Error("Error al actualizar organización");
 
     return res.json();
   }
@@ -121,9 +117,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
       headers: this.getHeaders(),
     });
 
-    if (!res.ok) {
-      throw new Error("Error al deshabilitar organización");
-    }
+    if (!res.ok) throw new Error("Error al deshabilitar organización");
   }
 
   async restore(id: number): Promise<void> {
@@ -132,7 +126,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
       {
         method: "PATCH",
         headers: this.getHeaders(),
-      },
+      }
     );
 
     if (!res.ok) {
@@ -141,101 +135,27 @@ export class OrganizacionesService extends Crud<Organizacion> {
     }
   }
 
-  async getImages(): Promise<OrganizacionImagen[]> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/imagenes`, {
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Error al obtener imágenes de organizaciones");
-    }
-
-    return res.json();
-  }
-
-  async getSummaries(): Promise<OrganizacionSummary[]> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/summary`, {
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Error al obtener resumen de organizaciones");
-    }
-
-    return res.json();
-  }
-
-  async getCampaigns(organizacionId: number): Promise<any[]> {
-    const res = await fetch(
-      `${this.baseUrl}/campaigns/${organizacionId}/campaigns`,
-      {
-        headers: this.getHeaders(),
-      },
-    );
-
-    if (!res.ok) {
-      throw new Error("Error al obtener campañas de la organización");
-    }
-
-    return res.json();
-  }
-
-  async getCampaignsPaginated(page = 1, limit = 10, search: string = "") {
-    const res = await fetch(
-      `${this.baseUrl}/campaigns/list/paginated?page=${page}&limit=${limit}&search=${search}`,
-      {
-        method: "GET",
-        headers: this.getHeaders(),
-      },
-    );
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      throw new Error(
-        `Error al obtener usuarios paginados (${res.status}): ${errorDetails}`,
-      );
-    }
-    return res.json();
-  }
-
-  async getOrganizationCampaignsPaginated(
-    organizacionId: number,
-    page = 1,
-    limit = 10,
-  ) {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${organizacionId}/campaigns/paginated?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-        headers: this.getHeaders(),
-      },
-    );
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      throw new Error(
-        `Error al obtener campañas de organización (${res.status}): ${errorDetails}`,
-      );
-    }
-    return res.json();
-  }
-
   async getDonationsPaginatedByOrganizacion(
     organizacionId: number,
     page = 1,
-    limit = 10,
+    limit = 10
   ): Promise<PaginatedResponse<DonationResponse>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${organizacionId}/donations/${organizacionId}/donations?page=${page}$limit=${limit}`,
+      `${this.baseUrl}/${this.endPoint}/${organizacionId}/donations?page=${page}&limit=${limit}`,
       {
         method: "GET",
         headers: this.getHeaders(),
-      },
+        cache: "no-store",
+      }
     );
 
     if (!res.ok) {
       const errorDetails = await res.text();
-      throw new Error(`Error al obtener las donaciones a la organizacion (${res.status}): ${errorDetails}`,
+      throw new Error(
+        `Error al obtener donaciones (${res.status}): ${errorDetails}`
       );
     }
+
     return res.json();
   }
 }

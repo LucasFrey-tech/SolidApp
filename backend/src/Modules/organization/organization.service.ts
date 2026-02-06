@@ -30,31 +30,34 @@ export class OrganizationsService {
   ) {}
 
   async findAll(): Promise<ResponseOrganizationDto[]> {
-    const organizations = await this.organizationRepository.find({
-      where: { deshabilitado: false },
-    });
+  const organizations = await this.organizationRepository.find();
 
-    return organizations.map(this.mapToResponseDto);
-  }
+  return organizations.map(this.mapToResponseDto);
+}
 
   async findPaginated(page: number, limit: number, search: string) {
-    const startIndex = (page - 1) * limit;
-    const [organizacion, total] =
-      await this.organizationRepository.findAndCount({
-        skip: startIndex,
-        take: limit,
-        order: { id: 'ASC' },
-        where: [
-          { razon_social: Like(`%${search}%`), deshabilitado: false },
-          { nombre_fantasia: Like(`%${search}%`), deshabilitado: false },
-        ],
-      });
+  const startIndex = (page - 1) * limit;
 
-    return {
-      items: organizacion.map(this.mapToResponseDto),
-      total,
-    };
-  }
+  const whereCondition = search
+    ? [
+        { razon_social: Like(`%${search}%`) },
+        { nombre_fantasia: Like(`%${search}%`) },
+      ]
+    : {};
+
+  const [organizacion, total] =
+    await this.organizationRepository.findAndCount({
+      skip: startIndex,
+      take: limit,
+      order: { id: 'ASC' },
+      where: whereCondition,
+    });
+
+  return {
+    items: organizacion.map(this.mapToResponseDto),
+    total,
+  };
+}
 
   async findOrganizationCampaignsPaginated(
     organizacionId: number,
