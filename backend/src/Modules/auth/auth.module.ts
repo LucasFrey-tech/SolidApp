@@ -13,6 +13,12 @@ import { Empresa } from '../../Entities/empresa.entity';
 import { Organizations } from '../../Entities/organizations.entity';
 import { CommonMulterModule } from '../../common/multer/multer.module';
 
+/**
+ * Módulo de NestJS que agrupa los componentes relacionados a la Autenticación:
+ * - Controlador
+ * - Servicio
+ * - Repositorios TypeORM
+ */
 @Module({
   imports: [
     UserModule,
@@ -29,7 +35,7 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
         signOptions: { expiresIn: '2h' },
       }),
     }),
-    CommonMulterModule, //Files upload module
+    CommonMulterModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

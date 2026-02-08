@@ -3,11 +3,19 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { RankingService } from './ranking.service';
 import { RankingDTO } from './dto/ranking.dto';
 
+/**
+ * Controlador para gestionar las operaciones del Ranking.
+ */
 @ApiTags('Ranking')
 @Controller('ranking')
 export class RankingController {
     constructor(private readonly rankingService: RankingService) {}
 
+    /**
+     * Obtiene a los diez Usuarios con mayor puntaje acumulado.
+     * 
+     * @returns {Promise<RankingDTO[]>} Lista de los 10 usuarios con mayor puntaje acumulado.
+     */
     @Get('top')
     @ApiOperation({ summary: 'Obtener Top 10 usuarios por puntaje' })
     @ApiResponse({
