@@ -11,10 +11,8 @@ import {
   //UploadedFile,
   UseInterceptors,
   Query,
-  DefaultValuePipe,
-  Search,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { UsuarioService } from './usuario.service';
 import { CreateUsuarioDto } from './dto/create_usuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
@@ -29,7 +27,7 @@ import { UpdateCredentialsDto } from './dto/panelUsuario.dto';
 @ApiTags('Usuarios')
 @Controller('users')
 export class UsuarioController {
-  constructor(private readonly userService: UsuarioService) { }
+  constructor(private readonly userService: UsuarioService) {}
 
   @Get()
   @ApiOperation({ summary: 'Listar usuarios activos' })
@@ -60,8 +58,12 @@ export class UsuarioController {
     type: ResponseUsuarioDto,
     isArray: true,
   })
-  findPaginated(@Query('page') page = 1, @Query('limit') limit = 10,@Query('search') search = "") {
-    return this.userService.findPaginated(page,limit,search);
+  findPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+  ) {
+    return this.userService.findPaginated(page, limit, search);
   }
 
   @Get(':id/points')
@@ -117,7 +119,7 @@ export class UsuarioController {
     return this.userService.restore(id);
   }
 
-  @Patch(':id/credentials')
+  @Patch(':id/credenciales')
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña del usuario',
   })
