@@ -106,7 +106,7 @@ export class EmpresasService extends Crud<Empresa> {
     data: UpdateCredentialsPayload,
   ): Promise<{ user: Empresa; token:string }> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${id}/credentials`,
+      `${this.baseUrl}/${this.endPoint}/${id}/credenciales`,
       {
         method: "PATCH",
         headers: this.getHeaders(),
