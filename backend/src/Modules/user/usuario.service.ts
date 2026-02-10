@@ -47,7 +47,7 @@ export class UsuarioService {
             { apellido: Like(`%${search}%`) },
             { correo: Like(`%${search}%`) },
           ]
-        : undefined,  // ← sin filtro de deshabilitado → trae todos
+        : undefined,
     });
 
     return {
