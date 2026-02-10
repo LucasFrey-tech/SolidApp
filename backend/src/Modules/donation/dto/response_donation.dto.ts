@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { DonacionEstado } from '../enum';
+import { IsEnum } from 'class-validator';
 
 export class ResponseDonationDto {
   @ApiProperty({
@@ -32,10 +34,17 @@ export class ResponseDonationDto {
   cantidad: number;
 
   @ApiProperty({
-    example: 'CONFIRMADA',
+    example: 'ACEPTADA',
     description: 'Estado actual de la donación',
   })
-  estado: string;
+  @IsEnum(DonacionEstado)
+  estado: DonacionEstado;
+
+  @ApiProperty({
+    example: 500,
+    description: 'Puntos a otorgar al usuario por la donacion',
+  })
+  puntos: number;
 
   @ApiProperty({
     example: 3,

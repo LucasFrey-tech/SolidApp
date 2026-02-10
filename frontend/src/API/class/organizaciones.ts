@@ -224,7 +224,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     limit = 10,
   ): Promise<PaginatedResponse<DonationResponse>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${organizacionId}/donations/${organizacionId}/donations?page=${page}$limit=${limit}`,
+      `${this.baseUrl}/${this.endPoint}/${organizacionId}/donations?page=${page}$limit=${limit}`,
       {
         method: "GET",
         headers: this.getHeaders(),

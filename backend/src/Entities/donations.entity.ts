@@ -9,6 +9,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
 import { Usuario } from './usuario.entity';
+import { DonacionEstado } from '../Modules/donation/enum';
 
 @Entity('donaciones')
 export class Donations {
@@ -39,11 +40,18 @@ export class Donations {
   cantidad: number;
 
   @ApiProperty({
-    example: 'Estado¿?', // ¿Es realmente necesario?
+    example: 'APROBADA',
     description: 'Indicador del estado del Articulo',
   })
-  @Column({ type: 'varchar', length: 15 })
-  estado: string;
+  @Column({ type: 'varchar', enum: DonacionEstado })
+  estado: DonacionEstado;
+
+  @ApiProperty({
+    example: 500,
+    description: 'Puntos que otorga la donación',
+  })
+  @Column({ type: 'int', nullable: true })
+  puntos: number;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',

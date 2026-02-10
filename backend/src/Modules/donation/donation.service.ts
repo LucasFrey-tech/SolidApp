@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donations } from '../../Entities/donations.entity';
@@ -9,6 +14,9 @@ import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { RankingService } from '../ranking/ranking.service';
+import { DonacionEstado } from './enum';
+import { PaginatedDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
+import { OrganizationDonationItemDto } from './dto/donation_item.dto';
 
 @Injectable()
 export class DonationsService {
@@ -112,7 +120,7 @@ export class DonationsService {
     organizacionId: number,
     page = 1,
     limit = 10,
-  ) {
+  ): Promise<PaginatedDonationsResponseDto> {
     const startIndex = (page - 1) * limit;
     const [donations, total] = await this.donationsRepository.findAndCount({
       where: {
@@ -121,7 +129,7 @@ export class DonationsService {
         },
       },
       relations: { campaña: true, usuario: true },
-      order: { id: 'DESC' },
+      order: { fecha_registro: 'DESC' },
       skip: startIndex,
       take: limit,
     });
@@ -177,6 +185,34 @@ export class DonationsService {
     return this.mapToResponseDto(savedDonation);
   }
 
+  async confirmarDonacion(id: number): Promise<ResponseDonationDto> {
+    const donacion = await this.donationsRepository.findOne({
+      where: { id },
+    });
+
+    if (!donacion) {
+      throw new NotFoundException('Donacion no encontrada');
+    }
+
+    if (donacion.estado !== DonacionEstado.PENDIENTE) {
+      throw new BadRequestException(
+        'Solo se pueden confirmar donacions pendientes',
+      );
+    }
+
+    const puntos = this.calcularPuntos(donacion);
+
+    donacion.estado = DonacionEstado.APROBADA;
+    donacion.puntos = puntos;
+
+    await this.donationsRepository.save(donacion);
+    return this.mapToResponseDto(donacion);
+  }
+
+  private calcularPuntos(donacion: Donations): number {
+    return donacion.cantidad * 10;
+  }
+
   private readonly mapToResponseDto = (
     donation: Donations,
   ): ResponseDonationDto => ({
@@ -186,28 +222,27 @@ export class DonationsService {
     tipo: donation.tipo,
     cantidad: donation.cantidad,
     estado: donation.estado,
+    puntos: donation.puntos,
     fecha_registro: donation.fecha_registro,
     campaignId: donation.campaña?.id,
     userId: donation.usuario?.id,
     imagen: '',
   });
 
-  private mapToDonationsResponse(donation: Donations) {
+  private mapToDonationsResponse(
+    donation: Donations,
+  ): OrganizationDonationItemDto {
     return {
       id: donation.id,
-      //puntos: donation.puntos,
+      puntos: donation.puntos,
       descripcion: donation.detalle,
+      estado: donation.estado,
 
-      usuario: {
-        id: donation.usuario.id,
-        nombre: donation.usuario.nombre,
-        correo: donation.usuario.correo,
-      },
+      userId: donation.usuario.id,
+      correo: donation.usuario.correo,
 
-      campaña: {
-        id: donation.campaña.id,
-        titulo: donation.campaña.titulo,
-      },
+      campaignId: donation.campaña.id,
+      campaignTitulo: donation.campaña.titulo,
     };
   }
 }

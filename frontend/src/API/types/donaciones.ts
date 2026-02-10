@@ -19,13 +19,12 @@ export interface DonacionImagen {
 export interface DonationResponse {
   id: number;
   descripcion: string;
-  usuario: {
-    id: number;
-    nombre: string;
-    correo: string;
-  };
-  campaña: {
-    id: number;
-    titulo: string;
-  };
+  puntos: number;
+  estado: string;
+
+  userId: number;
+  correo: string;
+  
+  campaignId: number;
+  campaignTitulo: string;
 }

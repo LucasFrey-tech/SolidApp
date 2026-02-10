@@ -38,15 +38,13 @@ export type CampaignFormValues = {
 type Donation = {
   id: number;
   descripcion: string;
-  usuario: {
-    id: number;
-    nombre: string;
-    correo: string;
-  };
-  campaña: {
-    id: number;
-    titulo: string;
-  }
+  puntos: number;
+
+  userId: number;
+  correo: string;
+
+  campaignId: number;
+  campaignTitulo: string;
 };
 
 type ViewMode = "campaigns" | "donations";
@@ -103,7 +101,7 @@ export default function OrganizationCampaignsPage() {
     fecha_Fin: campaign.fecha_Fin,
     estado: campaign.estado,
   });
-  
+
   /* ===============================
      CREAR O ACTUALIZAR CAMPAÑAS
   ================================ */
@@ -150,7 +148,7 @@ export default function OrganizationCampaignsPage() {
   const handleAcceptDonation = (donation: Donation) => {
     Swal.fire({
       title: "¿Aceptar donación?",
-      text: `${donation.usuario.correo} - ${donation.id}`,
+      text: `${donation.correo} - ${donation.id}`,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Aceptar",
@@ -178,6 +176,26 @@ export default function OrganizationCampaignsPage() {
       }
     });
   };
+
+  const fetchDonations = async () => {
+    if (!organizacionId) return;
+    const limit = 8;
+    const response = await api.organizacion.getDonationsPaginatedByOrganizacion(
+      organizacionId,
+      donationsPage,
+      limit,
+    );
+
+    setDonations(response.items);
+    setDonationsTotalPages(Math.ceil(response.total / limit));
+  };
+
+  useEffect(() => {
+  if (view === "donations") {
+    fetchDonations();
+  }
+}, [organizacionId, donationsPage, view]);
+
 
   /* ===============================
      RENDER
@@ -252,48 +270,46 @@ export default function OrganizationCampaignsPage() {
       ================================ */}
       {view === "donations" && (
         <>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Campaña</th>
-              <th>Usuario</th>
-              <th>Donación</th>
-              <th>Puntos</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {donations.map((d) => (
-              <tr key={d.id}>
-                <td>{d.campaña.titulo}</td>
-                <td>{d.usuario.nombre}</td>
-                <td>{d.descripcion}</td>
-                {
-                 // <td>{d.points}</td>
-                }
-                <td>
-                  <div className={styles.actions}>
-                    <button
-                      className={styles.accept}
-                      onClick={() => handleAcceptDonation(d)}
-                    >
-                      ✔
-                    </button>
-                    <button
-                      className={styles.reject}
-                      onClick={() => handleRejectDonation(d)}
-                    >
-                      ✖
-                    </button>
-                  </div>
-                </td>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Campaña</th>
+                <th>Usuario</th>
+                <th>Donación</th>
+                <th>Puntos</th>
+                <th>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
 
-        {/* PAGINADOR */}
+            <tbody>
+              {donations.map((d) => (
+                <tr key={d.id}>
+                  <td>{d.campaignTitulo}</td>
+                  <td>{d.correo}</td>
+                  <td>{d.descripcion}</td>
+                  <td>{d.puntos}</td>
+                  <td>
+                    <div className={styles.actions}>
+                      <button
+                        className={styles.accept}
+                        onClick={() => handleAcceptDonation(d)}
+                      >
+                        ✔
+                      </button>
+                      <button
+                        className={styles.reject}
+                        onClick={() => handleRejectDonation(d)}
+                      >
+                        ✖
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* PAGINADOR */}
           <div className={styles.pagination}>
             <button
               disabled={donationsPage === 1}
@@ -326,9 +342,8 @@ export default function OrganizationCampaignsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <CampaignForm
-              initialValues={editingCampaign
-                ? toFormValues(editingCampaign)
-                : undefined
+              initialValues={
+                editingCampaign ? toFormValues(editingCampaign) : undefined
               }
               onSubmit={handleSubmitCampaign}
               onCancel={() => {

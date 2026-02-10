@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { DonacionEstado } from '../enum';
+import { IsEnum } from 'class-validator';
 
 export class CreateDonationDto {
   @ApiProperty({
@@ -30,7 +32,8 @@ export class CreateDonationDto {
     description:
       'Estado actual de la donación (PENDIENTE, CONFIRMADA, ENTREGADA)',
   })
-  estado: string;
+  @IsEnum(DonacionEstado)
+  estado: DonacionEstado;
 
   @ApiProperty({
     example: 3,

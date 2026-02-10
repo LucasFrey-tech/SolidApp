@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   UseGuards,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
@@ -128,5 +129,10 @@ export class DonationsController {
   })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ResponseDonationDto> {
     return this.donationsService.findOne(id);
+  }
+
+  @Patch(':id/confirmar')
+  confirmarDonacion(@Param('id') id: number) {
+    return this.donationsService.confirmarDonacion(id);
   }
 }
