@@ -5,6 +5,7 @@ import {
   OrganizacionCreateRequest,
   OrganizacionUpdateRequest,
 } from "../types/organizaciones";
+import { UpdateCredentialsPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class OrganizacionesService extends Crud<Organizacion> {
   protected endPoint = "organizations";
@@ -16,7 +17,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
   async getAll(): Promise<Organizacion[]> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
       headers: this.getHeaders(),
-      cache: "no-store",
     });
 
     if (!res.ok) throw new Error("Error al obtener organizaciones");
@@ -35,7 +35,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
       {
         method: "GET",
         headers: this.getHeaders(),
-        cache: "no-store", // ⭐ SOLUCIÓN
       }
     );
 
@@ -59,7 +58,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
       {
         method: "GET",
         headers: this.getHeaders(),
-        cache: "no-store",
       }
     );
 
@@ -76,7 +74,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
   async getOne(id: number): Promise<Organizacion> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       headers: this.getHeaders(),
-      cache: "no-store",
     });
 
     if (!res.ok) throw new Error("Organización no encontrada");
@@ -111,6 +108,29 @@ export class OrganizacionesService extends Crud<Organizacion> {
     return res.json();
   }
 
+  async updateCredentials(
+    id: number,
+    data: UpdateCredentialsPayload,
+  ): Promise<{ user: Organizacion; token: string }> {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/${id}/credenciales`,
+      {
+        method: "PATCH",
+        headers: this.getHeaders(),
+        body: JSON.stringify(data),
+      },
+    );
+
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
+      );
+    }
+
+    return res.json();
+  }
+
   async delete(id: number): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       method: "DELETE",
@@ -135,6 +155,27 @@ export class OrganizacionesService extends Crud<Organizacion> {
     }
   }
 
+  async getOrganizationCampaignsPaginated(
+    organizacionId: number,
+    page = 1,
+    limit = 10,
+  ) {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/${organizacionId}/campaigns/paginated?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      },
+    );
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener campañas de organización (${res.status}): ${errorDetails}`,
+      );
+    }
+    return res.json();
+  }
+
   async getDonationsPaginatedByOrganizacion(
     organizacionId: number,
     page = 1,
@@ -145,7 +186,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
       {
         method: "GET",
         headers: this.getHeaders(),
-        cache: "no-store",
       }
     );
 
