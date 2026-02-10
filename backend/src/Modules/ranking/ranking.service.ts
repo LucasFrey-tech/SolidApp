@@ -4,6 +4,9 @@ import { Repository } from "typeorm"
 import { RankingDonador } from "../../Entities/ranking.entity"
 import { RankingDTO } from "./dto/ranking.dto"
 
+/**
+ * Servicio que maneja la lógica de negocio para el Ranking
+ */
 @Injectable()
 export class RankingService {
     private readonly logger = new Logger(RankingService.name);
@@ -13,6 +16,11 @@ export class RankingService {
         private readonly puntosRepository: Repository<RankingDonador>,
     ) { }
 
+    /**
+     * Obtiene los diez Usuarios con mayor puntaje acumulado
+     * 
+     * @returns {Promise<RankingDTO[]>} Lista de los Usuarios ordenada descendentemente.
+     */
     async getTop10(): Promise<RankingDTO[]> {
         const ranking = await this.puntosRepository
             .createQueryBuilder('ranking')
@@ -36,6 +44,12 @@ export class RankingService {
         }));
     }
 
+    /**
+     * Funcion para Sumar y acumular los puntos obtenidos a los Usuarios
+     * 
+     * @param {number} userID - ID del usuario
+     * @param {number} puntos - cantidad de puntos a sumar
+     */
     async sumarPuntos(userID: number, puntos: number): Promise<void> {
         const exists = await this.puntosRepository.findOne({
             where: { id_usuario: userID },

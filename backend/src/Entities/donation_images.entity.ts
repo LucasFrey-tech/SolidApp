@@ -10,6 +10,11 @@ import { Donations } from './donations.entity';
 
 @Entity('imagenes_donacion')
 export class Donation_images {
+  
+  /**
+   * ID único de la Imagen de la Donación
+   * @type {number}
+   */
   @ApiProperty({
     example: 1,
     description: 'Id Único de la Imagen de la Donación',
@@ -17,10 +22,18 @@ export class Donation_images {
   @PrimaryGeneratedColumn()
   id: number;
 
+  /**
+   * Imagen de la Donación
+   * @type {string}
+   */
   @ApiProperty({ example: 'image.jpg', description: 'Imagen de la Donación' })
   @Column({ type: 'varchar', length: 255 })
   imagen: string;
 
+  /**
+   * Donación asociada
+   * @type {Donations}
+   */
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Donación' })
   @ManyToOne(() => Donations, {
     onDelete: 'CASCADE',

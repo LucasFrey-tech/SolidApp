@@ -8,7 +8,7 @@ import { BaseApi } from '@/API/baseApi';
 type Organizacion = {
   id: number;
   name: string;
-  habilitado: boolean;  // en frontend lo llamamos habilitado para que sea intuitivo
+  habilitado: boolean;
 };
 
 const PAGE_SIZE = 10;
@@ -19,25 +19,32 @@ export default function OrganizacionesList() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  const [refreshKey, setRefreshKey] = useState(0); // ← clave para forzar recarga
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const api = new BaseApi();
 
   const fetchOrganizaciones = async () => {
     try {
       setLoading(true);
-      const res = await api.organizacion.getAllPaginated(page, PAGE_SIZE, search);
-      
+
+      const res = await api.organizacion.getAllPaginated(
+        page,
+        PAGE_SIZE,
+        search,
+        true // incluir deshabilitadas
+      );
+
       const formatted = res.items.map((u: any) => ({
         id: u.id,
         name: u.razonSocial,
-        habilitado: !u.deshabilitado,  // ← importante: invertimos aquí
+        habilitado: !u.deshabilitado, // ✅ CORREGIDO
       }));
 
       setOrganizaciones(formatted);
       setTotalCount(res.total);
     } catch (error) {
       console.error('Error al cargar organizaciones:', error);
+
       Swal.fire({
         icon: 'error',
         title: 'Error',
@@ -50,13 +57,16 @@ export default function OrganizacionesList() {
 
   useEffect(() => {
     fetchOrganizaciones();
-  }, [page, search, refreshKey]);  // ← agregamos refreshKey
+  }, [page, search, refreshKey]);
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE) || 1;
 
   const toggleOrganizacion = async (org: Organizacion) => {
     const quiereHabilitar = !org.habilitado;
-    const title = quiereHabilitar ? '¿Habilitar organización?' : '¿Deshabilitar organización?';
+
+    const title = quiereHabilitar
+      ? '¿Habilitar organización?'
+      : '¿Deshabilitar organización?';
 
     const confirmed = await Swal.fire({
       title,
@@ -65,19 +75,19 @@ export default function OrganizacionesList() {
       showCancelButton: true,
       confirmButtonText: 'Sí',
       cancelButtonText: 'Cancelar',
-    }).then(res => res.isConfirmed);
+    }).then((res) => res.isConfirmed);
 
     if (!confirmed) return;
 
     try {
       if (quiereHabilitar) {
-        await api.organizacion.restore(org.id);  // PATCH /restaurar
+        await api.organizacion.restore(org.id);
       } else {
-        await api.organizacion.delete(org.id);   // DELETE
+        await api.organizacion.delete(org.id);
       }
 
-      // Forzamos recarga de datos desde backend
-      setRefreshKey(prev => prev + 1);
+      // 🔥 fuerza refresco del listado
+      setRefreshKey((prev) => prev + 1);
 
       Swal.fire({
         icon: 'success',
@@ -88,6 +98,7 @@ export default function OrganizacionesList() {
       });
     } catch (error: any) {
       console.error('Error al cambiar estado:', error);
+
       Swal.fire({
         icon: 'error',
         title: 'Error',
@@ -101,7 +112,9 @@ export default function OrganizacionesList() {
     setPage(1);
   };
 
-  if (loading) return <div className={styles.UsersBox}>Cargando...</div>;
+  if (loading) {
+    return <div className={styles.UsersBox}>Cargando...</div>;
+  }
 
   return (
     <div className={styles.UsersBox}>
@@ -112,13 +125,13 @@ export default function OrganizacionesList() {
         className={styles.Search}
         placeholder="Buscar organización..."
         value={search}
-        onChange={e => handleSearch(e.target.value)}
+        onChange={(e) => handleSearch(e.target.value)}
       />
 
       {organizaciones.length === 0 ? (
         <p className={styles.Empty}>No se encontraron organizaciones</p>
       ) : (
-        organizaciones.map(org => (
+        organizaciones.map((org) => (
           <div key={org.id} className={styles.UserRow}>
             <strong>{org.name}</strong>
 
@@ -146,13 +159,17 @@ export default function OrganizacionesList() {
       )}
 
       <div className={styles.Pagination}>
-        <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
           Anterior
         </button>
-        <span>Página {page} de {totalPages}</span>
+
+        <span>
+          Página {page} de {totalPages}
+        </span>
+
         <button
           disabled={page === totalPages}
-          onClick={() => setPage(p => p + 1)}
+          onClick={() => setPage((p) => p + 1)}
         >
           Siguiente
         </button>
