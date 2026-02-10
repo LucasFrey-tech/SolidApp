@@ -13,7 +13,6 @@ import { DonacionEstado } from '../Modules/donation/enum';
 
 @Entity('donaciones')
 export class Donations {
-  
   /**
    * ID único de la Donación
    * @type {number}
