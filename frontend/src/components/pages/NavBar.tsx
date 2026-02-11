@@ -122,7 +122,7 @@ export default function Navbar() {
           }`}
       >
         <li><Link href="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
-        <li><Link href="/donaciones-catalogo" onClick={() => setMenuOpen(false)}>Donar</Link></li>
+        <li><Link href="/campaign-catalogo" onClick={() => setMenuOpen(false)}>Donar</Link></li>
         <li><Link href="/tienda" onClick={() => setMenuOpen(false)}>Tienda</Link></li>
         <li><Link href="/ranking" onClick={() => setMenuOpen(false)}>Ranking</Link></li>
         <li><Link href="/como-participar" onClick={() => setMenuOpen(false)}>Cómo participar</Link></li>
