@@ -28,7 +28,7 @@ export default function Home() {
       {/* ========== PASOS PARA DONAR ========== */}
       <section className={styles.pasosDonar}>
 
-        <Link href="/donaciones-catalogo" className={styles.linkCard}>
+        <Link href="/campaign-catalogo" className={styles.linkCard}>
           <div className={styles.iconosDonar}>
             <Image
               src="/fotosInicio/donar.png"
