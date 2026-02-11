@@ -1,5 +1,5 @@
 import { Crud, PaginatedResponse } from "../service";
-import { Campaign, CampaignCreateRequest, CampaignUpdateRequest } from "../types/campañas/campaigns";
+import { Campaign, CampaignCreateRequest, CampaignImagen, CampaignUpdateRequest } from "../types/campañas/campaigns";
 
 export class campaignService extends Crud<Campaign> {
   protected endPoint = "/campaigns";
@@ -50,6 +50,22 @@ export class campaignService extends Crud<Campaign> {
     return res.json();
   }
   
+  async getImages(): Promise<CampaignImagen[]> {
+      const resQuery = await fetch(
+        `${this.baseUrl}${this.endPoint}/imagenes`,
+        {
+          headers: this.getHeaders(),
+        },
+      );
+  
+      if (!resQuery.ok) {
+        throw new Error('Error al obtener imágenes de donaciones');
+      }
+  
+      const res = await resQuery.json();
+      return res;
+    }
+
   async create(data: CampaignCreateRequest): Promise<Campaign> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
         method: "POST",
