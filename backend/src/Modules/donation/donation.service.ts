@@ -99,9 +99,9 @@ export class DonationsService {
   /**
    * Obtiene todas las Donaciones paginadas.
    * 
-   * @param {number} page -
-   * @param {number} limit -
-   * @returns 
+   * @param {number} page - Página solicitada
+   * @param {number} limit - Cantidad de Donaciones por página
+   * @returns Lsita de Donaciones paginadas
    */
   async findAllPaginated(
     page = 1,
@@ -132,7 +132,12 @@ export class DonationsService {
   }
 
   /**
-   * Paginar las Donaciones por Organización
+   * Obtiene
+   * 
+   * @param organizacionId 
+   * @param page 
+   * @param limit 
+   * @returns 
    */
   async findAllPaginatedByOrganizacion(
     organizacionId: number,

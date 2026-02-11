@@ -5,13 +5,14 @@ import { Organizations } from '../../Entities/organizations.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { Campaigns } from '../../Entities/campaigns.entity';
+import { CampaignModule } from '../campaign/campaign.module';
 @Module({
   imports: [
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'defaultSecret',
       signOptions: { expiresIn: '2h' },
     }),
-    TypeOrmModule.forFeature([Organizations, Campaigns]),
+    TypeOrmModule.forFeature([Organizations, Campaigns]),CampaignModule,
   ],
   controllers: [OrganizationsController],
   providers: [OrganizationsService],

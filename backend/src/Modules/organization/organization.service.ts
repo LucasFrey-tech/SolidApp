@@ -15,6 +15,7 @@ import { ResponseOrganizationDto } from './dto/response_organization.dto';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
+import { CampaignsService } from '../campaign/campaign.service';
 import { Campaigns } from '../../Entities/campaigns.entity';
 
 @Injectable()
@@ -24,56 +25,50 @@ export class OrganizationsService {
   constructor(
     @InjectRepository(Organizations)
     private readonly organizationRepository: Repository<Organizations>,
-    @InjectRepository(Campaigns)
-    private readonly campaignRepository: Repository<Campaigns>,
+    private readonly campaignService: CampaignsService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async findAll(): Promise<ResponseOrganizationDto[]> {
-  const organizations = await this.organizationRepository.find();
+    const organizations = await this.organizationRepository.find();
 
-  return organizations.map(this.mapToResponseDto);
-}
+    return organizations.map(this.mapToResponseDto);
+  }
 
   async findPaginated(page: number, limit: number, search: string) {
-  const startIndex = (page - 1) * limit;
+    const startIndex = (page - 1) * limit;
 
-  const whereCondition = search
-    ? [
+    const whereCondition = search
+      ? [
         { razon_social: Like(`%${search}%`) },
         { nombre_fantasia: Like(`%${search}%`) },
       ]
-    : {};
+      : {};
 
-  const [organizacion, total] =
-    await this.organizationRepository.findAndCount({
-      skip: startIndex,
-      take: limit,
-      order: { id: 'ASC' },
-      where: whereCondition,
-    });
+    const [organizacion, total] =
+      await this.organizationRepository.findAndCount({
+        skip: startIndex,
+        take: limit,
+        order: { id: 'ASC' },
+        where: whereCondition,
+      });
 
-  return {
-    items: organizacion.map(this.mapToResponseDto),
-    total,
-  };
-}
+    return {
+      items: organizacion.map(this.mapToResponseDto),
+      total,
+    };
+  }
 
   async findOrganizationCampaignsPaginated(
     organizacionId: number,
     page: number,
     limit: number,
   ) {
-    const [campaigns, total] = await this.campaignRepository.findAndCount({
-      where: { organizacion: { id: organizacionId } },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-
-    return {
-      items: campaigns,
-      total,
-    };
+    return this.campaignService.findByOrganizationPaginated(
+      organizacionId,
+      page,
+      limit,
+    );
   }
 
   async findOne(id: number): Promise<ResponseOrganizationDto> {

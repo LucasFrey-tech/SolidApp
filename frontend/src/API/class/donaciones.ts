@@ -10,7 +10,7 @@ export class DonationsService extends Crud<Donation> {
   }
 
   async getAll(): Promise<Donation[]> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
       method: "GET",
       headers: this.getHeaders(),
     });
@@ -24,7 +24,7 @@ export class DonationsService extends Crud<Donation> {
   }
 
   async getById(id: number): Promise<Donation> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
       method: "GET",
       headers: this.getHeaders(),
     });
@@ -58,7 +58,7 @@ export class DonationsService extends Crud<Donation> {
     limit = 6,
   ): Promise<PaginatedResponse<Donation>> {
     return fetch(
-      `${this.baseUrl}/${this.endPoint}/paginated?page=${page}&limit=${limit}`,
+      `${this.baseUrl}${this.endPoint}/paginated?page=${page}&limit=${limit}`,
       {
         method: 'GET',
         headers: this.getHeaders(),

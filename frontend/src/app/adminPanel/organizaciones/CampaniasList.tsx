@@ -45,7 +45,7 @@ export default function CampaniasList() {
     useEffect(() => {
       async function fetchUsers() {
         const api = new BaseApi();
-        const res = await api.organizacion.getCampaignsPaginated(page, PAGE_SIZE, search);
+        const res = await api.organizacion.getOrganizationCampaignsPaginated(page, PAGE_SIZE);
         console.log(res);
         const campaniasFormated = res.items.map((u: any) => ({
           id: u.id,
