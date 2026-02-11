@@ -10,7 +10,6 @@ import { Campaigns } from './campaigns.entity';
 
 @Entity('imagenes_campaña')
 export class Campaigns_images {
-  
   /**
    * Id única de la Imagen de la Campaña
    * @type {number}
@@ -21,7 +20,7 @@ export class Campaigns_images {
   })
   @PrimaryGeneratedColumn()
   id: number;
-  
+
   /**
    * Imagen de la Campaña
    * @type {string}
@@ -29,7 +28,7 @@ export class Campaigns_images {
   @ApiProperty({ example: 'imagen.jpg', description: 'Imagen de la Campaña' })
   @Column({ type: 'varchar', length: 255 })
   imagen: string;
-  
+
   /**
    * Campaña asociada
    * @type {Campaigns}
@@ -37,5 +36,5 @@ export class Campaigns_images {
   @ApiProperty({ example: 1, description: 'Id Foranea de la Campaña' })
   @ManyToOne(() => Campaigns)
   @JoinColumn({ name: 'campañas_id' })
-  id_campaña: Campaigns;
+  id_campaign: Campaigns;
 }

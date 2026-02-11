@@ -10,7 +10,6 @@ import { Donations } from './donations.entity';
 
 @Entity('imagenes_donacion')
 export class Donation_images {
-  
   /**
    * ID único de la Imagen de la Donación
    * @type {number}

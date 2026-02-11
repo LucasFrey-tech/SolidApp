@@ -1,5 +1,10 @@
 import { Crud, PaginatedResponse } from "../service";
-import { Campaign, CampaignCreateRequest, CampaignUpdateRequest } from "../types/campañas/campaigns";
+import {
+  Campaign,
+  CampaignCreateRequest,
+  CampaignImagen,
+  CampaignUpdateRequest,
+} from "../types/campañas/campaigns";
 
 export class campaignService extends Crud<Campaign> {
   protected endPoint = "/campaigns";
@@ -10,7 +15,7 @@ export class campaignService extends Crud<Campaign> {
 
   async getAll(): Promise<Campaign[]> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
-        headers: this.getHeaders(),
+      headers: this.getHeaders(),
     });
 
     if (!res.ok) {
@@ -25,10 +30,10 @@ export class campaignService extends Crud<Campaign> {
     limit = 20,
   ): Promise<PaginatedResponse<Campaign>> {
     const res = await fetch(
-        `${this.baseUrl}${this.endPoint}/list/paginated/?page=${page}&limit=${limit}`,
-        {
-            headers: this.getHeaders(),
-        },
+      `${this.baseUrl}${this.endPoint}/list/paginated/?page=${page}&limit=${limit}`,
+      {
+        headers: this.getHeaders(),
+      },
     );
 
     if (!res.ok) {
@@ -40,25 +45,38 @@ export class campaignService extends Crud<Campaign> {
 
   async getOne(id: number): Promise<Campaign> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
-        headers: this.getHeaders(),
+      headers: this.getHeaders(),
     });
 
-    if(!res.ok) {
-        throw new Error("Campaña no encontrada");
+    if (!res.ok) {
+      throw new Error("Campaña no encontrada");
     }
 
     return res.json();
   }
-  
+
+  async getImages(): Promise<CampaignImagen[]> {
+    const resQuery = await fetch(`${this.baseUrl}${this.endPoint}/imagenes`, {
+      headers: this.getHeaders(),
+    });
+
+    if (!resQuery.ok) {
+      throw new Error("Error al obtener imágenes de donaciones");
+    }
+
+    const res = await resQuery.json();
+    return res;
+  }
+
   async create(data: CampaignCreateRequest): Promise<Campaign> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(data),
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
     });
 
     if (!res.ok) {
-        throw new Error("Error al crear campaña");
+      throw new Error("Error al crear campaña");
     }
 
     return res.json();
@@ -66,13 +84,13 @@ export class campaignService extends Crud<Campaign> {
 
   async update(id: number, data: CampaignUpdateRequest): Promise<Campaign> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
-       method: "PUT",
-       headers: this.getHeaders(),
-       body: JSON.stringify(data), 
+      method: "PUT",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
     });
 
     if (!res.ok) {
-        throw new Error("Error al actualizar campaña");
+      throw new Error("Error al actualizar campaña");
     }
 
     return res.json();
@@ -80,10 +98,10 @@ export class campaignService extends Crud<Campaign> {
 
   async delete(id: number): Promise<void> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
-        method: "DELETE",
-        headers: this.getHeaders(),
+      method: "DELETE",
+      headers: this.getHeaders(),
     });
-    
+
     if (!res.ok) {
       throw new Error("Error al eliminar la campaña");
     }

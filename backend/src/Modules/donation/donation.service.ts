@@ -39,11 +39,11 @@ export class DonationsService {
     private readonly donationImagenRepository: Repository<Donation_images>,
 
     private readonly rankingService: RankingService,
-  ) { }
+  ) {}
 
   /**
    * Obtiene todas las Donaciones disponibles.
-   * 
+   *
    * @returns {Promise<ResponseDonationDto[]>} Lista de todas las Donaciones activas
    */
   async findAll(): Promise<ResponseDonationDto[]> {
@@ -57,7 +57,7 @@ export class DonationsService {
 
   /**
    * Obtiene la imagen de las Donaciones.
-   * 
+   *
    * @returns {Promise<DonacionImagenDTO[]>} Lista de las Imágenes de las Donaciones
    */
   async findIMG(): Promise<DonacionImagenDTO[]> {
@@ -78,7 +78,7 @@ export class DonationsService {
 
   /**
    * Busca una Donacion específica por ID.
-   * 
+   *
    * @param {number} id - ID de la Donación a buscar
    * @returns {Promise<ResponseDonationDto>} DTO de la Donación encontrada
    * @throws {NotFoundException} cuando no encuentra ninguna Donación con el ID específico
@@ -98,7 +98,7 @@ export class DonationsService {
 
   /**
    * Obtiene todas las Donaciones paginadas.
-   * 
+   *
    * @param {number} page - Página solicitada
    * @param {number} limit - Cantidad de Donaciones por página
    * @returns Lsita de Donaciones paginadas
@@ -133,11 +133,11 @@ export class DonationsService {
 
   /**
    * Obtiene
-   * 
-   * @param organizacionId 
-   * @param page 
-   * @param limit 
-   * @returns 
+   *
+   * @param organizacionId
+   * @param page
+   * @param limit
+   * @returns
    */
   async findAllPaginatedByOrganizacion(
     organizacionId: number,

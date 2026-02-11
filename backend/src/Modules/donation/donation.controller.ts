@@ -35,12 +35,12 @@ import { PaginatedDonationsResponseDto } from './dto/response_donation_paginated
 // @UseGuards(JwtAuthGuard)
 @Controller('donations')
 export class DonationsController {
-  constructor(private readonly donationsService: DonationsService) { }
+  constructor(private readonly donationsService: DonationsService) {}
 
   /**
    * Obtiene todas las Donaciones disponibles.
-   * 
-   * @returns {Promise<ResponseDonationDto[]} Lista de todas las donaciones activas
+   *
+   * @returns {Promise<ResponseDonationDto[]>} Lista de todas las donaciones activas
    */
   @Get()
   @ApiOperation({ summary: 'Listar todas las donaciones' })
@@ -56,7 +56,7 @@ export class DonationsController {
 
   /**
    * Obtiene todas las Donaciones paginadas disponibles
-   * 
+   *
    * @param {number} page - Página solicitada (basada en 1)
    * @param {number} limit - Cantidad de Donaciones por página
    * @returns Lista de Donaciones paginadas
@@ -69,7 +69,7 @@ export class DonationsController {
 
   /**
    * Obtiene todas las Donaciones paginadas pertenecientes a una misma Organización
-   * 
+   *
    * @param {number} organizacionId - ID de la Organización a filtrar
    * @param {number} page - Página solicitada
    * @param {number} limit - Cantidad de Donaciones por página
@@ -90,7 +90,7 @@ export class DonationsController {
 
   /**
    * Obtiene las Imagenes de las Donaciones.
-   * 
+   *
    * @returns {Promise<DonacionImagenDTO[]} Lista de imágenes de las Donaciones
    */
   @Get('imagenes')
@@ -107,7 +107,7 @@ export class DonationsController {
 
   /**
    * Obtiene una Donacíon específica.
-   * 
+   *
    * @param {number} id - ID de la Donación a buscar
    * @returns {Promise<ResponseDonationDto>} Donación encontrada
    */
@@ -132,12 +132,12 @@ export class DonationsController {
   }
 
   /**
- * Crea una Donación nueva en el sistema.
- * 
- * @param {CreateDonationDto} createDto - Datos de la Donación a crear
- * @param {JwtPayload} user - ID de la Organización que crea la Donación
- * @returns {Promise<ResponseDonationDto>} Donación creada.
- */
+   * Crea una Donación nueva en el sistema.
+   *
+   * @param {CreateDonationDto} createDto - Datos de la Donación a crear
+   * @param {JwtPayload} user - ID de la Organización que crea la Donación
+   * @returns {Promise<ResponseDonationDto>} Donación creada.
+   */
   @Post(':campaignId')
   @ApiOperation({
     summary: 'Crear una donación',
@@ -163,7 +163,7 @@ export class DonationsController {
 
   /**
    * Confirma la Donación pendiente.
-   * 
+   *
    * @param {number} id - ID de la Donación a confirmar
    * @returns Donación confirmada
    */
