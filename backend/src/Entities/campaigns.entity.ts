@@ -15,7 +15,6 @@ import { CampaignEstado } from '../Modules/campaign/enum';
 
 @Entity('campañas')
 export class Campaigns {
-    
   /**
    * Id único de la Campaña
    * @type {number}
@@ -23,7 +22,7 @@ export class Campaigns {
   @ApiProperty({ example: 1, description: 'Id único de la Campaña' })
   @PrimaryGeneratedColumn()
   id: number;
-    
+
   /**
    * Estado de la Campaña
    * @type {CampaignEstado}
@@ -34,7 +33,7 @@ export class Campaigns {
   })
   @Column({ type: 'varchar', length: 20 })
   estado?: CampaignEstado;
-    
+
   /**
    * Título de la Campaña
    * @type {string}
@@ -45,7 +44,7 @@ export class Campaigns {
   })
   @Column({ type: 'varchar', length: 255 })
   titulo: string;
-    
+
   /**
    * Descripción de la Campaña
    * @type {string}
