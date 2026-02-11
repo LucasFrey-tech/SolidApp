@@ -19,10 +19,35 @@ import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
+/**
+ * ============================================================
+ * EmpresasService
+ * ============================================================
+ * Servicio encargado de la lógica de negocio relacionada
+ * a las Empresas dentro del sistema.
+ *
+ * Responsabilidades principales:
+ * - CRUD de empresas
+ * - Soft delete (deshabilitar / restaurar)
+ * - Paginación y búsqueda
+ * - Gestión de credenciales (correo y contraseña)
+ * - Manejo de imágenes asociadas
+ * - Generación de JWT tras cambios sensibles
+ *
+ * Seguridad implementada:
+ * - Hash de contraseñas con bcrypt
+ * - Validación de contraseña actual antes de modificarla
+ * - Emisión de nuevo token JWT tras actualización de credenciales
+ *
+ * Arquitectura:
+ * - Patrón Service + Repository (TypeORM)
+ * - Uso de DTOs para estandarizar respuestas
+ * - Manejo explícito de excepciones HTTP
+ * ============================================================
+ */
 @Injectable()
 export class EmpresasService {
   private readonly logger = new Logger(EmpresasService.name);
-  empresaRepo: any;
 
   constructor(
     @InjectRepository(Empresa)
@@ -32,52 +57,72 @@ export class EmpresasService {
     private readonly empresasImagenRepository: Repository<Empresa_imagenes>,
 
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   /**
-   *  Obtener todas las Empresas
+   * Obtiene todas las empresas activas (no deshabilitadas).
+   *
+   * Flujo:
+   * 1. Filtra por deshabilitado = false.
+   * 2. Transforma entidades a DTO.
+   * 3. Asigna imagen por defecto.
+   *
+   * @returns {Promise <EmpresaResponseDTO[]>}
    */
   async findAll(): Promise<EmpresaResponseDTO[]> {
     const empresas = await this.empresasRepository.find({
       where: { deshabilitado: false },
     });
 
-    const imagen = await this.empresasImagenRepository.find({
-      where: { id_empresa: { id: empresas[0].id } },
-    });
-
     this.logger.log(`Se obtuvieron ${empresas.length} Empresas`);
-    let res = empresas.map(this.mapToResponseDto);
-    // res.forEach((empresa) => empresa.imagen = imagen[0].logo);
+
+    const res = empresas.map(this.mapToResponseDto);
+
     res.forEach(
       (empresa) =>
-        (empresa.imagen = SettingsService.getStaticResourceUrl('servo.png')),
+        (empresa.imagen =
+          SettingsService.getStaticResourceUrl('servo.png')),
     );
+
     return res;
   }
 
+  /**
+   * Obtiene empresas paginadas con búsqueda opcional.
+   *
+   * @param page Número de página.
+   * @param limit Cantidad de registros por página.
+   * @param search Texto opcional para filtrar por razón social o nombre fantasía.
+   *
+   * @returns { items: Empresa[], total: number }
+   */
   async findPaginated(page: number, limit: number, search: string) {
-  const startIndex = (page - 1) * limit;
+    const startIndex = (page - 1) * limit;
 
-  const where = search
-    ? [
-        { razon_social: Like(`%${search}%`) },
-        { nombre_fantasia: Like(`%${search}%`) },
-      ]
-    : {};
+    const where = search
+      ? [
+          { razon_social: Like(`%${search}%`) },
+          { nombre_fantasia: Like(`%${search}%`) },
+        ]
+      : {};
 
-  const [empresas, total] = await this.empresasRepository.findAndCount({
-    skip: startIndex,
-    take: limit,
-    order: { id: 'ASC' },
-    where,
-  });
+    const [empresas, total] =
+      await this.empresasRepository.findAndCount({
+        skip: startIndex,
+        take: limit,
+        order: { id: 'ASC' },
+        where,
+      });
 
-  return { items: empresas, total };
-}
+    return { items: empresas, total };
+  }
 
   /**
-   * Obtengo las Imagenes de cada empresa
+   * Obtiene las imágenes asociadas a empresas activas.
+   *
+   * Incluye la relación con la entidad Empresa.
+   *
+   * @returns {Promise EmpresaImagenDTO[]}
    */
   async findIMG(): Promise<EmpresaImagenDTO[]> {
     const images = await this.empresasImagenRepository.find({
@@ -89,7 +134,9 @@ export class EmpresasService {
       },
     });
 
-    this.logger.log(`Se obtuvieron ${images.length} imágenes de empresas`);
+    this.logger.log(
+      `Se obtuvieron ${images.length} imágenes de empresas`,
+    );
 
     return images.map((img) => ({
       id_empresa: img.id_empresa.id,
@@ -99,138 +146,191 @@ export class EmpresasService {
   }
 
   /**
-   * Obtiene una Empresa por ID
+   * Obtiene una empresa por ID.
+   *
+   * @param id Identificador de la empresa.
+   * @throws NotFoundException si no existe o está deshabilitada.
+   *
+   * @returns {Promise<EmpresaResponseDTO>}
    */
   async findOne(id: number): Promise<EmpresaResponseDTO> {
-    const empresas = await this.empresasRepository.findOne({
+    const empresa = await this.empresasRepository.findOne({
       where: { id, deshabilitado: false },
     });
 
-    if (!empresas) {
-      throw new NotFoundException(`
-        La Empresa con ID ${id} no encontrada  `);
+    if (!empresa) {
+      throw new NotFoundException(
+        `La Empresa con ID ${id} no encontrada`,
+      );
     }
 
     this.logger.log(`La Empresa ${id} obtenida`);
-    return this.mapToResponseDto(empresas);
+
+    return this.mapToResponseDto(empresa);
   }
 
   /**
-   * Obtiene una Empresa por Correo
+   * Busca una empresa por correo electrónico.
+   *
+   * @param correo Email de la empresa.
+   * @throws NotFoundException si no existe.
+   *
+   * @returns {Promise<Empresa>}
    */
-
   async findByEmail(correo: string): Promise<Empresa> {
     const empresa = await this.empresasRepository.findOne({
       where: { correo },
     });
 
     if (!empresa) {
-      throw new NotFoundException(`Usuario con email ${correo} no encontrado`);
+      throw new NotFoundException(
+        `Usuario con email ${correo} no encontrado`,
+      );
     }
 
     return empresa;
   }
 
   /**
-   * Crea una nueva Empresa
+   * Crea una nueva empresa.
+   *
+   * Validaciones:
+   * - Verifica que no exista otra empresa con el mismo nroDocumento.
+   *
+   * @param createDto Datos de creación.
+   * @throws ConflictException si ya existe.
+   *
+   * @returns {Promise<EmpresaResponseDTO>}
    */
-  async create(createDto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {
-    // Verificación de Empresa ya Registrada
+  async create(
+    createDto: CreateEmpresaDTO,
+  ): Promise<EmpresaResponseDTO> {
     const existente = await this.empresasRepository.findOne({
       where: { nroDocumento: createDto.nroDocumento },
     });
 
     if (existente) {
-      throw new ConflictException('La Empresa ya esta registrada');
+      throw new ConflictException(
+        'La Empresa ya está registrada',
+      );
     }
 
-    // Creación de la Empresa
-    const empresas = this.empresasRepository.create({
+    const empresa = this.empresasRepository.create({
       ...createDto,
       verificada: false,
     });
 
-    const savedEmpresa = await this.empresasRepository.save(empresas);
+    const savedEmpresa =
+      await this.empresasRepository.save(empresa);
+
     return this.mapToResponseDto(savedEmpresa);
   }
 
   /**
-   * Actualizar una Empresa
+   * Actualiza los datos generales de una empresa.
+   *
+   * @param id ID de la empresa.
+   * @param updateDto Datos a modificar.
+   *
+   * @throws NotFoundException si no existe.
+   *
+   * @returns {Promise<EmpresaResponseDTO>}-> Actualiza a la empresa
    */
   async update(
     id: number,
     updateDto: UpdateEmpresaDTO,
   ): Promise<EmpresaResponseDTO> {
-    const empresas = await this.empresasRepository.findOne({
+    const empresa = await this.empresasRepository.findOne({
       where: { id },
     });
 
-    if (!empresas) {
-      throw new NotFoundException(`
-        Empresa con ID ${id} no encontrada`);
+    if (!empresa) {
+      throw new NotFoundException(
+        `Empresa con ID ${id} no encontrada`,
+      );
     }
 
-    // Aplicación de cambios
-    Object.assign(empresas, updateDto);
+    Object.assign(empresa, updateDto);
 
-    const updatedEmpresa = await this.empresasRepository.save(empresas);
+    const updatedEmpresa =
+      await this.empresasRepository.save(empresa);
+
     this.logger.log(`Empresa ${id} actualizada`);
 
     return this.mapToResponseDto(updatedEmpresa);
   }
 
-async updateEstado(id: number, deshabilitado: boolean) {
-  const empresa = await this.empresaRepo.findOne({ where: { id } });
-
-  if (!empresa) {
-    throw new NotFoundException('Empresa no encontrada');
-  }
-
-  empresa.deshabilitado = deshabilitado;
-  return this.empresaRepo.save(empresa);
-}
-
-
-
+  /**
+   * Realiza un borrado lógico (soft delete).
+   * Marca la empresa como deshabilitada.
+   *
+   * @param id ID de la empresa.
+   * @throws NotFoundException si no existe.
+   */
   async delete(id: number): Promise<void> {
     const empresa = await this.empresasRepository.findOne({
       where: { id },
     });
 
     if (!empresa) {
-      throw new NotFoundException(`La Empresa con ID ${id} no encontrada`);
+      throw new NotFoundException(
+        `La Empresa con ID ${id} no encontrada`,
+      );
     }
 
-    // Soft delete
     empresa.deshabilitado = true;
-
     await this.empresasRepository.save(empresa);
 
     this.logger.log(`Empresa ${id} deshabilitada`);
   }
 
+  /**
+   * Restaura una empresa previamente deshabilitada.
+   *
+   * @param id ID de la empresa.
+   * @throws NotFoundException si no existe la empresa.
+   * @throws BadRequestException si ya está activa la empresa.
+   */
   async restore(id: number): Promise<void> {
     const empresa = await this.empresasRepository.findOne({
       where: { id },
     });
 
     if (!empresa) {
-      throw new NotFoundException(`La Empresa con ID ${id} no encontrada`);
+      throw new NotFoundException(
+        `La Empresa con ID ${id} no encontrada`,
+      );
     }
 
     if (!empresa.deshabilitado) {
-      throw new BadRequestException('La empresa ya se encuentra activa');
+      throw new BadRequestException(
+        'La empresa ya se encuentra activa',
+      );
     }
 
-    // Restaurar empresa
     empresa.deshabilitado = false;
-
     await this.empresasRepository.save(empresa);
 
     this.logger.log(`Empresa ${id} restaurada`);
   }
 
-  async updateCredentials(id: number, dto: UpdateCredentialsDto) {
+  /**
+   * Actualiza credenciales (correo y/o contraseña).
+   *
+   * Reglas:
+   * - El email no puede estar en uso por otra empresa.
+   * - Para cambiar contraseña se debe validar la actual.
+   * - Se genera un nuevo JWT tras cambios.
+   *
+   * @param id ID de la empresa.
+   * @param dto Datos de actualización.
+   *
+   * @returns { user: Empresa, token: string }
+   */
+  async updateCredentials(
+    id: number,
+    dto: UpdateCredentialsDto,
+  ) {
     const empresa = await this.empresasRepository.findOne({
       where: { id },
     });
@@ -242,12 +342,15 @@ async updateEstado(id: number, deshabilitado: boolean) {
     let cambiosRealizados = false;
 
     if (dto.correo && dto.correo !== empresa.correo) {
-      const empresaExistente = await this.empresasRepository.findOne({
-        where: { correo: dto.correo },
-      });
+      const empresaExistente =
+        await this.empresasRepository.findOne({
+          where: { correo: dto.correo },
+        });
 
       if (empresaExistente && empresaExistente.id !== id) {
-        throw new ConflictException('El email ya está en uso por otro usuario');
+        throw new ConflictException(
+          'El email ya está en uso por otro usuario',
+        );
       }
 
       empresa.correo = dto.correo;
@@ -255,19 +358,15 @@ async updateEstado(id: number, deshabilitado: boolean) {
     }
 
     if (dto.passwordNueva) {
-      if (!dto.passwordNueva) {
-        throw new UnauthorizedException(
-          'Para cambiar la contraseña debés ingresar la contraseña actual',
-        );
-      }
-
       const passwordValida = await bcrypt.compare(
         dto.passwordActual,
         empresa.clave,
       );
 
       if (!passwordValida) {
-        throw new UnauthorizedException('Contraseña actual incorrecta');
+        throw new UnauthorizedException(
+          'Contraseña actual incorrecta',
+        );
       }
 
       const hash = await bcrypt.hash(dto.passwordNueva, 10);
@@ -280,22 +379,27 @@ async updateEstado(id: number, deshabilitado: boolean) {
       await this.empresasRepository.save(empresa);
     }
 
-    const updated = await this.empresasRepository.save(empresa);
-
     const payload = {
-      sub: updated.id,
-      email: updated.correo,
+      sub: empresa.id,
+      email: empresa.correo,
       userType: 'empresa',
     };
 
     const newToken = this.jwtService.sign(payload);
 
     return {
-      user: updated,
+      user: empresa,
       token: newToken,
     };
   }
 
+  /**
+   * Transforma la entidad Empresa en un DTO de respuesta.
+   * Oculta datos sensibles como la contraseña.
+   *
+   * @param empresa Entidad Empresa.
+   * @returns {EmpresaResponseDTO}
+   */
   private readonly mapToResponseDto = (
     empresa: Empresa,
   ): EmpresaResponseDTO => {

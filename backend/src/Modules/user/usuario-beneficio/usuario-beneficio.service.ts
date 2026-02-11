@@ -1,19 +1,49 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsuarioBeneficio } from '../../../Entities/usuario-beneficio.entity';
 
+/**
+ * =============================================================================
+ * UsuarioBeneficioService
+ * =============================================================================
+ * Servicio encargado de gestionar los beneficios (cupones) asociados
+ * a los usuarios del sistema.
+ *
+ * Funcionalidades:
+ *  - Obtener beneficios de un usuario
+ *  - Reclamar un beneficio (crear o acumular)
+ *  - Usar un beneficio disponible
+ *
+ * Todas las operaciones interactúan con la entidad UsuarioBeneficio.
+ * =============================================================================
+ */
 @Injectable()
 export class UsuarioBeneficioService {
+  private readonly logger = new Logger(UsuarioBeneficioService.name);
+
   constructor(
     @InjectRepository(UsuarioBeneficio)
     private readonly usuarioBeneficioRepo: Repository<UsuarioBeneficio>,
   ) {}
 
-  /* ===============================
-     OBTENER CUPONES DEL USUARIO
-  ================================ */
-  async getByUsuario(usuarioId: number) {
+  /**  ===========================================================================
+     OBTENER BENEFICIOS DEL USUARIO
+     ---------------------------------------------------------------------------
+     Devuelve todos los beneficios asociados a un usuario específico,
+     ordenados por fecha de reclamo descendente.
+
+     @param usuarioId number → ID del usuario
+     @returns {Promise<UsuarioBeneficio[]>} - Obtiene el array con los cupones del usuario
+
+    ** Si el usuario no tiene beneficios → retorna []
+  =========================================================================== */
+  async getByUsuario(usuarioId: number): Promise<UsuarioBeneficio[]> {
     return this.usuarioBeneficioRepo.find({
       where: {
         usuario: { id: usuarioId },
@@ -25,11 +55,28 @@ export class UsuarioBeneficioService {
     });
   }
 
-  /* ===============================
-     RECLAMAR BENEFICIO (Seguro)
-  ================================ */
-  async reclamarBeneficio(usuarioId: number, beneficioId: number) {
-    // Intentamos actualizar la cantidad si ya existe
+  /** ===========================================================================
+     RECLAMAR BENEFICIO
+     ---------------------------------------------------------------------------
+     Permite que un usuario reclame un beneficio.
+
+     Lógica:
+       - Si ya existe un beneficio ACTIVO del mismo tipo:
+           → incrementa cantidad (+1)
+       - Si no existe:
+           → crea nuevo registro con cantidad = 1
+
+     @param usuarioId number → ID del usuario
+     @param beneficioId number → ID del beneficio
+
+     @returns {Promise<UsuarioBeneficio>}  - Actualiza los cupones del usuario
+     
+     No lanza excepciones actualmente (se asume existencia de usuario/beneficio).
+  =========================================================================== */
+  async reclamarBeneficio(
+    usuarioId: number,
+    beneficioId: number,
+  ): Promise<UsuarioBeneficio> {
     const existing = await this.usuarioBeneficioRepo.findOne({
       where: {
         usuario: { id: usuarioId },
@@ -38,34 +85,77 @@ export class UsuarioBeneficioService {
       },
     });
 
+    // Si ya existe → acumular
     if (existing) {
-      existing.cantidad += 1; // sumamos 1 cupón
-      return this.usuarioBeneficioRepo.save(existing);
+      existing.cantidad += 1;
+
+      const updated = await this.usuarioBeneficioRepo.save(existing);
+
+      this.logger.log(
+        `Usuario ${usuarioId} acumuló beneficio ${beneficioId}. Nueva cantidad: ${updated.cantidad}`,
+      );
+
+      return updated;
     }
 
-    // Si no existe, creamos un nuevo registro
+    // Si no existe → crear nuevo
     const nuevo = this.usuarioBeneficioRepo.create({
       usuario: { id: usuarioId } as any,
       beneficio: { id: beneficioId } as any,
       cantidad: 1,
       usados: 0,
       estado: 'activo',
+      fecha_reclamo: new Date(),
     });
 
-    return this.usuarioBeneficioRepo.save(nuevo);
+    const saved = await this.usuarioBeneficioRepo.save(nuevo);
+
+    this.logger.log(
+      `Usuario ${usuarioId} reclamó nuevo beneficio ${beneficioId}`,
+    );
+
+    return saved;
   }
 
-  /* ===============================
+  /** ===========================================================================
      USAR BENEFICIO
-  ================================ */
-  async usarBeneficio(id: number) {
+     ---------------------------------------------------------------------------
+     Permite consumir un cupón disponible.
+
+     Reglas:
+       - El registro debe existir
+       - Debe estar en estado "activo"
+       - Debe tener cupones disponibles (usados < cantidad)
+
+     Lógica:
+       - Incrementa "usados"
+       - Si usados === cantidad:
+           → estado = "usado"
+           → fecha_uso = ahora
+
+     @param id number → ID del UsuarioBeneficio
+
+     @returns {Promise<UsuarioBeneficio>} - Actualiza la cantidad de cupones del usuario.
+
+     @throws NotFoundException
+       - Si el registro no existe
+
+     @throws BadRequestException
+       - Si el beneficio no está activo
+       - Si no hay cupones disponibles
+  =========================================================================== */
+  async usarBeneficio(id: number): Promise<UsuarioBeneficio> {
     const registro = await this.usuarioBeneficioRepo.findOne({
       where: { id },
-      relations: ['beneficio'],
+      relations: ['beneficio', 'usuario'],
     });
 
     if (!registro) {
       throw new NotFoundException('Beneficio no encontrado');
+    }
+
+    if (registro.estado !== 'activo') {
+      throw new BadRequestException('El beneficio no está activo');
     }
 
     if (registro.usados >= registro.cantidad) {
@@ -79,6 +169,12 @@ export class UsuarioBeneficioService {
       registro.fecha_uso = new Date();
     }
 
-    return this.usuarioBeneficioRepo.save(registro);
+    const updated = await this.usuarioBeneficioRepo.save(registro);
+
+    this.logger.log(
+      `Usuario ${registro.usuario?.id} usó beneficio ${registro.beneficio?.id}. Usados: ${updated.usados}/${updated.cantidad}`,
+    );
+
+    return updated;
   }
 }
