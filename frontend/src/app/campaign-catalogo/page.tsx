@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/donar.module.css";
-import { Campaign } from "@/API/types/campañas/campaigns";
+import { Campaign, CampaignImagen } from "@/API/types/campañas/campaigns";
 import { BaseApi } from "@/API/baseApi";
 
 const ITEMS_PER_PAGE = 6;
 
-export default function DonacionesCatalogoPage() {
+export default function CampaignsCatalogoPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  //const [images, setImages] = useState<DonacionImagen[]>([]);
+  const [images, setImages] = useState<CampaignImagen[]>([]);
   
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -26,16 +26,14 @@ export default function DonacionesCatalogoPage() {
 
         const api = new BaseApi();
 
-        /*const [campaignsRes, imagesRes] = await Promise.all([
+        const [campaignsRes, imagesRes] = await Promise.all([
           api.campaign.getAllPaginated(currentPage, ITEMS_PER_PAGE),
           api.campaign.getImages(),
-        ]);*/
-
-        const campaignsRes = await api.campaign.getAllPaginated(currentPage, ITEMS_PER_PAGE);
+        ]);
 
         setCampaigns(campaignsRes.items);
         setTotal(campaignsRes.total);
-        //setImages(imagesRes);
+        setImages(imagesRes);
       } catch (err) {
         console.error(err);
         setError("Error al cargar las campañas");
@@ -49,9 +47,9 @@ export default function DonacionesCatalogoPage() {
 
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
-  /*const getImageByDonationId = (id: number) =>
-    images.find((img) => img.id_donacion === id)?.imagen;
-  */
+  const getImageByCampaignId = (id: number) =>
+    images.find((img) => img.id_campaign === id)?.imagen;
+  
 
   /* ===== LOADING ===== */
   if (loading) {
@@ -92,11 +90,11 @@ export default function DonacionesCatalogoPage() {
             </div>
           ) : (
             campaigns.map((campaign) => {
-              //const image = getImageByDonationId(donation.id);
+              const image = getImageByCampaignId(campaign.id);
 
               return (
                 <article key={campaign.id} className={styles.card}>
-                  {/*image && (
+                  {image && (
                     <div className={styles.imageWrapper}>
                       <Image
                         src={image}
@@ -105,7 +103,7 @@ export default function DonacionesCatalogoPage() {
                         className={styles.image}
                       />
                     </div>
-                  )*/}
+                  )}
 
                   <div className={styles.cardContent}>
                     <h2 className={styles.cardTitle}>
