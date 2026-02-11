@@ -31,3 +31,9 @@ export interface CampaignUpdateRequest {
   fecha_Fin?: string;
   objetivo?: number;
 }
+
+export interface CampaignImagen {
+  id_campaign:number;
+  imagen:string;
+  nombre:string;
+}
