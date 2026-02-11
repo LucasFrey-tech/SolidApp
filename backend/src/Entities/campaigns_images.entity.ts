@@ -36,5 +36,5 @@ export class Campaigns_images {
   @ApiProperty({ example: 1, description: 'Id Foranea de la Campaña' })
   @ManyToOne(() => Campaigns)
   @JoinColumn({ name: 'campañas_id' })
-  id_campaña: Campaigns;
+  id_campaign: Campaigns;
 }
