@@ -11,7 +11,6 @@ import {
   HttpCode,
   HttpStatus,
   Query,
-  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -28,13 +27,43 @@ import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 
+/**
+ * ============================================================
+ * EmpresaController
+ * ============================================================
+ *
+ * Controlador encargado de exponer los endpoints REST para la
+ * gestión de Empresas dentro del sistema.
+ *
+ * Responsabilidades:
+ * - Listar empresas activas
+ * - Listar empresas paginadas con búsqueda
+ * - Obtener imágenes asociadas
+ * - Obtener empresa por ID
+ * - Crear empresa
+ * - Actualizar empresa
+ * - Deshabilitar (Soft Delete)
+ * - Restaurar empresa
+ * - Actualizar credenciales
+ *
+ * Arquitectura:
+ * Controller → Service → Repository (TypeORM)
+ *
+ * Todas las reglas de negocio están delegadas en EmpresasService.
+ * ============================================================
+ */
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
   constructor(private readonly empresasService: EmpresasService) {}
 
   /**
-   * Obtener todas las empresas activas
+   * GET /empresas
+   *
+   * Obtiene todas las empresas activas (no deshabilitadas).
+   *
+   * @returns Promise<EmpresaResponseDTO[]>
+   * Lista de empresas activas.
    */
   @Get()
   @ApiOperation({ summary: 'Listar todas las empresas activas' })
@@ -48,8 +77,22 @@ export class EmpresaController {
     return this.empresasService.findAll();
   }
 
+  /**
+   * GET /empresas/list/paginated
+   *
+   * Devuelve empresas de manera paginada con opción de búsqueda.
+   *
+   * @param page Número de página (default: 1)
+   * @param limit Cantidad de registros por página (default: 10)
+   * @param search Texto opcional para filtrar por razón social o nombre fantasía
+   *
+   * @returns Promise<{ items: EmpresaResponseDTO[], total: number }>
+   * Objeto con:
+   * - items: lista de empresas
+   * - total: cantidad total de registros
+   */
   @Get('/list/paginated/')
-  @ApiOperation({ summary: 'Listar usuarios paginados' })
+  @ApiOperation({ summary: 'Listar empresas paginadas' })
   @ApiResponse({
     status: 200,
     type: EmpresaResponseDTO,
@@ -64,13 +107,18 @@ export class EmpresaController {
   }
 
   /**
-   * Obtener las imagenes de las empresas
+   * GET /empresas/imagenes
+   *
+   * Obtiene todas las imágenes asociadas a empresas activas.
+   *
+   * @returns Promise<EmpresaImagenDTO[]>
+   * Lista de imágenes con información de la empresa asociada.
    */
   @Get('imagenes')
-  @ApiOperation({ summary: 'Listar las imagenes de las empresas' })
+  @ApiOperation({ summary: 'Listar las imágenes de las empresas' })
   @ApiResponse({
     status: 200,
-    description: 'Listado de imagenes de empresas',
+    description: 'Listado de imágenes de empresas',
     type: EmpresaImagenDTO,
     isArray: true,
   })
@@ -79,7 +127,17 @@ export class EmpresaController {
   }
 
   /**
-   * Obtener empresa por ID
+   * GET /empresas/:id
+   *
+   * Obtiene una empresa específica por su ID.
+   *
+   * @param id ID numérico de la empresa.
+   *
+   * @returns Promise<EmpresaResponseDTO>
+   * Empresa encontrada.
+   *
+   * @throws NotFoundException
+   * Si la empresa no existe.
    */
   @Get(':id')
   @ApiOperation({ summary: 'Obtener una empresa por ID' })
@@ -104,7 +162,17 @@ export class EmpresaController {
   }
 
   /**
-   * Crear una nueva empresa
+   * POST /empresas
+   *
+   * Crea una nueva empresa en el sistema.
+   *
+   * @param createDto Datos necesarios para la creación.
+   *
+   * @returns Promise<EmpresaResponseDTO>
+   * Empresa creada correctamente.
+   *
+   * @throws ConflictException
+   * Si la empresa ya existe.
    */
   @Post()
   @ApiOperation({ summary: 'Crear una nueva empresa' })
@@ -125,7 +193,18 @@ export class EmpresaController {
   }
 
   /**
-   * Actualizar una empresa existente
+   * PUT /empresas/:id
+   *
+   * Actualiza los datos de una empresa existente.
+   *
+   * @param id ID de la empresa.
+   * @param updateDto Datos a modificar.
+   *
+   * @returns Promise<EmpresaResponseDTO>
+   * Empresa actualizada.
+   *
+   * @throws NotFoundException
+   * Si la empresa no existe.
    */
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar una empresa' })
@@ -152,55 +231,68 @@ export class EmpresaController {
   }
 
   /**
-   * Deshabilitar una empresa (soft delete)
+   * DELETE /empresas/:id
+   *
+   * Realiza un Soft Delete de la empresa.
+   * No elimina el registro físicamente, solo lo marca como deshabilitado.
+   *
+   * @param id ID de la empresa.
+   *
+   * @returns Promise<void>
+   *
+   * @throws NotFoundException
+   * Si la empresa no existe.
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deshabilitar una empresa' })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la empresa',
-  })
-  @ApiResponse({
-    status: 204,
-    description: 'Empresa deshabilitada',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Empresa no encontrada',
-  })
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.empresasService.delete(id);
   }
 
   /**
-   * Restaurar una empresa deshabilitada
+   * PATCH /empresas/:id/restaurar
+   *
+   * Restaura una empresa previamente deshabilitada.
+   *
+   * @param id ID de la empresa.
+   *
+   * @returns Promise<void>
+   *
+   * @throws NotFoundException
+   * Si la empresa no existe.
+   *
+   * @throws BadRequestException
+   * Si la empresa ya está activa.
    */
   @Patch(':id/restaurar')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Restaurar una empresa deshabilitada' })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la empresa',
-  })
-  @ApiResponse({
-    status: 204,
-    description: 'Empresa restaurada',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'La empresa ya está activa',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Empresa no encontrada',
-  })
   async restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.empresasService.restore(id);
   }
 
+  /**
+   * PATCH /empresas/:id/credenciales
+   *
+   * Permite actualizar el correo electrónico y/o contraseña
+   * de la empresa.
+   *
+   * @param id ID de la empresa.
+   * @param dto Datos para actualizar credenciales.
+   *
+   * @returns {Promise user: Empresa; token: string }
+   * Devuelve la empresa actualizada junto con un nuevo JWT.
+   *
+   * @throws NotFoundException
+   * Si la empresa no existe.
+   *
+   * @throws ConflictException
+   * Si el correo ya está en uso.
+   *
+   * @throws UnauthorizedException
+   * Si la contraseña actual es incorrecta.
+   */
   @Patch(':id/credenciales')
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña de la empresa',
@@ -210,17 +302,5 @@ export class EmpresaController {
     @Body() dto: UpdateCredentialsDto,
   ) {
     return await this.empresasService.updateCredentials(id, dto);
-  }
-
-  @Patch(':id/estado')
-  async updateEstado(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateEmpresaDTO,
-  ) {
-    if (dto.deshabilitado === undefined) {
-      throw new BadRequestException('El campo deshabilitado es obligatorio');
-    }
-
-    return this.empresasService.updateEstado(id, dto.deshabilitado);
   }
 }
