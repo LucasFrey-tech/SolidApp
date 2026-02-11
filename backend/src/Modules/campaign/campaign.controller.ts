@@ -33,12 +33,12 @@ import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 @ApiTags('Campañas')
 @Controller('campaigns')
 export class CampaignsController {
-  constructor(private readonly campaignService: CampaignsService) { }
+  constructor(private readonly campaignService: CampaignsService) {}
 
   /**
    * Obtiene todas las Campañas disponibles.
-   * 
-   * @returns {Promise<ResponseCampaignsDto[]} Lista todas las Campañas activas.
+   *
+   * @returns {Promise<ResponseCampaignsDto[]>} Lista todas las Campañas activas.
    */
   @Get()
   @ApiOperation({ summary: 'Lista todas las Campañas Solidarias' })
@@ -54,7 +54,7 @@ export class CampaignsController {
 
   /**
    * Obtener una Campaña por ID.
-   * 
+   *
    * @param {number} id - ID de la Campaña a buscar
    * @returns {Promise<ResponseCampaignsDto>} Campaña encontrada
    */
@@ -83,11 +83,11 @@ export class CampaignsController {
 
   /**
    * Obtiene todas las Campañas paginadas pertenecientes a una misma Organización.
-   * 
+   *
    * @param {number} page - Página solicitada (basada en 1)
    * @param {number} limit - Cantidad de Campañas por página
    * @param {string} search - Término de busqueda
-   * @returns 
+   * @returns
    */
   @Get('/list/paginated/')
   @ApiOperation({ summary: 'Listar campañas solidarias de la organizacion' })
@@ -106,7 +106,7 @@ export class CampaignsController {
 
   /**
    * Crea una nueva Campaña en el sistema.
-   * 
+   *
    * @param {CreateCampaignsDto} createCampaignsDto - Datos de la Campaña a crear
    * @returns {Promise<ResponseCampaignsDto>} Campaña creada
    */
@@ -138,7 +138,7 @@ export class CampaignsController {
 
   /**
    * Actualiza una Campaña existente.
-   * 
+   *
    * @param {number} id - ID de la Campaña a actualizar
    * @param {UpdateCampaignsDto} updateCampaignsDto - Datos actualizados de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
@@ -169,7 +169,7 @@ export class CampaignsController {
 
   /**
    * Eliminar una Campaña del sistema (hard delete)
-   * 
+   *
    * @param {number} id - ID de la Campaña a eliminar
    */
   @Delete(':id')
