@@ -24,6 +24,7 @@ import { CampaignsService } from './campaign.service';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
+import { CampaignImagenDTO } from './dto/lista_campaign_imagen.dto';
 
 /**
  * Controlador para gestionar las operaciones de las Campañas.
@@ -102,6 +103,18 @@ export class CampaignsController {
     @Query('search') search = '',
   ) {
     return this.campaignService.findPaginated(page, limit, search);
+  }
+
+  @Get('imagenes')
+  @ApiOperation({ summary: 'Listar las imagenes de las campañas' })
+  @ApiResponse({
+    status: 200,
+    description: 'Listado de imagenes de campañas',
+    type: CampaignImagenDTO,
+    isArray: true,
+  })
+  async findIMG(): Promise<CampaignImagenDTO[]> {
+    return this.campaignService.findIMG();
   }
 
   /**
