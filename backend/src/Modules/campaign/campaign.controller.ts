@@ -54,6 +54,23 @@ export class CampaignsController {
   }
 
   /**
+   * Obtiene todas las imagenes de las campañas
+   *
+   * @returns {Promise<CampaignImagenDTO[]>} Lista todas las imagenes de las campañas activas
+   */
+  @Get('imagenes')
+  @ApiOperation({ summary: 'Listar las imagenes de las campañas' })
+  @ApiResponse({
+    status: 200,
+    description: 'Listado de imagenes de campañas',
+    type: CampaignImagenDTO,
+    isArray: true,
+  })
+  async findIMG(): Promise<CampaignImagenDTO[]> {
+    return this.campaignService.findIMG();
+  }
+
+  /**
    * Obtener una Campaña por ID.
    *
    * @param {number} id - ID de la Campaña a buscar
@@ -103,18 +120,6 @@ export class CampaignsController {
     @Query('search') search = '',
   ) {
     return this.campaignService.findPaginated(page, limit, search);
-  }
-
-  @Get('imagenes')
-  @ApiOperation({ summary: 'Listar las imagenes de las campañas' })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de imagenes de campañas',
-    type: CampaignImagenDTO,
-    isArray: true,
-  })
-  async findIMG(): Promise<CampaignImagenDTO[]> {
-    return this.campaignService.findIMG();
   }
 
   /**
