@@ -26,16 +26,19 @@ import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 
 /**
- * Controlador para gestionar las Campañas Solidarias.
+ * Controlador para gestionar las operaciones de las Campañas.
+ * Proporciona endpoints para crear, leer actualizar y eliminar Campañas,
+ * así como para obtener Campañas filtrados por organizaciones.
  */
-
 @ApiTags('Campañas')
 @Controller('campaigns')
 export class CampaignsController {
-  constructor(private readonly campaignService: CampaignsService) {}
+  constructor(private readonly campaignService: CampaignsService) { }
 
   /**
-   * Listar todas las Campañas Solidarias
+   * Obtiene todas las Campañas disponibles.
+   * 
+   * @returns {Promise<ResponseCampaignsDto[]} Lista todas las Campañas activas.
    */
   @Get()
   @ApiOperation({ summary: 'Lista todas las Campañas Solidarias' })
@@ -50,7 +53,10 @@ export class CampaignsController {
   }
 
   /**
-   * Obtener una Campaña Solidaria por ID
+   * Obtener una Campaña por ID.
+   * 
+   * @param {number} id - ID de la Campaña a buscar
+   * @returns {Promise<ResponseCampaignsDto>} Campaña encontrada
    */
   @Get(':id')
   @ApiOperation({ summary: 'Obtener Campaña Solidaria por ID' })
@@ -75,6 +81,14 @@ export class CampaignsController {
     return this.campaignService.findOne(id);
   }
 
+  /**
+   * Obtiene todas las Campañas paginadas pertenecientes a una misma Organización.
+   * 
+   * @param {number} page - Página solicitada (basada en 1)
+   * @param {number} limit - Cantidad de Campañas por página
+   * @param {string} search - Término de busqueda
+   * @returns 
+   */
   @Get('/list/paginated/')
   @ApiOperation({ summary: 'Listar campañas solidarias de la organizacion' })
   @ApiResponse({
@@ -91,7 +105,10 @@ export class CampaignsController {
   }
 
   /**
-   * Crea una Nueva Campaña Solidaria
+   * Crea una nueva Campaña en el sistema.
+   * 
+   * @param {CreateCampaignsDto} createCampaignsDto - Datos de la Campaña a crear
+   * @returns {Promise<ResponseCampaignsDto>} Campaña creada
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -120,7 +137,11 @@ export class CampaignsController {
   }
 
   /**
-   * Actualiza una Campaña Solidaria Existente
+   * Actualiza una Campaña existente.
+   * 
+   * @param {number} id - ID de la Campaña a actualizar
+   * @param {UpdateCampaignsDto} updateCampaignsDto - Datos actualizados de la Campaña
+   * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
    */
   @Put(':id')
   @ApiOperation({ summary: 'Actualizar Campaña Solidaria existente' })
@@ -147,7 +168,9 @@ export class CampaignsController {
   }
 
   /**
-   * Eliminar una Campaña Solidaria
+   * Eliminar una Campaña del sistema (hard delete)
+   * 
+   * @param {number} id - ID de la Campaña a eliminar
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

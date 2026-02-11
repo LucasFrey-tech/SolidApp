@@ -18,6 +18,9 @@ import { DonacionEstado } from './enum';
 import { PaginatedDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
 import { OrganizationDonationItemDto } from './dto/donation_item.dto';
 
+/**
+ * Servicio que maneja la lógica de negocio para las Donaciones.
+ */
 @Injectable()
 export class DonationsService {
   private readonly logger = new Logger(DonationsService.name);
@@ -36,10 +39,12 @@ export class DonationsService {
     private readonly donationImagenRepository: Repository<Donation_images>,
 
     private readonly rankingService: RankingService,
-  ) {}
+  ) { }
 
   /**
-   * Obtener todas las Donaciones
+   * Obtiene todas las Donaciones disponibles.
+   * 
+   * @returns {Promise<ResponseDonationDto[]>} Lista de todas las Donaciones activas
    */
   async findAll(): Promise<ResponseDonationDto[]> {
     const donations = await this.donationsRepository.find({
@@ -51,7 +56,9 @@ export class DonationsService {
   }
 
   /**
-   * Obtengo las Imagenes de cada donacion
+   * Obtiene la imagen de las Donaciones.
+   * 
+   * @returns {Promise<DonacionImagenDTO[]>} Lista de las Imágenes de las Donaciones
    */
   async findIMG(): Promise<DonacionImagenDTO[]> {
     const images = await this.donationImagenRepository.find({
@@ -70,7 +77,11 @@ export class DonationsService {
   }
 
   /**
-   * Obtener una Donación por ID
+   * Busca una Donacion específica por ID.
+   * 
+   * @param {number} id - ID de la Donación a buscar
+   * @returns {Promise<ResponseDonationDto>} DTO de la Donación encontrada
+   * @throws {NotFoundException} cuando no encuentra ninguna Donación con el ID específico
    */
   async findOne(id: number): Promise<ResponseDonationDto> {
     const donation = await this.donationsRepository.findOne({
@@ -85,6 +96,13 @@ export class DonationsService {
     return this.mapToResponseDto(donation);
   }
 
+  /**
+   * Obtiene todas las Donaciones paginadas.
+   * 
+   * @param {number} page -
+   * @param {number} limit -
+   * @returns 
+   */
   async findAllPaginated(
     page = 1,
     limit = 6,

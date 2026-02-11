@@ -5,6 +5,12 @@ import { Campaigns } from '../../Entities/campaigns.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Organizations } from '../../Entities/organizations.entity';
 
+/**
+ * Módulo de NestJS que agrupa los componentes realcionados a Campañas:
+ * - Controlador
+ * - Servicio
+ * - Repositorios TypeORM
+ */
 @Module({
   imports: [TypeOrmModule.forFeature([Campaigns, Organizations])],
   controllers: [CampaignsController],

@@ -17,7 +17,6 @@ import { CampaignEstado } from './enum';
 /**
  * Servicio que maneja la lógica de negocio de las Campañas Solidarias
  */
-
 @Injectable()
 export class CampaignsService {
   private readonly logger = new Logger(CampaignsService.name);
@@ -28,21 +27,31 @@ export class CampaignsService {
 
     @InjectRepository(Organizations)
     private readonly organizationsRepository: Repository<Organizations>,
-  ) {}
+  ) { }
 
   /**
    * Obtiene todas las Campañas Solidarias
+   * 
+   * @returns {Promise<ResponseCampaignsDto[]>} Lista de todas las Campañas disponibles
    */
   async findAll(): Promise<ResponseCampaignsDto[]> {
     const campaigns = await this.campaignsRepository.find({
       relations: ['organizacion'],
-      where: { organizacion: { deshabilitado: false } }, // Solo organizaciones activas
+      where: { organizacion: { deshabilitado: false } },
     });
 
     this.logger.log(`Se obtuvieron ${campaigns.length} Campañas Solidarias`);
     return campaigns.map(this.mapToResponseDto);
   }
 
+  /**
+   * Obtiene todas las Campañas paginadas activas
+   * 
+   * @param {number} page - Página solicitada
+   * @param {number} limit - Cantidad de Campañas por página
+   * @param {string} search - Término de busqueda
+   * @returns Lista de Campañas paginadas
+   */
   async findPaginated(page: number, limit: number, search: string) {
     const startIndex = (page - 1) * limit;
     const [campaings, total] = await this.campaignsRepository.findAndCount({
@@ -62,6 +71,14 @@ export class CampaignsService {
     };
   }
 
+  /**
+   * Obtiene todas las Campañas paginadas de una Organizacion específica.
+   * 
+   * @param {number} organizacionId - ID de la Organización
+   * @param {number} page - Página solicitada
+   * @param {number} limit - Cantidad de Campañas por página
+   * @returns  Lista de Campañas paginadas
+   */
   async findByOrganizationPaginated(
     organizacionId: number,
     page: number,
@@ -79,7 +96,11 @@ export class CampaignsService {
   }
 
   /**
-   * Obtiene una campaña por ID
+   * Obtiene una Campaña específica
+   * 
+   * @param {number} id - ID de la Campaña a buscar
+   * @returns {Promise<ResponseCampaignsDto>} DTO de la Campaña encontrada
+   * @throws {NotFoundException} Si no encuentra ninguna campaña con el ID especificado
    */
   async findOne(id: number): Promise<ResponseCampaignsDto> {
     const campaign = await this.campaignsRepository.findOne({
@@ -96,9 +117,14 @@ export class CampaignsService {
     return this.mapToResponseDto(campaign);
   }
 
-  /**
-   * Crea una nueva Campaña Solidaria
-   */
+/**
+ * Crea una nueva Campaña en el sistema.
+ * 
+ * @param {CreateCampaignsDto} createDto - DTO con los datos de la campaña
+ * @returns {Promise<CreateCampaignsDto>} Promesa que resuelve con la entidad de la campaña recién creada.
+ * @throws {NotFoundException} Cuando la Organizacion no se encuentra o esta deshabilitada
+ * @throws {BadRequestException} Cuando el objetivo es menor a 0 (cero)
+ */
   async create(createDto: CreateCampaignsDto): Promise<ResponseCampaignsDto> {
     // Validar que la organización existe y esta activa
     const organizacion = await this.organizationsRepository.findOne({
@@ -138,7 +164,17 @@ export class CampaignsService {
   }
 
   /**
-   * Actualiza un Campaña Solidaria existente
+   * Actualiza los datos de una Campaña del sistema.
+   * 
+   * @param {number} id - ID de la Campaña a actualizar
+   * @param {UpdateCampaignsDto} updateDto - DTO con la informacion actualizada de la Campaña
+   * @returns {Promise<ResponseCampaignsDto>} Promesa que resuelve con el DTO actualizado de Campañas
+   * 
+   * @throws {NotFoundException} cuando:
+   * - No se encuentra el ID de la Campaña solicitada
+   * - No se encuentra el ID de la Organización solicitada
+   * 
+   * @throws {BadRequestException} cuando el objetico de la Campaña es menor a 0 (cero)
    */
   async update(
     id: number,
@@ -205,6 +241,13 @@ export class CampaignsService {
     return this.mapToResponseDto(updatedCampaign);
   }
 
+  /**
+   * Elimina una Campaña específica del sistema (hard delete).
+   * 
+   * @param {number} id - ID de la campaña a eliminar 
+   * 
+   * @throws {NotFoundException} cuando no se encuentra el ID de la campaña solicitada
+   */
   async delete(id: number): Promise<void> {
     const campaign = await this.campaignsRepository.findOne({
       where: { id },
@@ -220,6 +263,12 @@ export class CampaignsService {
     this.logger.log(`Campaña Solidaria ${id} eliminada`);
   }
 
+  /**
+   * Mapea una entidad Campaña a su DTO de respuesta.
+   * 
+   * @param {Campaigns} campaign - Entidad Campaña con la relación organización cargada
+   * @returns {ResponseCampaignsDto} DTO listo para ser enviado como respuesta de la API
+   */
   private readonly mapToResponseDto = (
     campaign: Campaigns,
   ): ResponseCampaignsDto => {

@@ -125,7 +125,7 @@ export class BeneficioController {
   /**
    * Crea un nuevo Beneficio en el sistema.
    * 
-   * @param {CreateBeneficiosDTO} dto - DAtos del Beneficio a crear 
+   * @param {CreateBeneficiosDTO} dto - Datos del Beneficio a crear 
    * @returns {Promise<BeneficiosResponseDTO>} Beneficio creado
    */
   @Post()
@@ -171,7 +171,7 @@ export class BeneficioController {
   /**
    * Actualiza el estado del Beneficio.
    * 
-   * @param id - ID del Beneficio a actualizar
+   * @param {number} id - ID del Beneficio a actualizar
    * @param {UpdateEstadoBeneficioDTO} dto - Estado actualizado del Beneficio
    * @returns Beneficio actualizado
    */

@@ -174,7 +174,7 @@ export class BeneficioService {
    * 
    * @param {CreateBeneficiosDTO} createDto - Objeto de transferencia de datos con la información del beneficio a crear.
    * @returns {Promise<BeneficiosResponseDTO>} Promesa que resuelve con la entidad del beneficio recién creado.
-   * @throws {NotFoundException}  Cuando alguno de las Empresas no se encuenta o esta desabilitada.
+   * @throws {NotFoundException}  Cuando alguna de las Empresas no se encuenta o esta deshabilitada.
    * @throws {BadRequestException} Cuando la cantidad o valor del beneficio es menor a 0 (cero)
    */
   async create(createDto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO> {

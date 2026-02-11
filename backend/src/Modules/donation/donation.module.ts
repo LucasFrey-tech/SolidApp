@@ -9,6 +9,12 @@ import { Usuario } from '../../Entities/usuario.entity';
 import { RankingDonador } from '../../Entities/ranking.entity';
 import { RankingModule } from '../ranking/ranking.module';
 
+/**
+ * Módulo de NestJS que agrupa los componentes relacionados a Donaciones:
+ * - Controlador
+ * - Servicio
+ * - Repositorio TypeORM
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([

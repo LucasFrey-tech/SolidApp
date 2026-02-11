@@ -1,10 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ResponseCampaignsDto } from './response_campaigns.dto';
 
+/**
+ * DTO para la respuesta paginada de las Campañas
+ */
 export class ResponseCampaignsPaginatedDto {
+  /** Datos de las Campañas */
   @ApiProperty({ type: [ResponseCampaignsDto] })
   items: ResponseCampaignsDto[];
 
+  /** Total de las Campañas */
   @ApiProperty({ example: 42 })
   total: number;
 }
