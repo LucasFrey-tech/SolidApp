@@ -86,6 +86,7 @@ export class CampaignsService {
   ) {
     const [campaigns, total] = await this.campaignsRepository.findAndCount({
       where: { organizacion: { id: organizacionId } },
+      relations: ['organizacion'],
       skip: (page - 1) * limit,
       take: limit,
     });

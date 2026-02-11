@@ -32,7 +32,7 @@ import { PaginatedDonationsResponseDto } from './dto/response_donation_paginated
  */
 @ApiTags('Donaciones')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+// @UseGuards(JwtAuthGuard)
 @Controller('donations')
 export class DonationsController {
   constructor(private readonly donationsService: DonationsService) { }

@@ -110,7 +110,6 @@ export class BeneficioService {
       ],
     });
 
-
     return {
       items: beneficios.map(this.mapToResponseDto),
       total
