@@ -21,11 +21,11 @@ export class campaignService extends Crud<Campaign> {
   }
 
   async getAllPaginated(
-    page: 1,
-    limit: 20,
+    page = 1,
+    limit = 20,
   ): Promise<PaginatedResponse<Campaign>> {
     const res = await fetch(
-        `${this.baseUrl}${this.endPoint}?page=${page}&limit=${limit}`,
+        `${this.baseUrl}${this.endPoint}/list/paginated/?page=${page}&limit=${limit}`,
         {
             headers: this.getHeaders(),
         },
