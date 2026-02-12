@@ -2,6 +2,7 @@ import { OrganizacionSummary } from "../organizaciones";
 
 export interface Campaign {
   id: number;
+  imagenPortada?: string | null;
   estado: string;
   titulo: string;
   descripcion: string;
@@ -15,6 +16,7 @@ export interface Campaign {
 
 export interface CampaignCreateRequest {
   titulo: string;
+  imagen: string;
   descripcion: string;
   fecha_Inicio: string;
   fecha_Fin: string;
@@ -30,6 +32,10 @@ export interface CampaignUpdateRequest {
   fecha_Inicio: string;
   fecha_Fin?: string;
   objetivo?: number;
+}
+
+export interface CampaignDetalle extends Campaign {
+  imagenes: CampaignImagen[];
 }
 
 export interface CampaignImagen {

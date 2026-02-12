@@ -37,4 +37,14 @@ export class Campaigns_images {
   @ManyToOne(() => Campaigns)
   @JoinColumn({ name: 'campañas_id' })
   id_campaign: Campaigns;
+
+  /**
+   * Indica si la imágen es portada
+   */
+  @ApiProperty({
+    example: false,
+    description: 'Variable Booleana que indica si la imágen es portada',
+  })
+  @Column({ default: false })
+  esPortada: boolean;
 }

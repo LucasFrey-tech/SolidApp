@@ -2,7 +2,7 @@ import { Crud, PaginatedResponse } from "../service";
 import {
   Campaign,
   CampaignCreateRequest,
-  CampaignImagen,
+  CampaignDetalle,
   CampaignUpdateRequest,
 } from "../types/campañas/campaigns";
 
@@ -55,17 +55,16 @@ export class campaignService extends Crud<Campaign> {
     return res.json();
   }
 
-  async getImages(): Promise<CampaignImagen[]> {
-    const resQuery = await fetch(`${this.baseUrl}${this.endPoint}/imagenes`, {
+  async getOneDetail(id: number): Promise<CampaignDetalle> {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/detail`, {
       headers: this.getHeaders(),
     });
 
-    if (!resQuery.ok) {
-      throw new Error("Error al obtener imágenes de donaciones");
+    if (!res.ok) {
+      throw new Error("Detalle de campaña no encontrado");
     }
 
-    const res = await resQuery.json();
-    return res;
+    return res.json();
   }
 
   async create(data: CampaignCreateRequest): Promise<Campaign> {
