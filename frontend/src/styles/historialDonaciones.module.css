@@ -77,9 +77,21 @@
   padding: 0.35rem 0.6rem;
   color: #ffffff;
 }
+/* =================================================
+   RESPONSIVE 
+================================================= */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .title {
+    font-size: 1.55rem;
+  }
+}
 
 /* =================================================
-   📱 MOBILE (hasta 640px)
+    MOBILE 
 ================================================= */
 @media (max-width: 640px) {
   .container {
@@ -112,15 +124,4 @@
   }
 }
 
-/* =================================================
-   RESPONSIVE (641px a 1024px)
-================================================= */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 
-  .title {
-    font-size: 1.55rem;
-  }
-}

@@ -80,8 +80,6 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* ===== QUITAR FLECHAS INPUT NUMBER ===== */
-
 .Input[type='number']::-webkit-inner-spin-button,
 .Input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -194,15 +192,12 @@
   border: 1px solid #e2e8f0;
 }
 
-/* Para campos de solo lectura con estilo diferente */
 .ReadOnlyField {
   background-color: #f8fafc;
   border-color: #e2e8f0;
   color: #64748b;
   cursor: not-allowed;
 }
-
-/* Campos readOnly diferentes */
 .Input[readonly] {
   background-color: #f8fafc;
   border-color: #e2e8f0;
