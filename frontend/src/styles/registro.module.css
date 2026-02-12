@@ -16,7 +16,7 @@
   margin-bottom: 40px;
 }
 
-/* Contenedor de las tarjetas (globitos) */
+/* Contenedor de las tarjetas */
 .cards {
   display: flex;
   justify-content: center;
@@ -26,7 +26,7 @@
   margin-bottom: 30px;
 }
 
-/* Estilo de cada tarjeta (globito) */
+/* Estilo de cada tarjeta */
 .card {
   width: 160px;
   height: 160px;
@@ -228,7 +228,7 @@
   font-size: 15px;
 }
 
-/* Estilos para inputs - CORREGIDO: AÑADIR COLOR DE TEXTO */
+/* Estilos para inputs */
 .input {
   width: 100%;
   padding: 14px 16px;
@@ -240,20 +240,20 @@
   outline: none;
   transition: border 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
-  color: #333; /* ¡ESTO ES LO IMPORTANTE! */
+  color: #333;
 }
 
 .input:focus {
   border: 1px solid #7ac05b;
   box-shadow: 0 0 0 3px rgba(122, 192, 91, 0.25);
-  color: #333; /* Asegurar color en focus también */
+  color: #333;
 }
 
 .input::placeholder {
   color: #aaa;
 }
 
-/* Asegurar que el texto sea visible en todos los estados */
+/* Texto sea visible en todos los estados */
 .input:-webkit-autofill,
 .input:-webkit-autofill:hover,
 .input:-webkit-autofill:focus {
@@ -353,7 +353,7 @@
   }
   
   .input {
-    font-size: 16px; /* Mejor para móviles */
+    font-size: 16px; 
     padding: 12px 14px;
   }
 }
@@ -408,14 +408,14 @@
   }
 }
 
-/* Para pantallas muy altas */
+/* 800px */
 @media (min-height: 800px) {
   .scrollableFields {
     max-height: 500px;
   }
 }
 
-/* Para pantallas pequeñas en altura */
+/* 700px */
 @media (max-height: 700px) {
   .formWrapper {
     max-height: 95vh;

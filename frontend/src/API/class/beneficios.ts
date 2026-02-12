@@ -76,26 +76,33 @@ export class BeneficiosService extends Crud<Beneficio> {
   }
 
   async canjear(
-    beneficioId: number,
-    data: { userId: number; cantidad: number },
-  ) {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endpoint}/${beneficioId}/canjear`,
-      {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(data),
+  beneficioId: number,
+  data: { userId: number; cantidad: number },
+) {
+  const res = await fetch(
+    `${this.baseUrl}/${this.endpoint}/${beneficioId}/canjear`,
+    {
+      method: "POST",
+      headers: {
+        ...this.getHeaders(),
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(data),
+    },
+  );
 
-    if (!res.ok) {
-      const error = await res.text();
-      throw new Error(error);
-    }
+  const result = await res.json();
 
-    return res.json();
+  if (!res.ok) {
+    const mensaje = Array.isArray(result.message)
+      ? result.message.join(", ")
+      : result.message;
+
+    throw new Error(mensaje || "Error al canjear beneficio");
   }
 
+  return result;
+}
   async update(id: number, data: any) {
     const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}`, {
       method: "PATCH",

@@ -155,7 +155,7 @@
 .profileButton {
   display: flex;
   align-items: center;
-  gap: 8px; /* separación icono - texto */
+  gap: 8px; 
 }
 
 .profileIcon {
