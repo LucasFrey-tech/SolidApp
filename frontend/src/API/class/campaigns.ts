@@ -56,7 +56,7 @@ export class campaignService extends Crud<Campaign> {
   }
 
   async getOneDetail(id: number): Promise<CampaignDetalle> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/detail`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/detalle`, {
       headers: this.getHeaders(),
     });
 

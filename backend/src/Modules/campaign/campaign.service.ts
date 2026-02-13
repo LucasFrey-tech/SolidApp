@@ -343,7 +343,8 @@ export class CampaignsService {
           id: img.id,
           nombre: path.parse(img.imagen).name,
           logo: img.imagen,
-        })) || [],
+          esPortada: img.esPortada,
+        })) ?? [],
     };
   };
 

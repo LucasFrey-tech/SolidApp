@@ -39,7 +39,8 @@ export interface CampaignDetalle extends Campaign {
 }
 
 export interface CampaignImagen {
-  id_campaign:number;
-  imagen:string;
+  id:number;
+  url:string;
   nombre:string;
+  esPortada?: boolean;
 }
