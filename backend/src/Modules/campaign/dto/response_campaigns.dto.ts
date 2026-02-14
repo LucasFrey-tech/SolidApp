@@ -42,7 +42,7 @@ export class ResponseCampaignsDto {
     example: 'Campaña destinada a la recolección de ropa de abrigo',
     description: 'Descripción detallada de la campaña solidaria',
   })
-  description: string;
+  descripcion: string;
 
   /** Fecha de Inicio de la Campaña */
   @ApiProperty({

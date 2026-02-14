@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Edit2 } from "lucide-react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Paneles/organizationPanel.module.css";
-import { CampaignForm } from "./CampainForm";
+import { CampaignForm, CampaignFormValues } from "./CampainForm";
 import { BaseApi } from "@/API/baseApi";
 import { useUser } from "../context/UserContext";
 import Modal from "@/components/ui/Modal";
@@ -53,12 +53,13 @@ export default function OrganizationCampaignsPage() {
   const fetchCampaigns = async () => {
     if (!organizacionId) return;
 
-    const response =
-      await api.organizacion.getOrganizationCampaignsPaginated(
-        organizacionId,
-        campaignsPage,
-        8
-      );
+    const response = await api.organizacion.getOrganizationCampaignsPaginated(
+      organizacionId,
+      campaignsPage,
+      8,
+    );
+
+    console.log("RESPONSE CAMPAIGNS:", response.items)
 
     setCampaigns(response.items);
     setCampaignsTotalPages(response.totalPages);
@@ -77,12 +78,11 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response =
-      await api.organizacion.getDonationsPaginatedByOrganizacion(
-        organizacionId,
-        donationsPage,
-        limit
-      );
+    const response = await api.organizacion.getDonationsPaginatedByOrganizacion(
+      organizacionId,
+      donationsPage,
+      limit,
+    );
 
     setDonations(response.items);
     setDonationsTotalPages(Math.ceil(response.total / limit));
@@ -130,7 +130,7 @@ export default function OrganizationCampaignsPage() {
      CREAR / EDITAR CAMPAÑA
   ================================ */
 
-  const handleSubmitCampaign = async (data: Campaign) => {
+  const handleSubmitCampaign = async (data: CampaignFormValues) => {
     if (!organizacionId) return;
 
     try {
@@ -148,14 +148,14 @@ export default function OrganizationCampaignsPage() {
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
       } else {
-         const createData: CampaignCreateRequest = {
+        const createData: CampaignCreateRequest = {
           titulo: data.titulo,
           descripcion: data.descripcion,
           objetivo: data.objetivo,
           fecha_Inicio: data.fecha_Inicio,
           fecha_Fin: data.fecha_Fin,
           estado: data.estado,
-          imagen: data.imagenPortada,
+          imagen: data.imagen,
           id_organizacion: organizacionId,
         };
         await api.campaign.create(createData);

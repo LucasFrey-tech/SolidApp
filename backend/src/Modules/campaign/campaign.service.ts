@@ -217,7 +217,7 @@ export class CampaignsService {
   async update(
     id: number,
     updateDto: UpdateCampaignsDto,
-    imagenes: string[]
+    imagenes: string[],
   ): Promise<ResponseCampaignsDto> {
     const campaign = await this.campaignsRepository.findOne({
       where: { id },
@@ -286,12 +286,12 @@ export class CampaignsService {
     }
     for (let index = 0; index < imagenes.length; index++) {
       const element = imagenes[index];
-      const campaignImages = new Campaigns_images;
-      if(index === 0){
+      const campaignImages = new Campaigns_images();
+      if (index === 0) {
         campaignImages.esPortada = true;
       }
-      campaignImages.id_campaign.id = id
-      campaignImages.imagen = element
+      campaignImages.id_campaign.id = id;
+      campaignImages.imagen = element;
       await this.campaignsImagesRepository.save(campaignImages);
     }
 
@@ -340,7 +340,7 @@ export class CampaignsService {
     return {
       id: campaign.id,
       titulo: campaign.titulo,
-      description: campaign.descripcion,
+      descripcion: campaign.descripcion,
       estado: campaign.estado,
       fecha_Registro: campaign.fecha_Registro,
       fecha_Inicio: campaign.fecha_Inicio,

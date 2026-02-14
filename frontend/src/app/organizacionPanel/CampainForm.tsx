@@ -6,7 +6,7 @@ import { CampaignCreateRequest } from "@/API/types/campañas/campaigns";
 import { CampaignEstado } from "@/API/types/campañas/enum";
 import styles from "@/styles/Paneles/campaignPanel.module.css";
 
-type CampaignFormValues = Omit<
+export type CampaignFormValues = Omit<
   CampaignCreateRequest,
   "id_organizacion"
 > & {
