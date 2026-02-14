@@ -18,7 +18,7 @@ export interface Campaign {
   fecha_Registro: string;
 
   objetivo: number;
-  ultimo_Cambio: string;
+  ultimo_cambio: string;
 
   organizacion: OrganizacionSummary;
 }
@@ -28,7 +28,7 @@ export interface Campaign {
 ================================ */
 export interface CampaignCreateRequest {
   titulo: string;
-  imagen: string;
+  imagen?: string;
   descripcion: string;
 
   fecha_Inicio: string;

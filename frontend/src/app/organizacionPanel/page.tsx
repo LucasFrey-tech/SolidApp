@@ -11,6 +11,7 @@ import Modal from "@/components/ui/Modal";
 
 import {
   Campaign,
+  CampaignCreateRequest,
   CampaignUpdateRequest,
 } from "@/API/types/campañas/campaigns";
 
@@ -41,8 +42,7 @@ export default function OrganizationCampaignsPage() {
   const [donationsTotalPages, setDonationsTotalPages] = useState(1);
 
   const [open, setOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] =
-    useState<Campaign | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
 
   const api = useMemo(() => new BaseApi(), []);
 
@@ -148,16 +148,17 @@ export default function OrganizationCampaignsPage() {
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
       } else {
-        await api.campaign.create({
+         const createData: CampaignCreateRequest = {
           titulo: data.titulo,
           descripcion: data.descripcion,
           objetivo: data.objetivo,
           fecha_Inicio: data.fecha_Inicio,
           fecha_Fin: data.fecha_Fin,
+          estado: data.estado,
+          imagen: "",
           id_organizacion: organizacionId,
-          imagen: ""
-        });
-
+        };
+        await api.campaign.create(createData);
         Swal.fire("Creada", "Campaña creada con éxito", "success");
       }
 
