@@ -10,6 +10,8 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 
 import {
@@ -25,6 +27,9 @@ import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { ImagesArrayValidationPipe } from '../../common/pipes/mediaFilePipes';
+import { SettingsService } from '../../common/settings/settings.service';
 
 /**
  * Controlador para gestionar las operaciones de las Campañas.
@@ -174,11 +179,14 @@ export class CampaignsController {
     description: 'Campaña Solidaria actualizada exitosamente',
     type: ResponseCampaignsDto,
   })
+  @UseInterceptors(FilesInterceptor('files', 10))
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateCampaignsDto: UpdateCampaignsDto,
+    @Body() updateCampaignsDto: UpdateCampaignsDto, 
+    @UploadedFiles(new ImagesArrayValidationPipe()) files: Express.Multer.File[]
   ): Promise<ResponseCampaignsDto> {
-    return this.campaignService.update(id, updateCampaignsDto);
+    const imagenes = files.map(x => SettingsService.getStaticResourceUrl(x.filename));
+    return this.campaignService.update(id, updateCampaignsDto, imagenes);
   }
 
   /**

@@ -10,7 +10,7 @@ import { SettingsService } from '../settings/settings.service';
       storage: diskStorage({
         filename: (req, file, cb) => {
           const ext = extname(file.originalname);
-          const filename = `${Date.now()}${ext}`;
+          const filename = file.originalname;
           cb(null, filename);
         },
         destination: SettingsService.getStaticResourcesPath(),

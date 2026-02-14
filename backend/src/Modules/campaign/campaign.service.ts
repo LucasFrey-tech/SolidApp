@@ -217,6 +217,7 @@ export class CampaignsService {
   async update(
     id: number,
     updateDto: UpdateCampaignsDto,
+    imagenes: string[]
   ): Promise<ResponseCampaignsDto> {
     const campaign = await this.campaignsRepository.findOne({
       where: { id },
@@ -272,9 +273,27 @@ export class CampaignsService {
 
     // Actualizar fecha de modificación
     campaign.ultimo_cambio = new Date();
-
     const updatedCampaign = await this.campaignsRepository.save(campaign);
     this.logger.log(`Campaña Solidaria ${id} actualizada`);
+
+    // // Actualizar imagenes (Borrar existentes y añadir nuevas)
+    const existingImages = await this.campaignsImagesRepository.find({
+      where: { id_campaign: { id } },
+    });
+    if (existingImages.length > 0) {
+      // Borrar las imagenes de la base de datos
+      await this.campaignsImagesRepository.delete({ id_campaign: { id } });
+    }
+    for (let index = 0; index < imagenes.length; index++) {
+      const element = imagenes[index];
+      const campaignImages = new Campaigns_images;
+      if(index === 0){
+        campaignImages.esPortada = true;
+      }
+      campaignImages.id_campaign.id = id
+      campaignImages.imagen = element
+      await this.campaignsImagesRepository.save(campaignImages);
+    }
 
     return this.mapToResponseDto(updatedCampaign);
   }

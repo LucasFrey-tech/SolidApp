@@ -5,6 +5,7 @@ import { Campaigns } from '../../Entities/campaigns.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Organizations } from '../../Entities/organizations.entity';
 import { Campaigns_images } from '../../Entities/campaigns_images.entity';
+import { CommonMulterModule } from '../../common/multer/multer.module';
 
 /**
  * Módulo de NestJS que agrupa los componentes realcionados a Campañas:
@@ -15,6 +16,7 @@ import { Campaigns_images } from '../../Entities/campaigns_images.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Campaigns, Organizations, Campaigns_images]),
+    CommonMulterModule
   ],
   controllers: [CampaignsController],
   providers: [CampaignsService],
