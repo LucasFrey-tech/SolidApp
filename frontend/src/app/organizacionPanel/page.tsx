@@ -130,7 +130,7 @@ export default function OrganizationCampaignsPage() {
      CREAR / EDITAR CAMPAÑA
   ================================ */
 
-  const handleSubmitCampaign = async (data: any) => {
+  const handleSubmitCampaign = async (data: Campaign) => {
     if (!organizacionId) return;
 
     try {
@@ -155,7 +155,7 @@ export default function OrganizationCampaignsPage() {
           fecha_Inicio: data.fecha_Inicio,
           fecha_Fin: data.fecha_Fin,
           estado: data.estado,
-          imagen: "",
+          imagen: data.imagenPortada,
           id_organizacion: organizacionId,
         };
         await api.campaign.create(createData);

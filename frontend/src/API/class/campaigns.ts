@@ -75,6 +75,16 @@ export class campaignService extends Crud<Campaign> {
     });
 
     if (!res.ok) {
+      console.error("STATUS:", res.status);
+
+      try {
+        const errorData = await res.json();
+        console.error("BACKEND ERROR (json):", JSON.stringify(errorData, null, 2));
+      } catch (e) {
+        const text = await res.text();
+        console.error("BACKEND ERROR (text):", text);
+      }
+
       throw new Error("Error al crear campaña");
     }
 

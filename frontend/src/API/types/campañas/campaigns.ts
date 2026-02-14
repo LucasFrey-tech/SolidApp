@@ -6,7 +6,7 @@ import { CampaignEstado } from "./enum";
 ================================ */
 export interface Campaign {
   id: number;
-  imagenPortada?: string | null;
+  imagenPortada?: string;
 
   estado: CampaignEstado; 
 
