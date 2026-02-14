@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
@@ -13,8 +13,9 @@ import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { OrganizationSummaryDto } from '../organization/dto/summary_organization.dto';
 import { Organizations } from '../../Entities/organizations.entity';
 import { CampaignEstado } from './enum';
-import { CampaignImagenDTO } from './dto/lista_campaign_imagen.dto';
 import { Campaigns_images } from '../../Entities/campaigns_images.entity';
+import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
+import * as path from 'path';
 
 /**
  * Servicio que maneja la lógica de negocio de las Campañas Solidarias
@@ -49,24 +50,8 @@ export class CampaignsService {
     return campaigns.map(this.mapToResponseDto);
   }
 
-  async findIMG(): Promise<CampaignImagenDTO[]> {
-    const images = await this.campaignsImagesRepository.find({
-      relations: ['id_campaign'],
-    });
-
-    this.logger.log(
-      `Se obtuvieron ${images.length} imagenes de las donaciones`,
-    );
-
-    return images.map((img) => ({
-      id_campaign: img.id_campaign.id,
-      nombre: img.id_campaign.titulo,
-      logo: img.imagen,
-    }));
-  }
-
   /**
-   * Obtiene todas las Campañas paginadas activas
+   * Obtiene todas las Campañas paginadas activas, incluyendo imagenes.
    *
    * @param {number} page - Página solicitada
    * @param {number} limit - Cantidad de Campañas por página
@@ -75,19 +60,30 @@ export class CampaignsService {
    */
   async findPaginated(page: number, limit: number, search: string) {
     const startIndex = (page - 1) * limit;
-    const [campaings, total] = await this.campaignsRepository.findAndCount({
-      skip: startIndex,
-      take: limit,
-      relations: ['organizacion'],
-      order: { id: 'ASC' },
-      where: [
-        { titulo: Like(`%${search}%`) },
-        { descripcion: Like(`%${search}%`) },
-      ],
-    });
+
+    const query = this.campaignsRepository
+      .createQueryBuilder('campaign')
+      .leftJoinAndSelect('campaign.organizacion', 'organizacion')
+      .leftJoinAndSelect(
+        'campaign.imagenes',
+        'imagen',
+        'imagen.esPortada = :isPortada',
+        { isPortada: true },
+      )
+      .where(
+        'campaign.titulo LIKE :search OR campaign.descripcion LIKE :search',
+        {
+          search: `%${search}%`,
+        },
+      )
+      .orderBy('campaign.id', 'ASC')
+      .skip(startIndex)
+      .take(limit);
+
+    const [campaigns, total] = await query.getManyAndCount();
 
     return {
-      items: campaings.map(this.mapToResponseDto),
+      items: campaigns.map(this.mapToResponseDto),
       total,
     };
   }
@@ -137,6 +133,26 @@ export class CampaignsService {
 
     this.logger.log(`Campaña Solidaria ${id} obtenida`);
     return this.mapToResponseDto(campaign);
+  }
+
+  /**
+   * Obtiene una Campaña específica, incluyendo imagenes.
+   *
+   * @param {number} id - ID de la Campaña a buscar
+   * @returns {Promise<ResponseCampaignDetalleDto>} DTO de la Campaña encontrada, incluyendo las imagenes.
+   * @throws {NotFoundException} Si no encuentra ninguna campaña con el ID especificado
+   */
+  async findOneDetail(id: number): Promise<ResponseCampaignDetalleDto> {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id },
+      relations: ['organizacion', 'imagenes'],
+    });
+
+    if (!campaign) {
+      throw new NotFoundException('Campaña no encontrada');
+    }
+
+    return this.mapToDetailDto(campaign);
   }
 
   /**
@@ -300,6 +316,8 @@ export class CampaignsService {
       verificada: campaign.organizacion.verificada,
     };
 
+    const portada = campaign.imagenes?.[0] ?? null;
+
     return {
       id: campaign.id,
       titulo: campaign.titulo,
@@ -310,6 +328,23 @@ export class CampaignsService {
       fecha_Fin: campaign.fecha_Fin,
       objetivo: campaign.objetivo,
       organizacion: organizationSummary,
+      imagenPortada: portada ? portada.imagen : null,
+    };
+  };
+
+  private readonly mapToDetailDto = (
+    campaign: Campaigns,
+  ): ResponseCampaignDetalleDto => {
+    return {
+      ...this.mapToResponseDto(campaign),
+
+      imagenes:
+        campaign.imagenes?.map((img) => ({
+          id: img.id,
+          nombre: path.parse(img.imagen).name,
+          logo: img.imagen,
+          esPortada: img.esPortada,
+        })) ?? [],
     };
   };
 

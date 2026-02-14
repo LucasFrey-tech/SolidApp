@@ -11,8 +11,6 @@ const ITEMS_PER_PAGE = 6;
 
 export default function CampaignsCatalogoPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [images, setImages] = useState<CampaignImagen[]>([]);
-  
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -26,14 +24,13 @@ export default function CampaignsCatalogoPage() {
 
         const api = new BaseApi();
 
-        const [campaignsRes, imagesRes] = await Promise.all([
-          api.campaign.getAllPaginated(currentPage, ITEMS_PER_PAGE),
-          api.campaign.getImages(),
-        ]);
+        const campaignsRes = await api.campaign.getAllPaginated(
+          currentPage,
+          ITEMS_PER_PAGE,
+        );
 
         setCampaigns(campaignsRes.items);
         setTotal(campaignsRes.total);
-        setImages(imagesRes);
       } catch (err) {
         console.error(err);
         setError("Error al cargar las campañas");
@@ -46,10 +43,6 @@ export default function CampaignsCatalogoPage() {
   }, [currentPage]);
 
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
-
-  const getImageByCampaignId = (id: number) =>
-    images.find((img) => img.id_campaign === id)?.imagen;
-  
 
   /* ===== LOADING ===== */
   if (loading) {
@@ -65,9 +58,7 @@ export default function CampaignsCatalogoPage() {
     return (
       <main className={styles.page}>
         <section className={styles.container}>
-          <div className={styles.noResults}>
-            {error}
-          </div>
+          <div className={styles.noResults}>{error}</div>
         </section>
       </main>
     );
@@ -89,47 +80,37 @@ export default function CampaignsCatalogoPage() {
               No hay campañas disponibles ahora
             </div>
           ) : (
-            campaigns.map((campaign) => {
-              const image = getImageByCampaignId(campaign.id);
-
-              return (
-                <article key={campaign.id} className={styles.card}>
-                  {image && (
-                    <div className={styles.imageWrapper}>
-                      <Image
-                        src={image}
-                        alt={campaign.titulo}
-                        fill
-                        className={styles.image}
-                      />
-                    </div>
-                  )}
-
-                  <div className={styles.cardContent}>
-                    <h2 className={styles.cardTitle}>
-                      {campaign.titulo}
-                    </h2>
-
-                    <p className={styles.description}>
-                      {campaign.descripcion}
-                    </p>
-
-                    <div className={styles.meta}>
-                      <span>
-                        {campaign.objetivo}
-                      </span>
-                    </div>
+            campaigns.map((campaign) => (
+              <article key={campaign.id} className={styles.card}>
+                {campaign.imagenPortada && (
+                  <div className={styles.imageWrapper}>
+                    <Image
+                      src={campaign.imagenPortada}
+                      alt={campaign.titulo}
+                      fill
+                      className={styles.image}
+                    />
                   </div>
+                )}
 
-                  <Link
-                    href={`/campaign-catalogo/${campaign.id}`}
-                    className={styles.button}
-                  >
-                    Ver más información
-                  </Link>
-                </article>
-              );
-            })
+                <div className={styles.cardContent}>
+                  <h2 className={styles.cardTitle}>{campaign.titulo}</h2>
+
+                  <p className={styles.description}>{campaign.descripcion}</p>
+
+                  <div className={styles.meta}>
+                    <span>{campaign.objetivo}</span>
+                  </div>
+                </div>
+
+                <Link
+                  href={`/campaign-catalogo/${campaign.id}`}
+                  className={styles.button}
+                >
+                  Ver más información
+                </Link>
+              </article>
+            ))
           )}
         </div>
 

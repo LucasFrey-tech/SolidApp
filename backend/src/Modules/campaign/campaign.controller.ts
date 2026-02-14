@@ -24,7 +24,7 @@ import { CampaignsService } from './campaign.service';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
-import { CampaignImagenDTO } from './dto/lista_campaign_imagen.dto';
+import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
 
 /**
  * Controlador para gestionar las operaciones de las Campañas.
@@ -54,23 +54,6 @@ export class CampaignsController {
   }
 
   /**
-   * Obtiene todas las imagenes de las campañas
-   *
-   * @returns {Promise<CampaignImagenDTO[]>} Lista todas las imagenes de las campañas activas
-   */
-  @Get('imagenes')
-  @ApiOperation({ summary: 'Listar las imagenes de las campañas' })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de imagenes de campañas',
-    type: CampaignImagenDTO,
-    isArray: true,
-  })
-  async findIMG(): Promise<CampaignImagenDTO[]> {
-    return this.campaignService.findIMG();
-  }
-
-  /**
    * Obtener una Campaña por ID.
    *
    * @param {number} id - ID de la Campaña a buscar
@@ -97,6 +80,19 @@ export class CampaignsController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ResponseCampaignsDto> {
     return this.campaignService.findOne(id);
+  }
+
+  @Get(':id/detalle')
+  @ApiOperation({ summary: 'Obtener campaña por ID con detalle completo' })
+  @ApiResponse({
+    status: 200,
+    description: 'Detalle de campaña encontrado',
+    type: ResponseCampaignDetalleDto,
+  })
+  async findOneDetail(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ResponseCampaignDetalleDto> {
+    return this.campaignService.findOneDetail(id);
   }
 
   /**

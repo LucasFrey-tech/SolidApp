@@ -5,8 +5,8 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 export class CampaignImagenDTO {
   /** ID de la Imágen de la Donación */
-  @ApiProperty({ example: 1, description: 'ID único de la Donacion' })
-  id_campaign: number;
+  @ApiProperty({ example: 1, description: 'ID único de la imágen' })
+  id: number;
 
   /** Nombre de la Imágen de la Donación */
   @ApiProperty({

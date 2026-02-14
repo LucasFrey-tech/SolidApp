@@ -12,6 +12,10 @@ export class ResponseCampaignsDto {
   })
   id: number;
 
+  /** Imagen de la campaña */
+  @ApiProperty({ required: false, nullable: true })
+  imagenPortada?: string | null;
+
   /** Datos de la Organización asociada */
   @ApiProperty({
     type: () => OrganizationSummaryDto,
