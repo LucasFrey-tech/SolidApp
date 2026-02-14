@@ -1,39 +1,39 @@
 /* ===============================
-   ANIMATIONS
+   OVERLAY
 ================================ */
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px; /* 👈 evita que toque bordes en mobile */
+
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
+
+  animation: fadeIn 0.2s ease;
 }
 
 /* ===============================
-   PANEL (FORM)
+   MODAL
 ================================ */
-.panel {
-  background-color: #111;
-  color: #e5e7eb;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+.modal {
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
 
-  animation: modalFadeIn 0.25s ease-out;
-}
+  background: #f3f4f6;
+  border-radius: 18px;
+  padding: 32px;
 
-/* ===============================
-   TITLE
-================================ */
-.title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #e5e7eb;
-  text-align: center;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+
+  animation: scaleIn 0.2s ease;
 }
 
 /* ===============================
@@ -42,7 +42,18 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 22px;
+}
+
+/* ===============================
+   TITLE
+================================ */
+.title {
+  font-size: 2rem;
+  text-align: center;
+  font-weight: 800;
+  color: #0069fc;
+  margin-bottom: 8px;
 }
 
 /* ===============================
@@ -51,110 +62,162 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
-/* ===============================
-   LABELS
-================================ */
 .field label {
-  font-size: 18px;
-  font-weight: 500;
-  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4b5563;
+  letter-spacing: 0.4px;
 }
 
 /* ===============================
    INPUTS
 ================================ */
 .field input,
-.field textarea {
-  background: #1b1b1b !important;
-  border: 1px solid #2e2e2e;
+.field textarea,
+.select {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  padding: 10px 12px;
-  color: #e5e7eb !important;
+  padding: 11px 14px;
   font-size: 14px;
-}
-
-.field textarea {
-  resize: none;
-  min-height: 90px;
-}
-
-.field input::placeholder,
-.field textarea::placeholder {
-  color: #94a3b8;
+  color: #111827;
+  transition: all 0.18s ease;
 }
 
 .field input:focus,
-.field textarea:focus {
+.field textarea:focus,
+.select:focus {
   outline: none;
-  border-color: #4f8cff;
-  box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.2);
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }
 
 /* ===============================
-   ACTIONS (BOTONES)
+   ERROR
 ================================ */
+.error {
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* ===============================
+   ACTIONS
+================================ */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.actions button {
+  min-width: 130px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* ===============================
+   DROP ZONE
+================================ */
+.dropZone {
+  border: 2px dashed #4f46e5;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropZone:hover {
+  background: #f9fafb;
+  border-color: #4338ca;
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.exploreButton {
+  margin-top: 10px;
+  background: #111827;
+  color: white;
+  border-radius: 10px;
+  padding: 8px 14px;
+  border: none;
+}
+
+.exploreButton:hover {
+  background: #1f2937;
+}
+
 .actions {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 12px;
 }
-
-.actions button {
-  min-width: 120px;
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
-}
-
-.actions button:hover {
-  transform: translateY(-1px);
-  opacity: 0.95;
-}
-
-/* BOTÓN CANCELAR */
-.actions button[type="button"] {
-  background-color: #000;
-  color: #fff;
-  border: 1px solid #333;
-}
-
-/* BOTÓN GUARDAR */
-.actions button[type="submit"] {
-  background-color: #000000;
-  color: #fff;
+.primaryButton {
+  background: #16a34a; /* verde */
+  color: white;
   border: none;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.actions button[type="submit"]:hover {
-  background-color: #4338ca;
+.primaryButton:hover {
+  background: #15803d;
+}
+
+.primaryButton:active {
+  transform: scale(0.98);
+}
+
+/* =============================== */
+
+.dangerButton {
+  background: #dc2626; /* rojo */
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dangerButton:hover {
+  background: #b91c1c;
+}
+
+.dangerButton:active {
+  transform: scale(0.98);
 }
 
 /* ===============================
-   RESPONSIVE
+   Responsive
 ================================ */
 @media (max-width: 768px) {
-  .panel {
-    padding: 20px;
+  .modal {
+    padding: 24px;
   }
 
   .title {
-    font-size: 18px;
-  }
-
-  .field label {
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  .panel {
-    padding: 16px;
+    font-size: 1.6rem;
   }
 
   .actions {
@@ -163,5 +226,54 @@
 
   .actions button {
     width: 100%;
+  }
+}
+
+/* ===============================
+ (≤ 480px)
+================================ */
+@media (max-width: 480px) {
+
+  .overlay {
+    padding: 0; /* fullscreen real */
+  }
+
+  .modal {
+    max-width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    padding: 20px;
+  }
+
+  .title {
+    font-size: 1.4rem;
+  }
+
+  .field label {
+    font-size: 0.9rem;
+  }
+
+  .dropZone {
+    padding: 20px;
+  }
+}
+
+/* ===============================
+   ANIMATIONS
+================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }

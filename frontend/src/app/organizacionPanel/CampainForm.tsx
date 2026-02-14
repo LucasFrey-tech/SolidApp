@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { CampaignCreateRequest } from "@/API/types/campañas/campaigns";
 import { CampaignEstado } from "@/API/types/campañas/enum";
-import styles from "@/styles/campaignPanel.module.css";
-import { CampaignFormValues } from "./page";
+import styles from "@/styles/Paneles/couponForm.module.css";
 
+type CampaignFormValues = Omit<
+  CampaignCreateRequest,
+  "id_organizacion"
+> & {
+  imagen?: File; 
+};
 
 type Props = {
-  initialValues?: CampaignFormValues;
+  initialValues?: Partial<CampaignFormValues>;
   onSubmit: (data: CampaignFormValues) => void;
   onCancel: () => void;
 };
@@ -24,51 +27,56 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<CampaignFormValues>({
     defaultValues: initialValues ?? {
       titulo: "",
       descripcion: "",
-      objetivo: 0,
+      objetivo: 1,
       fecha_Inicio: "",
       fecha_Fin: "",
+      imagen: undefined,
+      estado: CampaignEstado.PENDIENTE,
     },
   });
 
-  /* ===============================
-     RESET AL EDITAR
-  ================================ */
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleFile = (file: File) => {
+    setValue("imagen", file as any);
+    setPreview(URL.createObjectURL(file));
+  };
 
   useEffect(() => {
     if (initialValues) {
       reset(initialValues);
-    } else {
-      reset({
-        titulo: "",
-        descripcion: "",
-        objetivo: 1,
-        fecha_Inicio: "",
-        fecha_Fin: "",
-      });
     }
   }, [initialValues, reset]);
 
-  const submit = async (data: CampaignFormValues) => {
+  const submit = (data: CampaignFormValues) => {
     onSubmit(data);
   };
 
   return (
     <form className={styles.form} onSubmit={handleSubmit(submit)}>
+      <h3 className={styles.title}>
+        {isEditMode ? "Editar Campaña" : "Nueva Campaña"}
+      </h3>
+
+      {/* TÍTULO */}
       <div className={styles.field}>
         <label>Título</label>
-        <Input {...register("titulo", { required: "Obligatorio" })} />
+        <input {...register("titulo", { required: "Obligatorio" })} />
         {errors.titulo && (
           <span className={styles.error}>{errors.titulo.message}</span>
         )}
       </div>
 
+      {/* DESCRIPCIÓN */}
       <div className={styles.field}>
         <label>Descripción</label>
-        <Textarea
+        <textarea
           rows={3}
           {...register("descripcion", { required: "Obligatorio" })}
         />
@@ -77,29 +85,28 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
         )}
       </div>
 
+      {/* FECHA INICIO */}
       <div className={styles.field}>
         <label>Fecha Inicio</label>
-        <Input
+        <input
           type="date"
-          {...register("fecha_Inicio", {
-            required: "Obligatorio",
-          })}
+          {...register("fecha_Inicio", { required: "Obligatorio" })}
         />
       </div>
 
+      {/* FECHA FIN */}
       <div className={styles.field}>
         <label>Fecha Fin</label>
-        <Input
+        <input
           type="date"
-          {...register("fecha_Fin", {
-            required: "Obligatorio",
-          })}
+          {...register("fecha_Fin", { required: "Obligatorio" })}
         />
       </div>
 
+      {/* OBJETIVO */}
       <div className={styles.field}>
         <label>Objetivo</label>
-        <Input
+        <input
           type="number"
           {...register("objetivo", {
             required: "Obligatorio",
@@ -112,6 +119,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
         )}
       </div>
 
+      {/* ESTADO (solo en edición) */}
       {isEditMode && (
         <div className={styles.field}>
           <label>Estado</label>
@@ -125,20 +133,64 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
               </option>
             ))}
           </select>
-
-          {errors.estado && (
-            <span className={styles.error}>{errors.estado.message}</span>
-          )}
         </div>
       )}
 
+      {/* IMAGEN */}
+      <div className={styles.field}>
+        <label>Imagen</label>
+
+        <div
+          className={styles.dropZone}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+              handleFile(e.dataTransfer.files[0]);
+            }
+          }}
+        >
+          {preview ? (
+            <img src={preview} className={styles.previewImage} />
+          ) : (
+            <p>Arrastrá una imagen acá</p>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className={styles.exploreButton}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          Explorar archivos
+        </button>
+
+        <input
+          type="file"
+          accept="image/*"
+          hidden
+          ref={fileInputRef}
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              handleFile(e.target.files[0]);
+            }
+          }}
+        />
+      </div>
+
+      {/* BOTONES */}
       <div className={styles.actions}>
-        <Button variant="outline" type="button" onClick={onCancel}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className={styles.dangerButton}
+        >
           Cancelar
-        </Button>
-        <Button type="submit">
-          {initialValues ? "Guardar cambios" : "Agregar"}
-        </Button>
+        </button>
+
+        <button type="submit" className={styles.primaryButton}>
+          {isEditMode ? "Guardar" : "Crear"}
+        </button>
       </div>
     </form>
   );

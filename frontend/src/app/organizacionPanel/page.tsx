@@ -3,55 +3,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { Edit2 } from "lucide-react";
 import Swal from "sweetalert2";
-import styles from "@/styles/organizationPanel.module.css";
-import formStyles from "@/styles/campaignPanel.module.css";
+import styles from "@/styles/Paneles/organizationPanel.module.css";
 import { CampaignForm } from "./CampainForm";
 import { BaseApi } from "@/API/baseApi";
 import { useUser } from "../context/UserContext";
-import { CampaignEstado } from "@/API/types/campañas/enum";
+import Modal from "@/components/ui/Modal";
 
-/* ===============================
-   TIPOS
-================================ */
-type Campaign = {
-  id: number;
-  titulo: string;
-  descripcion: string;
-  objetivo: number;
-
-  fecha_Inicio: string;
-  fecha_Fin: string;
-
-  fecha_Registro: string;
-  estado?: CampaignEstado;
-};
-
-export type CampaignFormValues = {
-  titulo: string;
-  descripcion: string;
-  objetivo: number;
-  fecha_Inicio: string;
-  fecha_Fin: string;
-  estado?: CampaignEstado;
-};
+import {
+  Campaign,
+  CampaignUpdateRequest,
+} from "@/API/types/campañas/campaigns";
 
 type Donation = {
   id: number;
   descripcion: string;
   puntos: number;
-
   userId: number;
   correo: string;
-
   campaignId: number;
   campaignTitulo: string;
 };
 
 type ViewMode = "campaigns" | "donations";
 
-/* ===============================
-   COMPONENTE
-================================ */
 export default function OrganizationCampaignsPage() {
   const [view, setView] = useState<ViewMode>("campaigns");
 
@@ -67,21 +41,25 @@ export default function OrganizationCampaignsPage() {
   const [donationsTotalPages, setDonationsTotalPages] = useState(1);
 
   const [open, setOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [editingCampaign, setEditingCampaign] =
+    useState<Campaign | null>(null);
 
   const api = useMemo(() => new BaseApi(), []);
 
   /* ===============================
-     CAMPAÑAS PÁGINADAS
+     CAMPAÑAS
   ================================ */
+
   const fetchCampaigns = async () => {
     if (!organizacionId) return;
 
-    const response = await api.organizacion.getOrganizationCampaignsPaginated(
-      organizacionId,
-      campaignsPage,
-      8,
-    );
+    const response =
+      await api.organizacion.getOrganizationCampaignsPaginated(
+        organizacionId,
+        campaignsPage,
+        8
+      );
+
     setCampaigns(response.items);
     setCampaignsTotalPages(response.totalPages);
   };
@@ -91,60 +69,31 @@ export default function OrganizationCampaignsPage() {
   }, [organizacionId, campaignsPage]);
 
   /* ===============================
-     HELPERS
+     DONACIONES
   ================================ */
-  const toFormValues = (campaign: Campaign): CampaignFormValues => ({
-    titulo: campaign.titulo,
-    descripcion: campaign.descripcion,
-    objetivo: campaign.objetivo,
-    fecha_Inicio: campaign.fecha_Inicio,
-    fecha_Fin: campaign.fecha_Fin,
-    estado: campaign.estado,
-  });
 
-  /* ===============================
-     CREAR O ACTUALIZAR CAMPAÑAS
-  ================================ */
-  const handleSubmitCampaign = async (data: CampaignFormValues) => {
+  const fetchDonations = async () => {
     if (!organizacionId) return;
 
-    try {
-      if (editingCampaign) {
-        await api.campaign.update(editingCampaign.id, {
-          titulo: data.titulo,
-          descripcion: data.descripcion,
-          objetivo: data.objetivo,
-          fecha_Inicio: data.fecha_Inicio,
-          fecha_Fin: data.fecha_Fin,
-          estado: data.estado,
-        });
+    const limit = 8;
 
-        Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
-      } else {
-        await api.campaign.create({
-          titulo: data.titulo,
-          descripcion: data.descripcion,
-          objetivo: data.objetivo,
-          fecha_Inicio: data.fecha_Inicio,
-          fecha_Fin: data.fecha_Fin,
-          id_organizacion: organizacionId,
-        });
+    const response =
+      await api.organizacion.getDonationsPaginatedByOrganizacion(
+        organizacionId,
+        donationsPage,
+        limit
+      );
 
-        Swal.fire("Creada", "Campaña creada con éxito", "success");
-      }
-
-      setOpen(false);
-      setEditingCampaign(null);
-      fetchCampaigns();
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "No se pudo guardar la campaña", "error");
-    }
+    setDonations(response.items);
+    setDonationsTotalPages(Math.ceil(response.total / limit));
   };
 
-  /* ===============================
-     DONACIONES (ACCIONES)
-  ================================ */
+  useEffect(() => {
+    if (view === "donations") {
+      fetchDonations();
+    }
+  }, [organizacionId, donationsPage, view]);
+
   const handleAcceptDonation = (donation: Donation) => {
     Swal.fire({
       title: "¿Aceptar donación?",
@@ -177,29 +126,54 @@ export default function OrganizationCampaignsPage() {
     });
   };
 
-  const fetchDonations = async () => {
+  /* ===============================
+     CREAR / EDITAR CAMPAÑA
+  ================================ */
+
+  const handleSubmitCampaign = async (data: any) => {
     if (!organizacionId) return;
-    const limit = 8;
-    const response = await api.organizacion.getDonationsPaginatedByOrganizacion(
-      organizacionId,
-      donationsPage,
-      limit,
-    );
 
-    setDonations(response.items);
-    setDonationsTotalPages(Math.ceil(response.total / limit));
+    try {
+      if (editingCampaign) {
+        const updateData: CampaignUpdateRequest = {
+          titulo: data.titulo,
+          descripcion: data.descripcion,
+          objetivo: data.objetivo,
+          fecha_Inicio: data.fecha_Inicio,
+          fecha_Fin: data.fecha_Fin,
+          estado: data.estado,
+        };
+
+        await api.campaign.update(editingCampaign.id, updateData);
+
+        Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
+      } else {
+        await api.campaign.create({
+          titulo: data.titulo,
+          descripcion: data.descripcion,
+          objetivo: data.objetivo,
+          fecha_Inicio: data.fecha_Inicio,
+          fecha_Fin: data.fecha_Fin,
+          id_organizacion: organizacionId,
+          imagen: ""
+        });
+
+        Swal.fire("Creada", "Campaña creada con éxito", "success");
+      }
+
+      setOpen(false);
+      setEditingCampaign(null);
+      fetchCampaigns();
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "No se pudo guardar la campaña", "error");
+    }
   };
-
-  useEffect(() => {
-  if (view === "donations") {
-    fetchDonations();
-  }
-}, [organizacionId, donationsPage, view]);
-
 
   /* ===============================
      RENDER
   ================================ */
+
   return (
     <div className={styles.container}>
       {/* HEADER */}
@@ -246,27 +220,51 @@ export default function OrganizationCampaignsPage() {
           CAMPAÑAS
       ================================ */}
       {view === "campaigns" && (
-        <ul className={styles.list}>
-          {campaigns.map((c) => (
-            <li key={c.id} className={styles.card}>
-              <div>
-                <strong>{c.titulo}</strong> — {c.descripcion} — Objetivo:{" "}
-                {c.objetivo} - Estado: {c.estado}
-              </div>
-              <Edit2
-                className={styles.editIcon}
-                onClick={() => {
-                  setEditingCampaign(c);
-                  setOpen(true);
-                }}
-              />
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className={styles.list}>
+            {campaigns.map((c) => (
+              <li key={c.id} className={styles.card}>
+                <div>
+                  <strong>{c.titulo}</strong> — {c.descripcion} — Objetivo:{" "}
+                  {c.objetivo} - Estado: {c.estado}
+                </div>
+
+                <Edit2
+                  className={styles.editIcon}
+                  onClick={() => {
+                    setEditingCampaign(c);
+                    setOpen(true);
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
+
+          {/* PAGINACIÓN CAMPAÑAS */}
+          <div className={styles.pagination}>
+            <button
+              disabled={campaignsPage === 1}
+              onClick={() => setCampaignsPage((p) => p - 1)}
+            >
+              Anterior
+            </button>
+
+            <span>
+              Página {campaignsPage} de {campaignsTotalPages}
+            </span>
+
+            <button
+              disabled={campaignsPage === campaignsTotalPages}
+              onClick={() => setCampaignsPage((p) => p + 1)}
+            >
+              Siguiente
+            </button>
+          </div>
+        </>
       )}
 
       {/* ===============================
-          DONACIONES (HORIZONTAL)
+          DONACIONES
       ================================ */}
       {view === "donations" && (
         <>
@@ -309,7 +307,7 @@ export default function OrganizationCampaignsPage() {
             </tbody>
           </table>
 
-          {/* PAGINADOR */}
+          {/* PAGINACIÓN DONACIONES */}
           <div className={styles.pagination}>
             <button
               disabled={donationsPage === 1}
@@ -332,28 +330,23 @@ export default function OrganizationCampaignsPage() {
         </>
       )}
 
-      {/* ===============================
-          MODAL
-      ================================ */}
-      {open && (
-        <div className={formStyles.modalOverlay} onClick={() => setOpen(false)}>
-          <div
-            className={formStyles.modal}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <CampaignForm
-              initialValues={
-                editingCampaign ? toFormValues(editingCampaign) : undefined
-              }
-              onSubmit={handleSubmitCampaign}
-              onCancel={() => {
-                setOpen(false);
-                setEditingCampaign(null);
-              }}
-            />
-          </div>
-        </div>
-      )}
+      {/* MODAL */}
+      <Modal
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          setEditingCampaign(null);
+        }}
+      >
+        <CampaignForm
+          initialValues={editingCampaign ?? undefined}
+          onSubmit={handleSubmitCampaign}
+          onCancel={() => {
+            setOpen(false);
+            setEditingCampaign(null);
+          }}
+        />
+      </Modal>
     </div>
   );
 }
