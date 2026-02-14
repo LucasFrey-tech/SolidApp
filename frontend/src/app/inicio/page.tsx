@@ -3,7 +3,8 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import styles from '@/styles/inicio.module.css'
+import styles from '@/styles/Inicio/inicio.module.css'
+import RankingCard from '@/components/pages/inicio/ranking'
 
 export default function Home() {
   return (
@@ -78,6 +79,12 @@ export default function Home() {
 
       </section>
 
+ {/* ========== SECCIÓN DE RANKING ========== */}
+      <section id="ranking" className={styles.rankingSection}>
+        
+        <h2 className={styles.rankingTitle}>Top 10 Donadores</h2>
+         <RankingCard />
+      </section>
     </div>
   )
 }

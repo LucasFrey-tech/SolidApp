@@ -8,7 +8,7 @@ import Image from "next/image";
 import Login from "@/components/pages/login/login";
 import Registro from "@/components/Registro/registro";
 
-import styles from "@/styles/login.module.css";
+import styles from "@/styles/login-registro/login.module.css";
 
 export default function LogInPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");

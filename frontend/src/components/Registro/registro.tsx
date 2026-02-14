@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { z } from "zod";
 import Image from "next/image";
-import styles from "../../styles/registro.module.css";
+import styles from "../../styles/login-registro/registro.module.css";
 import { BaseApi } from "@/API/baseApi";
 import { NumericInput } from "../Utils/NumericInputProp";
 

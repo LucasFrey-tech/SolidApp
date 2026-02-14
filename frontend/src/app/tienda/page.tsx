@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import styles from '@/styles/tiendaTabs.module.css';
+import styles from '@/styles/Tienda/tiendaTabs.module.css';
 
 import Tienda from '@/components/pages/tienda/Tienda';
 import Empresas from '@/components/pages/tienda/Empresa';

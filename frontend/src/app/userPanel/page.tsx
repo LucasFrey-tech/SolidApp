@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import styles from "@/styles/userPanel.module.css";
+import styles from "@/styles/UserPanel/userPanel.module.css";
 
 import MyAccount from "@/components/pages/perfil/MyAccount";
 import UserAndPass from "@/components/pages/perfil/User&Pass";

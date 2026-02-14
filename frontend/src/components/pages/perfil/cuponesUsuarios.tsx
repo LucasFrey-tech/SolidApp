@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import styles from '../../../styles/userCoupons.module.css';
+import styles from '../../../styles/UserPanel/usuario/userCoupons.module.css';
 import { useUser } from '@/app/context/UserContext';
 import { getUserCoupons, useCoupon, UsuarioBeneficio } from '@/API/class/usuarioBeneficios.api';
 

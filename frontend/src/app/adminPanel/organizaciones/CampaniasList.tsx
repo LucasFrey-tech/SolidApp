@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import styles from '@/styles/adminUsersPanel.module.css';
+import styles from '@/styles/Paneles/adminUsersPanel.module.css';
 import { BaseApi } from '@/API/baseApi';
 
 type Campania = {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import styles from "@/styles/donar.module.css";
+import styles from "@/styles/Donar/donar.module.css";
 import { Campaign, CampaignImagen } from "@/API/types/campañas/campaigns";
 import { BaseApi } from "@/API/baseApi";
 

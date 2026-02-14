@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Swal from 'sweetalert2';
-import styles from '@/styles/canjeModal.module.css';
+import styles from '@/styles/Tienda/canjeModal.module.css';
 
 import { Beneficio } from '@/API/types/beneficios';
 

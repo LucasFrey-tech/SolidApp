@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { BaseApi } from '@/API/baseApi';
 import type { RankingItem } from '@/API/types/ranking';
-import styles from '@/styles/ranking.module.css'
+import styles from '@/styles/Ranking/ranking.module.css'
 
 export default function RankingPage() {
   const [ranking, setRanking] = useState<RankingItem[]>([]);

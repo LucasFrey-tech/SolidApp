@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import styles from "@/styles/historialDonaciones.module.css";
+import styles from "@/styles/UserPanel/usuario/historialDonaciones.module.css";
 
 /* ===============================
    TIPOS

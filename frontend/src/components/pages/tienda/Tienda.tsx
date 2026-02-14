@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import styles from '@/styles/tienda.module.css';
+import styles from '@/styles/Tienda/tienda.module.css';
 
 import { BaseApi } from '@/API/baseApi';
 import { Beneficio } from '@/API/types/beneficios';
@@ -10,7 +10,7 @@ import { EmpresaImagen } from '@/API/types/empresas';
 
 import { isBeneficioVisible } from '@/components/Utils/beneficiosUtils';
 
-import CanjeModal from '@/components/pages/CanjeModal';
+import CanjeModal from '@/components/pages/tienda/CanjeModal';
 
 const LIMIT = 10;
 

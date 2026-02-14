@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "@/styles/myAccountMenu.module.css";
+import styles from "@/styles/UserPanel/usuario/myAccountMenu.module.css";
 import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";

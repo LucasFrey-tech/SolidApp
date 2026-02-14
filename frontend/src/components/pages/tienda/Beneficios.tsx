@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import styles from '@/styles/beneficios.module.css';
+import styles from '@/styles/Tienda/beneficios.module.css';
 
 import { BeneficiosService } from '@/API/class/beneficios';
 import { Beneficio } from '@/API/types/beneficios';
 
-import CanjeModal from '@/components/pages/CanjeModal';
+import CanjeModal from '@/components/pages/tienda/CanjeModal';
 
 /* ==================== HELPERS ==================== */
-import { isBeneficioVisible } from '../Utils/beneficiosUtils';
+import { isBeneficioVisible } from '../../Utils/beneficiosUtils';
 
 /* ==================== PROPS ==================== */
 interface Props {

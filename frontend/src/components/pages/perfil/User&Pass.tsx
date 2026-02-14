@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "@/styles/user&pass.module.css";
+import styles from "@/styles/UserPanel/usuario/user&pass.module.css";
 import { useEffect, useState, useMemo } from "react";
 import { BaseApi } from "@/API/baseApi";
 import { useUser } from "@/app/context/UserContext";

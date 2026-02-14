@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import styles from "@/styles/couponForm.module.css";
+import styles from "@/styles/Paneles/couponForm.module.css";
 
 type Coupon = {
   id: number;

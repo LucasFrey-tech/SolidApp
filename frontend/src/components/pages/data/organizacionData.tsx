@@ -1,7 +1,7 @@
 "use client";
 
 import { BaseApi } from "@/API/baseApi";
-import styles from "@/styles/data/organizacionData.module.css";
+import styles from '@/styles/UserPanel/data/organizacionData.module.css';
 import { useCallback, useEffect, useState } from "react";
 import {
   Organizacion,

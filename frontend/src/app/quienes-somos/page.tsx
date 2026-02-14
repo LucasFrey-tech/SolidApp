@@ -1,4 +1,4 @@
-import styles from "@/styles/sobre-solidapp.module.css";
+import styles from "@/styles/Quienes-Somos/sobre-solidapp.module.css";
 import {
   FaPeopleCarryBox,
   FaListCheck,

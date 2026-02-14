@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import styles from '@/styles/adminUsersPanel.module.css';
+import styles from '@/styles/Paneles/adminUsersPanel.module.css';
 import EmpresasList from './EmpresasList';
 import CuponesEmpresaList from './CuponesEmpresaList';
 

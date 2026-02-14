@@ -2,7 +2,7 @@
 
 import { BaseApi } from "@/API/baseApi";
 import { NumericInput } from "../../Utils/NumericInputProp";
-import styles from "@/styles/data/empresaData.module.css";
+import styles from '@/styles/UserPanel/data/empresaData.module.css';
 import { useCallback, useEffect, useState } from "react";
 import { Empresa, EmpresaUpdateRequest } from "@/API/types/empresas";
 

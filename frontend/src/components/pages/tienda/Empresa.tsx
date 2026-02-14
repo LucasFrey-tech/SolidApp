@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import styles from '@/styles/empresaTienda.module.css';
+import styles from '@/styles/Tienda/empresaTienda.module.css';
 
 import { Empresa, EmpresaImagen } from '@/API/types/empresas';
 import { BaseApi } from '@/API/baseApi';
-import BeneficiosPanel from '@/components/pages/Beneficios';
+import BeneficiosPanel from '@/components/pages/tienda/Beneficios';
 
 // ==================== CONSTANTES ====================
 const PLACEHOLDER_IMG = '/img/placeholder.svg';

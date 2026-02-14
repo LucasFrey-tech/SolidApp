@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import styles from "@/styles/donarDetalle.module.css";
+import styles from "@/styles/Donar/donarDetalle.module.css";
 
 export default function DonacionDetallePage({
   params,
