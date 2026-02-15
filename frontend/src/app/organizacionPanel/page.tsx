@@ -53,16 +53,18 @@ export default function OrganizationCampaignsPage() {
   const fetchCampaigns = async () => {
     if (!organizacionId) return;
 
+    const limit = 8;
+
     const response = await api.organizacion.getOrganizationCampaignsPaginated(
       organizacionId,
       campaignsPage,
-      8,
+      limit,
     );
 
     console.log("RESPONSE CAMPAIGNS:", response.items)
 
     setCampaigns(response.items);
-    setCampaignsTotalPages(response.totalPages);
+    setCampaignsTotalPages(Math.ceil(response.total / limit));
   };
 
   useEffect(() => {
