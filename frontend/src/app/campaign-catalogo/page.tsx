@@ -99,7 +99,7 @@ export default function CampaignsCatalogoPage() {
                   <p className={styles.description}>{campaign.descripcion}</p>
 
                   <div className={styles.meta}>
-                    <span>{campaign.objetivo}</span>
+                    <span>Objetivo: {campaign.objetivo}</span>
                   </div>
                 </div>
 
