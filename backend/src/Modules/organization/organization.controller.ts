@@ -27,6 +27,7 @@ import { ResponseOrganizationDto } from './dto/response_organization.dto';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 import { ResponseOrganizationPaginatedDto } from './dto/response_organization_paginated.dto';
 import { ResponseCampaignsPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
+import { PaginatedDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
 
 /**
  * Controlador encargado de gestionar las operaciones HTTP
@@ -46,9 +47,7 @@ import { ResponseCampaignsPaginatedDto } from '../campaign/dto/response_campaign
 @ApiTags('Organizaciones')
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(
-    private readonly organizationService: OrganizationsService,
-  ) {}
+  constructor(private readonly organizationService: OrganizationsService) {}
 
   /**
    * Obtiene el listado completo de organizaciones activas.
@@ -154,6 +153,41 @@ export class OrganizationsController {
     @Query('limit') limit = 10,
   ): Promise<ResponseCampaignsPaginatedDto> {
     return await this.organizationService.findOrganizationCampaignsPaginated(
+      organizacionId,
+      Number(page),
+      Number(limit),
+    );
+  }
+
+  /**
+   * Obtiene las donaciones a una organización de manera paginada.
+   *
+   * @param organizacionId ID de la organización
+   * @param page Número de página
+   * @param limit Cantidad por página
+   *
+   * @returns Donaciones paginadas de la organización
+   */
+  @Get(':id/donaciones/paginated/')
+  @ApiOperation({
+    summary: 'Listar donaciones a la organización (paginado)',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID de la organización',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Listado paginado de donaciones',
+    type: PaginatedDonationsResponseDto,
+  })
+  async findOrganizationDonatiosPaginated(
+    @Param('id', ParseIntPipe) organizacionId: number,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ): Promise<PaginatedDonationsResponseDto> {
+    return await this.organizationService.findOrganizationDonationsPaginated(
       organizacionId,
       Number(page),
       Number(limit),

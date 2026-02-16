@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { CampaignModule } from '../campaign/campaign.module';
+import { DonationModule } from '../donation/donation.module';
 
 /**
  * OrganizationModule
@@ -59,6 +60,7 @@ import { CampaignModule } from '../campaign/campaign.module';
      * - Obtener campañas asociadas a una organización.
      */
     CampaignModule,
+    DonationModule,
   ],
 
   /**

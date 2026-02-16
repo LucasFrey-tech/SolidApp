@@ -16,6 +16,7 @@ import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
 import { CampaignsService } from '../campaign/campaign.service';
+import { DonationsService } from '../donation/donation.service';
 
 /**
  * ============================================================
@@ -51,6 +52,7 @@ export class OrganizationsService {
     @InjectRepository(Organizations)
     private readonly organizationRepository: Repository<Organizations>,
     private readonly campaignService: CampaignsService,
+    private readonly donationService: DonationsService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -121,6 +123,18 @@ export class OrganizationsService {
     );
   }
 
+  async findOrganizationDonationsPaginated(
+    organizacionId: number,
+    page: number,
+    limit: number,
+  ) {
+    return this.donationService.findAllPaginatedByOrganizacion(
+      organizacionId,
+      page,
+      limit,
+    );
+  }
+
   /**
    * Obtiene una organización por ID.
    *
@@ -137,9 +151,7 @@ export class OrganizationsService {
     });
 
     if (!organization) {
-      throw new NotFoundException(
-        `Organización con ID ${id} no encontrada`,
-      );
+      throw new NotFoundException(`Organización con ID ${id} no encontrada`);
     }
 
     return this.mapToResponseDto(organization);
@@ -161,9 +173,7 @@ export class OrganizationsService {
     });
 
     if (!organizacion) {
-      throw new NotFoundException(
-        `Usuario con email ${correo} no encontrado`,
-      );
+      throw new NotFoundException(`Usuario con email ${correo} no encontrado`);
     }
 
     return organizacion;
@@ -187,9 +197,7 @@ export class OrganizationsService {
     });
 
     if (existente) {
-      throw new ConflictException(
-        'La organización ya se encuentra registrada',
-      );
+      throw new ConflictException('La organización ya se encuentra registrada');
     }
 
     const organization = this.organizationRepository.create({
@@ -227,9 +235,7 @@ export class OrganizationsService {
     });
 
     if (!organization) {
-      throw new NotFoundException(
-        `Organización con ID ${id} no encontrada`,
-      );
+      throw new NotFoundException(`Organización con ID ${id} no encontrada`);
     }
 
     Object.assign(organization, updateDto);
@@ -256,9 +262,7 @@ export class OrganizationsService {
     });
 
     if (!organization) {
-      throw new NotFoundException(
-        `Organización con ID ${id} no encontrada`,
-      );
+      throw new NotFoundException(`Organización con ID ${id} no encontrada`);
     }
 
     organization.deshabilitado = true;
@@ -286,15 +290,11 @@ export class OrganizationsService {
     });
 
     if (!organization) {
-      throw new NotFoundException(
-        `Organización con ID ${id} no encontrada`,
-      );
+      throw new NotFoundException(`Organización con ID ${id} no encontrada`);
     }
 
     if (!organization.deshabilitado) {
-      throw new BadRequestException(
-        'La organización ya está activa',
-      );
+      throw new BadRequestException('La organización ya está activa');
     }
 
     organization.deshabilitado = false;
@@ -333,18 +333,12 @@ export class OrganizationsService {
     let cambiosRealizados = false;
 
     if (dto.correo && dto.correo !== organizacion.correo) {
-      const organizacionExistente =
-        await this.organizationRepository.findOne({
-          where: { correo: dto.correo },
-        });
+      const organizacionExistente = await this.organizationRepository.findOne({
+        where: { correo: dto.correo },
+      });
 
-      if (
-        organizacionExistente &&
-        organizacionExistente.id !== id
-      ) {
-        throw new ConflictException(
-          'El email ya está en uso por otro usuario',
-        );
+      if (organizacionExistente && organizacionExistente.id !== id) {
+        throw new ConflictException('El email ya está en uso por otro usuario');
       }
 
       organizacion.correo = dto.correo;
@@ -364,9 +358,7 @@ export class OrganizationsService {
       );
 
       if (!passwordValida) {
-        throw new UnauthorizedException(
-          'Contraseña actual incorrecta',
-        );
+        throw new UnauthorizedException('Contraseña actual incorrecta');
       }
 
       const hash = await bcrypt.hash(dto.passwordNueva, 10);
@@ -379,8 +371,7 @@ export class OrganizationsService {
       await this.organizationRepository.save(organizacion);
     }
 
-    const updated =
-      await this.organizationRepository.save(organizacion);
+    const updated = await this.organizationRepository.save(organizacion);
 
     const payload = {
       sub: updated.id,
