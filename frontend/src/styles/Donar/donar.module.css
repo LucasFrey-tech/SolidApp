@@ -19,6 +19,7 @@
 .title {
   font-size: clamp(32px, 4vw, 44px);
   font-weight: 800;
+  color: red;
   margin-bottom: 8px;
 }
 
@@ -37,6 +38,7 @@
 /* ===== CARD ===== */
 .card {
   background: #ffffff;
+  text-align: center;
   border-radius: 16px;
   overflow: hidden;
   display: flex;
@@ -65,10 +67,14 @@
 
 .cardTitle {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 8px;
 }
-
+.meta {
+  font-weight: 800;
+  color: #056cfc;
+  margin-bottom: 12px;
+}
 .description {
   font-size: 14px;
   color: #475569;

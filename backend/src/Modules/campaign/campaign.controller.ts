@@ -39,7 +39,7 @@ import { SettingsService } from '../../common/settings/settings.service';
 @ApiTags('Campañas')
 @Controller('campaigns')
 export class CampaignsController {
-  constructor(private readonly campaignService: CampaignsService) {}
+  constructor(private readonly campaignService: CampaignsService) { }
 
   /**
    * Obtiene todas las Campañas disponibles.
@@ -127,6 +127,7 @@ export class CampaignsController {
    * Crea una nueva Campaña en el sistema.
    *
    * @param {CreateCampaignsDto} createCampaignsDto - Datos de la Campaña a crear
+   * @param {Express.Multer.File} files - Imagenes de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña creada
    */
   @Post()
@@ -149,10 +150,13 @@ export class CampaignsController {
     status: 404,
     description: 'Campaña Solidaria no Encontrada',
   })
+  @UseInterceptors(FilesInterceptor('files', 10))
   async create(
     @Body() createCampaignsDto: CreateCampaignsDto,
+    @UploadedFiles(new ImagesArrayValidationPipe()) files: Express.Multer.File[]
   ): Promise<ResponseCampaignsDto> {
-    return this.campaignService.create(createCampaignsDto);
+    const imagenes = files.map(x => SettingsService.getStaticResourceUrl(x.filename));
+    return this.campaignService.create(createCampaignsDto, imagenes);
   }
 
   /**
@@ -182,7 +186,7 @@ export class CampaignsController {
   @UseInterceptors(FilesInterceptor('files', 10))
   async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateCampaignsDto: UpdateCampaignsDto, 
+    @Body() updateCampaignsDto: UpdateCampaignsDto,
     @UploadedFiles(new ImagesArrayValidationPipe()) files: Express.Multer.File[]
   ): Promise<ResponseCampaignsDto> {
     const imagenes = files.map(x => SettingsService.getStaticResourceUrl(x.filename));

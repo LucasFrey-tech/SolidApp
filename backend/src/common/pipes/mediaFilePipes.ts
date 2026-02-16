@@ -2,7 +2,7 @@ import { ArgumentMetadata, Injectable, PipeTransform, BadRequestException } from
 
 @Injectable()
 export class ImageValidationPipe implements PipeTransform {
-    readonly maxSize: number = 2500;
+    readonly maxSize: number = 10 * 1024 * 1024;
     readonly allowedTypes: RegExp = /\.(jpg|jpeg|png|svg)$/;
     
     transform(value: any, metadata: ArgumentMetadata) {
@@ -24,7 +24,7 @@ export class ImageValidationPipe implements PipeTransform {
 
 @Injectable()
 export class NullableImageValidationPipe implements PipeTransform {
-    readonly maxSize: number = 2500;
+    readonly maxSize: number = 10 * 1024 * 1024;
     readonly allowedTypes: RegExp = /\.(jpg|jpeg|png|svg)$/;
     
     transform(value: any, metadata: ArgumentMetadata) {
@@ -132,7 +132,7 @@ export class NullablePdfValidationPipe implements PipeTransform {
 
 @Injectable()
 export class ImagesArrayValidationPipe implements PipeTransform {
-    readonly maxSize: number = 2500;
+    readonly maxSize: number = 10 * 1024 * 1024;
     readonly allowedTypes: RegExp = /\.(jpg|jpeg|png|svg)$/;
     
     transform(value: any, metadata: ArgumentMetadata) {

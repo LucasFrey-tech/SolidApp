@@ -10,7 +10,7 @@ export type CampaignFormValues = Omit<
   CampaignCreateRequest,
   "id_organizacion"
 > & {
-  imagen?: File; 
+  imagenes?: File[];
 };
 
 type Props = {
@@ -35,18 +35,55 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
       objetivo: 1,
       fecha_Inicio: "",
       fecha_Fin: "",
-      imagen: undefined,
+      imagenes: [],
       estado: CampaignEstado.PENDIENTE,
     },
   });
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
 
-  const handleFile = (file: File) => {
-    setValue("imagen", file as any);
-    setPreview(URL.createObjectURL(file));
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+
+  // 🔥 Agregar archivos
+  const handleFiles = (files: FileList) => {
+    const newFiles = Array.from(files);
+
+    const updatedFiles = [...selectedFiles, ...newFiles];
+
+    setSelectedFiles(updatedFiles);
+    setValue("imagenes", updatedFiles);
+
+    const updatedPreviews = updatedFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    setPreviews(updatedPreviews);
   };
+
+  // 🔥 Eliminar imagen por índice
+  const removeImage = (index: number) => {
+    const updatedFiles = selectedFiles.filter((_, i) => i !== index);
+
+    // liberar memoria de la imagen eliminada
+    URL.revokeObjectURL(previews[index]);
+
+    setSelectedFiles(updatedFiles);
+    setValue("imagenes", updatedFiles);
+
+    const updatedPreviews = updatedFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    setPreviews(updatedPreviews);
+  };
+
+  // 🔥 Limpiar todas las URLs al desmontar
+  useEffect(() => {
+    return () => {
+      previews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previews]);
 
   useEffect(() => {
     if (initialValues) {
@@ -119,7 +156,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
         )}
       </div>
 
-      {/* ESTADO (solo en edición) */}
+      {/* ESTADO */}
       {isEditMode && (
         <div className={styles.field}>
           <label>Estado</label>
@@ -136,24 +173,40 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
         </div>
       )}
 
-      {/* IMAGEN */}
+      {/* IMÁGENES */}
       <div className={styles.field}>
-        <label>Imagen</label>
+        <label>Imágenes</label>
 
         <div
           className={styles.dropZone}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
             e.preventDefault();
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-              handleFile(e.dataTransfer.files[0]);
+            if (e.dataTransfer.files) {
+              handleFiles(e.dataTransfer.files);
             }
           }}
         >
-          {preview ? (
-            <img src={preview} className={styles.previewImage} />
+          {previews.length > 0 ? (
+            <div className={styles.previewContainer}>
+              {previews.map((src, index) => (
+                <div key={index} className={styles.previewWrapper}>
+                  <img
+                    src={src}
+                    className={styles.previewImage}
+                  />
+                  <button
+                    type="button"
+                    className={styles.removeButton}
+                    onClick={() => removeImage(index)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
           ) : (
-            <p>Arrastrá una imagen acá</p>
+            <p>Arrastrá imágenes acá</p>
           )}
         </div>
 
@@ -168,11 +221,12 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
         <input
           type="file"
           accept="image/*"
+          multiple
           hidden
           ref={fileInputRef}
           onChange={(e) => {
-            if (e.target.files && e.target.files[0]) {
-              handleFile(e.target.files[0]);
+            if (e.target.files) {
+              handleFiles(e.target.files);
             }
           }}
         />
