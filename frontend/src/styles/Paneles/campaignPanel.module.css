@@ -10,7 +10,7 @@
   align-items: center;
   justify-content: center;
 
-  padding: 16px; /* 👈 evita que toque bordes en mobile */
+  padding: 16px; 
 
   background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(6px);
@@ -169,7 +169,7 @@
   margin-top: 12px;
 }
 .primaryButton {
-  background: #16a34a; /* verde */
+  background: #16a34a; /* 👈 verde */
   color: white;
   border: none;
   padding: 10px 16px;
@@ -223,7 +223,7 @@
 /* =============================== */
 
 .dangerButton {
-  background: #dc2626; /* rojo */
+  background: #dc2626; /* 👈 rojo */
   color: white;
   border: none;
   padding: 10px 16px;
@@ -268,7 +268,7 @@
 @media (max-width: 480px) {
 
   .overlay {
-    padding: 0; /* fullscreen real */
+    padding: 0;
   }
 
   .modal {
