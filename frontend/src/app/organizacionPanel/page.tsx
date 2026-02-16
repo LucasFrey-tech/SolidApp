@@ -137,6 +137,7 @@ export default function OrganizationCampaignsPage() {
 
     try {
       if (editingCampaign) {
+        // EDITAR CAMPAÑA
         const updateData: CampaignUpdateRequest = {
           titulo: data.titulo,
           descripcion: data.descripcion,
@@ -146,21 +147,24 @@ export default function OrganizationCampaignsPage() {
           estado: data.estado,
         };
 
-        await api.campaign.update(editingCampaign.id, updateData);
+        const files = data.imagen ? [data.imagen] : [];
+        await api.campaign.update(editingCampaign.id, updateData, files);
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
       } else {
+        // CREAR CAMPAÑA
         const createData: CampaignCreateRequest = {
           titulo: data.titulo,
           descripcion: data.descripcion,
           objetivo: data.objetivo,
           fecha_Inicio: data.fecha_Inicio,
           fecha_Fin: data.fecha_Fin,
-          estado: data.estado,
-          imagen: data.imagen,
           id_organizacion: organizacionId,
         };
-        await api.campaign.create(createData);
+
+        const files = data.imagen ? [data.imagen] : [];
+        await api.campaign.create(createData, files);
+
         Swal.fire("Creada", "Campaña creada con éxito", "success");
       }
 
@@ -199,18 +203,16 @@ export default function OrganizationCampaignsPage() {
       {/* TABS */}
       <div className={styles.tabs}>
         <button
-          className={`${styles.tabButton} ${
-            view === "campaigns" ? styles.active : ""
-          }`}
+          className={`${styles.tabButton} ${view === "campaigns" ? styles.active : ""
+            }`}
           onClick={() => setView("campaigns")}
         >
           Campañas
         </button>
 
         <button
-          className={`${styles.tabButton} ${
-            view === "donations" ? styles.active : ""
-          }`}
+          className={`${styles.tabButton} ${view === "donations" ? styles.active : ""
+            }`}
           onClick={() => setView("donations")}
         >
           Donaciones

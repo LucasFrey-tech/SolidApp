@@ -33,7 +33,7 @@ export class CampaignsService {
 
     @InjectRepository(Campaigns_images)
     private readonly campaignsImagesRepository: Repository<Campaigns_images>,
-  ) {}
+  ) { }
 
   /**
    * Obtiene todas las Campañas Solidarias
@@ -159,11 +159,12 @@ export class CampaignsService {
    * Crea una nueva Campaña en el sistema.
    *
    * @param {CreateCampaignsDto} createDto - DTO con los datos de la campaña
+   * @param {string} imagenes - Imagenes de la Campaña 
    * @returns {Promise<CreateCampaignsDto>} Promesa que resuelve con la entidad de la campaña recién creada.
    * @throws {NotFoundException} Cuando la Organizacion no se encuentra o esta deshabilitada
    * @throws {BadRequestException} Cuando el objetivo es menor a 0 (cero)
    */
-  async create(createDto: CreateCampaignsDto): Promise<ResponseCampaignsDto> {
+  async create(createDto: CreateCampaignsDto, imagenes: string[]): Promise<ResponseCampaignsDto> {
     // Validar que la organización existe y esta activa
     const organizacion = await this.organizationsRepository.findOne({
       where: { id: createDto.id_organizacion, deshabilitado: false },
@@ -198,6 +199,18 @@ export class CampaignsService {
     const saveCampaign = await this.campaignsRepository.save(campaign);
     this.logger.log(`Campaña creado con ID ${saveCampaign.id}`);
 
+    // Guardar imagenes
+    for (let index = 0; index < imagenes.length; index++) {
+      const element = imagenes[index];
+      const campaignImages = new Campaigns_images();
+      if (index === 0) {
+        campaignImages.esPortada = true;
+      }
+      campaignImages.id_campaign = saveCampaign;
+      campaignImages.imagen = element;
+      await this.campaignsImagesRepository.save(campaignImages);
+    }
+
     return this.mapToResponseDto(saveCampaign);
   }
 
@@ -206,13 +219,13 @@ export class CampaignsService {
    *
    * @param {number} id - ID de la Campaña a actualizar
    * @param {UpdateCampaignsDto} updateDto - DTO con la informacion actualizada de la Campaña
-   * @returns {Promise<ResponseCampaignsDto>} Promesa que resuelve con el DTO actualizado de Campañas
+   * @returns {Promise<ResponseCampaignsDto>} Promesa que resuelve con el DTO actualizado
    *
    * @throws {NotFoundException} cuando:
    * - No se encuentra el ID de la Campaña solicitada
    * - No se encuentra el ID de la Organización solicitada
    *
-   * @throws {BadRequestException} cuando el objetico de la Campaña es menor a 0 (cero)
+   * @throws {BadRequestException} cuando el objetivo de la Campaña es menor a 0
    */
   async update(
     id: number,
@@ -225,14 +238,17 @@ export class CampaignsService {
     });
 
     if (!campaign) {
-      throw new NotFoundException(`
-        Campaña Solidaria con ID ${id} no encontrada`);
+      throw new NotFoundException(
+        `Campaña Solidaria con ID ${id} no encontrada`,
+      );
     }
 
-    // Si se actualiza la organizacion, validar que existe
-    if (updateDto.id_organizacion) {
+    if (updateDto.id_organizacion !== undefined) {
       const organizacion = await this.organizationsRepository.findOne({
-        where: { id: updateDto.id_organizacion, deshabilitado: false },
+        where: {
+          id: updateDto.id_organizacion,
+          deshabilitado: false,
+        },
       });
 
       if (!organizacion) {
@@ -244,21 +260,21 @@ export class CampaignsService {
       campaign.organizacion = organizacion;
     }
 
-    // Actualizar campos
+    if (updateDto.objetivo !== undefined && updateDto.objetivo < 0) {
+      throw new BadRequestException(
+        'El objetivo no puede ser negativo',
+      );
+    }
+
     Object.keys(updateDto).forEach((key) => {
       if (key !== 'id_organizacion' && updateDto[key] !== undefined) {
-        campaign[key as keyof Omit<Campaigns, 'organizacion'>] = updateDto[
-          key as keyof UpdateCampaignsDto
+        campaign[
+          key as keyof Omit<Campaigns, 'organizacion'>
+        ] = updateDto[
+        key as keyof UpdateCampaignsDto
         ] as never;
       }
     });
-
-    // Validar cantidad si se actualiza
-    if (updateDto.objetivo != undefined && updateDto.objetivo < 0) {
-      throw new BadRequestException('El objetivo no puede ser negativo');
-    }
-
-    console.log('UPDATE DTO:', updateDto.estado);
 
     if (
       updateDto.estado === undefined &&
@@ -271,28 +287,30 @@ export class CampaignsService {
       );
     }
 
-    // Actualizar fecha de modificación
     campaign.ultimo_cambio = new Date();
-    const updatedCampaign = await this.campaignsRepository.save(campaign);
-    this.logger.log(`Campaña Solidaria ${id} actualizada`);
 
-    // // Actualizar imagenes (Borrar existentes y añadir nuevas)
-    const existingImages = await this.campaignsImagesRepository.find({
-      where: { id_campaign: { id } },
-    });
-    if (existingImages.length > 0) {
-      // Borrar las imagenes de la base de datos
-      await this.campaignsImagesRepository.delete({ id_campaign: { id } });
-    }
-    for (let index = 0; index < imagenes.length; index++) {
-      const element = imagenes[index];
-      const campaignImages = new Campaigns_images();
-      if (index === 0) {
-        campaignImages.esPortada = true;
+    const updatedCampaign =
+      await this.campaignsRepository.save(campaign);
+
+    this.logger.log(
+      `Campaña Solidaria ${id} actualizada`,
+    );
+
+
+    if (imagenes && imagenes.length > 0) {
+      await this.campaignsImagesRepository.delete({
+        id_campaign: { id },
+      });
+
+      for (let index = 0; index < imagenes.length; index++) {
+        const newImage = new Campaigns_images();
+
+        newImage.id_campaign = campaign;
+        newImage.imagen = imagenes[index];
+        newImage.esPortada = index === 0;
+
+        await this.campaignsImagesRepository.save(newImage);
       }
-      campaignImages.id_campaign.id = id;
-      campaignImages.imagen = element;
-      await this.campaignsImagesRepository.save(campaignImages);
     }
 
     return this.mapToResponseDto(updatedCampaign);

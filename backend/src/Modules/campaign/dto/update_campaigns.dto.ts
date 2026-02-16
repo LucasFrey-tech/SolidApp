@@ -8,6 +8,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 /**
  * DTO para la actualización de datos de las Campañas.
@@ -70,6 +71,7 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
     example: 750000,
     description: 'Nuevo monto objetivo de la campaña',
   })
+  @Type(() => Number)
   @Min(1)
   @IsNotEmpty()
   @IsNumber()

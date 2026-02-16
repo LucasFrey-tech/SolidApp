@@ -8,6 +8,7 @@ import {
   IsDateString,
   IsOptional,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 /**
  * Data Transfer Object (DTO) para la creacion de Campañas.
@@ -19,6 +20,7 @@ export class CreateCampaignsDto {
     example: 1,
     description: 'ID Foranea de la Organización',
   })
+  @Type(() => Number)
   @IsNotEmpty()
   @IsNumber()
   id_organizacion: number;
@@ -80,6 +82,7 @@ export class CreateCampaignsDto {
     example: 500000,
     description: 'Monto objetivo a recaudar para la campaña solidaria',
   })
+  @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
   @Min(1)
