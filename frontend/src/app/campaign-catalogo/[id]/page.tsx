@@ -69,7 +69,8 @@ export default function CampaignDetallePage() {
             <Image
               src={portada}
               alt={campaign.titulo}
-              fill
+              width={20}
+              height={20}
               className={styles.image}
             />
           </div>
