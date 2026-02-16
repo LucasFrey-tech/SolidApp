@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { CampaignCreateRequest } from "@/API/types/campañas/campaigns";
 import { CampaignEstado } from "@/API/types/campañas/enum";
 import styles from "@/styles/Paneles/campaignPanel.module.css";
+import { NumericInput } from "@/components/Utils/NumericInputProp";
 
 export type CampaignFormValues = Omit<
   CampaignCreateRequest,
@@ -45,7 +46,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
 
-  // 🔥 Agregar archivos
+  // Agregar archivos
   const handleFiles = (files: FileList) => {
     const newFiles = Array.from(files);
 
@@ -55,13 +56,13 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file)
+      URL.createObjectURL(file),
     );
 
     setPreviews(updatedPreviews);
   };
 
-  // 🔥 Eliminar imagen por índice
+  // Eliminar imagen por índice
   const removeImage = (index: number) => {
     const updatedFiles = selectedFiles.filter((_, i) => i !== index);
 
@@ -72,13 +73,13 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file)
+      URL.createObjectURL(file),
     );
 
     setPreviews(updatedPreviews);
   };
 
-  // 🔥 Limpiar todas las URLs al desmontar
+  // Limpiar todas las URLs al desmontar
   useEffect(() => {
     return () => {
       previews.forEach((url) => URL.revokeObjectURL(url));
@@ -143,14 +144,15 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
       {/* OBJETIVO */}
       <div className={styles.field}>
         <label>Objetivo</label>
-        <input
-          type="number"
+
+        <NumericInput
           {...register("objetivo", {
             required: "Obligatorio",
             valueAsNumber: true,
             min: { value: 1, message: "Debe ser mayor a 0" },
           })}
         />
+
         {errors.objetivo && (
           <span className={styles.error}>{errors.objetivo.message}</span>
         )}
@@ -191,10 +193,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             <div className={styles.previewContainer}>
               {previews.map((src, index) => (
                 <div key={index} className={styles.previewWrapper}>
-                  <img
-                    src={src}
-                    className={styles.previewImage}
-                  />
+                  <img src={src} className={styles.previewImage} />
                   <button
                     type="button"
                     className={styles.removeButton}
