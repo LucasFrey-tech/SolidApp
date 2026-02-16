@@ -51,21 +51,25 @@ export default function OrganizationCampaignsPage() {
   ================================ */
 
   const fetchCampaigns = async () => {
-    if (!organizacionId) return;
+  if (!organizacionId) return;
 
-    const limit = 8;
+  const limit = 8;
 
-    const response = await api.organizacion.getOrganizationCampaignsPaginated(
-      organizacionId,
-      campaignsPage,
-      limit,
-    );
+  const response = await api.organizacion.getOrganizationCampaignsPaginated(
+    organizacionId,
+    campaignsPage,
+    limit,
+  );
+  const totalPages = Math.max(1, Math.ceil(response.total / limit));
 
-    console.log("RESPONSE CAMPAIGNS:", response.items)
+  setCampaigns(response.items);
+  setCampaignsTotalPages(totalPages);
 
-    setCampaigns(response.items);
-    setCampaignsTotalPages(Math.ceil(response.total / limit));
-  };
+
+  if (campaignsPage > totalPages) {
+    setCampaignsPage(totalPages);
+  }
+};
 
   useEffect(() => {
     fetchCampaigns();
@@ -133,49 +137,50 @@ export default function OrganizationCampaignsPage() {
   ================================ */
 
   const handleSubmitCampaign = async (data: CampaignFormValues) => {
-    if (!organizacionId) return;
+  if (!organizacionId) return;
 
-    try {
-      if (editingCampaign) {
-        // EDITAR CAMPAÑA
-        const updateData: CampaignUpdateRequest = {
-          titulo: data.titulo,
-          descripcion: data.descripcion,
-          objetivo: data.objetivo,
-          fecha_Inicio: data.fecha_Inicio,
-          fecha_Fin: data.fecha_Fin,
-          estado: data.estado,
-        };
+  try {
+    const files = data.imagenes ?? [];
 
-        const files = data.imagen ? [data.imagen] : [];
-        await api.campaign.update(editingCampaign.id, updateData, files);
+    if (editingCampaign) {
+      // EDITAR CAMPAÑA
+      const updateData: CampaignUpdateRequest = {
+        titulo: data.titulo,
+        descripcion: data.descripcion,
+        objetivo: data.objetivo,
+        fecha_Inicio: data.fecha_Inicio,
+        fecha_Fin: data.fecha_Fin,
+        estado: data.estado,
+      };
 
-        Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
-      } else {
-        // CREAR CAMPAÑA
-        const createData: CampaignCreateRequest = {
-          titulo: data.titulo,
-          descripcion: data.descripcion,
-          objetivo: data.objetivo,
-          fecha_Inicio: data.fecha_Inicio,
-          fecha_Fin: data.fecha_Fin,
-          id_organizacion: organizacionId,
-        };
+      await api.campaign.update(editingCampaign.id, updateData, files);
 
-        const files = data.imagen ? [data.imagen] : [];
-        await api.campaign.create(createData, files);
+      Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
+    } else {
+      // CREAR CAMPAÑA
+      const createData: CampaignCreateRequest = {
+        titulo: data.titulo,
+        descripcion: data.descripcion,
+        objetivo: data.objetivo,
+        fecha_Inicio: data.fecha_Inicio,
+        fecha_Fin: data.fecha_Fin,
+        id_organizacion: organizacionId,
+      };
 
-        Swal.fire("Creada", "Campaña creada con éxito", "success");
-      }
+      await api.campaign.create(createData, files);
 
-      setOpen(false);
-      setEditingCampaign(null);
-      fetchCampaigns();
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "No se pudo guardar la campaña", "error");
+      Swal.fire("Creada", "Campaña creada con éxito", "success");
     }
-  };
+
+    setOpen(false);
+    setEditingCampaign(null);
+    fetchCampaigns();
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", "No se pudo guardar la campaña", "error");
+  }
+};
+
 
   /* ===============================
      RENDER
