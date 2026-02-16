@@ -102,6 +102,13 @@ export class Campaigns {
   @Column({ type: 'int', default: 0 })
   objetivo: number;
 
+  @ApiProperty({
+    example: '50',
+    description: 'Puntos que se van a otorgar por donación',
+  })
+  @Column({ type: 'int', default: 0 })
+  puntos: number;
+
   /**
    * Fecha del Ultimo cambio de la Campaña
    * @type {Date}

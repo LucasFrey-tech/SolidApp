@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Donations } from '../../Entities/donations.entity';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { Usuario } from '../../Entities/usuario.entity';
@@ -191,15 +191,14 @@ export class DonationsService {
       ...createDto,
       campaña: campaign,
       usuario: usuario,
+      estado: DonacionEstado.PENDIENTE,
+      puntos: campaign.puntos,
+      fecha_estado: new Date(),
     });
 
     const savedDonation = await this.donationsRepository.save(donation);
 
-    // Sumar puntos (ejemplo simple)
-    usuario.puntos += createDto.cantidad;
     await this.usuarioRepository.save(usuario);
-
-    await this.rankingService.sumarPuntos(usuario.id, createDto.cantidad);
 
     this.logger.log(
       `Donación ${savedDonation.id} creada | Usuario ${usuario.id} +${createDto.cantidad} puntos`,
@@ -208,32 +207,105 @@ export class DonationsService {
     return this.mapToResponseDto(savedDonation);
   }
 
-  async confirmarDonacion(id: number): Promise<ResponseDonationDto> {
-    const donacion = await this.donationsRepository.findOne({
-      where: { id },
-    });
+  async confirmarDonacion(
+    id: number,
+    nuevoEstado: DonacionEstado,
+    motivo?: string,
+  ): Promise<ResponseDonationDto> {
+    return await this.donationsRepository.manager.transaction(
+      async (manager) => {
+        const donacion = await manager.findOne(Donations, {
+          where: { id: id },
+          relations: ['usuario'],
+        });
 
-    if (!donacion) {
-      throw new NotFoundException('Donacion no encontrada');
+        if (!donacion) {
+          throw new NotFoundException('Donación no encontrada');
+        }
+
+        this.validarTransicion(donacion.estado, nuevoEstado);
+
+        if (
+          donacion.estado === DonacionEstado.RECHAZADA &&
+          nuevoEstado === DonacionEstado.APROBADA
+        ) {
+          this.validarVentanaReversion(donacion.fecha_estado);
+        }
+
+        await this.aplicarEfectosDeEstado(manager, donacion, nuevoEstado);
+
+        donacion.estado = nuevoEstado;
+        donacion.fecha_estado = new Date();
+        donacion.motivo_rechazo = motivo ?? null;
+
+        await manager.save(donacion);
+
+        return this.mapToResponseDto(donacion);
+      },
+    );
+  }
+
+  private validarTransicion(
+    estadoActual: DonacionEstado,
+    nuevoEstado: DonacionEstado,
+  ) {
+    if (estadoActual === nuevoEstado) {
+      throw new BadRequestException('La donación ya tiene ese estado');
     }
 
-    if (donacion.estado !== DonacionEstado.PENDIENTE) {
+    if (estadoActual === DonacionEstado.APROBADA) {
       throw new BadRequestException(
-        'Solo se pueden confirmar donacions pendientes',
+        'Una donación aprobada no puede cambiar de estado',
       );
     }
 
-    const puntos = this.calcularPuntos(donacion);
+    if (
+      estadoActual === DonacionEstado.PENDIENTE &&
+      ![DonacionEstado.APROBADA, DonacionEstado.RECHAZADA].includes(nuevoEstado)
+    ) {
+      throw new BadRequestException('Transición no válida');
+    }
 
-    donacion.estado = DonacionEstado.APROBADA;
-    donacion.puntos = puntos;
-
-    await this.donationsRepository.save(donacion);
-    return this.mapToResponseDto(donacion);
+    if (
+      estadoActual === DonacionEstado.RECHAZADA &&
+      nuevoEstado !== DonacionEstado.APROBADA
+    ) {
+      throw new BadRequestException('Transición no válida');
+    }
   }
 
-  private calcularPuntos(donacion: Donations): number {
-    return donacion.cantidad * 10;
+  private validarVentanaReversion(fechaEstado: Date) {
+    const REVERSAL_WINDOWS_HOURS = 48;
+
+    const ahora = new Date();
+    const diffHoras =
+      (ahora.getTime() - fechaEstado.getTime()) / (1000 * 60 * 60);
+
+    if (diffHoras > REVERSAL_WINDOWS_HOURS) {
+      throw new BadRequestException(
+        'El plazo para revertir la donación ha expirada',
+      );
+    }
+  }
+
+  private async aplicarEfectosDeEstado(
+    manager: EntityManager,
+    donacion: Donations,
+    nuevoEstado: DonacionEstado,
+  ) {
+    const usuario = donacion.usuario;
+
+    if (nuevoEstado === DonacionEstado.APROBADA) {
+      usuario.puntos += donacion.puntos;
+
+      await manager.save(usuario);
+
+      await this.rankingService.ajustarPuntos(
+        usuario.id,
+        donacion.puntos,
+        manager,
+      );
+    }
   }
 
   private readonly mapToResponseDto = (

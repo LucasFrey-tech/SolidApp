@@ -89,6 +89,12 @@ export class Donations {
   fecha_registro: Date;
 
   /**
+   * Fecha de cuando cambio el estado
+   */
+  @Column({ type: 'datetime2', nullable: true })
+  fecha_estado: Date;
+
+  /**
    * Canpaña asociada
    * @type {Campaigns}
    */
@@ -103,4 +109,8 @@ export class Donations {
    */
   @ManyToOne(() => Usuario)
   usuario: Usuario;
+
+  @ApiProperty({ example: 'Articulos dañados' })
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  motivo_rechazo?: string | null;
 }

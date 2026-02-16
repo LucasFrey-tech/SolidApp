@@ -5,17 +5,18 @@ import {
   Param,
   Body,
   ParseIntPipe,
-  UseGuards,
+  //UseGuards,
   Query,
   Patch,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+//import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiParam,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { DonationsService } from './donation.service';
 import { CreateDonationDto } from './dto/create_donation.dto';
@@ -24,6 +25,7 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import type { JwtPayload } from '../auth/jwt-payload.interface';
 import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { PaginatedDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
+import { DonacionEstado } from './enum';
 
 /**
  * Controlador para gestionar las operaciones de las Donaciones.
@@ -162,13 +164,92 @@ export class DonationsController {
   }
 
   /**
-   * Confirma la Donación pendiente.
+   * Aprueba una donación pendiente.
    *
-   * @param {number} id - ID de la Donación a confirmar
-   * @returns Donación confirmada
+   * Cambia el estado de la donación a APROBADA y aplica los efectos
+   * correspondientes (acreditación de puntos al usuario y actualización del ranking).
+   *
+   * @param {number} id - ID de la donación a aprobar.
+   * @returns {Promise<void>} Resultado de la operación.
    */
-  @Patch(':id/confirmar')
-  confirmarDonacion(@Param('id') id: number) {
-    return this.donationsService.confirmarDonacion(id);
+  @Patch(':id/aprobar')
+  @ApiOperation({
+    summary: 'Aprobar donación',
+    description:
+      'Cambia el estado de una donación a APROBADA y acredita los puntos correspondientes al usuario.',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID de la donación a aprobar',
+    example: 5,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Donación aprobada correctamente.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Donación no encontrada.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'La donación no puede cambiar de estado.',
+  })
+  async aprobarDonacion(@Param('id', ParseIntPipe) id: number) {
+    return this.donationsService.confirmarDonacion(id, DonacionEstado.APROBADA);
+  }
+
+  /**
+   * Rechaza una donación pendiente.
+   *
+   * Cambia el estado de la donación a RECHAZADA y registra el motivo
+   * del rechazo proporcionado por el administrador.
+   *
+   * @param {number} id - ID de la donación a rechazar.
+   * @param {string} motivo - Motivo del rechazo.
+   * @returns {Promise<void>} Resultado de la operación.
+   */
+  @Patch(':id/rechazar')
+  @ApiOperation({
+    summary: 'Rechazar donación',
+    description:
+      'Cambia el estado de una donación a RECHAZADA y registra el motivo del rechazo.',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID de la donación a rechazar',
+    example: 5,
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        motivo: {
+          type: 'string',
+          example: 'La imagen comprobante no es legible',
+        },
+      },
+      required: ['motivo'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Donación rechazada correctamente.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Donación no encontrada.',
+  })
+  async rechazarDonacion(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('motivo') motivo: string,
+  ) {
+    return this.donationsService.confirmarDonacion(
+      id,
+      DonacionEstado.RECHAZADA,
+      motivo,
+    );
   }
 }
