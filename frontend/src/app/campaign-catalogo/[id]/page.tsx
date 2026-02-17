@@ -1,22 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/Donar/donarDetalle.module.css";
 import { CampaignDetalle } from "@/API/types/campañas/campaigns";
 import { BaseApi } from "@/API/baseApi";
-import DonarModal from "@/components/pages/donaciones/DonarModal"; 
+import DonarModal from "@/components/pages/donaciones/DonarModal";
 
 export default function CampaignDetallePage() {
   const params = useParams();
   const router = useRouter();
 
   const [campaign, setCampaign] = useState<CampaignDetalle | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const puntosPorArticulo = 100;
 
@@ -25,8 +27,16 @@ export default function CampaignDetallePage() {
       try {
         const api = new BaseApi();
         const data = await api.campaign.getOneDetail(Number(params.id));
+
         setCampaign(data);
-      } catch (err) {
+
+        const portadaDefault =
+          data.imagenPortada ||
+          data.imagenes?.find((img) => img.esPortada)?.url ||
+          null;
+
+        setSelectedImage(portadaDefault);
+      } catch {
         setError(true);
       } finally {
         setLoading(false);
@@ -37,6 +47,32 @@ export default function CampaignDetallePage() {
       fetchCampaign();
     }
   }, [params]);
+
+  const galeriaCompleta = useMemo(() => {
+    if (!campaign) return [];
+
+    const imagenesValidas =
+      campaign.imagenes?.filter(
+        (img) => img.url && img.url.trim() !== ""
+      ) || [];
+
+    if (campaign.imagenPortada) {
+      const existePortada = imagenesValidas.some(
+        (img) => img.url === campaign.imagenPortada
+      );
+
+      if (!existePortada) {
+        imagenesValidas.unshift({
+          id: -1,
+          url: campaign.imagenPortada,
+          nombre: "portada",
+          esPortada: true,
+        });
+      }
+    }
+
+    return imagenesValidas;
+  }, [campaign]);
 
   if (loading) {
     return <p className={styles.loading}>Cargando campaña...</p>;
@@ -53,21 +89,17 @@ export default function CampaignDetallePage() {
     );
   }
 
-  const portada =
-    campaign.imagenPortada ||
-    campaign.imagenes?.find((img) => img.esPortada)?.url;
-
-  const galeria =
-    campaign.imagenes?.filter((img) => img.url !== portada) || [];
-
   return (
     <>
       <main className={styles.page}>
         <section className={styles.container}>
-          {portada && (
-            <div className={styles.imageWrapper}>
+          {selectedImage && (
+            <div
+              className={styles.imageWrapper}
+              onClick={() => setIsLightboxOpen(true)}
+            >
               <Image
-                src={portada}
+                src={selectedImage}
                 alt={campaign.titulo}
                 fill
                 sizes="(max-width: 768px) 100vw, 600px"
@@ -78,7 +110,6 @@ export default function CampaignDetallePage() {
           )}
 
           <h1 className={styles.title}>{campaign.titulo}</h1>
-
           <p className={styles.description}>{campaign.descripcion}</p>
 
           <div className={styles.meta}>
@@ -91,10 +122,16 @@ export default function CampaignDetallePage() {
             </p>
           </div>
 
-          {galeria.length > 0 && (
+          {galeriaCompleta.length > 0 && (
             <div className={styles.gallery}>
-              {galeria.map((img) => (
-                <div key={img.id} className={styles.galleryItem}>
+              {galeriaCompleta.map((img) => (
+                <div
+                  key={img.id}
+                  className={`${styles.galleryItem} ${
+                    selectedImage === img.url ? styles.activeThumb : ""
+                  }`}
+                  onClick={() => setSelectedImage(img.url)}
+                >
                   <Image
                     src={img.url}
                     alt={img.nombre}
@@ -118,6 +155,28 @@ export default function CampaignDetallePage() {
           </Link>
         </section>
       </main>
+
+      {/* Lightbox */}
+      {isLightboxOpen && selectedImage && (
+        <div
+          className={styles.lightbox}
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <div
+            className={styles.lightboxContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={selectedImage}
+              alt="Imagen ampliada"
+              width={2000}
+              height={2000}
+              className={styles.lightboxImage}
+              priority
+            />
+          </div>
+        </div>
+      )}
 
       <DonarModal
         isOpen={isModalOpen}
