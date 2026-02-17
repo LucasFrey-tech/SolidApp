@@ -29,12 +29,13 @@
 .imageWrapper {
   position: relative;
   width: 100%;
-  max-width: 320px;   
-  aspect-ratio: 1 / 1; 
+  max-width: 500px;
+  aspect-ratio: 1 / 1;
   margin: 0 auto 24px auto;
   border-radius: 16px;
   overflow: hidden;
   background: #111;
+  cursor: zoom-in;
 }
 
 .image {
@@ -46,6 +47,37 @@
   transform: scale(1.03);
 }
 
+/* ===============================
+  LIGHTBOX
+================================ */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  cursor: zoom-out;
+}
+
+.lightboxContent {
+  max-width: 95%;
+  max-height: 95%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lightboxImage {
+  max-width: 100%;
+  max-height: 95vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+}
 
 /* ===============================
    TEXT
@@ -79,21 +111,46 @@
    GALLERY
 ================================ */
 .gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 10px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
   margin-bottom: 24px;
+  scroll-behavior: smooth;
+}
+
+.gallery::-webkit-scrollbar {
+  height: 6px;
+}
+
+.gallery::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 10px;
 }
 
 .galleryItem {
   position: relative;
-  height: 90px;
+  min-width: 100px;
+  height: 100px;
   border-radius: 10px;
   overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 }
 
+.galleryItem:hover {
+  transform: scale(1.05);
+}
+
+.activeThumb {
+  outline: 2px solid #22c55e;
+}
+
+.image,
 .galleryImage {
   object-fit: cover;
+  object-position: center;
 }
 
 /* ===============================
