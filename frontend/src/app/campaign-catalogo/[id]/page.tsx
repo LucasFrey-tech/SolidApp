@@ -18,7 +18,7 @@ export default function CampaignDetallePage() {
   const [error, setError] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const puntosPorArticulo = 100; // valor fijo por artículo, ajustar según tu lógica
+  const puntosPorArticulo = 100;
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -119,13 +119,12 @@ export default function CampaignDetallePage() {
         </section>
       </main>
 
-      {/* ✅ MODAL REAL */}
       <DonarModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         campaignId={campaign.id}
         campaignTitle={campaign.titulo}
-        userId={1} // reemplazar cuando tengas auth real
+        userId={1}
         puntosPorArticulo={puntosPorArticulo}
       />
     </>

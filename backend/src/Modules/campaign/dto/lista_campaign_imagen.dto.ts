@@ -20,5 +20,5 @@ export class CampaignImagenDTO {
     example: '/uploads/bb-logo.png',
     description: 'path de la imagen de la donacion',
   })
-  logo: string;
+  url: string;
 }

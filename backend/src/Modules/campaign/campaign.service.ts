@@ -379,7 +379,7 @@ export class CampaignsService {
         campaign.imagenes?.map((img) => ({
           id: img.id,
           nombre: path.parse(img.imagen).name,
-          logo: img.imagen,
+          url: img.imagen,
           esPortada: img.esPortada,
         })) ?? [],
     };
