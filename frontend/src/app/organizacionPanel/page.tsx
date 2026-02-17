@@ -42,7 +42,8 @@ export default function OrganizationCampaignsPage() {
   const [donationsTotalPages, setDonationsTotalPages] = useState(1);
 
   const [open, setOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [editingCampaign, setEditingCampaign] =
+    useState<Campaign | null>(null);
 
   const api = useMemo(() => new BaseApi(), []);
 
@@ -55,11 +56,13 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response = await api.organizacion.getOrganizationCampaignsPaginated(
-      organizacionId,
-      campaignsPage,
-      limit,
-    );
+    const response =
+      await api.organizacion.getOrganizationCampaignsPaginated(
+        organizacionId,
+        campaignsPage,
+        limit
+      );
+
     const totalPages = Math.max(1, Math.ceil(response.total / limit));
 
     setCampaigns(response.items);
@@ -83,13 +86,12 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response = await api.organizacion.getDonationsPaginatedByOrganizacion(
-      organizacionId,
-      donationsPage,
-      limit,
-    );
-
-    console.log("Response:", response);
+    const response =
+      await api.organizacion.getDonationsPaginatedByOrganizacion(
+        organizacionId,
+        donationsPage,
+        limit
+      );
 
     setDonations(response.items);
     setDonationsTotalPages(Math.ceil(response.total / limit));
@@ -117,20 +119,55 @@ export default function OrganizationCampaignsPage() {
     });
   };
 
-  const handleRejectDonation = (donation: Donation) => {
-    Swal.fire({
+  const handleRejectDonation = async (donation: Donation) => {
+    const confirm = await Swal.fire({
       title: "¿Rechazar donación?",
       text: "¿Estás seguro que querés rechazar esta donación?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Rechazar",
       cancelButtonText: "Cancelar",
-    }).then((res) => {
-      if (res.isConfirmed) {
-        Swal.fire("Rechazada", "La donación fue rechazada", "error");
-        setDonations((prev) => prev.filter((d) => d.id !== donation.id));
-      }
+      reverseButtons: true,
     });
+
+    if (!confirm.isConfirmed) return;
+
+    const { value: reason } = await Swal.fire({
+      title: "Motivo del rechazo",
+      input: "textarea",
+      inputLabel: "Por favor, escribí el motivo",
+      inputPlaceholder: "Escribí el motivo del rechazo...",
+      inputAttributes: {
+        maxlength: "300",
+      },
+      showCancelButton: true,
+      confirmButtonText: "Enviar",
+      cancelButtonText: "Cancelar",
+      reverseButtons: true,
+      inputValidator: (value) => {
+        if (!value || value.trim().length === 0) {
+          return "Tenés que escribir un motivo";
+        }
+        return null;
+      },
+    });
+
+    if (!reason) return;
+
+    try {
+      // LLamar API de rechazo de donación.
+
+      await Swal.fire(
+        "Rechazada",
+        "La donación fue rechazada correctamente",
+        "success"
+      );
+
+      setDonations((prev) => prev.filter((d) => d.id !== donation.id));
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "No se pudo rechazar la donación", "error");
+    }
   };
 
   /* ===============================
@@ -144,7 +181,6 @@ export default function OrganizationCampaignsPage() {
       const files = data.imagenes ?? [];
 
       if (editingCampaign) {
-        // EDITAR CAMPAÑA
         const updateData: CampaignUpdateRequest = {
           titulo: data.titulo,
           descripcion: data.descripcion,
@@ -158,7 +194,6 @@ export default function OrganizationCampaignsPage() {
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
       } else {
-        // CREAR CAMPAÑA
         const createData: CampaignCreateRequest = {
           titulo: data.titulo,
           descripcion: data.descripcion,
@@ -188,7 +223,6 @@ export default function OrganizationCampaignsPage() {
 
   return (
     <div className={styles.container}>
-      {/* HEADER */}
       <div className={styles.header}>
         <h2>Panel de Organización</h2>
 
@@ -205,7 +239,6 @@ export default function OrganizationCampaignsPage() {
         )}
       </div>
 
-      {/* TABS */}
       <div className={styles.tabs}>
         <button
           className={`${styles.tabButton} ${
@@ -228,9 +261,6 @@ export default function OrganizationCampaignsPage() {
 
       <div className={styles.divider} />
 
-      {/* ===============================
-          CAMPAÑAS
-      ================================ */}
       {view === "campaigns" && (
         <>
           <ul className={styles.list}>
@@ -252,7 +282,6 @@ export default function OrganizationCampaignsPage() {
             ))}
           </ul>
 
-          {/* PAGINACIÓN CAMPAÑAS */}
           <div className={styles.pagination}>
             <button
               disabled={campaignsPage === 1}
@@ -275,9 +304,6 @@ export default function OrganizationCampaignsPage() {
         </>
       )}
 
-      {/* ===============================
-          DONACIONES
-      ================================ */}
       {view === "donations" && (
         <>
           <table className={styles.table}>
@@ -319,7 +345,6 @@ export default function OrganizationCampaignsPage() {
             </tbody>
           </table>
 
-          {/* PAGINACIÓN DONACIONES */}
           <div className={styles.pagination}>
             <button
               disabled={donationsPage === 1}
@@ -342,7 +367,6 @@ export default function OrganizationCampaignsPage() {
         </>
       )}
 
-      {/* MODAL */}
       <Modal
         open={open}
         onClose={() => {

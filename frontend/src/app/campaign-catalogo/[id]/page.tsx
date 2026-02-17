@@ -7,23 +7,24 @@ import Image from "next/image";
 import styles from "@/styles/Donar/donarDetalle.module.css";
 import { CampaignDetalle } from "@/API/types/campañas/campaigns";
 import { BaseApi } from "@/API/baseApi";
+import DonarModal from "@/components/pages/donaciones/DonarModal"; 
 
 export default function CampaignDetallePage() {
   const params = useParams();
   const router = useRouter();
 
-  const [campaign, setCampaign] = useState<CampaignDetalle | null >(null);
+  const [campaign, setCampaign] = useState<CampaignDetalle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const puntosPorArticulo = 100; // valor fijo por artículo, ajustar según tu lógica
 
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
         const api = new BaseApi();
-        const data = await api.campaign.getOneDetail(
-          Number(params.id)
-        );
-
+        const data = await api.campaign.getOneDetail(Number(params.id));
         setCampaign(data);
       } catch (err) {
         setError(true);
@@ -57,65 +58,76 @@ export default function CampaignDetallePage() {
     campaign.imagenes?.find((img) => img.esPortada)?.url;
 
   const galeria =
-    campaign.imagenes?.filter(
-      (img) => img.url !== portada
-    ) || [];
+    campaign.imagenes?.filter((img) => img.url !== portada) || [];
 
   return (
-    <main className={styles.page}>
-      <section className={styles.container}>
-        {portada && (
-          <div className={styles.imageWrapper}>
-            <Image
-              src={portada}
-              alt={campaign.titulo}
-              width={20}
-              height={20}
-              className={styles.image}
-            />
+    <>
+      <main className={styles.page}>
+        <section className={styles.container}>
+          {portada && (
+            <div className={styles.imageWrapper}>
+              <Image
+                src={portada}
+                alt={campaign.titulo}
+                fill
+                sizes="(max-width: 768px) 100vw, 600px"
+                className={styles.image}
+                priority
+              />
+            </div>
+          )}
+
+          <h1 className={styles.title}>{campaign.titulo}</h1>
+
+          <p className={styles.description}>{campaign.descripcion}</p>
+
+          <div className={styles.meta}>
+            <p>
+              <strong>Objetivo:</strong> ${campaign.objetivo}
+            </p>
+            <p>
+              <strong>Organización:</strong>{" "}
+              {campaign.organizacion.nombreFantasia}
+            </p>
           </div>
-        )}
 
-        <h1 className={styles.title}>{campaign.titulo}</h1>
+          {galeria.length > 0 && (
+            <div className={styles.gallery}>
+              {galeria.map((img) => (
+                <div key={img.id} className={styles.galleryItem}>
+                  <Image
+                    src={img.url}
+                    alt={img.nombre}
+                    fill
+                    className={styles.galleryImage}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
-        <p className={styles.description}>
-          {campaign.descripcion}
-        </p>
+          <button
+            className={styles.donateButton}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Donar ahora
+          </button>
 
-        <div className={styles.meta}>
-          <p><strong>Objetivo:</strong> ${campaign.objetivo}</p>
-          <p>
-            <strong>Organización:</strong>{" "}
-            {campaign.organizacion.nombreFantasia}
-          </p>
-        </div>
+          <Link href="/campaign-catalogo" className={styles.backButton}>
+            ← Volver al catálogo
+          </Link>
+        </section>
+      </main>
 
-        {galeria.length > 0 && (
-          <div className={styles.gallery}>
-            {galeria.map((img) => (
-              <div key={img.id} className={styles.galleryItem}>
-                <Image
-                  src={img.url}
-                  alt={img.nombre}
-                  fill
-                  className={styles.galleryImage}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        <button className={styles.donateButton}>
-          Donar ahora
-        </button>
-
-        <Link
-          href="/campaign-catalogo"
-          className={styles.backButton}
-        >
-          ← Volver al catálogo
-        </Link>
-      </section>
-    </main>
+      {/* ✅ MODAL REAL */}
+      <DonarModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        campaignId={campaign.id}
+        campaignTitle={campaign.titulo}
+        userId={1} // reemplazar cuando tengas auth real
+        puntosPorArticulo={puntosPorArticulo}
+      />
+    </>
   );
 }
