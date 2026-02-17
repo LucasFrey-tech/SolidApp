@@ -83,7 +83,7 @@ export default function CampaignDetallePage() {
 
           <div className={styles.meta}>
             <p>
-              <strong>Objetivo:</strong> ${campaign.objetivo}
+              <strong>Objetivo:</strong> {campaign.objetivo}
             </p>
             <p>
               <strong>Organización:</strong>{" "}

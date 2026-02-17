@@ -12,6 +12,7 @@ export type CampaignFormValues = Omit<
   "id_organizacion"
 > & {
   imagenes?: File[];
+  puntos: number;
 };
 
 type Props = {
@@ -34,6 +35,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
       titulo: "",
       descripcion: "",
       objetivo: 1,
+      puntos: 1,
       fecha_Inicio: "",
       fecha_Fin: "",
       imagenes: [],
@@ -49,37 +51,34 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
   // Agregar archivos
   const handleFiles = (files: FileList) => {
     const newFiles = Array.from(files);
-
     const updatedFiles = [...selectedFiles, ...newFiles];
 
     setSelectedFiles(updatedFiles);
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file),
+      URL.createObjectURL(file)
     );
 
     setPreviews(updatedPreviews);
   };
 
-  // Eliminar imagen por índice
+  // Eliminar imagen
   const removeImage = (index: number) => {
     const updatedFiles = selectedFiles.filter((_, i) => i !== index);
 
-    // liberar memoria de la imagen eliminada
     URL.revokeObjectURL(previews[index]);
 
     setSelectedFiles(updatedFiles);
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file),
+      URL.createObjectURL(file)
     );
 
     setPreviews(updatedPreviews);
   };
 
-  // Limpiar todas las URLs al desmontar
   useEffect(() => {
     return () => {
       previews.forEach((url) => URL.revokeObjectURL(url));
@@ -155,6 +154,23 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
 
         {errors.objetivo && (
           <span className={styles.error}>{errors.objetivo.message}</span>
+        )}
+      </div>
+
+      {/* PUNTOS */}
+      <div className={styles.field}>
+        <label>Ingresar puntos por unidad donada:</label>
+
+        <NumericInput
+          {...register("puntos", {
+            required: "Obligatorio",
+            valueAsNumber: true,
+            min: { value: 1, message: "Debe ser mayor a 0" },
+          })}
+        />
+
+        {errors.puntos && (
+          <span className={styles.error}>{errors.puntos.message}</span>
         )}
       </div>
 
