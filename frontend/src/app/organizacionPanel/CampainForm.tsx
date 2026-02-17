@@ -30,6 +30,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     formState: { errors },
     reset,
     setValue,
+    watch,
   } = useForm<CampaignFormValues>({
     defaultValues: initialValues ?? {
       titulo: "",
@@ -42,6 +43,9 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
       estado: CampaignEstado.PENDIENTE,
     },
   });
+
+  const fechaInicio = watch("fecha_Inicio");
+  const fechaFin = watch("fecha_Fin");
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -57,7 +61,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file)
+      URL.createObjectURL(file),
     );
 
     setPreviews(updatedPreviews);
@@ -73,7 +77,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file)
+      URL.createObjectURL(file),
     );
 
     setPreviews(updatedPreviews);
@@ -127,8 +131,22 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
         <label>Fecha Inicio</label>
         <input
           type="date"
-          {...register("fecha_Inicio", { required: "Obligatorio" })}
+          {...register("fecha_Inicio", {
+            required: "Obligatorio",
+            validate: (value) => {
+              if (!fechaFin) return true;
+
+              return (
+                new Date(fechaFin) > new Date(value) ||
+                "La fecha inicio debe ser anterior a la fecha fin"
+              );
+            },
+          })}
         />
+
+        {errors.fecha_Inicio && (
+          <span className={styles.error}>{errors.fecha_Inicio.message}</span>
+        )}
       </div>
 
       {/* FECHA FIN */}
@@ -136,8 +154,22 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
         <label>Fecha Fin</label>
         <input
           type="date"
-          {...register("fecha_Fin", { required: "Obligatorio" })}
+          {...register("fecha_Fin", {
+            required: "Obligatorio",
+            validate: (value) => {
+              if (!fechaInicio) return true;
+
+              return (
+                new Date(value) > new Date(fechaInicio) ||
+                "La fecha fin debe ser posterior a la fecha inicio"
+              );
+            },
+          })}
         />
+
+        {errors.fecha_Fin && (
+          <span className={styles.error}>{errors.fecha_Fin.message}</span>
+        )}
       </div>
 
       {/* OBJETIVO */}
