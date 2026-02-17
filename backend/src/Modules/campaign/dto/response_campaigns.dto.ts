@@ -77,4 +77,10 @@ export class ResponseCampaignsDto {
     description: 'Monto objetivo de recaudación de la campaña solidaria',
   })
   objetivo: number;
+
+  @ApiProperty({
+    example: 75,
+    description: 'Puntos por donación a la campaña, por cantidad de articulos',
+  })
+  puntos: number;
 }

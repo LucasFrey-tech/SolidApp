@@ -8,7 +8,7 @@ import {
   OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Organizations } from './organizations.entity';
 import { Donations } from './donations.entity';
 import { CampaignEstado } from '../Modules/campaign/enum';
@@ -145,11 +145,11 @@ export class Campaigns {
    * Imagenes relacionadas a la campaña
    * @type {Campaigns_images}
    */
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: () => Campaigns_images,
     isArray: true,
     description: 'Imagenes asociadas a la campaña',
   })
   @OneToMany(() => Campaigns_images, (imagen) => imagen.id_campaign)
-  imagenes: Campaigns_images[];
+  imagenes?: Campaigns_images[];
 }

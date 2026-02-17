@@ -39,7 +39,7 @@ import { SettingsService } from '../../common/settings/settings.service';
 @ApiTags('Campañas')
 @Controller('campaigns')
 export class CampaignsController {
-  constructor(private readonly campaignService: CampaignsService) { }
+  constructor(private readonly campaignService: CampaignsService) {}
 
   /**
    * Obtiene todas las Campañas disponibles.
@@ -153,9 +153,12 @@ export class CampaignsController {
   @UseInterceptors(FilesInterceptor('files', 10))
   async create(
     @Body() createCampaignsDto: CreateCampaignsDto,
-    @UploadedFiles(new ImagesArrayValidationPipe()) files: Express.Multer.File[]
+    @UploadedFiles(new ImagesArrayValidationPipe())
+    files: Express.Multer.File[],
   ): Promise<ResponseCampaignsDto> {
-    const imagenes = files.map(x => SettingsService.getStaticResourceUrl(x.filename));
+    const imagenes = files.map((x) =>
+      SettingsService.getStaticResourceUrl(x.filename),
+    );
     return this.campaignService.create(createCampaignsDto, imagenes);
   }
 
@@ -187,9 +190,15 @@ export class CampaignsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCampaignsDto: UpdateCampaignsDto,
-    @UploadedFiles(new ImagesArrayValidationPipe()) files: Express.Multer.File[]
+    @UploadedFiles(new ImagesArrayValidationPipe())
+    files?: Express.Multer.File[],
   ): Promise<ResponseCampaignsDto> {
-    const imagenes = files.map(x => SettingsService.getStaticResourceUrl(x.filename));
+    let imagenes: string[] | undefined;
+    if (files && files.length > 0) {
+      imagenes = files.map((x) =>
+        SettingsService.getStaticResourceUrl(x.filename),
+      );
+    }
     return this.campaignService.update(id, updateCampaignsDto, imagenes);
   }
 

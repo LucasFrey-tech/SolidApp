@@ -232,7 +232,7 @@ export class CampaignsService {
   async update(
     id: number,
     updateDto: UpdateCampaignsDto,
-    imagenes: string[],
+    imagenes?: string[],
   ): Promise<ResponseCampaignsDto> {
     const campaign = await this.campaignsRepository.findOne({
       where: { id },
@@ -358,6 +358,7 @@ export class CampaignsService {
       fecha_Inicio: campaign.fecha_Inicio,
       fecha_Fin: campaign.fecha_Fin,
       objetivo: campaign.objetivo,
+      puntos: campaign.puntos,
       organizacion: organizationSummary,
       imagenPortada: portada ? portada.imagen : null,
     };

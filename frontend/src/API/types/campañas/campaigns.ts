@@ -18,6 +18,7 @@ export interface Campaign {
   fecha_Registro: string;
 
   objetivo: number;
+  puntos: number;
   ultimo_cambio: string;
 
   organizacion: OrganizacionSummary;
@@ -35,6 +36,7 @@ export interface CampaignCreateRequest {
   fecha_Fin: string;
 
   objetivo: number;
+  puntos: number;
 
   estado?: CampaignEstado; 
 
@@ -54,6 +56,7 @@ export interface CampaignUpdateRequest {
   fecha_Fin?: string;
 
   objetivo?: number;
+  puntos?: number;
 }
 
 /* ===============================

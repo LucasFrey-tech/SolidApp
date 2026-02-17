@@ -185,6 +185,7 @@ export default function OrganizationCampaignsPage() {
           titulo: data.titulo,
           descripcion: data.descripcion,
           objetivo: data.objetivo,
+          puntos: data.puntos,
           fecha_Inicio: data.fecha_Inicio,
           fecha_Fin: data.fecha_Fin,
           estado: data.estado,
@@ -198,6 +199,7 @@ export default function OrganizationCampaignsPage() {
           titulo: data.titulo,
           descripcion: data.descripcion,
           objetivo: data.objetivo,
+          puntos: data.puntos,
           fecha_Inicio: data.fecha_Inicio,
           fecha_Fin: data.fecha_Fin,
           id_organizacion: organizacionId,
@@ -267,8 +269,8 @@ export default function OrganizationCampaignsPage() {
             {campaigns.map((c) => (
               <li key={c.id} className={styles.card}>
                 <div>
-                  <strong>{c.titulo}</strong> — {c.descripcion} — Objetivo:{" "}
-                  {c.objetivo} - Estado: {c.estado}
+                  <strong>{c.titulo}</strong> — {c.descripcion} — <strong>Objetivo:{" "}
+                  {c.objetivo}</strong> - <strong>Puntos por donacion: {c.puntos}</strong> - Estado: {c.estado}
                 </div>
 
                 <Edit2

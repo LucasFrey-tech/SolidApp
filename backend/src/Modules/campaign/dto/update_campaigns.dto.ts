@@ -19,7 +19,6 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
     example: 'Campaña Solidaria Invierno 2025 (extendida)',
     description: 'Título actualizado de la campaña solidaria',
   })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(255)
   titulo?: string;
@@ -29,7 +28,6 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
     example: 'FINALIZADA',
     description: 'Nuevo estado de la campaña solidaria',
   })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(20)
   estado?: string;
@@ -39,7 +37,6 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
     example: 'Campaña extendida hasta fines de agosto',
     description: 'Descripción actualizada de la campaña',
   })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(255)
   descripcion?: string;
@@ -51,7 +48,6 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
     type: String,
     format: 'date',
   })
-  @IsNotEmpty()
   @IsDateString()
   fecha_Inicio?: Date;
 
@@ -62,7 +58,6 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
     type: String,
     format: 'date',
   })
-  @IsNotEmpty()
   @IsDateString()
   fecha_Fin?: Date;
 
@@ -73,7 +68,16 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
   })
   @Type(() => Number)
   @Min(1)
-  @IsNotEmpty()
   @IsNumber()
   objetivo?: number;
+
+  /** Puntos que se otorgan por donacion */
+  @ApiPropertyOptional({
+    example: 75,
+    description: 'Puntos por donación a la campaña, por cantidad de articulos',
+  })
+  @Type(() => Number)
+  @Min(1)
+  @IsNumber()
+  puntos?: number;
 }

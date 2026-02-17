@@ -132,6 +132,9 @@ export class campaignService extends Crud<Campaign> {
     if (data.objetivo !== undefined) {
       formData.append('objetivo', data.objetivo.toString());
     }
+    if (data.puntos !== undefined) {
+      formData.append('puntos', data.puntos.toString());
+    }
     if (data.estado !== undefined) {
       formData.append('estado', data.estado);
     }

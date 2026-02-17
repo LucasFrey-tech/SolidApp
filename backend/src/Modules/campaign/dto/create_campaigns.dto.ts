@@ -87,4 +87,14 @@ export class CreateCampaignsDto {
   @IsNotEmpty()
   @Min(1)
   objetivo: number;
+
+  @ApiProperty({
+    example: 75,
+    description: 'Puntos por donación a la campaña, por cantidad de articulos',
+  })
+  @Type(() => Number)
+  @IsNumber()
+  @IsNotEmpty()
+  @Min(1)
+  puntos: number;
 }
