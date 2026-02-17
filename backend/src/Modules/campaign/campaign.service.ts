@@ -33,7 +33,7 @@ export class CampaignsService {
 
     @InjectRepository(Campaigns_images)
     private readonly campaignsImagesRepository: Repository<Campaigns_images>,
-  ) { }
+  ) {}
 
   /**
    * Obtiene todas las Campañas Solidarias
@@ -159,12 +159,15 @@ export class CampaignsService {
    * Crea una nueva Campaña en el sistema.
    *
    * @param {CreateCampaignsDto} createDto - DTO con los datos de la campaña
-   * @param {string} imagenes - Imagenes de la Campaña 
+   * @param {string} imagenes - Imagenes de la Campaña
    * @returns {Promise<CreateCampaignsDto>} Promesa que resuelve con la entidad de la campaña recién creada.
    * @throws {NotFoundException} Cuando la Organizacion no se encuentra o esta deshabilitada
    * @throws {BadRequestException} Cuando el objetivo es menor a 0 (cero)
    */
-  async create(createDto: CreateCampaignsDto, imagenes: string[]): Promise<ResponseCampaignsDto> {
+  async create(
+    createDto: CreateCampaignsDto,
+    imagenes: string[],
+  ): Promise<ResponseCampaignsDto> {
     // Validar que la organización existe y esta activa
     const organizacion = await this.organizationsRepository.findOne({
       where: { id: createDto.id_organizacion, deshabilitado: false },
@@ -181,9 +184,8 @@ export class CampaignsService {
       throw new BadRequestException('El Objetivo tiene que ser mayor a 0');
     }
 
-    // El estado depende de la fecha de inicio y de fin
-
-    const estado = this.setEstado(createDto.fecha_Inicio, createDto.fecha_Fin);
+    // Validación de fecha
+    this.validarRangoFechas(createDto.fecha_Inicio, createDto.fecha_Fin);
 
     // Creación de la Campaña Solidaria
     const campaign = this.campaignsRepository.create({
@@ -192,7 +194,7 @@ export class CampaignsService {
       fecha_Inicio: createDto.fecha_Inicio,
       fecha_Fin: createDto.fecha_Fin,
       objetivo: createDto.objetivo,
-      estado: estado,
+      estado: CampaignEstado.PENDIENTE,
       organizacion,
     });
 
@@ -261,17 +263,13 @@ export class CampaignsService {
     }
 
     if (updateDto.objetivo !== undefined && updateDto.objetivo < 0) {
-      throw new BadRequestException(
-        'El objetivo no puede ser negativo',
-      );
+      throw new BadRequestException('El objetivo no puede ser negativo');
     }
 
     Object.keys(updateDto).forEach((key) => {
       if (key !== 'id_organizacion' && updateDto[key] !== undefined) {
-        campaign[
-          key as keyof Omit<Campaigns, 'organizacion'>
-        ] = updateDto[
-        key as keyof UpdateCampaignsDto
+        campaign[key as keyof Omit<Campaigns, 'organizacion'>] = updateDto[
+          key as keyof UpdateCampaignsDto
         ] as never;
       }
     });
@@ -289,13 +287,9 @@ export class CampaignsService {
 
     campaign.ultimo_cambio = new Date();
 
-    const updatedCampaign =
-      await this.campaignsRepository.save(campaign);
+    const updatedCampaign = await this.campaignsRepository.save(campaign);
 
-    this.logger.log(
-      `Campaña Solidaria ${id} actualizada`,
-    );
-
+    this.logger.log(`Campaña Solidaria ${id} actualizada`);
 
     if (imagenes && imagenes.length > 0) {
       await this.campaignsImagesRepository.delete({
@@ -385,13 +379,41 @@ export class CampaignsService {
     };
   };
 
-  private setEstado(inicio: Date, fin: Date) {
+  private setEstado(inicio: Date, fin: Date): CampaignEstado {
+    if (!inicio || !fin) {
+      throw new BadRequestException('Las fechas son obligatorias');
+    }
+
+    if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
+      throw new BadRequestException('Fechas inválidas');
+    }
+
+    if (fin <= inicio) {
+      throw new BadRequestException(
+        'La fecha de fin debe ser posterior a la fecha de inicio',
+      );
+    }
+
     const hoy = new Date();
 
     if (hoy < inicio) return CampaignEstado.PENDIENTE;
 
-    if (fin < hoy) return CampaignEstado.FINALIZADA;
+    if (hoy > fin) return CampaignEstado.FINALIZADA;
 
     return CampaignEstado.ACTIVA;
+  }
+
+  private validarRangoFechas(inicio: Date, fin: Date): boolean {
+    if (!inicio || !fin) {
+      throw new BadRequestException('Las fechas son obligatorias');
+    }
+
+    if (fin <= inicio) {
+      throw new BadRequestException(
+        'La fecha de fin no puede ser anterior a la fecha de inicio',
+      );
+    }
+
+    return true;
   }
 }
