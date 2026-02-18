@@ -25,7 +25,7 @@ export class ResponseDonationDto {
     example: 'ALIMENTO',
     description: 'Tipo de donación (ALIMENTO, ROPA, DINERO, INSUMOS)',
   })
-  tipo: string;
+  tipo?: string;
 
   @ApiProperty({
     example: 10,
@@ -38,7 +38,7 @@ export class ResponseDonationDto {
     description: 'Estado actual de la donación',
   })
   @IsEnum(DonacionEstado)
-  estado: DonacionEstado;
+  estado?: DonacionEstado;
 
   @ApiProperty({
     example: 500,

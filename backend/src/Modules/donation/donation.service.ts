@@ -166,10 +166,7 @@ export class DonationsService {
   /**
    * Crear una Donación
    */
-  async create(
-    createDto: CreateDonationDto,
-    userId: number,
-  ): Promise<ResponseDonationDto> {
+  async create(createDto: CreateDonationDto): Promise<ResponseDonationDto> {
     const campaign = await this.campaignsRepository.findOne({
       where: { id: createDto.campaignId },
     });
@@ -179,7 +176,7 @@ export class DonationsService {
     }
 
     const usuario = await this.usuarioRepository.findOne({
-      where: { id: userId, deshabilitado: false },
+      where: { id: createDto.userId, deshabilitado: false },
     });
 
     if (!usuario) {
@@ -188,11 +185,13 @@ export class DonationsService {
 
     // Crear donación
     const donation = this.donationsRepository.create({
-      ...createDto,
-      campaña: campaign,
+      titulo: `Donación Solidaria de ${usuario.nombre} ${usuario.apellido}`,
+      detalle: createDto.detalle,
+      cantidad: createDto.cantidad,
       usuario: usuario,
+      campaña: campaign,
       estado: DonacionEstado.PENDIENTE,
-      puntos: campaign.puntos,
+      puntos: createDto.puntos,
       fecha_estado: new Date(),
     });
 

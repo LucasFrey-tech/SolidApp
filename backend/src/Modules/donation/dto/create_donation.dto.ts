@@ -1,53 +1,53 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DonacionEstado } from '../enum';
-import { IsEnum } from 'class-validator';
+import { IsInt, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
 /**
  * DTO para la creación de Donaciones.
  * Contiene las validaciones para los campos del cuerpo de la petición.
  */
 export class CreateDonationDto {
-  /** Título de la Donación */
-  @ApiProperty({
-    example: 'Donación de alimentos no perecederos',
-    description: 'Título o nombre identificatorio de la donación',
-  })
-  titulo: string;
-
   /** Descripción de la Donación */
   @ApiProperty({
     example: 'Arroz, fideos y enlatados',
     description: 'Detalle o descripción de la donación realizada',
   })
+  @IsString()
   detalle: string;
-
-  /** Tipo de la Donación */
-  @ApiProperty({
-    example: 'ALIMENTO',
-    description: 'Tipo de donación (ALIMENTO, ROPA, DINERO, INSUMOS)',
-  })
-  tipo: string;
 
   /** Cantidad de unidades donadas */
   @ApiProperty({
     example: 10,
     description: 'Cantidad de unidades donadas',
   })
+  @Type(() => Number)
+  @IsInt()
   cantidad: number;
 
-  /** Estado de la Donación */
+  /** ID del Usuario Asociado*/
   @ApiProperty({
-    example: 'PENDIENTE',
-    description:
-      'Estado actual de la donación (PENDIENTE, CONFIRMADA, ENTREGADA)',
+    example: 5,
+    description: 'Identificador del usuario asociado a la donación',
   })
-  @IsEnum(DonacionEstado)
-  estado: DonacionEstado;
+  @Type(() => Number)
+  @IsInt()
+  userId: number;
 
   /** ID de la Campaña asociada */
   @ApiProperty({
     example: 3,
     description: 'Identificador de la campaña solidaria asociada a la donación',
   })
+  @Type(() => Number)
+  @IsInt()
   campaignId: number;
+
+  /** Puntos asociados a la campaña */
+  @ApiProperty({
+    example: 50,
+    description: 'Puntos x la cantidad de articulos donados',
+  })
+  @Type(() => Number)
+  @IsInt()
+  puntos: number;
 }

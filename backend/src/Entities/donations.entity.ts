@@ -48,8 +48,8 @@ export class Donations {
    * @type {string}
    */
   @ApiProperty({ example: 'ROPA', description: 'El tipo de Articulo a Donar' })
-  @Column({ type: 'varchar', length: 25 })
-  tipo: string;
+  @Column({ type: 'varchar', length: 25, default: 'Articulo' })
+  tipo?: string;
 
   /**
    * Cantidad del Artículo a Donar

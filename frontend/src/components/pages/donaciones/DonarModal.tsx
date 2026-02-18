@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Donar/donarModal.module.css";
+import { BaseApi } from "@/API/baseApi";
 
 interface Props {
   isOpen: boolean;
@@ -23,6 +24,8 @@ export default function DonarModal({
 }: Props) {
   const [detalle, setDetalle] = useState("");
   const [cantidad, setCantidad] = useState(1);
+
+  const api = useMemo(() => new BaseApi(), []);
 
   if (!isOpen) return null;
 
@@ -60,23 +63,17 @@ export default function DonarModal({
     if (!confirm.isConfirmed) return;
 
     const body = {
-      titulo: campaignTitle,
       detalle,
-      tipo: "articulo",
       cantidad,
-      fecha_registro: new Date(),
-      id_campaña: campaignId,
-      usuarioId: userId,
+      campaignId: campaignId,
+      userId: userId,
       puntos,
-      estado: "pendiente",
-      fecha_estado: null,
-      motivo_rechazo: "",
     };
 
     try {
       console.log("DONACION:", body);
 
-      // await api.donaciones.create(body);
+      await api.donation.create(body);
 
       await Swal.fire({
         icon: "success",

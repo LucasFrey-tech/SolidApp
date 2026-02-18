@@ -8,10 +8,12 @@ import styles from "@/styles/Donar/donarDetalle.module.css";
 import { CampaignDetalle } from "@/API/types/campañas/campaigns";
 import { BaseApi } from "@/API/baseApi";
 import DonarModal from "@/components/pages/donaciones/DonarModal";
+import { useUser } from "@/app/context/UserContext";
 
 export default function CampaignDetallePage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useUser();
 
   const [campaign, setCampaign] = useState<CampaignDetalle | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -183,7 +185,7 @@ export default function CampaignDetallePage() {
         onClose={() => setIsModalOpen(false)}
         campaignId={campaign.id}
         campaignTitle={campaign.titulo}
-        userId={1}
+        userId={user!.sub}
         puntosPorArticulo={puntosPorArticulo}
       />
     </>

@@ -1,5 +1,4 @@
 export interface Donation {
-  id: number;
   titulo: string;
   detalle: string;
   tipo: string;
@@ -27,4 +26,12 @@ export interface DonationResponse {
   
   campaignId: number;
   campaignTitulo: string;
+}
+
+export interface CreateDonation {
+  detalle: string;
+  cantidad: number;
+  userId: number;
+  campaignId: number;
+  puntos: number;
 }

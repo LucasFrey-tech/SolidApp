@@ -1,12 +1,27 @@
-import type { Donation, DonacionImagen } from "@/API/types/donaciones";
+import type { Donation, DonacionImagen, CreateDonation } from "@/API/types/donaciones";
 import { Crud, PaginatedResponse } from "../service";
 
 export class DonationsService extends Crud<Donation> {
 
   protected endPoint = '/donations';
-
+  
   constructor(token?: string) {
     super(token);
+  }
+  
+  async create(data: CreateDonation): Promise<Donation> {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    })
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Error ${res.status}: ${errorText}`);
+    }
+
+    return res.json();
   }
 
   async getAll(): Promise<Donation[]> {
@@ -74,9 +89,6 @@ export class DonationsService extends Crud<Donation> {
 
 
   getOne(_id: number): Promise<Donation> {
-    throw new Error("Method not implemented.");
-  }
-  create(_data: Partial<Donation>): Promise<Donation> {
     throw new Error("Method not implemented.");
   }
   update(_id: number, data: Partial<Donation>): Promise<Donation> {

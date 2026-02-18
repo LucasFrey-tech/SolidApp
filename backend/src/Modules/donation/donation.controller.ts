@@ -21,8 +21,6 @@ import {
 import { DonationsService } from './donation.service';
 import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
-import { CurrentUser } from '../auth/current-user.decorator';
-import type { JwtPayload } from '../auth/jwt-payload.interface';
 import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { PaginatedDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
 import { DonacionEstado } from './enum';
@@ -140,7 +138,7 @@ export class DonationsController {
    * @param {JwtPayload} user - ID de la Organización que crea la Donación
    * @returns {Promise<ResponseDonationDto>} Donación creada.
    */
-  @Post(':campaignId')
+  @Post()
   @ApiOperation({
     summary: 'Crear una donación',
     description:
@@ -156,11 +154,8 @@ export class DonationsController {
     description: 'Donación creada exitosamente',
     type: ResponseDonationDto,
   })
-  create(
-    @Body() createDto: CreateDonationDto,
-    @CurrentUser() user: JwtPayload,
-  ): Promise<ResponseDonationDto> {
-    return this.donationsService.create(createDto, user.id);
+  create(@Body() createDto: CreateDonationDto): Promise<ResponseDonationDto> {
+    return this.donationsService.create(createDto);
   }
 
   /**
