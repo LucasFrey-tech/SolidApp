@@ -41,7 +41,7 @@ export class AuthService {
 
   /**
    * Registra un nuevo Usuario en el sistema.
-   * 
+   *
    * @param {RegisterUsuarioDto} dto - Datos de registro del Usuario.
    * @returns Devuelve los datos del usuario creado (sin contraseña).
    * @throws {BadRequestException} En estos casos:
@@ -81,7 +81,7 @@ export class AuthService {
 
   /**
    * Registra una nueva Empresa en el sistema.
-   * 
+   *
    * @param {RegisterEmpresaDto} dto - Datos de registro de la Empresa.
    * @returns Devuelve los datos de la empresa creada (sin contraseña).
    * @throws {BadRequestException} En estos casos:
@@ -129,7 +129,7 @@ export class AuthService {
 
   /**
    * Registra una nueva Organización en el sistema.
-   * 
+   *
    * @param {RegisterOrganizacionDto} dto - Datos de registro de la Organización.
    * @returns Devuelve los datos de la Organización creada (sin contraseña).
    * @throws {BadRequestException} En estos casos:
@@ -140,7 +140,9 @@ export class AuthService {
 
     try {
       // Verificar si ya existe la organización por email.
-      const existingUser = await this.organizationsService.findByEmail(dto.correo);
+      const existingUser = await this.organizationsService.findByEmail(
+        dto.correo,
+      );
       if (existingUser) {
         throw new BadRequestException('El correo ya está registrado');
       }
@@ -176,7 +178,7 @@ export class AuthService {
 
   /**
    * Autentica a un usuario y genera un token JWT
-   * 
+   *
    * @param {LoginRequestBody} requestBody - Objeto que contiene las credenciales del Usuario.
    * @returns Un objeto con el tocken de acceso.
    * @throws {UnauthorizedException} Si las credenciales son incorrectas
@@ -188,11 +190,15 @@ export class AuthService {
     const user = await this.validateUser(requestBody.correo, requestBody.clave);
 
     if (!['usuario', 'admin'].includes(user.rol)) {
-      throw new UnauthorizedException('El correo no corresponde a un usuario válido');
+      throw new UnauthorizedException(
+        'El correo no corresponde a un usuario válido',
+      );
     }
 
     if (user.deshabilitado) {
-      throw new ForbiddenException('Usuario bloqueado. Contacta al administrador.');
+      throw new ForbiddenException(
+        'Usuario bloqueado. Contacta al administrador.',
+      );
     }
 
     // Creamos el payload del JWT
@@ -209,17 +215,22 @@ export class AuthService {
 
   /**
    * Autentica a una empresa y genera un token JWT
-   * 
+   *
    * @param {LoginRequestBody} requestBody - Objeto que contiene las credenciales de la Empresa.
    * @returns Un objeto con el tocken de acceso.
    * @throws {ForbiddenException} Si el usuario de la Empresa está desabilitado
    */
   // Login Empresa
   async loginEmpresa(requestBody: LoginRequestBody) {
-    const user = await this.validateEmpresa(requestBody.correo, requestBody.clave);
+    const user = await this.validateEmpresa(
+      requestBody.correo,
+      requestBody.clave,
+    );
 
     if (user.deshabilitado) {
-      throw new ForbiddenException('Usuario bloqueado. Contacta al administrador.');
+      throw new ForbiddenException(
+        'Usuario bloqueado. Contacta al administrador.',
+      );
     }
 
     // Devolvemos el token
@@ -234,17 +245,22 @@ export class AuthService {
 
   /**
    * Autentica a una organizacion y genera un token JWT
-   * 
+   *
    * @param {LoginRequestBody} requestBody - Objeto que contiene las credenciales de la Organización.
    * @returns Un objeto con el tocken de acceso.
    * @throws {ForbiddenException} Si el usuario de la Organización está desabilitado
    */
   // Login Organizacion
   async loginOrganizacion(requestBody: LoginRequestBody) {
-    const user = await this.validateOrganizacion(requestBody.correo, requestBody.clave);
+    const user = await this.validateOrganizacion(
+      requestBody.correo,
+      requestBody.clave,
+    );
 
     if (user.deshabilitado) {
-      throw new ForbiddenException('Usuario bloqueado. Contacta al administrador.');
+      throw new ForbiddenException(
+        'Usuario bloqueado. Contacta al administrador.',
+      );
     }
 
     // Devolvemos el token
