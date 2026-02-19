@@ -38,6 +38,14 @@ a {
   text-decoration: none;
 }
 
+.swal2-container {
+  z-index: 999999 !important;
+}
+
+.swal2-popup {
+  z-index: 999999 !important;
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

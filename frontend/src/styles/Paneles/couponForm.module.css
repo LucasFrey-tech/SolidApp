@@ -1,19 +1,46 @@
 /* ===============================
-   ANIMATIONS
+   OVERLAY
+================================ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+
+  animation: modalFadeIn 0.2s ease;
+}
+
+/* ===============================
+   MODAL CONTAINER
+================================ */
+.modal {
+  width: 100%;
+  max-width: 500px;
+  padding: 16px;
+}
+
+/* ===============================
+   ANIMATION
 ================================ */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
-    transform: scale(0.95) translateY(10px);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1);
   }
 }
 
 /* ===============================
-   PANEL (FORM)
+   PANEL
 ================================ */
 .panel {
   background-color: #111;
@@ -32,7 +59,6 @@
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 16px;
-  color: #e5e7eb;
   text-align: center;
 }
 
@@ -45,123 +71,117 @@
   gap: 16px;
 }
 
-/* ===============================
-   FIELD
-================================ */
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-/* ===============================
-   LABELS
-================================ */
 .field label {
-  font-size: 18px;
-  font-weight: 500;
-  color: #ffffff;
+  font-size: 16px;
 }
 
-/* ===============================
-   INPUTS
-================================ */
 .field input,
 .field textarea {
-  background: #1b1b1b !important;
-  border: 1px solid #2e2e2e;
+  background: #1b1b1b;
+  border: 1px solid #333;
   border-radius: 8px;
-  padding: 10px 12px;
-  color: #e5e7eb !important;
-  font-size: 14px;
+  padding: 10px;
+  color: white;
 }
 
-.field textarea {
-  resize: none;
-  min-height: 90px;
-}
-
-.field input::placeholder,
-.field textarea::placeholder {
-  color: #94a3b8;
-}
-
-.field input:focus,
-.field textarea:focus {
-  outline: none;
-  border-color: #4f8cff;
-  box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.2);
-}
-
-/* ===============================
-   ACTIONS (BOTONES)
-================================ */
 .actions {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: 16px;
 }
 
 .actions button {
-  min-width: 120px;
+  padding: 10px 16px;
   border-radius: 8px;
-  padding: 10px 18px;
-  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.actions .cancel {
+  background: #555;
+  color: white;
 }
 
-.actions button:hover {
-  transform: translateY(-1px);
-  opacity: 0.95;
+.noSpinner::-webkit-outer-spin-button,
+.noSpinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-/* BOTÓN CANCELAR */
-.actions button[type="button"] {
-  background-color: #000;
-  color: #fff;
-  border: 1px solid #333;
+.noSpinner {
+  -moz-appearance: textfield;
 }
 
-/* BOTÓN GUARDAR */
-.actions button[type="submit"] {
-  background-color: #000000;
-  color: #fff;
-  border: none;
-}
-
-.actions button[type="submit"]:hover {
-  background-color: #4338ca;
-}
 
 /* ===============================
    RESPONSIVE
 ================================ */
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .panel {
+    max-width: 90%;
+    padding: 28px;
+  }
+}
+
+/* Mobile */
 @media (max-width: 768px) {
   .panel {
-    padding: 20px;
+    width: 95%;
+    padding: 22px;
+    border-radius: 10px;
   }
 
   .title {
     font-size: 18px;
+    text-align: center;
+  }
+
+  .form {
+    gap: 16px;
   }
 
   .field label {
-    font-size: 16px;
+    font-size: 14px;
   }
-}
 
-@media (max-width: 480px) {
-  .panel {
-    padding: 16px;
+  .field input,
+  .field textarea {
+    font-size: 14px;
+    padding: 10px;
   }
 
   .actions {
     flex-direction: column;
+    gap: 12px;
   }
 
-  .actions button {
+  .primaryButton,
+  .cancelButton {
     width: 100%;
+    padding: 12px;
+    font-size: 14px;
   }
 }
+
+/* Mobile chico */
+@media (max-width: 480px) {
+  .panel {
+    padding: 18px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .field input,
+  .field textarea {
+    font-size: 13px;
+  }
+}
+

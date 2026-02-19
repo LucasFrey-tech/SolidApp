@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { Edit2 } from "lucide-react";
 import Swal from "sweetalert2";
 
-import styles from "@/styles/organizationPanel.module.css";
-import formStyles from "@/styles/campaignPanel.module.css";
+import styles from "@/styles/Paneles/organizationPanel.module.css";
+import modalStyles from "@/styles/Paneles/couponForm.module.css";
 
 import { BeneficiosService } from "@/API/class/beneficios";
 import { CouponForm } from "./cuponForm";
@@ -39,6 +39,7 @@ export default function OrganizationCouponsPage() {
   const [open, setOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [loading, setLoading] = useState(true);
+
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -47,9 +48,12 @@ export default function OrganizationCouponsPage() {
   ================================ */
   const loadCoupons = async () => {
     if (!empresaId) return;
+
     try {
       setLoading(true);
-      const {items, total } = await api.getByEmpresaPaginated(empresaId, page, 5);
+
+      const { items, total } =
+        await api.getByEmpresaPaginated(empresaId, page, 5);
 
       const couponsWithEstado: Coupon[] = items.map((b: any) => ({
         id: b.id,
@@ -61,7 +65,15 @@ export default function OrganizationCouponsPage() {
       }));
 
       setCoupons(couponsWithEstado);
-      setTotalPages(Math.ceil(total / 5));
+
+      /* FIX PAGINACIÓN */
+      const calculatedTotalPages = Math.max(1, Math.ceil(total / 5));
+      setTotalPages(calculatedTotalPages);
+
+      if (page > calculatedTotalPages) {
+        setPage(calculatedTotalPages);
+      }
+
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "No se pudieron cargar los cupones", "error");
@@ -105,13 +117,15 @@ export default function OrganizationCouponsPage() {
 
       setEditingCoupon(null);
       setOpen(false);
+
       await loadCoupons();
+
     } catch (error) {
       console.error(error);
       Swal.fire(
         "Error",
         "No se pudo guardar el cupón. Verificá los datos.",
-        "error",
+        "error"
       );
     }
   };
@@ -121,6 +135,7 @@ export default function OrganizationCouponsPage() {
   ================================ */
   return (
     <div className={styles.container}>
+
       <div className={styles.header}>
         <h2>Panel de Empresa</h2>
 
@@ -137,30 +152,39 @@ export default function OrganizationCouponsPage() {
 
       <div className={styles.divider} />
 
-      {!loading && coupons.length === 0 && <p>No hay cupones en el momento</p>}
+      {!loading && coupons.length === 0 && (
+        <p>No hay cupones en el momento</p>
+      )}
 
       <ul className={styles.list}>
         {coupons.map((c) => (
           <li key={c.id} className={styles.card}>
+
             <div>
               <strong>{c.titulo}</strong> — {c.detalle} <br />
+
               <strong>Cantidad:</strong> {c.cantidad} —{" "}
+
               <strong>
-                {c.valor === 0 ? "Gratis" : `Puntos: ${c.valor} `}
+                {c.valor === 0
+                  ? "Gratis"
+                  : `Puntos: ${c.valor}`}
               </strong>{" "}
               —{" "}
+
               <span
                 style={{
                   color:
                     c.estado === "pendiente"
                       ? "blue"
                       : c.estado === "rechazado"
-                        ? "red"
-                        : "green",
+                      ? "red"
+                      : "green",
                 }}
               >
                 {c.estado}
               </span>
+
             </div>
 
             <Edit2
@@ -170,13 +194,20 @@ export default function OrganizationCouponsPage() {
                 setOpen(true);
               }}
             />
+
           </li>
         ))}
       </ul>
 
-      {/* ===== PAGINACIÓN ===== */}
+      {/* PAGINACIÓN */}
       <div className={styles.pagination}>
-        <button onClick={() => setPage((p) => p - 1)} disabled={page === 1}>
+
+        <button
+          onClick={() =>
+            setPage((p) => Math.max(1, p - 1))
+          }
+          disabled={page <= 1}
+        >
           Anterior
         </button>
 
@@ -185,17 +216,26 @@ export default function OrganizationCouponsPage() {
         </span>
 
         <button
-          onClick={() => setPage((p) => p + 1)}
-          disabled={page === totalPages}
+          onClick={() =>
+            setPage((p) =>
+              Math.min(totalPages, p + 1)
+            )
+          }
+          disabled={page >= totalPages}
         >
           Siguiente
         </button>
+
       </div>
 
+      {/* MODAL */}
       {open && (
-        <div className={formStyles.modalOverlay} onClick={() => setOpen(false)}>
+        <div
+          className={modalStyles.overlay}
+          onClick={() => setOpen(false)}
+        >
           <div
-            className={formStyles.modal}
+            className={modalStyles.modal}
             onClick={(e) => e.stopPropagation()}
           >
             <CouponForm
@@ -209,6 +249,7 @@ export default function OrganizationCouponsPage() {
           </div>
         </div>
       )}
+
     </div>
   );
 }
