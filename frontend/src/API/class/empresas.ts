@@ -69,9 +69,9 @@ export class EmpresasService extends Crud<Empresa> {
     return res.json();
   }
 
-  async update(id: number, data: EmpresaUpdateRequest, file?: File): Promise<Empresa> {
+  async update(id: number, data: EmpresaUpdateRequest, file?: File | null): Promise<Empresa> {
     let body: BodyInit;
-    let headers = this.getHeaders();
+    const headers = this.getHeaders();
 
     if (file) {
       const formData = new FormData();

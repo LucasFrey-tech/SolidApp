@@ -2,7 +2,7 @@
 
 import { baseApi } from "@/API/baseApi";
 import { NumericInput } from "../../Utils/NumericInputProp";
-import styles from '@/styles/UserPanel/data/empresaData.module.css';
+import styles from "@/styles/UserPanel/data/empresaData.module.css";
 import { useCallback, useEffect, useState } from "react";
 import { Empresa, EmpresaUpdateRequest } from "@/API/types/empresas";
 import { useUser } from "@/app/context/UserContext";
@@ -129,38 +129,53 @@ export default function EmpresaData() {
           (dataToSend as Record<string, string>)[campo] = valorNuevo;
         }
       });
-      
+
       if (Object.keys(dataToSend).length === 0 && !selectedFile) {
         setSuccess(true);
         setSaving(false);
         return;
       }
-      
-      await baseApi.empresa.update(
-        empresaData.id,
-        dataToSend as EmpresaUpdateRequest,
-        selectedFile ?? undefined
-      );
+
+      console.log("=== DATOS ENVIADOS A LA API ===");
+      console.log("ID:", empresaData.id);
+      console.log("Data a enviar (JSON):", dataToSend);
+      console.log("Archivo seleccionado:", selectedFile);
+      console.log("Tamaño del archivo:", selectedFile?.size);
+      console.log("Tipo de archivo:", selectedFile?.type);
+      console.log("=================================");
+
+      if (selectedFile) {
+        await baseApi.empresa.update(
+          empresaData.id,
+          dataToSend as EmpresaUpdateRequest,
+          selectedFile,
+        );
+      } else {
+        await baseApi.empresa.update(
+          empresaData.id,
+          dataToSend as EmpresaUpdateRequest,
+        );
+      }
       
       setSuccess(true);
-      
-      
+
+      setEmpresaData((prevData) => {
+        if (!prevData) return prevData;
+
+        const updatedData = {
+          ...prevData,
+          ...dataToSend,
+        };
+
+        if (selectedFile && preview) {
+          updatedData.logo = preview;
+        }
+
+        return updatedData;
+      });
+
       setSelectedFile(null);
       setPreview(null);
-
-      const updatedEmpresa = await baseApi.empresa.getOne(empresaData.id);
-
-      setSuccess(true);
-
-      const { descripcion, rubro, telefono, direccion, web, logo } = updatedEmpresa;
-      setEditableData({
-        descripcion: descripcion || "",
-        rubro: rubro || "",
-        telefono: telefono || "",
-        direccion: direccion || "",
-        web: web || "",
-        logo: logo || "",
-      });
     } catch (error) {
       console.error("Error en update empresa:", error);
       setError(
@@ -316,9 +331,6 @@ export default function EmpresaData() {
                 Agregar / Cambiar Imagen
               </button>
             </div>
-
-
-
           </div>
         </section>
 

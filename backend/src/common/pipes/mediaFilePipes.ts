@@ -33,6 +33,10 @@ export class NullableImageValidationPipe implements PipeTransform {
   readonly allowedTypes: RegExp = /\.(jpg|jpeg|png|svg|webp)$/;
 
   transform(value: any, metadata: ArgumentMetadata) {
+    if (!value) {
+      return null;
+    }
+
     if (value.size > this.maxSize) {
       throw new Error(`File size exceeds maximum of ${this.maxSize} bytes`);
     }

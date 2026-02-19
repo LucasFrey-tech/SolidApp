@@ -208,47 +208,45 @@ export class EmpresaController {
     status: 404,
     description: 'Empresa no encontrada',
   })
-@UseInterceptors(
-  FileInterceptor('imagen', {
-    storage: diskStorage({
-      destination: 'C:/StaticResources/Solid/empresas/',
-      filename: (req, file, cb) => {
-        const uniqueName =
-          Date.now() +
-          '-' +
-          Math.round(Math.random() * 1e9) +
-          extname(file.originalname);
-        cb(null, uniqueName);
-      },
+  @UseInterceptors(
+    FileInterceptor('imagen', {
+      storage: diskStorage({
+        destination: 'C:/StaticResources/Solid/empresas/',
+        filename: (req, file, cb) => {
+          const uniqueName =
+            Date.now() +
+            '-' +
+            Math.round(Math.random() * 1e9) +
+            extname(file.originalname);
+          cb(null, uniqueName);
+        },
+      }),
     }),
-  }),
-)
-async update(
-  @Param('id', ParseIntPipe) id: number,
-  @UploadedFile(new NullableImageValidationPipe())
-  file?: Express.Multer.File,
-  @Body() body?: any,
-): Promise<EmpresaResponseDTO> {
-  
-  let updateDto: UpdateEmpresaDTO;
+  )
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile(new NullableImageValidationPipe())
+    file?: Express.Multer.File,
+    @Body() body?: any,
+  ): Promise<EmpresaResponseDTO> {
+    let updateDto: UpdateEmpresaDTO;
 
-  // 🔹 Caso 1: Viene FormData (body.data existe)
-  if (body?.data) {
-    updateDto = JSON.parse(body.data);
-  } 
-  // 🔹 Caso 2: Viene JSON normal
-  else {
-    updateDto = body;
+    // 🔹 Caso 1: Viene FormData (body.data existe)
+    if (body?.data) {
+      updateDto = JSON.parse(body.data);
+    }
+    // 🔹 Caso 2: Viene JSON normal
+    else {
+      updateDto = body;
+    }
+
+    // 🔹 Si hay imagen, agregamos el logo
+    if (file) {
+      updateDto.logo = `empresas/${file.filename}`;
+    }
+
+    return this.empresasService.update(id, updateDto);
   }
-
-  // 🔹 Si hay imagen, agregamos el logo
-  if (file) {
-    updateDto.logo = `empresas/${file.filename}`;
-  }
-
-  return this.empresasService.update(id, updateDto);
-}
-
 
   /**
    * DELETE /empresas/:id

@@ -47,7 +47,6 @@ export interface EmpresaUpdateRequest {
   direccion?: string;
   web?: string;
   deshabilitado?: boolean;
-  logo?: string;
 }
 
 /**
