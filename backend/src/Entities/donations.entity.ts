@@ -61,13 +61,12 @@ export class Donations {
 
   /**
    * Estado del Artículo de la Donación
-   * @type {string}
+   * @type {number}
    */
-  @ApiProperty({
-    example: 'APROBADA',
-    description: 'Indicador del estado del Articulo',
+  @Column({
+    type: 'int',
+    default: DonacionEstado.PENDIENTE,
   })
-  @Column({ type: 'varchar', enum: DonacionEstado })
   estado: DonacionEstado;
 
   @ApiProperty({

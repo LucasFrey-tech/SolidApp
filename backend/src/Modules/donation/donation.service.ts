@@ -152,7 +152,10 @@ export class DonationsService {
         },
       },
       relations: { campaña: true, usuario: true },
-      order: { fecha_registro: 'DESC' },
+      order: {
+        estado: 'ASC',
+        fecha_registro: 'DESC',
+      },
       skip: startIndex,
       take: limit,
     });

@@ -357,7 +357,7 @@ export default function OrganizationCampaignsPage() {
                     <td>{d.correo}</td>
                     <td>{d.descripcion}</td>
                     <td>{d.puntos}</td>
-                    <td>{d.estado}</td>
+                    <td>{DonacionEstado[d.estado]}</td>
 
                     <td>
                       <div className={styles.actions}>

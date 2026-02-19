@@ -1,5 +1,5 @@
 export enum DonacionEstado {
-  PENDIENTE = 'PENDIENTE',
-  APROBADA = 'APROBADA',
-  RECHAZADA = 'RECHAZADA',
+  PENDIENTE = 0,
+  APROBADA = 2,
+  RECHAZADA = 1,
 }

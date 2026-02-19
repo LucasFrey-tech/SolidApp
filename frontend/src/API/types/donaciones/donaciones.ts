@@ -19,7 +19,7 @@ export interface DonationResponse {
   id: number;
   descripcion: string;
   puntos: number;
-  estado: string;
+  estado: number;
 
   userId: number;
   correo: string;
