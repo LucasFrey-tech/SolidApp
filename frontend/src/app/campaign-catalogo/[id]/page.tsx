@@ -54,13 +54,12 @@ export default function CampaignDetallePage() {
     if (!campaign) return [];
 
     const imagenesValidas =
-      campaign.imagenes?.filter(
-        (img) => img.url && img.url.trim() !== ""
-      ) || [];
+      campaign.imagenes?.filter((img) => img.url && img.url.trim() !== "") ||
+      [];
 
     if (campaign.imagenPortada) {
       const existePortada = imagenesValidas.some(
-        (img) => img.url === campaign.imagenPortada
+        (img) => img.url === campaign.imagenPortada,
       );
 
       if (!existePortada) {
@@ -147,7 +146,13 @@ export default function CampaignDetallePage() {
 
           <button
             className={styles.donateButton}
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              if (!user) {
+                router.push("/login");
+                return;
+              }
+              setIsModalOpen(true);
+            }}
           >
             Donar ahora
           </button>
@@ -180,14 +185,16 @@ export default function CampaignDetallePage() {
         </div>
       )}
 
-      <DonarModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        campaignId={campaign.id}
-        campaignTitle={campaign.titulo}
-        userId={user!.sub}
-        puntosPorArticulo={puntosPorArticulo}
-      />
+      {user && (
+        <DonarModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          campaignId={campaign.id}
+          campaignTitle={campaign.titulo}
+          userId={user.sub}
+          puntosPorArticulo={puntosPorArticulo}
+        />
+      )}
     </>
   );
 }
