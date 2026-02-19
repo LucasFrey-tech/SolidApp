@@ -5,22 +5,16 @@ import Swal from "sweetalert2";
 import styles from "@/styles/Paneles/adminUsersPanel.module.css";
 import { baseApi } from "@/API/baseApi";
 
-type Campania = {
-  id: number;
-  organizationId: number;
-  organizationName: string;
-  title: string;
-  objective: number;
-  enabled: boolean;
-};
+import { Campaign } from "@/API/types/campañas/campaigns";
+import { CampaignEstado } from "@/API/types/campañas/enum";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 export default function CampaniasList() {
 
   const [page, setPage] = useState(1);
-  const [campanias, setCampanias] = useState<Campania[]>([]);
-  const [search, setSearch] = useState('');
+  const [campanias, setCampanias] = useState<Campaign[]>([]);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [campaniasCount, setCampaniasCount] = useState(0);
 
@@ -28,32 +22,38 @@ export default function CampaniasList() {
      FETCH
   ================================ */
   useEffect(() => {
+
     async function fetchCampanias() {
+
       setLoading(true);
 
       try {
+
         const res = await baseApi.campaign.getAllPaginated(
           page,
           PAGE_SIZE
         );
-  
+
         console.log("RAW RESPONSE:", res);
-  
-        const campaniasFormated: Campania[] = res.items.map((u: any) => ({
-          id: u.id,
-          organizationId: u.organizacion.id,
-          organizationName: u.organizacion.nombreFantasia,
-          title: u.titulo,
-          objective: u.objetivo,
-          enabled: u.estado === 'ACTIVA',
-        }));
-  
-        setCampanias(campaniasFormated);
-        setCampaniasCount(res.total);
-      } catch (error) {
-        console.error("Error del fetch de campañas", error);
-      } finally {
+
+        setCampanias(res.items || []);
+        setCampaniasCount(res.total || 0);
+
+      }
+      catch (error) {
+
+        console.error("Error del fetch", error);
+
+        Swal.fire({
+          icon: "error",
+          title: "Error al cargar campañas"
+        });
+
+      }
+      finally {
+
         setLoading(false);
+
       }
 
     }
@@ -62,8 +62,9 @@ export default function CampaniasList() {
 
   }, [page]);
 
+
   /* ===============================
-     FILTRO BUSCADOR (ACA ESTA LA SOLUCION)
+     BUSCADOR
   ================================ */
   const campaniasFiltradas = useMemo(() => {
 
@@ -72,56 +73,89 @@ export default function CampaniasList() {
     const searchLower = search.toLowerCase();
 
     return campanias.filter(camp =>
-      camp.title.toLowerCase().includes(searchLower) ||
-      camp.organizationName.toLowerCase().includes(searchLower) ||
-      camp.organizationId.toString().includes(searchLower)
+      camp.titulo.toLowerCase().includes(searchLower) ||
+      camp.organizacion.nombreFantasia.toLowerCase().includes(searchLower) ||
+      camp.organizacion.id.toString().includes(searchLower)
     );
 
   }, [campanias, search]);
 
+
   const totalPages = Math.ceil(campaniasCount / PAGE_SIZE) || 1;
 
-  /* ===============================
-     TOGGLE
-  ================================ */
-  const toggleCampania = (camp: Campania) => {
 
-    Swal.fire({
-      title: camp.enabled ? "¿Deshabilitar campaña?" : "¿Habilitar campaña?",
-      text: `${camp.title} (${camp.organizationName})`,
+  /* ===============================
+     UPDATE ESTADO REAL EN DB
+  ================================ */
+  const updateEstado = async (
+    camp: Campaign,
+    nuevoEstado: CampaignEstado
+  ) => {
+
+    const confirm = await Swal.fire({
+      title:
+        nuevoEstado === CampaignEstado.ACTIVA
+          ? "¿Habilitar campaña?"
+          : "¿Deshabilitar campaña?",
+      text: `${camp.titulo} (${camp.organizacion.nombreFantasia})`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'Cancelar',
-    }).then(res => {
-
-      if (res.isConfirmed) {
-
-        setCampanias(prev =>
-          prev.map(c =>
-            c.id === camp.id
-              ? { ...c, enabled: !c.enabled }
-              : c
-          )
-        );
-
-        Swal.fire({
-          icon: "success",
-          title: "Actualizado",
-          timer: 1200,
-          showConfirmButton: false,
-        });
-
-      }
-
+      confirmButtonText: "Sí",
+      cancelButtonText: "Cancelar",
     });
 
+    if (!confirm.isConfirmed) return;
+
+    try {
+
+      await baseApi.campaign.update(camp.id, {
+        estado: nuevoEstado
+      });
+
+      setCampanias(prev =>
+        prev.map(c =>
+          c.id === camp.id
+            ? { ...c, estado: nuevoEstado }
+            : c
+        )
+      );
+
+      Swal.fire({
+        icon: "success",
+        title: "Estado actualizado",
+        timer: 1200,
+        showConfirmButton: false,
+      });
+
+    }
+    catch (error) {
+
+      console.error(error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Error al actualizar",
+      });
+
+    }
+
   };
 
+
+  const activarCampania = (camp: Campaign) =>
+    updateEstado(camp, CampaignEstado.ACTIVA);
+
+  const desactivarCampania = (camp: Campaign) =>
+    updateEstado(camp, CampaignEstado.RECHAZADA);
+
+
   const handleSearch = (value: string) => {
+
     setSearch(value);
     setPage(1);
+
   };
+
 
   return (
 
@@ -131,24 +165,30 @@ export default function CampaniasList() {
         Campañas
       </h2>
 
+
       <input
         type="text"
         className={styles.Search}
-        placeholder="Buscar campaña o ID organización..."
+        placeholder="Buscar campaña o organización..."
         value={search}
         onChange={(e) => handleSearch(e.target.value)}
       />
 
+
       {
         loading
           ?
-          <p className={styles.Empty}>Cargando...</p>
+          <p className={styles.Empty}>
+            Cargando...
+          </p>
+
           :
           campaniasFiltradas.length === 0
             ?
             <p className={styles.Empty}>
               No se encontraron campañas
             </p>
+
             :
             campaniasFiltradas.map(camp => (
 
@@ -160,33 +200,42 @@ export default function CampaniasList() {
                 <div>
 
                   <strong>
-                    {camp.title}
+                    {camp.titulo}
                   </strong>
 
                   <div className={styles.Email}>
-                    Org: {camp.organizationName} (ID {camp.organizationId})
+                    Org: {camp.organizacion.nombreFantasia} (ID {camp.organizacion.id})
                   </div>
 
-                  <div className={styles.Email}>
-                    Objetivo: {camp.objective.toLocaleString()} puntos
+                  <div
+                    className={styles.Email}
+                    style={{ color: "white" }}
+                  >
+                    Objetivo: {camp.objetivo.toLocaleString()} puntos
                   </div>
 
                 </div>
 
+
                 <div className={styles.Actions}>
 
+                  {/* ACTIVAR */}
                   <button
                     className={styles.Check}
-                    disabled={camp.enabled}
-                    onClick={() => toggleCampania(camp)}
+                    disabled={camp.estado === CampaignEstado.ACTIVA}
+                    onClick={() => activarCampania(camp)}
+                    title="Habilitar campaña"
                   >
                     ✓
                   </button>
 
+
+                  {/* DESACTIVAR */}
                   <button
                     className={styles.Cross}
-                    disabled={!camp.enabled}
-                    onClick={() => toggleCampania(camp)}
+                    disabled={camp.estado !== CampaignEstado.ACTIVA}
+                    onClick={() => desactivarCampania(camp)}
+                    title="Deshabilitar campaña"
                   >
                     ✕
                   </button>
@@ -198,6 +247,8 @@ export default function CampaniasList() {
             ))
       }
 
+
+      {/* PAGINACIÓN */}
       <div className={styles.Pagination}>
 
         <button
@@ -213,12 +264,13 @@ export default function CampaniasList() {
 
         <button
           disabled={page === totalPages}
-          onClick={() => setPage((p) => p + 1)}
+          onClick={() => setPage(p => p + 1)}
         >
           Siguiente
         </button>
 
       </div>
+
 
     </div>
 
