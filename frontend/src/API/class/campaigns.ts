@@ -72,6 +72,7 @@ export class campaignService extends Crud<Campaign> {
     formData.append('fecha_Inicio', data.fecha_Inicio);
     formData.append('fecha_Fin', data.fecha_Fin);
     formData.append('objetivo', data.objetivo.toString());
+    formData.append('puntos', data.puntos.toString());
     formData.append('id_organizacion', data.id_organizacion.toString());
 
     if (data.estado) {
