@@ -5,9 +5,6 @@ import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
 import { BaseApi } from '@/API/baseApi';
 
-/* ===============================
-   TYPES
-================================ */
 type Cupon = {
   id: number;
   empresa: string;
@@ -26,9 +23,7 @@ export default function CuponesEmpresaList() {
   const [loading, setLoading] = useState(true);
   const [cuponesCount, setCuponesCount] = useState(0);
 
-  /* ===============================
-     CARGAR CUPONES
-  ================================ */
+
   useEffect(() => {
     async function fetchCupones() {
       try {
@@ -67,17 +62,11 @@ export default function CuponesEmpresaList() {
     fetchCupones();
   }, [page, search]);
 
-  /* ===============================
-     BUSCADOR
-  ================================ */
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
   };
 
-  /* ===============================
-     TOGGLE VISUAL
-  ================================ */
 const toggleCupon = async (cupon: Cupon) => {
   const nuevoEstado =
     cupon.estado === 'aprobado' ? 'rechazado' : 'aprobado';
@@ -99,12 +88,10 @@ const toggleCupon = async (cupon: Cupon) => {
   try {
     const api = new BaseApi();
 
-    // 🔥 LLAMADA REAL A LA API
     await api.beneficio.updateEstado(cupon.id, {
       estado: nuevoEstado,
     });
 
-    // 🔄 ACTUALIZAR FRONT SOLO SI SALIÓ BIEN
     setCupones((prev) =>
       prev.map((c) =>
         c.id === cupon.id
@@ -139,7 +126,6 @@ const toggleCupon = async (cupon: Cupon) => {
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Cupones</h2>
 
-      {/* BUSCADOR */}
       <input
         type="text"
         className={styles.Search}
@@ -170,7 +156,6 @@ const toggleCupon = async (cupon: Cupon) => {
             </div>
 
             <div className={styles.Actions}>
-              {/* APROBAR */}
               <button
                 className={styles.Check}
                 disabled={cupon.estado === 'aprobado'}
@@ -179,7 +164,6 @@ const toggleCupon = async (cupon: Cupon) => {
                 ✓
               </button>
 
-              {/* RECHAZAR */}
               <button
                 className={styles.Cross}
                 disabled={cupon.estado !== 'aprobado'}
@@ -192,7 +176,6 @@ const toggleCupon = async (cupon: Cupon) => {
         ))
       )}
 
-      {/* PAGINACIÓN */}
       <div className={styles.Pagination}>
         <button
           disabled={page === 1}
