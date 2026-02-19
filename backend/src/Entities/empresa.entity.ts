@@ -164,4 +164,12 @@ export class Empresa {
   })
   @Column({ type: 'varchar', length: 255 })
   clave: string;
+
+  /**
+   * Logo de la empresa
+   * @type {string}
+   */
+  @ApiProperty({ example: 'logo.jpg', description: 'Loog de la Empresa' })
+  @Column({ type: 'varchar', length: 255, nullable: true})
+  logo: string;
 }

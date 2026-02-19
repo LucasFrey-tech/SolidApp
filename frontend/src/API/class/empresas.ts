@@ -4,7 +4,6 @@ import {
   EmpresaCreateRequest,
   EmpresaUpdateRequest,
   EmpresaSummary,
-  EmpresaImagen,
 } from "../types/empresas";
 import { UpdateCredentialsPayload } from "../types/panelUsuario/updateCredenciales";
 
@@ -44,19 +43,6 @@ export class EmpresasService extends Crud<Empresa> {
     return res.json();
   }
 
-  async getImages(): Promise<EmpresaImagen[]> {
-    const resQuery = await fetch(`${this.baseUrl}/${this.endPoint}/imagenes`, {
-      headers: this.getHeaders(),
-    });
-
-    if (!resQuery.ok) {
-      throw new Error("Error al obtener imágenes de empresas");
-    }
-
-    const res = await resQuery.json();
-    return res;
-  }
-
   async getOne(id: number): Promise<Empresa> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       headers: this.getHeaders(),
@@ -83,11 +69,27 @@ export class EmpresasService extends Crud<Empresa> {
     return res.json();
   }
 
-  async update(id: number, data: EmpresaUpdateRequest): Promise<Empresa> {
+  async update(id: number, data: EmpresaUpdateRequest, file?: File): Promise<Empresa> {
+    let body: BodyInit;
+    let headers = this.getHeaders();
+
+    if (file) {
+      const formData = new FormData();
+
+      formData.append("data", JSON.stringify(data));
+      formData.append("imagen", file);
+
+      body = formData;
+
+      delete headers["Content-Type"];
+    } else {
+      body = JSON.stringify(data);
+    }
+
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       method: "PUT",
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
+      headers,
+      body,
     });
 
     if (!res.ok) {
@@ -100,7 +102,7 @@ export class EmpresasService extends Crud<Empresa> {
   async updateCredentials(
     id: number,
     data: UpdateCredentialsPayload,
-  ): Promise<{ user: Empresa; token:string }> {
+  ): Promise<{ user: Empresa; token: string }> {
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/${id}/credenciales`,
       {

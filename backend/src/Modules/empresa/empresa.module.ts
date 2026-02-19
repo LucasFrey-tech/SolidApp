@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { EmpresaController } from './empresa.controller';
 import { EmpresasService } from './empresa.service';
 import { Empresa } from '../../Entities/empresa.entity';
-import { Empresa_imagenes } from '../../Entities/empresa_imagenes.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 
@@ -60,9 +59,8 @@ import { JwtModule } from '@nestjs/jwt';
      *
      * Permite usar:
      * @InjectRepository(Empresa)
-     * @InjectRepository(Empresa_imagenes)
      */
-    TypeOrmModule.forFeature([Empresa, Empresa_imagenes]),
+    TypeOrmModule.forFeature([Empresa]),
   ],
 
   /**

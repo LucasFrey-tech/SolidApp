@@ -11,6 +11,8 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,8 +26,11 @@ import { EmpresasService } from './empresa.service';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
-import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { NullableImageValidationPipe } from '../../common/pipes/mediaFilePipes';
 
 /**
  * ============================================================
@@ -104,26 +109,6 @@ export class EmpresaController {
     @Query('search') search = '',
   ) {
     return await this.empresasService.findPaginated(page, limit, search);
-  }
-
-  /**
-   * GET /empresas/imagenes
-   *
-   * Obtiene todas las imágenes asociadas a empresas activas.
-   *
-   * @returns Promise<EmpresaImagenDTO[]>
-   * Lista de imágenes con información de la empresa asociada.
-   */
-  @Get('imagenes')
-  @ApiOperation({ summary: 'Listar las imágenes de las empresas' })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de imágenes de empresas',
-    type: EmpresaImagenDTO,
-    isArray: true,
-  })
-  async findIMG(): Promise<EmpresaImagenDTO[]> {
-    return this.empresasService.findIMG();
   }
 
   /**
@@ -223,12 +208,47 @@ export class EmpresaController {
     status: 404,
     description: 'Empresa no encontrada',
   })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateDto: UpdateEmpresaDTO,
-  ): Promise<EmpresaResponseDTO> {
-    return this.empresasService.update(id, updateDto);
+@UseInterceptors(
+  FileInterceptor('imagen', {
+    storage: diskStorage({
+      destination: 'C:/StaticResources/Solid/empresas/',
+      filename: (req, file, cb) => {
+        const uniqueName =
+          Date.now() +
+          '-' +
+          Math.round(Math.random() * 1e9) +
+          extname(file.originalname);
+        cb(null, uniqueName);
+      },
+    }),
+  }),
+)
+async update(
+  @Param('id', ParseIntPipe) id: number,
+  @UploadedFile(new NullableImageValidationPipe())
+  file?: Express.Multer.File,
+  @Body() body?: any,
+): Promise<EmpresaResponseDTO> {
+  
+  let updateDto: UpdateEmpresaDTO;
+
+  // 🔹 Caso 1: Viene FormData (body.data existe)
+  if (body?.data) {
+    updateDto = JSON.parse(body.data);
+  } 
+  // 🔹 Caso 2: Viene JSON normal
+  else {
+    updateDto = body;
   }
+
+  // 🔹 Si hay imagen, agregamos el logo
+  if (file) {
+    updateDto.logo = `empresas/${file.filename}`;
+  }
+
+  return this.empresasService.update(id, updateDto);
+}
+
 
   /**
    * DELETE /empresas/:id

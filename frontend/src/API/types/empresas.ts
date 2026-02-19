@@ -16,6 +16,7 @@ export interface Empresa {
   deshabilitado: boolean;
   fecha_registro: string;
   ultimo_cambio: string;
+  logo: string;
 }
 
 /**
@@ -46,6 +47,7 @@ export interface EmpresaUpdateRequest {
   direccion?: string;
   web?: string;
   deshabilitado?: boolean;
+  logo?: string;
 }
 
 /**
@@ -58,14 +60,4 @@ export interface EmpresaSummary {
   rubro: string;
   verificada: boolean;
   deshabilitado: boolean;
-}
-
-
-/**
- * Imagen de empresa (EmpresaImagenDTO)
- */
-export interface EmpresaImagen {
-  empresaId: number
-  logo: string;
-  nombre: string;
 }

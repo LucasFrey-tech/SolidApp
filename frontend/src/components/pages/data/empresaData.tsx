@@ -6,10 +6,11 @@ import styles from '@/styles/UserPanel/data/empresaData.module.css';
 import { useCallback, useEffect, useState } from "react";
 import { Empresa, EmpresaUpdateRequest } from "@/API/types/empresas";
 import { useUser } from "@/app/context/UserContext";
+import Image from "next/image";
 
 type EditableEmpresaFields = Pick<
   Empresa,
-  "descripcion" | "rubro" | "telefono" | "direccion" | "web"
+  "descripcion" | "rubro" | "telefono" | "direccion" | "web" | "logo"
 >;
 
 const defaultEditableData: EditableEmpresaFields = {
@@ -18,6 +19,7 @@ const defaultEditableData: EditableEmpresaFields = {
   telefono: "",
   direccion: "",
   web: "",
+  logo: "",
 };
 
 export default function EmpresaData() {
@@ -28,6 +30,10 @@ export default function EmpresaData() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
   const { user } = useUser();
 
   useEffect(() => {
@@ -47,13 +53,14 @@ export default function EmpresaData() {
 
         setEmpresaData(response);
 
-        const { descripcion, rubro, telefono, direccion, web } = response;
+        const { descripcion, rubro, telefono, direccion, web, logo } = response;
         setEditableData({
           descripcion: descripcion || "",
           rubro: rubro || "",
           telefono: telefono || "",
           direccion: direccion || "",
           web: web || "",
+          logo: logo || "",
         });
       } catch (error) {
         console.error("Error fetching empresa data: ", error);
@@ -79,6 +86,22 @@ export default function EmpresaData() {
     },
     [],
   );
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    setSuccess(false);
+    setError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,32 +129,37 @@ export default function EmpresaData() {
           (dataToSend as Record<string, string>)[campo] = valorNuevo;
         }
       });
-
-      console.log("Datos a enviar (solo cambios):", dataToSend);
-
-      if (Object.keys(dataToSend).length === 0) {
+      
+      if (Object.keys(dataToSend).length === 0 && !selectedFile) {
         setSuccess(true);
         setSaving(false);
         return;
       }
-
+      
       await baseApi.empresa.update(
         empresaData.id,
         dataToSend as EmpresaUpdateRequest,
+        selectedFile ?? undefined
       );
+      
+      setSuccess(true);
+      
+      
+      setSelectedFile(null);
+      setPreview(null);
+
+      const updatedEmpresa = await baseApi.empresa.getOne(empresaData.id);
 
       setSuccess(true);
 
-      const updatedEmpresa = await baseApi.empresa.getOne(empresaData.id);
-      setEmpresaData(updatedEmpresa);
-
-      const { descripcion, rubro, telefono, direccion, web } = updatedEmpresa;
+      const { descripcion, rubro, telefono, direccion, web, logo } = updatedEmpresa;
       setEditableData({
         descripcion: descripcion || "",
         rubro: rubro || "",
         telefono: telefono || "",
         direccion: direccion || "",
         web: web || "",
+        logo: logo || "",
       });
     } catch (error) {
       console.error("Error en update empresa:", error);
@@ -244,6 +272,53 @@ export default function EmpresaData() {
                 placeholder="https://www.ejemplo.com"
               />
             </div>
+
+            <div className={styles.Field}>
+              <label className={styles.Label}>Imagen (Logo)</label>
+
+              <div style={{ marginBottom: "10px" }}>
+                {preview ? (
+                  <Image
+                    src={preview}
+                    alt="Preview Logo"
+                    width={200}
+                    height={200}
+                    style={{ objectFit: "contain", borderRadius: "8px" }}
+                  />
+                ) : empresaData.logo ? (
+                  <Image
+                    src={empresaData.logo}
+                    alt="Logo Empresa"
+                    width={200}
+                    height={200}
+                    style={{ objectFit: "contain", borderRadius: "8px" }}
+                  />
+                ) : (
+                  <div style={{ fontSize: "14px", color: "#777" }}>
+                    No hay imagen cargada
+                  </div>
+                )}
+              </div>
+
+              <input
+                id="logoUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+              />
+
+              <button
+                type="button"
+                className={styles.UploadButton}
+                onClick={() => document.getElementById("logoUpload")?.click()}
+              >
+                Agregar / Cambiar Imagen
+              </button>
+            </div>
+
+
+
           </div>
         </section>
 

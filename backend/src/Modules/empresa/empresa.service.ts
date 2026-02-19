@@ -12,8 +12,6 @@ import { Empresa } from '../../Entities/empresa.entity';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
-import { EmpresaImagenDTO } from './dto/lista_empresa_imagen.dto';
-import { Empresa_imagenes } from '../../Entities/empresa_imagenes.entity';
 import { SettingsService } from '../../common/settings/settings.service';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 import bcrypt from 'bcrypt';
@@ -53,11 +51,8 @@ export class EmpresasService {
     @InjectRepository(Empresa)
     private readonly empresasRepository: Repository<Empresa>,
 
-    @InjectRepository(Empresa_imagenes)
-    private readonly empresasImagenRepository: Repository<Empresa_imagenes>,
-
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   /**
    * Obtiene todas las empresas activas (no deshabilitadas).
@@ -80,8 +75,8 @@ export class EmpresasService {
 
     res.forEach(
       (empresa) =>
-        (empresa.imagen =
-          SettingsService.getStaticResourceUrl('servo.png')),
+      (empresa.logo =
+        SettingsService.getStaticResourceUrl('servo.png')),
     );
 
     return res;
@@ -101,9 +96,9 @@ export class EmpresasService {
 
     const where = search
       ? [
-          { razon_social: Like(`%${search}%`) },
-          { nombre_fantasia: Like(`%${search}%`) },
-        ]
+        { razon_social: Like(`%${search}%`) },
+        { nombre_fantasia: Like(`%${search}%`) },
+      ]
       : {};
 
     const [empresas, total] =
@@ -115,34 +110,6 @@ export class EmpresasService {
       });
 
     return { items: empresas, total };
-  }
-
-  /**
-   * Obtiene las imágenes asociadas a empresas activas.
-   *
-   * Incluye la relación con la entidad Empresa.
-   *
-   * @returns {Promise EmpresaImagenDTO[]}
-   */
-  async findIMG(): Promise<EmpresaImagenDTO[]> {
-    const images = await this.empresasImagenRepository.find({
-      relations: ['id_empresa'],
-      where: {
-        id_empresa: {
-          deshabilitado: false,
-        },
-      },
-    });
-
-    this.logger.log(
-      `Se obtuvieron ${images.length} imágenes de empresas`,
-    );
-
-    return images.map((img) => ({
-      id_empresa: img.id_empresa.id,
-      nombre: img.id_empresa.razon_social,
-      logo: img.logo,
-    }));
   }
 
   /**
@@ -239,6 +206,7 @@ export class EmpresasService {
   async update(
     id: number,
     updateDto: UpdateEmpresaDTO,
+    logo?: string,
   ): Promise<EmpresaResponseDTO> {
     const empresa = await this.empresasRepository.findOne({
       where: { id },
@@ -250,7 +218,19 @@ export class EmpresasService {
       );
     }
 
-    Object.assign(empresa, updateDto);
+    Object.keys(updateDto).forEach((key) => {
+      const value = updateDto[key as keyof UpdateEmpresaDTO];
+
+      if (value !== undefined) {
+        empresa[key as keyof Empresa] = value as never;
+      }
+    });
+
+    if (logo) {
+      empresa.logo = logo;
+    }
+
+    empresa.ultimo_cambio = new Date();
 
     const updatedEmpresa =
       await this.empresasRepository.save(empresa);
@@ -417,7 +397,9 @@ export class EmpresasService {
       deshabilitado: empresa.deshabilitado,
       fecha_registro: empresa.fecha_registro,
       ultimo_cambio: empresa.ultimo_cambio,
-      imagen: '',
+      logo: empresa.logo
+        ? SettingsService.getStaticResourceUrl(empresa.logo)
+        : '',
       correo: empresa.correo,
     };
   };

@@ -61,5 +61,5 @@ export class EmpresaResponseDTO {
   })
   ultimo_cambio: Date;
 
-  imagen: string;
+  logo: string;
 }

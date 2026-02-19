@@ -85,6 +85,21 @@
   -webkit-appearance: none;
   margin: 0;
 }
+
+.UploadButton {
+  padding: 10px 18px;
+  background-color: #37acfa;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.UploadButton:hover {
+  background-color: #195fa5;
+}
+
 /* ===== BOTÓN ===== */
 .SubmitButton {
   margin-top: 20px;
