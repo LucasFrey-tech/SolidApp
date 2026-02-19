@@ -160,7 +160,6 @@ export default function CampaignDetallePage() {
         </section>
       </main>
 
-      {/* Lightbox */}
       {isLightboxOpen && selectedImage && (
         <div
           className={styles.lightbox}

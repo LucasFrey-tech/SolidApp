@@ -20,14 +20,8 @@ export default function EmpresasList() {
   const [loading, setLoading] = useState(true);
   const [empresasCount, setEmpresasCount] = useState(0);
 
-  /* ===============================
-     PAGINACIÓN
-  ================================ */
   const totalPages = Math.ceil(empresasCount / PAGE_SIZE) || 1;
 
-  /* ===============================
-     TOGGLE
-  ================================ */
   const toggleEmpresa = async (empresa: Empresa) => {
     const nuevoEstado = empresa.enabled;
 
@@ -91,9 +85,6 @@ export default function EmpresasList() {
     fetchUsers();
   }, [page, search]);
 
-  /* ===============================
-     RESET PAGE AL BUSCAR
-  ================================ */
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
@@ -105,7 +96,6 @@ export default function EmpresasList() {
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Empresas</h2>
 
-      {/* 🔍 BUSCADOR */}
       <input
         type="text"
         className={styles.Search}
@@ -141,7 +131,6 @@ export default function EmpresasList() {
         ))
       )}
 
-      {/* 📄 PAGINACIÓN */}
       <div className={styles.Pagination}>
         <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
           Anterior
