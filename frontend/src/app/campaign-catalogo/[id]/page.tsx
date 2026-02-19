@@ -22,8 +22,6 @@ export default function CampaignDetallePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  const puntosPorArticulo = 100;
-
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
@@ -192,7 +190,7 @@ export default function CampaignDetallePage() {
           campaignId={campaign.id}
           campaignTitle={campaign.titulo}
           userId={user.sub}
-          puntosPorArticulo={puntosPorArticulo}
+          puntosPorArticulo={campaign.puntos}
         />
       )}
     </>
