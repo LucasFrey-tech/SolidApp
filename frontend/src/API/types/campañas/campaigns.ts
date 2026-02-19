@@ -52,7 +52,7 @@ export interface CampaignUpdateRequest {
 
   estado?: CampaignEstado; 
 
-  fecha_Inicio: string;
+  fecha_Inicio?: string;
   fecha_Fin?: string;
 
   objetivo?: number;
