@@ -5,6 +5,7 @@ import { NumericInput } from "../../Utils/NumericInputProp";
 import styles from '@/styles/UserPanel/data/empresaData.module.css';
 import { useCallback, useEffect, useState } from "react";
 import { Empresa, EmpresaUpdateRequest } from "@/API/types/empresas";
+import { useUser } from "@/app/context/UserContext";
 
 type EditableEmpresaFields = Pick<
   Empresa,
@@ -27,20 +28,18 @@ export default function EmpresaData() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchEmpresaData = async () => {
+      if (!user) return;
+
+      setLoading(true);
+
       try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No hay token disponible");
-        }
+        console.log("Buscando empresa con ID: ", user.sub);
 
-        const payload = JSON.parse(atob(token.split(".")[1]));
-
-        console.log("Buscando empresa con ID: ", payload.sub);
-
-        const response = await baseApi.empresa.getOne(payload.sub);
+        const response = await baseApi.empresa.getOne(user.sub);
 
         if (!response) {
           throw new Error("Error al obtener los datos de la empresa");
@@ -65,7 +64,7 @@ export default function EmpresaData() {
     };
 
     fetchEmpresaData();
-  }, []);
+  }, [user]);
 
   const handleInputChange = useCallback(
     (field: keyof EditableEmpresaFields, value: string) => {

@@ -7,6 +7,7 @@ import {
   Organizacion,
   OrganizacionUpdateRequest,
 } from "@/API/types/organizaciones";
+import { useUser } from "@/app/context/UserContext";
 
 type EditableOrganizacionFields = Pick<
   Organizacion,
@@ -29,19 +30,19 @@ export default function OrganizacionData() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const { user } = useUser();
+
   useEffect(() => {
     const fetchOrganizacionData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No hay token disponible");
-        }
+      if (!user) return;
 
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        console.log("Buscando organización con ID: ", payload.sub);
+      setLoading(true);
+
+      try {
+        console.log("Buscando organización con ID: ", user.sub);
 
         // Necesitarás agregar este método en tu BaseApi
-        const response = await baseApi.organizacion.getOne(payload.sub);
+        const response = await baseApi.organizacion.getOne(user.sub);
 
         if (!response) {
           throw new Error("Error al obtener los datos de la organización");
@@ -66,7 +67,7 @@ export default function OrganizacionData() {
     };
 
     fetchOrganizacionData();
-  }, []);
+  }, [user]);
 
   const handleInputChange = useCallback(
     (field: keyof EditableOrganizacionFields, value: string) => {

@@ -11,10 +11,14 @@ export default function RankingPage() {
 
   useEffect(() => {
     async function fetchRanking() {
-      const res = await baseApi.ranking.getTop10();
-      setRanking(res);
-      setLoading(false);
-      console.log(res);
+      try {
+        const res = await baseApi.ranking.getTop10();
+        setRanking(res);
+      } catch (error) {
+        console.error("Error en el fetch de ranking", error);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchRanking();
   }, []);

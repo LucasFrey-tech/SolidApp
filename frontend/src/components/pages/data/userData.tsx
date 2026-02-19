@@ -5,6 +5,7 @@ import { NumericInput } from '../../Utils/NumericInputProp';
 import styles from '@/styles/UserPanel/data/userData.module.css';
 import { useCallback, useEffect, useState } from 'react';
 import { User } from '@/API/types/user';
+import { useUser } from '@/app/context/UserContext';
 
 type EditableUserFields = Pick<User, 
   'calle' | 'numero' | 'departamento' | 'codigoPostal' | 
@@ -30,17 +31,15 @@ export default function UserData() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   
+  const { user } = useUser();
+
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!user) return;
+
+      setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        if(!token) {
-          throw new Error('No hay token disponible');
-        }
-
-        const payload = JSON.parse(atob(token.split('.')[1]));
-
-        const response = await baseApi.users.getOne(payload.sub);
+        const response = await baseApi.users.getOne(user.sub);
 
         if (!response) {
           throw new Error('Error al obtener los datos');
@@ -66,7 +65,7 @@ export default function UserData() {
     }
 
     fetchUserData();
-  }, []);
+  }, [user]);
 
   const handleInputChange = useCallback((field: keyof EditableUserFields, value: string) => {
     setEditableData(prev => ({

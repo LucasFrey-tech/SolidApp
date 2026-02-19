@@ -35,10 +35,7 @@ export default function Navbar() {
       : user.userType
     : null;
 
-  const navbarConfig = navbarKey
-    ? USER_NAVBAR_CONFIG[navbarKey]
-    : null;
-
+  const navbarConfig = navbarKey ? USER_NAVBAR_CONFIG[navbarKey] : null;
 
   // cerrar dropdown al click afuera
   useEffect(() => {
@@ -62,31 +59,28 @@ export default function Navbar() {
 
   //traer los puntos
   useEffect(() => {
-    if (!user) {
-      setPoints(null);
-      return;
-    }
+    const fetchPoints = async () => {
+      if (!user) {
+        setPoints(null);
+        return;
+      }
 
-    if (!navbarConfig?.showPoints) {
-      setPoints(null);
-      return;
-    }
+      if (!navbarConfig?.showPoints) {
+        setPoints(null);
+        return;
+      }
 
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    baseApi.users
-      .getPoints(user.sub)
-      .then((res) => {
+      try {
+        const res = await baseApi.users.getPoints(user.sub);
         setPoints(res.puntos);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Error al obtener puntos:", err);
-        setPoints(0);
-      });
+        setPoints(0); // fallback en caso de error
+      }
+    };
+
+    fetchPoints();
   }, [user, navbarConfig]);
-
-
 
   if (loading) return null;
 
@@ -116,15 +110,38 @@ export default function Navbar() {
 
       {/* LINKS */}
       <ul
-        className={`${styles.navLinks} ${menuOpen ? styles.navLinksOpen : ""
-          }`}
+        className={`${styles.navLinks} ${menuOpen ? styles.navLinksOpen : ""}`}
       >
-        <li><Link href="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
-        <li><Link href="/campaign-catalogo" onClick={() => setMenuOpen(false)}>Donar</Link></li>
-        <li><Link href="/tienda" onClick={() => setMenuOpen(false)}>Tienda</Link></li>
-        <li><Link href="/ranking" onClick={() => setMenuOpen(false)}>Ranking</Link></li>
-        <li><Link href="/como-participar" onClick={() => setMenuOpen(false)}>Cómo participar</Link></li>
-        <li><Link href="/quienes-somos" onClick={() => setMenuOpen(false)}>Quiénes somos</Link></li>
+        <li>
+          <Link href="/" onClick={() => setMenuOpen(false)}>
+            Inicio
+          </Link>
+        </li>
+        <li>
+          <Link href="/campaign-catalogo" onClick={() => setMenuOpen(false)}>
+            Donar
+          </Link>
+        </li>
+        <li>
+          <Link href="/tienda" onClick={() => setMenuOpen(false)}>
+            Tienda
+          </Link>
+        </li>
+        <li>
+          <Link href="/ranking" onClick={() => setMenuOpen(false)}>
+            Ranking
+          </Link>
+        </li>
+        <li>
+          <Link href="/como-participar" onClick={() => setMenuOpen(false)}>
+            Cómo participar
+          </Link>
+        </li>
+        <li>
+          <Link href="/quienes-somos" onClick={() => setMenuOpen(false)}>
+            Quiénes somos
+          </Link>
+        </li>
       </ul>
 
       {/* ACCIÓN DERECHA */}
@@ -175,15 +192,14 @@ export default function Navbar() {
               width={41}
               height={41}
             />
-            <span className={styles.profileName}>
-              {user.username}
-            </span>
+            <span className={styles.profileName}>{user.username}</span>
           </button>
 
           {/* Dropdown */}
           <div
-            className={`${styles.profileDropdown} ${profileOpen ? styles.open : ""
-              }`}
+            className={`${styles.profileDropdown} ${
+              profileOpen ? styles.open : ""
+            }`}
           >
             <Link
               href="/userPanel"
@@ -195,10 +211,7 @@ export default function Navbar() {
 
             <div className={styles.dropdownDivider} />
 
-            <button
-              className={styles.dropdownItem}
-              onClick={handleLogout}
-            >
+            <button className={styles.dropdownItem} onClick={handleLogout}>
               Cerrar sesión
             </button>
           </div>
