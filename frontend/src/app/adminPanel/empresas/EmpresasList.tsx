@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
 import { BaseApi } from '@/API/baseApi';
@@ -20,14 +20,9 @@ export default function EmpresasList() {
   const [loading, setLoading] = useState(true);
   const [empresasCount, setEmpresasCount] = useState(0);
 
-  /* ===============================
-     PAGINACIÓN
-  ================================ */
   const totalPages = Math.ceil(empresasCount / PAGE_SIZE) || 1;
 
-  /* ===============================
-     TOGGLE
-  ================================ */
+
 const toggleEmpresa = async (empresa: Empresa) => {
   const api = new BaseApi();
 
@@ -89,9 +84,6 @@ const toggleEmpresa = async (empresa: Empresa) => {
       fetchUsers();
     }, [page, search]);
 
-  /* ===============================
-     RESET PAGE AL BUSCAR
-  ================================ */
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
@@ -103,7 +95,6 @@ const toggleEmpresa = async (empresa: Empresa) => {
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Empresas</h2>
 
-      {/* 🔍 BUSCADOR */}
       <input
         type="text"
         className={styles.Search}
@@ -140,7 +131,6 @@ const toggleEmpresa = async (empresa: Empresa) => {
         ))
       }
 
-      {/* 📄 PAGINACIÓN */}
       <div className={styles.Pagination}>
         <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>
           Anterior

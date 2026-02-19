@@ -194,6 +194,7 @@ export class CampaignsService {
       fecha_Inicio: createDto.fecha_Inicio,
       fecha_Fin: createDto.fecha_Fin,
       objetivo: createDto.objetivo,
+      puntos: createDto.puntos,
       estado: CampaignEstado.PENDIENTE,
       organizacion,
     });

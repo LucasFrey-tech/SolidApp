@@ -19,7 +19,6 @@ export default function AdminPage() {
     <div className={styles.PanelLayout}>
       <main className={styles.Panel}>
         <section className={styles.Content}>
-          {/* SELECTOR */}
           <div className={styles.Selector}>
             <button
               onClick={() => setView('usuarios')}
@@ -43,7 +42,6 @@ export default function AdminPage() {
             </button>
           </div>
 
-          {/* CONTENIDO */}
           {view === 'usuarios' && <UsuariosAdminPanel />}
           {view === 'empresa' && <EmpresasAdminPanel />}
           {view === 'organizacion' && <OrganizacionesAdminPanel />}
