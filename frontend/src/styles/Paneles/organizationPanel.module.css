@@ -156,6 +156,14 @@
   transform: scale(1.2);
 }
 
+.accept:disabled,
+.reject:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+
+
 /* ===== PAGINATION ===== */
 .pagination {
   display: flex;

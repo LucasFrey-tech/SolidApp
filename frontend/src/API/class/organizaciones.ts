@@ -1,5 +1,5 @@
 import { Crud, PaginatedResponse } from "../service";
-import { DonationResponse } from "../types/donaciones";
+import { DonationResponse } from "../types/donaciones/donaciones";
 import {
   Organizacion,
   OrganizacionCreateRequest,

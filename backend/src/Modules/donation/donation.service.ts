@@ -235,7 +235,7 @@ export class DonationsService {
 
         donacion.estado = nuevoEstado;
         donacion.fecha_estado = new Date();
-        donacion.motivo_rechazo = motivo ?? null;
+        donacion.motivo_rechazo = motivo ?? '';
 
         await manager.save(donacion);
 
@@ -262,14 +262,14 @@ export class DonationsService {
       estadoActual === DonacionEstado.PENDIENTE &&
       ![DonacionEstado.APROBADA, DonacionEstado.RECHAZADA].includes(nuevoEstado)
     ) {
-      throw new BadRequestException('Transición no válida');
+      throw new BadRequestException('Transición de estado no válida');
     }
 
     if (
       estadoActual === DonacionEstado.RECHAZADA &&
       nuevoEstado !== DonacionEstado.APROBADA
     ) {
-      throw new BadRequestException('Transición no válida');
+      throw new BadRequestException('Transición de estado no válida');
     }
   }
 

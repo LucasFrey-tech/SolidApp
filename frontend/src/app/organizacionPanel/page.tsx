@@ -8,6 +8,8 @@ import { CampaignForm, CampaignFormValues } from "./CampainForm";
 import { BaseApi } from "@/API/baseApi";
 import { useUser } from "../context/UserContext";
 import Modal from "@/components/ui/Modal";
+import { DonacionEstado } from "@/API/types/donaciones/enum";
+import { Check, X } from "lucide-react";
 
 import {
   Campaign,
@@ -23,6 +25,7 @@ type Donation = {
   correo: string;
   campaignId: number;
   campaignTitulo: string;
+  estado: DonacionEstado;
 };
 
 type ViewMode = "campaigns" | "donations";
@@ -42,8 +45,7 @@ export default function OrganizationCampaignsPage() {
   const [donationsTotalPages, setDonationsTotalPages] = useState(1);
 
   const [open, setOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] =
-    useState<Campaign | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
 
   const api = useMemo(() => new BaseApi(), []);
 
@@ -56,12 +58,11 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response =
-      await api.organizacion.getOrganizationCampaignsPaginated(
-        organizacionId,
-        campaignsPage,
-        limit
-      );
+    const response = await api.organizacion.getOrganizationCampaignsPaginated(
+      organizacionId,
+      campaignsPage,
+      limit,
+    );
 
     const totalPages = Math.max(1, Math.ceil(response.total / limit));
 
@@ -86,12 +87,11 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response =
-      await api.organizacion.getDonationsPaginatedByOrganizacion(
-        organizacionId,
-        donationsPage,
-        limit
-      );
+    const response = await api.organizacion.getDonationsPaginatedByOrganizacion(
+      organizacionId,
+      donationsPage,
+      limit,
+    );
 
     setDonations(response.items);
     setDonationsTotalPages(Math.ceil(response.total / limit));
@@ -103,20 +103,34 @@ export default function OrganizationCampaignsPage() {
     }
   }, [organizacionId, donationsPage, view]);
 
-  const handleAcceptDonation = (donation: Donation) => {
-    Swal.fire({
+  const handleAcceptDonation = async (donation: Donation) => {
+    const res = await Swal.fire({
       title: "¿Aceptar donación?",
       text: `${donation.correo} - ${donation.id}`,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Aceptar",
       cancelButtonText: "Cancelar",
-    }).then((res) => {
-      if (res.isConfirmed) {
-        Swal.fire("Aceptada", "La donación fue aceptada", "success");
-        setDonations((prev) => prev.filter((d) => d.id !== donation.id));
-      }
     });
+
+    if (!res.isConfirmed) return;
+
+    try {
+      await api.donation.updateDonationStatus(donation.id, {
+        estado: DonacionEstado.APROBADA,
+      });
+
+      await Swal.fire("Aceptada", "La donación fue aceptada", "success");
+
+      setDonations((prev) =>
+        prev.map((d) =>
+          d.id === donation.id ? { ...d, estado: DonacionEstado.APROBADA } : d,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "No se pudo aceptar la donación", "error");
+    }
   };
 
   const handleRejectDonation = async (donation: Donation) => {
@@ -148,22 +162,28 @@ export default function OrganizationCampaignsPage() {
         if (!value || value.trim().length === 0) {
           return "Tenés que escribir un motivo";
         }
-        return null;
       },
     });
 
     if (!reason) return;
 
     try {
-      // LLamar API de rechazo de donación.
+      await api.donation.updateDonationStatus(donation.id, {
+        estado: DonacionEstado.RECHAZADA,
+        motivo: reason,
+      });
 
       await Swal.fire(
         "Rechazada",
         "La donación fue rechazada correctamente",
-        "success"
+        "success",
       );
 
-      setDonations((prev) => prev.filter((d) => d.id !== donation.id));
+      setDonations((prev) =>
+        prev.map((d) =>
+          d.id === donation.id ? { ...d, estado: DonacionEstado.RECHAZADA } : d,
+        ),
+      );
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "No se pudo rechazar la donación", "error");
@@ -269,8 +289,10 @@ export default function OrganizationCampaignsPage() {
             {campaigns.map((c) => (
               <li key={c.id} className={styles.card}>
                 <div>
-                  <strong>{c.titulo}</strong> — {c.descripcion} — <strong>Objetivo:{" "}
-                  {c.objetivo}</strong> - <strong>Puntos por donacion: {c.puntos}</strong> - Estado: {c.estado}
+                  <strong>{c.titulo}</strong> — {c.descripcion} —{" "}
+                  <strong>Objetivo: {c.objetivo}</strong> -{" "}
+                  <strong>Puntos por donacion: {c.puntos}</strong> - Estado:{" "}
+                  {c.estado}
                 </div>
 
                 <Edit2
@@ -315,35 +337,51 @@ export default function OrganizationCampaignsPage() {
                 <th>Usuario</th>
                 <th>Donación</th>
                 <th>Puntos</th>
+                <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
 
             <tbody>
-              {donations.map((d) => (
-                <tr key={d.id}>
-                  <td>{d.campaignTitulo}</td>
-                  <td>{d.correo}</td>
-                  <td>{d.descripcion}</td>
-                  <td>{d.puntos}</td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button
-                        className={styles.accept}
-                        onClick={() => handleAcceptDonation(d)}
-                      >
-                        ✔
-                      </button>
-                      <button
-                        className={styles.reject}
-                        onClick={() => handleRejectDonation(d)}
-                      >
-                        ✖
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {donations.map((d) => {
+                const isPending = d.estado === DonacionEstado.PENDIENTE;
+
+                return (
+                  <tr key={d.id}>
+                    <td>{d.campaignTitulo}</td>
+                    <td>{d.correo}</td>
+                    <td>{d.descripcion}</td>
+                    <td>{d.puntos}</td>
+                    <td>{d.estado}</td>
+
+                    <td>
+                      <div className={styles.actions}>
+                        <button
+                          className={styles.accept}
+                          disabled={!isPending}
+                          onClick={() => handleAcceptDonation(d)}
+                        >
+                          <Check
+                            size={20}
+                            color={isPending ? "#22c55e" : "#9ca3af"}
+                          />
+                        </button>
+
+                        <button
+                          className={styles.reject}
+                          disabled={!isPending}
+                          onClick={() => handleRejectDonation(d)}
+                        >
+                          <X
+                            size={20}
+                            color={isPending ? "#ef4444" : "#9ca3af"}
+                          />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
 

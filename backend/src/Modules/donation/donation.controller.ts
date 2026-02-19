@@ -159,92 +159,56 @@ export class DonationsController {
   }
 
   /**
-   * Aprueba una donación pendiente.
+   * Actualiza el estado de una donación.
    *
-   * Cambia el estado de la donación a APROBADA y aplica los efectos
-   * correspondientes (acreditación de puntos al usuario y actualización del ranking).
+   * Permite cambiar el estado de la donación (por ejemplo, a RECHAZADA)
+   * y registrar información adicional como el motivo del rechazo.
    *
-   * @param {number} id - ID de la donación a aprobar.
+   * @param {number} id - ID de la donación a actualizar.
+   * @param {string} motivo - Motivo del rechazo (opcional, requerido si estado=RECHAZADA).
    * @returns {Promise<void>} Resultado de la operación.
    */
-  @Patch(':id/aprobar')
+  @Patch(':id')
   @ApiOperation({
-    summary: 'Aprobar donación',
-    description:
-      'Cambia el estado de una donación a APROBADA y acredita los puntos correspondientes al usuario.',
+    summary: 'Actualizar el estado de la donación',
+    description: 'Modifica el estado de una donación (ej. RECHAZADA)',
   })
   @ApiParam({
     name: 'id',
     type: Number,
-    description: 'ID de la donación a aprobar',
-    example: 5,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Donación aprobada correctamente.',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Donación no encontrada.',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'La donación no puede cambiar de estado.',
-  })
-  async aprobarDonacion(@Param('id', ParseIntPipe) id: number) {
-    return this.donationsService.confirmarDonacion(id, DonacionEstado.APROBADA);
-  }
-
-  /**
-   * Rechaza una donación pendiente.
-   *
-   * Cambia el estado de la donación a RECHAZADA y registra el motivo
-   * del rechazo proporcionado por el administrador.
-   *
-   * @param {number} id - ID de la donación a rechazar.
-   * @param {string} motivo - Motivo del rechazo.
-   * @returns {Promise<void>} Resultado de la operación.
-   */
-  @Patch(':id/rechazar')
-  @ApiOperation({
-    summary: 'Rechazar donación',
-    description:
-      'Cambia el estado de una donación a RECHAZADA y registra el motivo del rechazo.',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la donación a rechazar',
+    description: 'ID de la donación a actualizar',
     example: 5,
   })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
+        estado: {
+          type: 'string',
+          enum: ['ACEPTADA', 'RECHAZADA'],
+          example: 'RECHAZADA',
+        },
         motivo: {
           type: 'string',
           example: 'La imagen comprobante no es legible',
         },
       },
-      required: ['motivo'],
+      required: ['estado'],
     },
   })
   @ApiResponse({
     status: 200,
-    description: 'Donación rechazada correctamente.',
+    description: 'Donación actualizada correctamente.',
   })
   @ApiResponse({
     status: 404,
     description: 'Donación no encontrada.',
   })
-  async rechazarDonacion(
+  async actualizarEstadoDonación(
     @Param('id', ParseIntPipe) id: number,
+    @Body('estado') estado: DonacionEstado,
     @Body('motivo') motivo: string,
   ) {
-    return this.donationsService.confirmarDonacion(
-      id,
-      DonacionEstado.RECHAZADA,
-      motivo,
-    );
+    return this.donationsService.confirmarDonacion(id, estado, motivo);
   }
 }

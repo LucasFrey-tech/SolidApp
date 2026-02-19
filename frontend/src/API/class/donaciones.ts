@@ -1,20 +1,24 @@
-import type { Donation, DonacionImagen, CreateDonation } from "@/API/types/donaciones";
+import type {
+  Donation,
+  DonacionImagen,
+  CreateDonation,
+} from "@/API/types/donaciones/donaciones";
 import { Crud, PaginatedResponse } from "../service";
+import { DonacionEstado } from "../types/donaciones/enum";
 
 export class DonationsService extends Crud<Donation> {
+  protected endPoint = "/donations";
 
-  protected endPoint = '/donations';
-  
   constructor(token?: string) {
     super(token);
   }
-  
+
   async create(data: CreateDonation): Promise<Donation> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify(data),
-    })
+    });
 
     if (!res.ok) {
       const errorText = await res.text();
@@ -53,15 +57,12 @@ export class DonationsService extends Crud<Donation> {
   }
 
   async getImages(): Promise<DonacionImagen[]> {
-    const resQuery = await fetch(
-      `${this.baseUrl}${this.endPoint}/imagenes`,
-      {
-        headers: this.getHeaders(),
-      },
-    );
+    const resQuery = await fetch(`${this.baseUrl}${this.endPoint}/imagenes`, {
+      headers: this.getHeaders(),
+    });
 
     if (!resQuery.ok) {
-      throw new Error('Error al obtener imágenes de donaciones');
+      throw new Error("Error al obtener imágenes de donaciones");
     }
 
     const res = await resQuery.json();
@@ -75,7 +76,7 @@ export class DonationsService extends Crud<Donation> {
     return fetch(
       `${this.baseUrl}${this.endPoint}/paginated?page=${page}&limit=${limit}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: this.getHeaders(),
       },
     ).then(async (res) => {
@@ -87,6 +88,23 @@ export class DonationsService extends Crud<Donation> {
     });
   }
 
+  async updateDonationStatus(
+    id: number,
+    data: { estado: DonacionEstado; motivo?: string },
+  ): Promise<DonacionEstado> {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Error ${res.status}: ${errorText}`);
+    }
+
+    return res.json();
+  }
 
   getOne(_id: number): Promise<Donation> {
     throw new Error("Method not implemented.");
