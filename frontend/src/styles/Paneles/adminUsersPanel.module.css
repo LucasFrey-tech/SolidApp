@@ -147,6 +147,14 @@
   cursor: not-allowed;
 }
 
+.UserRow strong {
+  color: #ffffff;
+}
+
+.UserRow .Email {
+  color: #ffffff;
+}
+
 .Search {
   width: 100%;
   padding: 10px 12px;
