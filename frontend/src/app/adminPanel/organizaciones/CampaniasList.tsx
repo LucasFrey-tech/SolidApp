@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useEffect } from 'react';
-import Swal from 'sweetalert2';
-import styles from '@/styles/Paneles/adminUsersPanel.module.css';
-import { baseApi } from '@/API/baseApi';
+import { useState, useMemo, useEffect } from "react";
+import Swal from "sweetalert2";
+import styles from "@/styles/Paneles/adminUsersPanel.module.css";
+import { baseApi } from "@/API/baseApi";
 
 type Campania = {
   id: number;
@@ -17,34 +17,37 @@ type Campania = {
 /* ===============================
    MOCK
 ================================ */
-const MOCK_CAMPANIAS: Campania[] = Array.from({ length: 18 }).map(
-  (_, i) => ({
-    id: i + 1,
-    organizationId: 200 + i,
-    organizationName: `Organización ${i + 1}`,
-    title: `Campaña ${i + 1}`,
-    objective: (i + 1) * 1000,
-    enabled: i % 3 !== 0,
-  })
-);
+const MOCK_CAMPANIAS: Campania[] = Array.from({ length: 18 }).map((_, i) => ({
+  id: i + 1,
+  organizationId: 200 + i,
+  organizationName: `Organización ${i + 1}`,
+  title: `Campaña ${i + 1}`,
+  objective: (i + 1) * 1000,
+  enabled: i % 3 !== 0,
+}));
 
 const PAGE_SIZE = 10;
 
 export default function CampaniasList() {
   const [page, setPage] = useState(1);
   const [campanias, setCampanias] = useState(MOCK_CAMPANIAS);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [campaniasCount, setCampaniasCount] = useState(0);
 
-    /* ===============================
+  /* ===============================
        PAGINACIÓN
     ================================ */
-    const totalPages = Math.ceil(campaniasCount / PAGE_SIZE) || 1;
-  
-    useEffect(() => {
-      async function fetchUsers() {
-        const res = await baseApi.organizacion.getOrganizationCampaignsPaginated(page, PAGE_SIZE);
+  const totalPages = Math.ceil(campaniasCount / PAGE_SIZE) || 1;
+
+  useEffect(() => {
+    async function fetchUsers() {
+      setLoading(true);
+      try {
+        const res = await baseApi.organizacion.getOrganizationCampaignsPaginated(
+          page,
+          PAGE_SIZE,
+        );
         console.log(res);
         const campaniasFormated = res.items.map((u: any) => ({
           id: u.id,
@@ -52,41 +55,43 @@ export default function CampaniasList() {
           organizationName: u.organizacion.nombreFantasia,
           title: u.titulo,
           objective: u.objetivo,
-          enabled: u.estado == 'activa'? true : false,
+          enabled: u.estado == "activa" ? true : false,
         }));
-        
+  
         setCampanias(campaniasFormated);
         setCampaniasCount(res.total);
+      } catch (error) {
+        console.error("Error del fetch de campañas: ", error);
+      } finally {
         setLoading(false);
       }
-  
-      fetchUsers();
-    }, [page, search]);
+    }
+
+    fetchUsers();
+  }, [page, search]);
 
   /* ===============================
      TOGGLE
   ================================ */
   const toggleCampania = (camp: Campania) => {
     Swal.fire({
-      title: camp.enabled
-        ? '¿Deshabilitar campaña?'
-        : '¿Habilitar campaña?',
+      title: camp.enabled ? "¿Deshabilitar campaña?" : "¿Habilitar campaña?",
       text: `${camp.title} (${camp.organizationName})`,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'Cancelar',
-    }).then(res => {
+      confirmButtonText: "Sí",
+      cancelButtonText: "Cancelar",
+    }).then((res) => {
       if (res.isConfirmed) {
-        setCampanias(prev =>
-          prev.map(c =>
-            c.id === camp.id ? { ...c, enabled: !c.enabled } : c
-          )
+        setCampanias((prev) =>
+          prev.map((c) =>
+            c.id === camp.id ? { ...c, enabled: !c.enabled } : c,
+          ),
         );
 
         Swal.fire({
-          icon: 'success',
-          title: 'Actualizado',
+          icon: "success",
+          title: "Actualizado",
           timer: 1200,
           showConfirmButton: false,
         });
@@ -116,45 +121,44 @@ export default function CampaniasList() {
       />
 
       {/* LISTA DE CAMPAÑAS */}
-      {
-        campanias.length === 0?
-          <p className={styles.Empty}>No se encontraron campañas</p>
-        :
-          campanias.map(camp => (
-            <div key={camp.id} className={styles.UserRow}>
-              <div>
-                <strong>{camp.title}</strong>
-                <div className={styles.Email}>
-                  Org: {camp.organizationName} (ID {camp.organizationId})
-                </div>
-                <div className={styles.Email}>
-                  Objetivo: {camp.objective.toLocaleString()} puntos
-                </div>
+      {campanias.length === 0 ? (
+        <p className={styles.Empty}>No se encontraron campañas</p>
+      ) : (
+        campanias.map((camp) => (
+          <div key={camp.id} className={styles.UserRow}>
+            <div>
+              <strong>{camp.title}</strong>
+              <div className={styles.Email}>
+                Org: {camp.organizationName} (ID {camp.organizationId})
               </div>
-
-              <div className={styles.Actions}>
-                <button
-                  className={styles.Check}
-                  disabled={camp.enabled}
-                  onClick={() => toggleCampania(camp)}
-                >
-                  ✓
-                </button>
-                <button
-                  className={styles.Cross}
-                  disabled={!camp.enabled}
-                  onClick={() => toggleCampania(camp)}
-                >
-                  ✕
-                </button>
+              <div className={styles.Email}>
+                Objetivo: {camp.objective.toLocaleString()} puntos
               </div>
             </div>
-          ))
-      }
+
+            <div className={styles.Actions}>
+              <button
+                className={styles.Check}
+                disabled={camp.enabled}
+                onClick={() => toggleCampania(camp)}
+              >
+                ✓
+              </button>
+              <button
+                className={styles.Cross}
+                disabled={!camp.enabled}
+                onClick={() => toggleCampania(camp)}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ))
+      )}
 
       {/* 📄 PAGINACIÓN */}
       <div className={styles.Pagination}>
-        <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
           Anterior
         </button>
 
@@ -164,7 +168,7 @@ export default function CampaniasList() {
 
         <button
           disabled={page === totalPages}
-          onClick={() => setPage(p => p + 1)}
+          onClick={() => setPage((p) => p + 1)}
         >
           Siguiente
         </button>

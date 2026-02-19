@@ -29,7 +29,7 @@ export default function OrganizacionesList() {
         page,
         PAGE_SIZE,
         search,
-        true // incluir deshabilitadas
+        true,
       );
 
       const formatted = res.items.map((u: any) => ({
