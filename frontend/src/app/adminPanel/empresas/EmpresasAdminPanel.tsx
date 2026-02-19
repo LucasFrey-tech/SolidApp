@@ -15,7 +15,6 @@ export default function EmpresasAdminPanel() {
 
   return (
     <>
-      {/* SELECTOR INTERNO */}
       <div className={styles.Selector}>
         <button
           className={getButtonClass('empresas')}

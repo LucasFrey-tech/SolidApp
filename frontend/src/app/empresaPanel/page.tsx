@@ -11,9 +11,7 @@ import { BeneficiosService } from "@/API/class/beneficios";
 import { CouponForm } from "./cuponForm";
 import { useUser } from "@/app/context/UserContext";
 
-/* ===============================
-   TIPOS
-================================ */
+
 type Coupon = {
   id: number;
   titulo: string;
@@ -23,14 +21,9 @@ type Coupon = {
   estado: "pendiente" | "aprobado" | "rechazado";
 };
 
-/* ===============================
-   API
-================================ */
 const api = new BeneficiosService();
 
-/* ===============================
-   COMPONENTE
-================================ */
+
 export default function OrganizationCouponsPage() {
   const { user } = useUser();
   const empresaId = user?.sub;
@@ -43,9 +36,6 @@ export default function OrganizationCouponsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  /* ===============================
-     CARGAR CUPONES
-  ================================ */
   const loadCoupons = async () => {
     if (!empresaId) return;
 
@@ -66,7 +56,6 @@ export default function OrganizationCouponsPage() {
 
       setCoupons(couponsWithEstado);
 
-      /* FIX PAGINACIÓN */
       const calculatedTotalPages = Math.max(1, Math.ceil(total / 5));
       setTotalPages(calculatedTotalPages);
 
@@ -86,9 +75,7 @@ export default function OrganizationCouponsPage() {
     loadCoupons();
   }, [empresaId, page]);
 
-  /* ===============================
-     CREATE / UPDATE
-  ================================ */
+
   const handleSaveCoupon = async (data: Partial<Coupon>) => {
     if (!empresaId) return;
 
@@ -130,9 +117,6 @@ export default function OrganizationCouponsPage() {
     }
   };
 
-  /* ===============================
-     RENDER
-  ================================ */
   return (
     <div className={styles.container}>
 
@@ -199,7 +183,6 @@ export default function OrganizationCouponsPage() {
         ))}
       </ul>
 
-      {/* PAGINACIÓN */}
       <div className={styles.pagination}>
 
         <button
@@ -228,7 +211,6 @@ export default function OrganizationCouponsPage() {
 
       </div>
 
-      {/* MODAL */}
       {open && (
         <div
           className={modalStyles.overlay}
