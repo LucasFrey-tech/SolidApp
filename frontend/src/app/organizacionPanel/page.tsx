@@ -93,7 +93,12 @@ export default function OrganizationCampaignsPage() {
       limit,
     );
 
-    setDonations(response.items);
+    setDonations(
+      response.items.map((item) => ({
+        ...item,
+        estado: item.estado as DonacionEstado,
+      })),
+    );
     setDonationsTotalPages(Math.ceil(response.total / limit));
   };
 
