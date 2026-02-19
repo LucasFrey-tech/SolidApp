@@ -9,10 +9,6 @@ import { DonacionEstado } from "../types/donaciones/enum";
 export class DonationsService extends Crud<Donation> {
   protected endPoint = "/donations";
 
-  constructor(token?: string) {
-    super(token);
-  }
-
   async create(data: CreateDonation): Promise<Donation> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
       method: "POST",

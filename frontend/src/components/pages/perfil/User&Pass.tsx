@@ -2,7 +2,7 @@
 
 import styles from "@/styles/UserPanel/usuario/user&pass.module.css";
 import { useEffect, useState, useMemo } from "react";
-import { BaseApi } from "@/API/baseApi";
+import { baseApi } from "@/API/baseApi";
 import { useUser } from "@/app/context/UserContext";
 
 type UserType = "usuario" | "empresa" | "organizacion";
@@ -23,11 +23,6 @@ export default function UserAndPass() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const { setUser, refreshUser } = useUser();
-
-  const api = useMemo(() => {
-    const token = localStorage.getItem("token");
-    return new BaseApi(token || undefined);
-  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -50,13 +45,13 @@ export default function UserAndPass() {
 
         switch (authData.userType) {
           case "usuario":
-            response = await api.users.getOne(authData.userId);
+            response = await baseApi.users.getOne(authData.userId);
             break;
           case "empresa":
-            response = await api.empresa.getOne(authData.userId);
+            response = await baseApi.empresa.getOne(authData.userId);
             break;
           case "organizacion":
-            response = await api.organizacion.getOne(authData.userId);
+            response = await baseApi.organizacion.getOne(authData.userId);
             break;
           default:
             return;
@@ -119,13 +114,13 @@ export default function UserAndPass() {
       let response;
       switch (authData!.userType) {
         case "usuario":
-          response = await api.users.updateCredentials(authData!.userId, payload);
+          response = await baseApi.users.updateCredentials(authData!.userId, payload);
           break;
         case "empresa":
-          response = await api.empresa.updateCredentials(authData!.userId, payload);
+          response = await baseApi.empresa.updateCredentials(authData!.userId, payload);
           break;
         case "organizacion":
-          response = await api.organizacion.updateCredentials(authData!.userId, payload);
+          response = await baseApi.organizacion.updateCredentials(authData!.userId, payload);
           break;
         default:
           throw new Error("Tipo de usuario inválido");

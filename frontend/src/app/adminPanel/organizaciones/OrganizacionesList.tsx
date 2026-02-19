@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
-import { BaseApi } from '@/API/baseApi';
+import { baseApi } from '@/API/baseApi';
 
 type Organizacion = {
   id: number;
@@ -21,13 +21,11 @@ export default function OrganizacionesList() {
   const [totalCount, setTotalCount] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const api = new BaseApi();
-
   const fetchOrganizaciones = async () => {
     try {
       setLoading(true);
 
-      const res = await api.organizacion.getAllPaginated(
+      const res = await baseApi.organizacion.getAllPaginated(
         page,
         PAGE_SIZE,
         search,
@@ -37,7 +35,7 @@ export default function OrganizacionesList() {
       const formatted = res.items.map((u: any) => ({
         id: u.id,
         name: u.razonSocial,
-        habilitado: !u.deshabilitado, // ✅ CORREGIDO
+        habilitado: !u.deshabilitado,
       }));
 
       setOrganizaciones(formatted);
@@ -81,12 +79,11 @@ export default function OrganizacionesList() {
 
     try {
       if (quiereHabilitar) {
-        await api.organizacion.restore(org.id);
+        await baseApi.organizacion.restore(org.id);
       } else {
-        await api.organizacion.delete(org.id);
+        await baseApi.organizacion.delete(org.id);
       }
 
-      // 🔥 fuerza refresco del listado
       setRefreshKey((prev) => prev + 1);
 
       Swal.fire({

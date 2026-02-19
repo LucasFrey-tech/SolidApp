@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/Tienda/tienda.module.css';
 
-import { BaseApi } from '@/API/baseApi';
+import { baseApi } from '@/API/baseApi';
 import { Beneficio } from '@/API/types/beneficios';
 import { EmpresaImagen } from '@/API/types/empresas';
 
@@ -38,8 +38,7 @@ export default function Tienda() {
         setLoading(true);
         setError(null);
 
-        const api = new BaseApi();
-        const res = await api.beneficio.getAllPaginated(page, LIMIT);
+        const res = await baseApi.beneficio.getAllPaginated(page, LIMIT);
 
         const items = Array.isArray(res.items)
           ? res.items
@@ -71,9 +70,8 @@ export default function Tienda() {
   useEffect(() => {
     const fetchLogos = async () => {
       try {
-        const api = new BaseApi();
         const images: EmpresaImagen[] =
-          await api.empresa.getImages();
+          await baseApi.empresa.getImages();
 
         const map = Object.fromEntries(
           images.map((img) => [img.empresaId, img.logo]),

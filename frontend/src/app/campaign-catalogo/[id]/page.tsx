@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/Donar/donarDetalle.module.css";
 import { CampaignDetalle } from "@/API/types/campañas/campaigns";
-import { BaseApi } from "@/API/baseApi";
+import { baseApi } from "@/API/baseApi";
 import DonarModal from "@/components/pages/donaciones/DonarModal";
 import { useUser } from "@/app/context/UserContext";
 
@@ -25,8 +25,7 @@ export default function CampaignDetallePage() {
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
-        const api = new BaseApi();
-        const data = await api.campaign.getOneDetail(Number(params.id));
+        const data = await baseApi.campaign.getOneDetail(Number(params.id));
 
         setCampaign(data);
 

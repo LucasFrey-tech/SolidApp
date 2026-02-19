@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import styles from "@/styles/navbar.module.css";
-import { BaseApi } from "@/API/baseApi";
+import { baseApi } from "@/API/baseApi";
 
 import { NavbarRole, USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
 
@@ -75,9 +75,7 @@ export default function Navbar() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const api = new BaseApi(token);
-
-    api.users
+    baseApi.users
       .getPoints(user.sub)
       .then((res) => {
         setPoints(res.puntos);

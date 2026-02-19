@@ -1,6 +1,6 @@
 "use client";
 
-import { BaseApi } from "@/API/baseApi";
+import { baseApi } from "@/API/baseApi";
 import { NumericInput } from "../../Utils/NumericInputProp";
 import styles from '@/styles/UserPanel/data/empresaData.module.css';
 import { useCallback, useEffect, useState } from "react";
@@ -29,7 +29,6 @@ export default function EmpresaData() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const api = new BaseApi();
     const fetchEmpresaData = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -41,7 +40,7 @@ export default function EmpresaData() {
 
         console.log("Buscando empresa con ID: ", payload.sub);
 
-        const response = await api.empresa.getOne(payload.sub);
+        const response = await baseApi.empresa.getOne(payload.sub);
 
         if (!response) {
           throw new Error("Error al obtener los datos de la empresa");
@@ -91,8 +90,6 @@ export default function EmpresaData() {
     setSuccess(false);
 
     try {
-      const api = new BaseApi();
-
       const dataToSend: Partial<EditableEmpresaFields> = {};
       const campos: (keyof EditableEmpresaFields)[] = [
         "descripcion",
@@ -119,14 +116,14 @@ export default function EmpresaData() {
         return;
       }
 
-      await api.empresa.update(
+      await baseApi.empresa.update(
         empresaData.id,
         dataToSend as EmpresaUpdateRequest,
       );
 
       setSuccess(true);
 
-      const updatedEmpresa = await api.empresa.getOne(empresaData.id);
+      const updatedEmpresa = await baseApi.empresa.getOne(empresaData.id);
       setEmpresaData(updatedEmpresa);
 
       const { descripcion, rubro, telefono, direccion, web } = updatedEmpresa;

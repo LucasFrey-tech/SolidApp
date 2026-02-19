@@ -2,7 +2,7 @@ import { useState } from "react";
 import { z } from "zod";
 import Image from "next/image";
 import styles from "../../styles/login-registro/registro.module.css";
-import { BaseApi } from "@/API/baseApi";
+import { baseApi } from "@/API/baseApi";
 import { NumericInput } from "../Utils/NumericInputProp";
 
 // ==================== Estrategias =====================
@@ -269,7 +269,6 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
 // ==================== COMPONENTE ====================
 export default function Registro() {
   const [step, setStep] = useState<Step>("select");
-  const [api] = useState(() => new BaseApi());
 
   // ==================== ESTADOS INDEPENDIENTES ====================
   const [usuarioData, setUsuarioData] = useState<UsuarioData>({
@@ -335,11 +334,11 @@ export default function Registro() {
   const getCurrentStrategy = () => {
     switch (step) {
       case "usuario":
-        return new RegisterUsuarioStrategy(api.register);
+        return new RegisterUsuarioStrategy(baseApi.register);
       case "empresa":
-        return new RegisterEmpresaStrategy(api.register);
+        return new RegisterEmpresaStrategy(baseApi.register);
       case "organizacion":
-        return new RegisterOrganizacionStrategy(api.register);
+        return new RegisterOrganizacionStrategy(baseApi.register);
       default:
         return null;
     }

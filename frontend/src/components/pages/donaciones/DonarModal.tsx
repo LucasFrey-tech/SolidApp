@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Donar/donarModal.module.css";
-import { BaseApi } from "@/API/baseApi";
+import { baseApi } from "@/API/baseApi";
 
 interface Props {
   isOpen: boolean;
@@ -24,8 +24,6 @@ export default function DonarModal({
 }: Props) {
   const [detalle, setDetalle] = useState("");
   const [cantidad, setCantidad] = useState(1);
-
-  const api = useMemo(() => new BaseApi(), []);
 
   if (!isOpen) return null;
 
@@ -73,7 +71,7 @@ export default function DonarModal({
     try {
       console.log("DONACION:", body);
 
-      await api.donation.create(body);
+      await baseApi.donation.create(body);
 
       await Swal.fire({
         icon: "success",

@@ -10,10 +10,6 @@ import { UpdateCredentialsPayload } from "../types/panelUsuario/updateCredencial
 export class OrganizacionesService extends Crud<Organizacion> {
   protected endPoint = "organizations";
 
-  constructor(token?: string) {
-    super(token);
-  }
-
   async getAll(): Promise<Organizacion[]> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
       headers: this.getHeaders(),

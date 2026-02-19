@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
-import { BaseApi } from '@/API/baseApi';
+import { baseApi } from '@/API/baseApi';
 
 type Campania = {
   id: number;
@@ -44,8 +44,7 @@ export default function CampaniasList() {
   
     useEffect(() => {
       async function fetchUsers() {
-        const api = new BaseApi();
-        const res = await api.organizacion.getOrganizationCampaignsPaginated(page, PAGE_SIZE);
+        const res = await baseApi.organizacion.getOrganizationCampaignsPaginated(page, PAGE_SIZE);
         console.log(res);
         const campaniasFormated = res.items.map((u: any) => ({
           id: u.id,

@@ -22,12 +22,15 @@ export class BaseApi {
     constructor(private token?:string){
         this.register = new RegisterService();
         this.log = new Login();
-        this.users = new Users(token);
-        this.empresa = new EmpresasService(token);
-        this.organizacion = new OrganizacionesService(token);
-        this.beneficio = new BeneficiosService(token);
-        this.ranking = new RankingService(token);
-        this.donation = new DonationsService(token);
-        this.campaign = new campaignService(token);
+        this.users = new Users();
+        this.empresa = new EmpresasService();
+        this.organizacion = new OrganizacionesService();
+        this.beneficio = new BeneficiosService();
+        this.ranking = new RankingService();
+        this.donation = new DonationsService();
+        this.campaign = new campaignService();
     }
+
 }
+
+export const baseApi = new BaseApi();

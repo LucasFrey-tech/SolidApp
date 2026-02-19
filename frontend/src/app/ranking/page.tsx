@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BaseApi } from '@/API/baseApi';
 import type { RankingItem } from '@/API/types/ranking';
 import styles from '@/styles/Ranking/ranking.module.css'
+import { baseApi } from '@/API/baseApi';
 
 export default function RankingPage() {
   const [ranking, setRanking] = useState<RankingItem[]>([]);
@@ -11,9 +11,8 @@ export default function RankingPage() {
 
   useEffect(() => {
     async function fetchRanking() {
-      const api = new BaseApi();
-      const res = await api.ranking.getTop10()
-      setRanking(res)
+      const res = await baseApi.ranking.getTop10();
+      setRanking(res);
       setLoading(false);
       console.log(res);
     }

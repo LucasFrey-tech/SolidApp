@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
-import { BaseApi } from '@/API/baseApi';
+import { baseApi } from '@/API/baseApi';
 
 type Empresa = {
   id: number;
@@ -29,8 +29,6 @@ export default function EmpresasList() {
      TOGGLE
   ================================ */
 const toggleEmpresa = async (empresa: Empresa) => {
-  const api = new BaseApi();
-
   const nuevoEstado = empresa.enabled; 
 
   Swal.fire({
@@ -46,7 +44,7 @@ const toggleEmpresa = async (empresa: Empresa) => {
     if (!res.isConfirmed) return;
 
     try {
-      await api.empresa.update(empresa.id, {
+      await baseApi.empresa.update(empresa.id, {
         deshabilitado: nuevoEstado,
       });
 
@@ -73,8 +71,7 @@ const toggleEmpresa = async (empresa: Empresa) => {
 
   useEffect(() => {
       async function fetchUsers() {
-        const api = new BaseApi();
-        const res = await api.empresa.getAllPaginated(page, PAGE_SIZE, search);
+        const res = await baseApi.empresa.getAllPaginated(page, PAGE_SIZE, search);
         const empresasFormated = res.items.map((u: any) => ({
           id: u.id,
           name: u.razon_social,

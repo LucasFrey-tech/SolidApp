@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
-import { BaseApi } from '@/API/baseApi';
+import { baseApi } from '@/API/baseApi';
 
 /* ===============================
    TYPES
@@ -33,9 +33,8 @@ export default function CuponesEmpresaList() {
     async function fetchCupones() {
       try {
         setLoading(true);
-        const api = new BaseApi();
 
-        const res = await api.beneficio.getAllPaginated(
+        const res = await baseApi.beneficio.getAllPaginated(
           page,
           PAGE_SIZE,
           search,
@@ -97,10 +96,7 @@ const toggleCupon = async (cupon: Cupon) => {
   if (!result.isConfirmed) return;
 
   try {
-    const api = new BaseApi();
-
-    // 🔥 LLAMADA REAL A LA API
-    await api.beneficio.updateEstado(cupon.id, {
+    await baseApi.beneficio.updateEstado(cupon.id, {
       estado: nuevoEstado,
     });
 

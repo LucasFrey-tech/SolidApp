@@ -6,7 +6,7 @@ export interface PaginatedResponse<T> {
 export abstract class Crud<T> {
     protected baseUrl: string;
 
-    constructor(private token?: string) {
+    constructor() {
         this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     }
 
@@ -26,8 +26,10 @@ export abstract class Crud<T> {
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
         };
-        if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
+
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
         }
         return headers;
     }

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import styles from '@/styles/Tienda/empresaTienda.module.css';
 
 import { Empresa, EmpresaImagen } from '@/API/types/empresas';
-import { BaseApi } from '@/API/baseApi';
+import { baseApi } from '@/API/baseApi';
 import BeneficiosPanel from '@/components/pages/tienda/Beneficios';
 
 // ==================== CONSTANTES ====================
@@ -35,8 +35,6 @@ function EmpresaLogo({
 
 // ==================== PAGE ====================
 export default function Empresas() {
-  const api = new BaseApi();
-
   // Empresas paginadas
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
 
@@ -55,8 +53,8 @@ export default function Empresas() {
         setLoading(true);
 
         const [empresasRes, imagenesRes] = await Promise.all([
-          api.empresa.getAllPaginated(1, 20),
-          api.empresa.getImages(),
+          baseApi.empresa.getAllPaginated(1, 20),
+          baseApi.empresa.getImages(),
         ]);
 
         // 🛡️ Normalización defensiva

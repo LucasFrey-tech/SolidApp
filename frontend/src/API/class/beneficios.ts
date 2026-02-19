@@ -9,10 +9,6 @@ import {
 export class BeneficiosService extends Crud<Beneficio> {
   protected endpoint = "beneficios";
 
-  constructor(token?: string) {
-    super(token);
-  }
-
   async getAll(): Promise<Beneficio[]> {
     const res = await fetch(`${this.baseUrl}/${this.endpoint}`, {
       headers: this.getHeaders(),
@@ -103,7 +99,7 @@ export class BeneficiosService extends Crud<Beneficio> {
 
   return result;
 }
-  async update(id: number, data: any) {
+  async update(id: number, data: BeneficioUpdateRequest) {
     const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}`, {
       method: "PATCH",
       headers: {

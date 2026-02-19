@@ -1,6 +1,6 @@
 "use client";
 
-import { BaseApi } from "@/API/baseApi";
+import { baseApi } from "@/API/baseApi";
 import styles from '@/styles/UserPanel/data/organizacionData.module.css';
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -30,7 +30,6 @@ export default function OrganizacionData() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const api = new BaseApi();
     const fetchOrganizacionData = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -42,7 +41,7 @@ export default function OrganizacionData() {
         console.log("Buscando organización con ID: ", payload.sub);
 
         // Necesitarás agregar este método en tu BaseApi
-        const response = await api.organizacion.getOne(payload.sub);
+        const response = await baseApi.organizacion.getOne(payload.sub);
 
         if (!response) {
           throw new Error("Error al obtener los datos de la organización");
@@ -92,8 +91,6 @@ export default function OrganizacionData() {
     setSuccess(false);
 
     try {
-      const api = new BaseApi();
-
       // Preparar datos para enviar (solo los que cambiaron)
       const dataToSend: Partial<EditableOrganizacionFields> = {};
       const campos: (keyof EditableOrganizacionFields)[] = [
@@ -121,7 +118,7 @@ export default function OrganizacionData() {
       }
 
       // Necesitarás agregar este método en tu BaseApi
-      await api.organizacion.update(
+      await baseApi.organizacion.update(
         organizacionData.id,
         dataToSend as OrganizacionUpdateRequest,
       );
@@ -129,7 +126,7 @@ export default function OrganizacionData() {
       setSuccess(true);
 
       // Refrescar datos después de actualizar
-      const updatedOrganizacion = await api.organizacion.getOne(organizacionData.id);
+      const updatedOrganizacion = await baseApi.organizacion.getOne(organizacionData.id);
       setOrganizacionData(updatedOrganizacion);
 
       // Actualizar editableData con los nuevos valores

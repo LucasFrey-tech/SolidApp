@@ -6,7 +6,7 @@ import styles from '@/styles/Tienda/canjeModal.module.css';
 
 import { Beneficio } from '@/API/types/beneficios';
 
-import { BaseApi } from '@/API/baseApi';
+import { baseApi } from '@/API/baseApi';
 import { useUser } from '@/app/context/UserContext';
 
 
@@ -70,10 +70,7 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
     if (!result.isConfirmed) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const api = new BaseApi(token ?? undefined);
-
-      await api.beneficio.canjear(beneficio.id, {
+      await baseApi.beneficio.canjear(beneficio.id, {
         userId: user.sub,
         cantidad,
       });

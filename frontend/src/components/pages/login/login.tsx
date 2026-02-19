@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import styles from "@/styles/login-registro/registro.module.css";
-import { BaseApi } from "@/API/baseApi";
+import { baseApi } from "@/API/baseApi";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
@@ -58,7 +58,6 @@ export default function Login() {
   const router = useRouter();
   const { setUser, refreshUser } = useUser();
   const [step, setStep] = useState<Step>("select");
-  const [api] = useState(() => new BaseApi());
   
   // ==================== ESTADOS SIMPLIFICADOS ====================
   const [loginData, setLoginData] = useState<LoginData>({
@@ -76,11 +75,11 @@ export default function Login() {
     
     switch (step) {
       case "usuario":
-        return new LoginUsuarioStrategy(api.log);
+        return new LoginUsuarioStrategy(baseApi.log);
       case "empresa":
-        return new LoginEmpresaStrategy(api.log);
+        return new LoginEmpresaStrategy(baseApi.log);
       case "organizacion":
-        return new LoginOrganizacionStrategy(api.log);
+        return new LoginOrganizacionStrategy(baseApi.log);
       default:
         return null;
     }

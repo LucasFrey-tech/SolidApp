@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/Donar/donar.module.css";
-import { Campaign, CampaignImagen } from "@/API/types/campañas/campaigns";
-import { BaseApi } from "@/API/baseApi";
+import { Campaign } from "@/API/types/campañas/campaigns";
+import { baseApi } from "@/API/baseApi";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -22,9 +22,7 @@ export default function CampaignsCatalogoPage() {
         setLoading(true);
         setError(null);
 
-        const api = new BaseApi();
-
-        const campaignsRes = await api.campaign.getAllPaginated(
+        const campaignsRes = await baseApi.campaign.getAllPaginated(
           currentPage,
           ITEMS_PER_PAGE,
         );

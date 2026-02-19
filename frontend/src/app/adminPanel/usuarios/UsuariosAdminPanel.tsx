@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
-import { BaseApi } from '@/API/baseApi';
+import { baseApi } from '@/API/baseApi';
 
 type User = {
   id: number;
@@ -22,13 +22,11 @@ export default function UsuariosAdminPanel() {
   const [usersCount, setUsersCount] = useState(0);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const api = new BaseApi();
-
   useEffect(() => {
     async function fetchUsers() {
       try {
         setLoading(true);
-        const res = await api.users.getAllPaginated(page, PAGE_SIZE, search);
+        const res = await baseApi.users.getAllPaginated(page, PAGE_SIZE, search);
 
         const formatted = res.items.map((u: any) => ({
           id: u.id,
@@ -73,11 +71,9 @@ export default function UsuariosAdminPanel() {
 
     try {
       if (quiereHabilitar) {
-        // Habilitar
-        await api.users.restore(user.id);
+        await baseApi.users.restore(user.id);
       } else {
-        // Deshabilitar
-        await api.users.delete(user.id);
+        await baseApi.users.delete(user.id);
       }
 
       // Recargar datos

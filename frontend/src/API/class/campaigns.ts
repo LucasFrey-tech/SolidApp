@@ -9,10 +9,6 @@ import {
 export class campaignService extends Crud<Campaign> {
   protected endPoint = "/campaigns";
 
-  constructor(token?: string) {
-    super(token);
-  }
-
   async getAll(): Promise<Campaign[]> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
       headers: this.getHeaders(),

@@ -1,6 +1,6 @@
 'use client';
 
-import { BaseApi } from '@/API/baseApi';
+import { baseApi } from '@/API/baseApi';
 import { NumericInput } from '../../Utils/NumericInputProp';
 import styles from '@/styles/UserPanel/data/userData.module.css';
 import { useCallback, useEffect, useState } from 'react';
@@ -31,7 +31,6 @@ export default function UserData() {
   const [success, setSuccess] = useState(false);
   
   useEffect(() => {
-    const api = new BaseApi();
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -41,7 +40,7 @@ export default function UserData() {
 
         const payload = JSON.parse(atob(token.split('.')[1]));
 
-        const response = await api.users.getOne(payload.sub);
+        const response = await baseApi.users.getOne(payload.sub);
 
         if (!response) {
           throw new Error('Error al obtener los datos');
@@ -88,13 +87,11 @@ export default function UserData() {
     setSuccess(false);
 
     try {
-      const api = new BaseApi();
-
-      await api.users.update(userData.id, editableData);
+      await baseApi.users.update(userData.id, editableData);
       
       setSuccess(true);
       
-      const updatedUser = await api.users.getOne(userData.id);
+      const updatedUser = await baseApi.users.getOne(userData.id);
       setUserData(updatedUser);
       
     } catch (error) {

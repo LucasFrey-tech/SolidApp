@@ -3,13 +3,8 @@ import { UpdateCredentialsPayload } from "../types/panelUsuario/updateCredencial
 import { User, UserPoints } from "../types/user";
 
 export class Users extends Crud<User> {
-  private endPoint: string;
-
-  constructor(token?: string) {
-    super(token);
-    this.endPoint = "users";
-  }
-
+  private endPoint = "users";
+  
   async getAllPaginated(
     page: number = 1,
     limit: number = 10,
