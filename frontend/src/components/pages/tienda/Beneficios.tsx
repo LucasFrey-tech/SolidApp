@@ -79,7 +79,7 @@ export default function BeneficiosPanel({
           {loading && <p>Cargando beneficios...</p>}
 
           {!loading && beneficiosVisibles.length === 0 && (
-            <p>No hay beneficios disponibles</p>
+            <p className={styles.emptyState}>No hay beneficios disponibles, vuelve mas tarde!</p>
           )}
 
           {/* LISTA */}
