@@ -118,3 +118,122 @@
 .cancel:hover {
   background: #555;
 }
+
+
+.inputCantidad {
+  width: 60px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 6px 4px;
+  background: #2a2a2a;
+  color: white;
+  font-weight: bold;
+}
+.inputCantidad:focus {
+  outline: none;
+  border-color: #22c55e;
+}
+.inputCantidad::-webkit-outer-spin-button,
+.inputCantidad::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.inputCantidad {
+  -moz-appearance: textfield;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+/* Tablets */
+@media (max-width: 768px) {
+  .modal {
+    max-width: 90%;
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .cantidadContainer {
+    gap: 16px;
+  }
+
+  .cantidadContainer button {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .inputCantidad {
+    width: 55px;
+    font-size: 16px;
+  }
+}
+
+/* Celulares */
+@media (max-width: 480px) {
+  .modal {
+    max-width: 95%;
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .textarea {
+    height: 80px;
+    font-size: 14px;
+  }
+
+  .cantidadContainer {
+    gap: 12px;
+  }
+
+  .cantidadContainer button {
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+  }
+
+  .inputCantidad {
+    width: 50px;
+    font-size: 15px;
+    padding: 5px 2px;
+  }
+
+  .puntos {
+    font-size: 14px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .confirm,
+  .cancel {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+  }
+}
+
+/* Celulares muy chicos */
+@media (max-width: 360px) {
+  .modal {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .inputCantidad {
+    width: 45px;
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Donar/donarModal.module.css";
 import { baseApi } from "@/API/baseApi";
@@ -63,8 +63,8 @@ export default function DonarModal({
     const body = {
       detalle,
       cantidad,
-      campaignId: campaignId,
-      userId: userId,
+      campaignId,
+      userId,
       puntos,
     };
 
@@ -107,7 +107,6 @@ export default function DonarModal({
         <div className={styles.separator}></div>
 
         <label className={styles.label}>Detalle de la donación</label>
-
         <textarea
           placeholder="Escribí un detalle sobre tu donación..."
           value={detalle}
@@ -118,19 +117,23 @@ export default function DonarModal({
         <div className={styles.separator}></div>
 
         <label className={styles.label}>Cantidad</label>
-
         <div className={styles.cantidadContainer}>
-          <button
-            onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}
-          >
+          <button onClick={() => cantidad > 1 && setCantidad(cantidad - 1)}>
             -
           </button>
 
-          <span>{cantidad}</span>
+          <input
+            type="number"
+            min={1}
+            value={cantidad}
+            onChange={(e) => {
+              const val = parseInt(e.target.value, 10);
+              if (!isNaN(val) && val > 0) setCantidad(val);
+            }}
+            className={styles.inputCantidad}
+          />
 
-          <button onClick={() => setCantidad(cantidad + 1)}>
-            +
-          </button>
+          <button onClick={() => setCantidad(cantidad + 1)}>+</button>
         </div>
 
         <p className={styles.puntos}>
@@ -138,13 +141,13 @@ export default function DonarModal({
         </p>
 
         <div className={styles.actions}>
+          <button onClick={onClose} className={styles.cancel}>
+            Cancelar
+          </button>
           <button onClick={handleSubmit} className={styles.confirm}>
             Confirmar donación
           </button>
 
-          <button onClick={onClose} className={styles.cancel}>
-            Cancelar
-          </button>
         </div>
       </div>
     </div>
