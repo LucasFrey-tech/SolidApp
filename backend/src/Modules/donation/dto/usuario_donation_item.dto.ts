@@ -5,6 +5,13 @@ import { DonacionEstado } from '../enum';
  * DTO de la Donación.
  */
 export class UserDonationItemDto {
+  /** ID único de la donación */
+  @ApiProperty({
+    example: '1',
+    description: 'ID único de la donación',
+  })
+  id: number;
+
   /** Descripcion de la Donación */
   @ApiProperty({
     example: 'Arroz, fideos y enlatados',
@@ -35,9 +42,16 @@ export class UserDonationItemDto {
 
   /** Fecha en la cual se realizo la donación */
   @ApiProperty({ example: '20/02/26', description: 'Fecha de la donacion' })
-  fecha_Registro: Date;
+  fecha_registro: Date;
 
-  /** Título de la Campaañ asociada */
+  /** Nombre de la Organización */
+  @ApiProperty({
+    example: 'Innovar ONG',
+    description: 'Nombre de la organización',
+  })
+  nombreOrganizacion: string;
+
+  /** Título de la Campaña asociada */
   @ApiProperty({
     example: 'Campaña Invierno Solidario',
     description: 'Titulo de la campaña',
