@@ -54,6 +54,7 @@ interface DecodedToken {
   sub: number;
   username: string;
   admin: boolean;
+  userType: UserType;
 }
 
 // ==================== COMPONENTE ====================
@@ -226,10 +227,13 @@ export default function Login() {
 
       const decoded = jwtDecode<DecodedToken>(token);
 
+      console.log("TOKEN DECODIFICADO COMPLETO: ", decoded);
+
       setUser({
         email: decoded.email || loginData.correo,
         sub: decoded.sub,
         username: decoded.username || loginData.correo.split("@")[0],
+        userType: decoded.userType,
       });
 
       refreshUser();
@@ -240,12 +244,10 @@ export default function Login() {
 
       router.refresh();
 
-      // ✅ SWEET ALERT SUCCESS
-
       await Swal.fire({
         icon: "success",
         title: "Login exitoso",
-        text: `Bienvenido ${decoded.username}`,
+        text: `Bienvenido ${loginData.correo.split('@')[0]}`,
         timer: 1500,
         showConfirmButton: false,
       });
