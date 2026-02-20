@@ -22,9 +22,9 @@ import { DonationsService } from './donation.service';
 import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
-import { PaginatedDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
-import { DonacionEstado } from './enum';
+import { PaginatedOrganizationDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
 import { UpdateDonacionEstadoDto } from './dto/update_donation_estado.dto';
+import { PaginatedUserDonationsResponseDto } from './dto/response_donation_paginatedByUser.dto';
 
 /**
  * Controlador para gestionar las operaciones de las Donaciones.
@@ -74,16 +74,36 @@ export class DonationsController {
    * @param {number} organizacionId - ID de la Organización a filtrar
    * @param {number} page - Página solicitada
    * @param {number} limit - Cantidad de Donaciones por página
-   * @returns {Promise<PaginatedDonationsResponseDto>} Lista paginada de Donaciones
+   * @returns {Promise<PaginatedDonationsResponseDto>} - Lista paginada de Donaciones
    */
-  @Get(':id/donations')
+  @Get('organizacion/:organizacionId')
   async getOrganizationDonationsPaginated(
     @Param('id', ParseIntPipe) organizacionId: number,
-    @Query('page') page = '1',
-    @Query('limit') limit = '10',
-  ): Promise<PaginatedDonationsResponseDto> {
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ): Promise<PaginatedOrganizationDonationsResponseDto> {
     return await this.donationsService.findAllPaginatedByOrganizacion(
       organizacionId,
+      Number(page),
+      Number(limit),
+    );
+  }
+
+  /**
+   * @param {number} userId - Id del usuario a filtrar
+   * @param {number} page - Página solicitada
+   * @param {number} limit - Cantidad de Donaciones por página
+   * @returns {Promise<PaginatedUserDonationsResponseDto>} - Lista paginada de Donaciones
+   */
+  @Get('usuario/:userId')
+  @ApiOperation({ summary: 'Obtener donaciones de un usuario' })
+  async getDonationsByUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<PaginatedUserDonationsResponseDto> {
+    return this.donationsService.findAllPaginatedByUser(
+      userId,
       Number(page),
       Number(limit),
     );
