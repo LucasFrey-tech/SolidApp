@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { OrganizationDonationItemDto } from './donation_item.dto';
+import { OrganizationDonationItemDto } from './organization_donation_item.dto';
 
 /**
  * DTO de la respuesta de la Donación paginada.
  */
-export class PaginatedDonationsResponseDto {
+export class PaginatedOrganizationDonationsResponseDto {
   /** Datos de las la Donaciones */
   @ApiProperty({ type: [OrganizationDonationItemDto] })
   items: OrganizationDonationItemDto[];
