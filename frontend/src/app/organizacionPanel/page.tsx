@@ -5,7 +5,7 @@ import { Edit2 } from "lucide-react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Paneles/organizationPanel.module.css";
 import { CampaignForm, CampaignFormValues } from "./CampainForm";
-import { BaseApi } from "@/API/baseApi";
+import { baseApi } from "@/API/baseApi";
 import { useUser } from "../context/UserContext";
 import Modal from "@/components/ui/Modal";
 import { DonacionEstado } from "@/API/types/donaciones/enum";
@@ -26,6 +26,7 @@ type Donation = {
   campaignId: number;
   campaignTitulo: string;
   estado: DonacionEstado;
+  fecha_estado: string;
 };
 
 type ViewMode = "campaigns" | "donations";
@@ -47,8 +48,6 @@ export default function OrganizationCampaignsPage() {
   const [open, setOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
 
-  const api = useMemo(() => new BaseApi(), []);
-
   /* ===============================
      CAMPAÑAS
   ================================ */
@@ -58,11 +57,12 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response = await api.organizacion.getOrganizationCampaignsPaginated(
-      organizacionId,
-      campaignsPage,
-      limit,
-    );
+    const response =
+      await baseApi.organizacion.getOrganizationCampaignsPaginated(
+        organizacionId,
+        campaignsPage,
+        limit,
+      );
 
     const totalPages = Math.max(1, Math.ceil(response.total / limit));
 
@@ -87,11 +87,15 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response = await api.organizacion.getDonationsPaginatedByOrganizacion(
-      organizacionId,
-      donationsPage,
-      limit,
-    );
+    const response =
+      await baseApi.organizacion.getDonationsPaginatedByOrganizacion(
+        organizacionId,
+        donationsPage,
+        limit,
+      );
+
+    console.log("Donaciones desde backend:", response.items);
+    console.log("Primera donación:", response.items[0]);
 
     setDonations(
       response.items.map((item) => ({
@@ -121,7 +125,7 @@ export default function OrganizationCampaignsPage() {
     if (!res.isConfirmed) return;
 
     try {
-      await api.donation.updateDonationStatus(donation.id, {
+      await baseApi.donation.updateDonationStatus(donation.id, {
         estado: DonacionEstado.APROBADA,
       });
 
@@ -173,7 +177,7 @@ export default function OrganizationCampaignsPage() {
     if (!reason) return;
 
     try {
-      await api.donation.updateDonationStatus(donation.id, {
+      await baseApi.donation.updateDonationStatus(donation.id, {
         estado: DonacionEstado.RECHAZADA,
         motivo: reason,
       });
@@ -216,7 +220,7 @@ export default function OrganizationCampaignsPage() {
           estado: data.estado,
         };
 
-        await api.campaign.update(editingCampaign.id, updateData, files);
+        await baseApi.campaign.update(editingCampaign.id, updateData, files);
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
       } else {
@@ -230,7 +234,7 @@ export default function OrganizationCampaignsPage() {
           id_organizacion: organizacionId,
         };
 
-        await api.campaign.create(createData, files);
+        await baseApi.campaign.create(createData, files);
 
         Swal.fire("Creada", "Campaña creada con éxito", "success");
       }
@@ -247,6 +251,25 @@ export default function OrganizationCampaignsPage() {
   /* ===============================
      RENDER
   ================================ */
+
+  const puedeAceptar = (donacion: Donation) => {
+    if (donacion.estado === DonacionEstado.PENDIENTE) return true;
+
+    if (donacion.estado === DonacionEstado.APROBADA) return false;
+
+    if (!donacion.fecha_estado) return false;
+
+    if (donacion.estado === DonacionEstado.RECHAZADA) {
+      const fechaRechazo = new Date(donacion.fecha_estado);
+      const ahora = new Date();
+      const horasPasadas =
+        (ahora.getTime() - fechaRechazo.getTime()) / (1000 * 60 * 60);
+
+      return horasPasadas <= 48;
+    }
+
+    return false;
+  };
 
   return (
     <div className={styles.container}>
@@ -349,7 +372,8 @@ export default function OrganizationCampaignsPage() {
 
             <tbody>
               {donations.map((d) => {
-                const isPending = d.estado === DonacionEstado.PENDIENTE;
+                const puedeAceptarDonacion = puedeAceptar(d);
+                const puedeRechazar = d.estado === DonacionEstado.PENDIENTE;
 
                 return (
                   <tr key={d.id}>
@@ -363,23 +387,23 @@ export default function OrganizationCampaignsPage() {
                       <div className={styles.actions}>
                         <button
                           className={styles.accept}
-                          disabled={!isPending}
+                          disabled={!puedeAceptarDonacion}
                           onClick={() => handleAcceptDonation(d)}
                         >
                           <Check
                             size={20}
-                            color={isPending ? "#22c55e" : "#9ca3af"}
+                            color={puedeAceptarDonacion ? "#22c55e" : "#9ca3af"}
                           />
                         </button>
 
                         <button
                           className={styles.reject}
-                          disabled={!isPending}
+                          disabled={!puedeRechazar}
                           onClick={() => handleRejectDonation(d)}
                         >
                           <X
                             size={20}
-                            color={isPending ? "#ef4444" : "#9ca3af"}
+                            color={puedeRechazar ? "#ef4444" : "#9ca3af"}
                           />
                         </button>
                       </div>

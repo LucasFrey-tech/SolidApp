@@ -1,5 +1,5 @@
 import { Crud, PaginatedResponse } from "../service";
-import { DonationResponse } from "../types/donaciones/donaciones";
+import { DonationResponsePanel } from "../types/donaciones/donaciones";
 import {
   Organizacion,
   OrganizacionCreateRequest,
@@ -176,7 +176,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     organizacionId: number,
     page = 1,
     limit = 10
-  ): Promise<PaginatedResponse<DonationResponse>> {
+  ): Promise<PaginatedResponse<DonationResponsePanel>> {
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/${organizacionId}/donaciones/paginated?page=${page}&limit=${limit}`,
       {

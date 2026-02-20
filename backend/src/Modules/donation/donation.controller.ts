@@ -24,6 +24,7 @@ import { ResponseDonationDto } from './dto/response_donation.dto';
 import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { PaginatedDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
 import { DonacionEstado } from './enum';
+import { UpdateDonacionEstadoDto } from './dto/update_donation_estado.dto';
 
 /**
  * Controlador para gestionar las operaciones de las Donaciones.
@@ -206,9 +207,8 @@ export class DonationsController {
   })
   async actualizarEstadoDonación(
     @Param('id', ParseIntPipe) id: number,
-    @Body('estado') estado: DonacionEstado,
-    @Body('motivo') motivo: string,
+    @Body() dto: UpdateDonacionEstadoDto,
   ) {
-    return this.donationsService.confirmarDonacion(id, estado, motivo);
+    return this.donationsService.confirmarDonacion(id, dto);
   }
 }

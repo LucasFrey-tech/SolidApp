@@ -45,4 +45,8 @@ export class OrganizationDonationItemDto {
   /** Título de la Campaañ asociada */
   @ApiProperty({ example: 'Campaña Invierno Solidario' })
   campaignTitulo: string;
+
+  /** Fecha en la que cambio de estado */
+  @ApiProperty({ example: '20/02/26' })
+  fecha_estado?: Date;
 }

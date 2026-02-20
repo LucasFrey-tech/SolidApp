@@ -15,7 +15,7 @@ export interface DonacionImagen {
   nombre:string;
 }
 
-export interface DonationResponse {
+export interface DonationResponsePanel {
   id: number;
   descripcion: string;
   puntos: number;

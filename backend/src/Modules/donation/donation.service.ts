@@ -17,6 +17,7 @@ import { RankingService } from '../ranking/ranking.service';
 import { DonacionEstado } from './enum';
 import { PaginatedDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
 import { OrganizationDonationItemDto } from './dto/donation_item.dto';
+import { UpdateDonacionEstadoDto } from './dto/update_donation_estado.dto';
 
 /**
  * Servicio que maneja la lógica de negocio para las Donaciones.
@@ -211,9 +212,13 @@ export class DonationsService {
 
   async confirmarDonacion(
     id: number,
-    nuevoEstado: DonacionEstado,
-    motivo?: string,
+    dto: UpdateDonacionEstadoDto,
   ): Promise<ResponseDonationDto> {
+    console.log('ID:', id);
+    console.log('nuevoEstado recibido:', dto.estado);
+    console.log('Tipo de nuevoEstado:', typeof dto.estado);
+    console.log('Motivo:', dto.motivo);
+
     return await this.donationsRepository.manager.transaction(
       async (manager) => {
         const donacion = await manager.findOne(Donations, {
@@ -225,20 +230,20 @@ export class DonationsService {
           throw new NotFoundException('Donación no encontrada');
         }
 
-        this.validarTransicion(donacion.estado, nuevoEstado);
+        this.validarTransicion(donacion.estado, dto.estado);
 
         if (
           donacion.estado === DonacionEstado.RECHAZADA &&
-          nuevoEstado === DonacionEstado.APROBADA
+          dto.estado === DonacionEstado.APROBADA
         ) {
           this.validarVentanaReversion(donacion.fecha_estado);
         }
 
-        await this.aplicarEfectosDeEstado(manager, donacion, nuevoEstado);
+        await this.aplicarEfectosDeEstado(manager, donacion, dto.estado);
 
-        donacion.estado = nuevoEstado;
+        donacion.estado = dto.estado;
         donacion.fecha_estado = new Date();
-        donacion.motivo_rechazo = motivo ?? '';
+        donacion.motivo_rechazo = dto.motivo ?? '';
 
         await manager.save(donacion);
 
@@ -334,12 +339,11 @@ export class DonationsService {
       puntos: donation.puntos,
       descripcion: donation.detalle,
       estado: donation.estado,
-
       userId: donation.usuario.id,
       correo: donation.usuario.correo,
-
       campaignId: donation.campaña.id,
       campaignTitulo: donation.campaña.titulo,
+      fecha_estado: donation.fecha_estado,
     };
   }
 }
