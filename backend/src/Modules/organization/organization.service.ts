@@ -123,18 +123,6 @@ export class OrganizationsService {
     );
   }
 
-  async findOrganizationDonationsPaginated(
-    organizacionId: number,
-    page: number,
-    limit: number,
-  ) {
-    return this.donationService.findAllPaginatedByOrganizacion(
-      organizacionId,
-      page,
-      limit,
-    );
-  }
-
   /**
    * Obtiene una organización por ID.
    *
