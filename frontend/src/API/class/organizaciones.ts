@@ -171,27 +171,4 @@ export class OrganizacionesService extends Crud<Organizacion> {
     }
     return res.json();
   }
-
-  async getDonationsPaginatedByOrganizacion(
-    organizacionId: number,
-    page = 1,
-    limit = 10
-  ): Promise<PaginatedResponse<DonationResponsePanel>> {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${organizacionId}/donaciones/paginated?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-        headers: this.getHeaders(),
-      }
-    );
-
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      throw new Error(
-        `Error al obtener donaciones (${res.status}): ${errorDetails}`
-      );
-    }
-
-    return res.json();
-  }
 }

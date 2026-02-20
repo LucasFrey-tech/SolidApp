@@ -2,6 +2,8 @@ import type {
   Donation,
   DonacionImagen,
   CreateDonation,
+  donacionUsuario,
+  DonationResponsePanel,
 } from "@/API/types/donaciones/donaciones";
 import { Crud, PaginatedResponse } from "../service";
 import { DonacionEstado } from "../types/donaciones/enum";
@@ -83,6 +85,49 @@ export class DonationsService extends Crud<Donation> {
       return res.json();
     });
   }
+
+  async getAllPaginatedByOrganizacion(
+    organizacionId: number,
+    page = 1,
+    limit = 10
+  ): Promise<PaginatedResponse<DonationResponsePanel>> {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/${organizacionId}/donaciones/paginated?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      }
+    );
+
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener donaciones (${res.status}): ${errorDetails}`
+      );
+    }
+
+    return res.json();
+  }
+
+  async getAllPaginatedByUser(
+    userId: number,
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResponse<donacionUsuario>> {
+    return fetch(
+      `${this.baseUrl}${this.endPoint}/usuario/${userId}?=${page}&limit=${limit}`,
+      {
+        method: 'GET',
+        headers: this.getHeaders(),
+      }
+    ).then(async (res) => {
+      if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error);
+      }
+      return res.json();
+    });
+  };
 
   async updateDonationStatus(
     id: number,

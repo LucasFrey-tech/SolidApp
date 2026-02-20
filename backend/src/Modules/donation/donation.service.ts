@@ -15,9 +15,11 @@ import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { RankingService } from '../ranking/ranking.service';
 import { DonacionEstado } from './enum';
-import { PaginatedDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
-import { OrganizationDonationItemDto } from './dto/donation_item.dto';
+import { PaginatedOrganizationDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
+import { OrganizationDonationItemDto } from './dto/organization_donation_item.dto';
 import { UpdateDonacionEstadoDto } from './dto/update_donation_estado.dto';
+import { PaginatedUserDonationsResponseDto } from './dto/response_donation_paginatedByUser.dto';
+import { UserDonationItemDto } from './dto/usuario_donation_item.dto';
 
 /**
  * Servicio que maneja la lógica de negocio para las Donaciones.
@@ -144,7 +146,7 @@ export class DonationsService {
     organizacionId: number,
     page = 1,
     limit = 10,
-  ): Promise<PaginatedDonationsResponseDto> {
+  ): Promise<PaginatedOrganizationDonationsResponseDto> {
     const startIndex = (page - 1) * limit;
     const [donations, total] = await this.donationsRepository.findAndCount({
       where: {
@@ -162,7 +164,40 @@ export class DonationsService {
     });
 
     return {
-      items: donations.map((d) => this.mapToDonationsResponse(d)),
+      items: donations.map((d) => this.mapToOrganizationDonationsResponse(d)),
+      total,
+    };
+  }
+
+  /**
+   * Obtiene
+   *
+   * @param userId
+   * @param page
+   * @param limit
+   * @returns
+   */
+  async findAllPaginatedByUser(
+    userId: number,
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedUserDonationsResponseDto> {
+    const startIndex = (page - 1) * limit;
+    const [donations, total] = await this.donationsRepository.findAndCount({
+      where: {
+        usuario: { id: userId },
+      },
+      relations: { campaña: true },
+      order: {
+        estado: 'ASC',
+        fecha_registro: 'DESC',
+      },
+      skip: startIndex,
+      take: limit,
+    });
+
+    return {
+      items: donations.map((d) => this.mapToUserDonationResponse(d)),
       total,
     };
   }
@@ -331,7 +366,7 @@ export class DonationsService {
     imagen: '',
   });
 
-  private mapToDonationsResponse(
+  private mapToOrganizationDonationsResponse(
     donation: Donations,
   ): OrganizationDonationItemDto {
     return {
@@ -344,6 +379,19 @@ export class DonationsService {
       campaignId: donation.campaña.id,
       campaignTitulo: donation.campaña.titulo,
       fecha_estado: donation.fecha_estado,
+    };
+  }
+
+  private mapToUserDonationResponse(donation: Donations): UserDonationItemDto {
+    return {
+      detalle: donation.detalle,
+      cantidad: donation.cantidad,
+      puntos: donation.puntos,
+      estado: donation.estado,
+      fecha_Registro: donation.fecha_registro,
+      tituloCampaña: donation.campaña.titulo,
+      fecha_estado: donation.fecha_estado,
+      motivo_rechazo: donation.motivo_rechazo || '',
     };
   }
 }

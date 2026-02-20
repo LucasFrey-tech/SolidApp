@@ -1,3 +1,5 @@
+import { DonacionEstado } from "./enum";
+
 export interface Donation {
   titulo: string;
   detalle: string;
@@ -34,4 +36,15 @@ export interface CreateDonation {
   userId: number;
   campaignId: number;
   puntos: number;
+}
+
+export interface donacionUsuario {
+  detalle: string;
+  puntos: number;
+  estado: DonacionEstado;
+  cantidad: string
+  fecha_registro: Date;
+  tituloCampaña: string;
+  fecha_estado: Date;
+  motivo_rechazo: string;
 }

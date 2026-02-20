@@ -106,7 +106,7 @@ export class Donations {
    * Usuarios asociados
    * @type {Usuario}
    */
-  @ManyToOne(() => Usuario)
+  @ManyToOne(() => Usuario, (user) => user.donaciones)
   usuario: Usuario;
 
   @ApiProperty({ example: 'Articulos dañados' })
