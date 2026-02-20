@@ -37,7 +37,6 @@ export default function Navbar() {
 
   const navbarConfig = navbarKey ? USER_NAVBAR_CONFIG[navbarKey] : null;
 
-  // cerrar dropdown al click afuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -155,10 +154,11 @@ export default function Navbar() {
             <>
               {/* Panel según tipo de usuario */}
               {navbarConfig.panelLink && (
-                <div className={styles.points}>
+                <div className={styles.panelLink}>
                   <Link
                     href={navbarConfig.panelLink.href}
                     onClick={() => setMenuOpen(false)}
+                    className={styles.panelLinkText}
                   >
                     {navbarConfig.panelLink.label}
                   </Link>
@@ -169,7 +169,7 @@ export default function Navbar() {
               {navbarConfig.showPoints && points !== null && (
                 <Link
                   href="/tienda"
-                  className={styles.points}
+                  className={styles.navbarPoints} 
                   onClick={() => setMenuOpen(false)}
                 >
                   <span>{points}</span>
