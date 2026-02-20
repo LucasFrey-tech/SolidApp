@@ -60,7 +60,7 @@ import { NullableImageValidationPipe } from '../../common/pipes/mediaFilePipes';
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: EmpresasService) {}
+  constructor(private readonly empresasService: EmpresasService) { }
 
   /**
    * GET /empresas
@@ -213,13 +213,14 @@ export class EmpresaController {
       storage: diskStorage({
         destination: 'C:/StaticResources/Solid/empresas/',
         filename: (req, file, cb) => {
-          const uniqueName =
-            Date.now() +
-            '-' +
-            Math.round(Math.random() * 1e9) +
-            extname(file.originalname);
-          cb(null, uniqueName);
-        },
+          const sanitizedName = file.originalname
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-zA-Z0-9.]/g, '_')
+            .replace(/\s+/g, '_');
+
+          cb(null, sanitizedName);
+        }
       }),
     }),
   )
