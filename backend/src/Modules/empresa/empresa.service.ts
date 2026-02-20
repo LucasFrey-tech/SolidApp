@@ -400,7 +400,7 @@ export class EmpresasService {
       fecha_registro: empresa.fecha_registro,
       ultimo_cambio: empresa.ultimo_cambio,
       logo: empresa.logo
-        ? SettingsService.getStaticResourceUrl(empresa.logo)
+        ? SettingsService.getEmpresaImageUrl(empresa.logo)
         : '',
       correo: empresa.correo,
     };

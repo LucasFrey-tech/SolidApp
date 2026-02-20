@@ -49,7 +49,7 @@ export interface BeneficioUpdateRequest {
 }
 
 /* ===============================
-   🔥 UPDATE ESTADO BENEFICIO
+   UPDATE ESTADO BENEFICIO
 ================================ */
 export interface BeneficioUpdateEstadoRequest {
   estado: BeneficioEstado;

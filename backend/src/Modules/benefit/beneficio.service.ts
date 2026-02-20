@@ -15,6 +15,7 @@ import { EmpresaSummaryDTO } from '../empresa/dto/summary_empresa.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
 import { Usuario } from '../../Entities/usuario.entity';
 import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
+import { SettingsService } from '../../common/settings/settings.service';
 
 /**
  * Servicio que maneja la lógica de negocio para los Beneficios.
@@ -435,7 +436,9 @@ export class BeneficioService {
       rubro: beneficio.empresa.rubro,
       verificada: beneficio.empresa.verificada,
       deshabilitado: beneficio.empresa.deshabilitado,
-      logo: beneficio.empresa.logo,
+      logo: beneficio.empresa.logo 
+        ? SettingsService.getEmpresaImageUrl(beneficio.empresa.logo)
+        : null,
     };
 
     return {
