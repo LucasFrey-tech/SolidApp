@@ -12,18 +12,15 @@ import { isBeneficioVisible } from '@/components/Utils/beneficiosUtils';
 import CanjeModal from '@/components/pages/tienda/CanjeModal';
 
 const LIMIT = 10;
+const PLACEHOLDER_IMG = '/img/placeholder.svg';
 
 export default function Tienda() {
   const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
-
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [beneficioSeleccionado, setBeneficioSeleccionado] =
-    useState<Beneficio | null>(null);
+  const [beneficioSeleccionado, setBeneficioSeleccionado] = useState<Beneficio | null>(null);
 
   /**
    * =========================
@@ -45,10 +42,7 @@ export default function Tienda() {
             : [];
 
         setBeneficios(items);
-
-        setTotalPages(
-          Math.ceil((res.total ?? items.length) / LIMIT),
-        );
+        setTotalPages(Math.ceil((res.total ?? items.length) / LIMIT));
       } catch (err) {
         console.error(err);
         setError('Error al cargar beneficios');
@@ -60,6 +54,29 @@ export default function Tienda() {
     fetchBeneficios();
   }, [page]);
 
+  /**
+   * Obtiene la URL de la imagen considerando errores
+   */
+  function EmpresaLogo({
+    src,
+    alt,
+  }: {
+    src?: string | null;
+    alt: string;
+  }) {
+    const [imgSrc, setImgSrc] = useState(src || PLACEHOLDER_IMG);
+
+    return (
+      <Image
+        src={imgSrc}
+        alt={alt}
+        width={120}
+        height={50}
+        className={styles.image}
+        onError={() => setImgSrc(PLACEHOLDER_IMG)}
+      />
+    );
+  }
 
   return (
     <>
@@ -76,22 +93,14 @@ export default function Tienda() {
               {beneficios
                 .filter(isBeneficioVisible)
                 .map((beneficio) => (
+
                   <div
                     key={beneficio.id}
                     className={styles.card}
                   >
-                    <Image
-                      src={
-                        beneficio.empresa?.logo ??
-                        '/img/placeholder.svg'
-                      }
-                      alt={
-                        beneficio.empresa?.nombre_fantasia ??
-                        'Empresa'
-                      }
-                      width={120}
-                      height={120}
-                      className={styles.image}
+                    <EmpresaLogo
+                    src={beneficio.empresa.logo}
+                    alt={beneficio.empresa.nombre_fantasia}
                     />
 
                     <h3 className={styles.cardTitle}>
@@ -105,18 +114,10 @@ export default function Tienda() {
 
                     <button
                       className={styles.button}
-                      disabled={
-                        beneficio.cantidad === 0
-                      }
-                      onClick={() =>
-                        setBeneficioSeleccionado(
-                          beneficio,
-                        )
-                      }
+                      disabled={beneficio.cantidad === 0}
+                      onClick={() => setBeneficioSeleccionado(beneficio)}
                     >
-                      {beneficio.cantidad === 0
-                        ? 'Sin stock'
-                        : 'Reclamar'}
+                      {beneficio.cantidad === 0 ? 'Sin stock' : 'Reclamar'}
                     </button>
                   </div>
                 ))}
@@ -150,9 +151,7 @@ export default function Tienda() {
       {beneficioSeleccionado && (
         <CanjeModal
           beneficio={beneficioSeleccionado}
-          onClose={() =>
-            setBeneficioSeleccionado(null)
-          }
+          onClose={() => setBeneficioSeleccionado(null)}
         />
       )}
     </>

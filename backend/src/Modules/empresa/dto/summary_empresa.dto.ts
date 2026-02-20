@@ -23,5 +23,5 @@ export class EmpresaSummaryDTO {
   deshabilitado: boolean;
 
   @ApiProperty({ example: 'logo.png', description: 'Logo de la empresa' })
-  logo?: string;
+  logo?: string | null;
 }

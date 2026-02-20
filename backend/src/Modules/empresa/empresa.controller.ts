@@ -240,7 +240,7 @@ export class EmpresaController {
     }
 
     if (file) {
-      updateDto.logo = `empresas/${file.filename}`;
+      updateDto.logo = file.filename;
     }
 
     return this.empresasService.update(id, updateDto);
