@@ -39,12 +39,14 @@ export interface CreateDonation {
 }
 
 export interface donacionUsuario {
+  id: number;
   detalle: string;
   puntos: number;
   estado: DonacionEstado;
   cantidad: string
-  fecha_registro: Date;
+  fecha_registro: string;
   tituloCampaña: string;
-  fecha_estado: Date;
+  nombreOrganizacion: string;
+  fecha_estado: string;
   motivo_rechazo: string;
 }

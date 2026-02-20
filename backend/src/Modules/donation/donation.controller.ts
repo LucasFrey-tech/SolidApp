@@ -78,7 +78,7 @@ export class DonationsController {
    */
   @Get('organizacion/:organizacionId')
   async getOrganizationDonationsPaginated(
-    @Param('id', ParseIntPipe) organizacionId: number,
+    @Param('organizacionId', ParseIntPipe) organizacionId: number,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ): Promise<PaginatedOrganizationDonationsResponseDto> {

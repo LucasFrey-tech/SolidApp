@@ -187,7 +187,7 @@ export class DonationsService {
       where: {
         usuario: { id: userId },
       },
-      relations: { campaña: true },
+      relations: ['campaña', 'campaña.organizacion'],
       order: {
         estado: 'ASC',
         fecha_registro: 'DESC',
@@ -384,11 +384,13 @@ export class DonationsService {
 
   private mapToUserDonationResponse(donation: Donations): UserDonationItemDto {
     return {
+      id: donation.id,
       detalle: donation.detalle,
       cantidad: donation.cantidad,
       puntos: donation.puntos,
       estado: donation.estado,
-      fecha_Registro: donation.fecha_registro,
+      fecha_registro: donation.fecha_registro,
+      nombreOrganizacion: donation.campaña.organizacion.nombre_fantasia,
       tituloCampaña: donation.campaña.titulo,
       fecha_estado: donation.fecha_estado,
       motivo_rechazo: donation.motivo_rechazo || '',

@@ -92,7 +92,7 @@ export class DonationsService extends Crud<Donation> {
     limit = 10
   ): Promise<PaginatedResponse<DonationResponsePanel>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${organizacionId}/donaciones/paginated?page=${page}&limit=${limit}`,
+      `${this.baseUrl}${this.endPoint}/organizacion/${organizacionId}?page=${page}&limit=${limit}`,
       {
         method: "GET",
         headers: this.getHeaders(),

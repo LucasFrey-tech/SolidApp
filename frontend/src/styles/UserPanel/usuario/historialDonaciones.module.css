@@ -77,6 +77,37 @@
   padding: 0.35rem 0.6rem;
   color: #ffffff;
 }
+
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.pagination span {
+  color: #000000;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+
+.pagination button {
+  padding: clamp(8px, 2.5vw, 10px) clamp(14px, 4vw, 18px);
+  border-radius: 10px;
+  border: none;
+  background-color: #2563eb;
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #c7d2fe;
+  cursor: not-allowed;
+}
+
 /* =================================================
    RESPONSIVE 
 ================================================= */
