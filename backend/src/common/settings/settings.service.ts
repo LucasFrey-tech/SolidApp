@@ -13,4 +13,14 @@ export class SettingsService {
     static getStaticResourceUrl = (fileName: string): string => {
         return `${SettingsService.getHostUrl()}${SettingsService.getStaticResourcesPrefix()}/${fileName}`;
     }
+
+    static getCampaignImageUrl = (fileName: string): string => {
+        const prefix = app_config.campaigns_images.prefix;
+        return `${SettingsService.getHostUrl()}${prefix}/${fileName}`;
+    }
+
+    static getEmpresaImageUrl = (fileName: string): string => {
+        const prefix = app_config.empresas_images.prefix;
+        return `${SettingsService.getHostUrl()}${prefix}/${fileName}`;
+    }
 }
