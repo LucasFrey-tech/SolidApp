@@ -169,7 +169,7 @@ export default function Navbar() {
               {navbarConfig.showPoints && points !== null && (
                 <Link
                   href="/tienda"
-                  className={styles.navbarPoints} 
+                  className={styles.points} 
                   onClick={() => setMenuOpen(false)}
                 >
                   <span>{points}</span>
