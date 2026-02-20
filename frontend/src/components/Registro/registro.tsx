@@ -4,6 +4,7 @@ import Image from "next/image";
 import styles from "../../styles/login-registro/registro.module.css";
 import { baseApi } from "@/API/baseApi";
 import { NumericInput } from "../Utils/NumericInputProp";
+import Swal from "sweetalert2";
 
 // ==================== Estrategias =====================
 import { RegisterUsuarioStrategy } from "@/API/class/register/usuario";
@@ -448,7 +449,12 @@ export default function Registro() {
       }
 
       setTouchedFields(allFields);
-      alert("Por favor, completa todos los campos requeridos.");
+      Swal.fire({
+        icon: "warning",
+        title: "Campos incompletos",
+        text: "Por favor, completa todos los campos requeridos.",
+        confirmButtonColor: "#9fd46d",
+    });
       return;
     }
 
@@ -495,7 +501,12 @@ export default function Registro() {
       }
 
       console.log("Registro Exitoso: ", response);
-      alert("Registro Exitoso");
+      Swal.fire({
+      icon: "success",
+      title: "Registro exitoso",
+      text: "Tu cuenta fue creada correctamente",
+      confirmButtonColor: "#9fd46d",
+    });
 
       // Reset
       setStep("select");
@@ -530,10 +541,33 @@ export default function Registro() {
         confirmarClave: "",
         correo: "",
       });
-    } catch (error) {
-      console.error("Error al Registrar:", error);
-      alert("Error al registrar usuario");
+    } catch (error: any) {
+
+  console.error("Error al Registrar:", error);
+
+  let errorMessage = "No se pudo registrar el usuario";
+
+  if (error?.response?.message) {
+
+    if (Array.isArray(error.response.message)) {
+      errorMessage = error.response.message[0];
+    } else {
+      errorMessage = error.response.message;
     }
+
+  }
+  // fetch normal
+  else if (error?.message) {
+    errorMessage = error.message;
+  }
+
+  Swal.fire({
+    icon: "error",
+    title: "Error",
+    text: errorMessage,
+    confirmButtonColor: "#d33",
+  });
+}
   };
 
   const handleStepChange = (newStep: Step) => {
@@ -657,7 +691,7 @@ export default function Registro() {
               onClick={() => handleStepChange("usuario")}
             >
               <Image
-                src="/Registro/Donador_Registro.svg" // ← Verifica el nombre real
+                src="/Registro/Donador_Registro.svg" 
                 alt="Usuario"
                 width={80}
                 height={80}
@@ -671,7 +705,7 @@ export default function Registro() {
               onClick={() => handleStepChange("empresa")}
             >
               <Image
-                src="/Registro/Empresa_Registro.svg" // ← Verifica el nombre real
+                src="/Registro/Empresa_Registro.svg" 
                 alt="Empresa"
                 width={80}
                 height={80}
@@ -685,7 +719,7 @@ export default function Registro() {
               onClick={() => handleStepChange("organizacion")}
             >
               <Image
-                src="/Registro/Organizacion_Registro.svg" // ← Verifica el nombre real
+                src="/Registro/Organizacion_Registro.svg" 
                 alt="Organización"
                 width={80}
                 height={80}
