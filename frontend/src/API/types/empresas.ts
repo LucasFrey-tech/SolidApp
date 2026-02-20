@@ -59,4 +59,5 @@ export interface EmpresaSummary {
   rubro: string;
   verificada: boolean;
   deshabilitado: boolean;
+  logo?: string;
 }

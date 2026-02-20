@@ -435,6 +435,7 @@ export class BeneficioService {
       rubro: beneficio.empresa.rubro,
       verificada: beneficio.empresa.verificada,
       deshabilitado: beneficio.empresa.deshabilitado,
+      logo: beneficio.empresa.logo,
     };
 
     return {
