@@ -167,7 +167,11 @@ export default function Navbar() {
 
               {/* Puntos */}
               {navbarConfig.showPoints && points !== null && (
-                <div className={styles.points}>
+                <Link
+                  href="/tienda"
+                  className={styles.points}
+                  onClick={() => setMenuOpen(false)}
+                >
                   <span>{points}</span>
                   <Image
                     src="/img/img_coin.png"
@@ -176,7 +180,7 @@ export default function Navbar() {
                     height={50}
                     className={styles.pointsIcon}
                   />
-                </div>
+                </Link>
               )}
             </>
           )}
@@ -197,9 +201,8 @@ export default function Navbar() {
 
           {/* Dropdown */}
           <div
-            className={`${styles.profileDropdown} ${
-              profileOpen ? styles.open : ""
-            }`}
+            className={`${styles.profileDropdown} ${profileOpen ? styles.open : ""
+              }`}
           >
             <Link
               href="/userPanel"
