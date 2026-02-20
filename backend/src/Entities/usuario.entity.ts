@@ -8,10 +8,10 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { UsuarioBeneficio } from './usuario-beneficio.entity';
+import { Donations } from './donations.entity';
 
 @Entity('usuarios')
 export class Usuario {
-    
   /**
    * ID único del Usuario
    * @type {number}
@@ -19,7 +19,7 @@ export class Usuario {
   @ApiProperty({ example: 1, description: 'Id Único del Usuario' })
   @PrimaryGeneratedColumn()
   id: number;
-    
+
   /**
    * DNI del Usuario
    * @type {string}
@@ -232,4 +232,11 @@ export class Usuario {
    */
   @OneToMany(() => UsuarioBeneficio, (ub) => ub.beneficio)
   usuarios: UsuarioBeneficio[];
+
+  /**
+   * Donaciones del usuario
+   * @type {Donations}
+   */
+  @OneToMany(() => Donations, (donacion) => donacion.usuario)
+  donaciones: Donations[];
 }
