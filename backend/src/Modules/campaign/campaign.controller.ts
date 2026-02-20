@@ -30,6 +30,8 @@ import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ImagesArrayValidationPipe } from '../../common/pipes/mediaFilePipes';
 import { SettingsService } from '../../common/settings/settings.service';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 /**
  * Controlador para gestionar las operaciones de las Campañas.
@@ -39,7 +41,7 @@ import { SettingsService } from '../../common/settings/settings.service';
 @ApiTags('Campañas')
 @Controller('campaigns')
 export class CampaignsController {
-  constructor(private readonly campaignService: CampaignsService) {}
+  constructor(private readonly campaignService: CampaignsService) { }
 
   /**
    * Obtiene todas las Campañas disponibles.
@@ -150,14 +152,28 @@ export class CampaignsController {
     status: 404,
     description: 'Campaña Solidaria no Encontrada',
   })
-  @UseInterceptors(FilesInterceptor('files', 10))
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        destination: 'C:/StaticResources/Solid/campaigns/',
+        filename: (req, file, cb) => {
+          const uniqueName =
+            Date.now() +
+            '-' +
+            Math.round(Math.random() * 1e9) +
+            extname(file.originalname);
+          cb(null, uniqueName);
+        },
+      }),
+    }),
+  )
   async create(
     @Body() createCampaignsDto: CreateCampaignsDto,
     @UploadedFiles(new ImagesArrayValidationPipe())
     files: Express.Multer.File[],
   ): Promise<ResponseCampaignsDto> {
     const imagenes = files.map((x) =>
-      SettingsService.getStaticResourceUrl(x.filename),
+      SettingsService.getCampaignImageUrl(x.filename),
     );
     return this.campaignService.create(createCampaignsDto, imagenes);
   }
@@ -186,7 +202,21 @@ export class CampaignsController {
     description: 'Campaña Solidaria actualizada exitosamente',
     type: ResponseCampaignsDto,
   })
-  @UseInterceptors(FilesInterceptor('files', 10))
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        destination: 'C:/StaticResources/Solid/campaigns/',
+        filename: (req, file, cb) => {
+          const uniqueName =
+            Date.now() +
+            '-' +
+            Math.round(Math.random() * 1e9) +
+            extname(file.originalname);
+          cb(null, uniqueName);
+        },
+      }),
+    }),
+  )
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCampaignsDto: UpdateCampaignsDto,
@@ -196,7 +226,7 @@ export class CampaignsController {
     let imagenes: string[] | undefined;
     if (files && files.length > 0) {
       imagenes = files.map((x) =>
-        SettingsService.getStaticResourceUrl(x.filename),
+        SettingsService.getCampaignImageUrl(x.filename),
       );
     }
     return this.campaignService.update(id, updateCampaignsDto, imagenes);

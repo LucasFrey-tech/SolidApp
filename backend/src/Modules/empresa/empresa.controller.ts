@@ -231,16 +231,13 @@ export class EmpresaController {
   ): Promise<EmpresaResponseDTO> {
     let updateDto: UpdateEmpresaDTO;
 
-    // 🔹 Caso 1: Viene FormData (body.data existe)
     if (body?.data) {
       updateDto = JSON.parse(body.data);
     }
-    // 🔹 Caso 2: Viene JSON normal
     else {
       updateDto = body;
     }
 
-    // 🔹 Si hay imagen, agregamos el logo
     if (file) {
       updateDto.logo = `empresas/${file.filename}`;
     }

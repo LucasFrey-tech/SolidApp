@@ -1,15 +1,137 @@
-.container{
+/* ===============================
+   CONTENEDOR PRINCIPAL
+================================ */
+.container {
   display: flex;
-  align-content: center;
   justify-content: center;
-  margin-top: 5%;
+  align-items: flex-start;
+  margin-top: 60px;
 }
 
-.list{
-  width: fit-content;
+
+/* ===============================
+   CARD
+================================ */
+.card {
+  width: 450px;
+  background: white;
+  border-radius: 14px;
+  padding: 24px 28px;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
 }
 
-.list_item{
-  color: black;
-  font-size: larger;
+
+/* ===============================
+   TITULO
+================================ */
+.title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 20px;
+}
+
+
+/* ===============================
+   LOADING
+================================ */
+.loading {
+  text-align: center;
+  color: #6b7280;
+}
+
+
+/* ===============================
+   LISTA
+================================ */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+
+/* ===============================
+   ITEM
+================================ */
+.list_item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px 14px;
+  margin-bottom: 8px;
+
+  border-radius: 10px;
+
+  transition: all 0.2s ease;
+}
+
+
+
+/* ===============================
+   LEFT SIDE
+================================ */
+.left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+/* ===============================
+   POSITION
+================================ */
+.position {
+  font-weight: 600;
+  color: #374151;
+  width: 32px;
+}
+
+
+/* ===============================
+   NAME
+================================ */
+.name {
+  font-size: 15px;
+  color: #111827;
+}
+
+
+/* ===============================
+   POINTS BADGE
+================================ */
+.points {
+  background: #0f766e;
+  color: white;
+
+  padding: 4px 12px;
+
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 500;
+}
+
+
+/* ===============================
+   TOP 3
+================================ */
+
+.first {
+  background: linear-gradient(90deg, #fef3c7, white);
+  font-weight: 600;
+}
+
+.second {
+  background: linear-gradient(90deg, #e5e7eb, white);
+  font-weight: 600;
+}
+
+.third {
+  background: linear-gradient(90deg, #fed7aa, white);
+  font-weight: 600;
 }
