@@ -17,14 +17,14 @@ export default function EmpresasAdminPanel() {
     <>
       <div className={styles.Selector}>
         <button
-          className={getButtonClass('empresas')}
+          className={`${styles.ButtonBase} ${getButtonClass('empresas')}`}
           onClick={() => setView('empresas')}
         >
           Empresas
         </button>
 
         <button
-          className={getButtonClass('cupones')}
+          className={`${styles.ButtonBase} ${getButtonClass('cupones')}`}
           onClick={() => setView('cupones')}
         >
           Cupones

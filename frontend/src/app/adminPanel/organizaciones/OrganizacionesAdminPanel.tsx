@@ -18,14 +18,14 @@ export default function OrganizacionesAdminPanel() {
     <>
       <div className={styles.Selector}>
         <button
-          className={getButtonClass('organizaciones')}
+          className={`${styles.ButtonBase} ${getButtonClass('organizaciones')}`}
           onClick={() => setView('organizaciones')}
         >
           Organizaciones
         </button>
 
         <button
-          className={getButtonClass('campanias')}
+          className={`${styles.ButtonBase} ${getButtonClass('campanias')}`}
           onClick={() => setView('campanias')}
         >
           Campañas

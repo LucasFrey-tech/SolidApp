@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
 import { baseApi } from '@/API/baseApi';
@@ -16,23 +16,25 @@ const PAGE_SIZE = 10;
 export default function OrganizacionesList() {
   const [page, setPage] = useState(1);
   const [organizaciones, setOrganizaciones] = useState<Organizacion[]>([]);
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  // INPUT SEPARADO PARA NO ROMPER EL FOCO
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const fetchOrganizaciones = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-
       const res = await baseApi.organizacion.getAllPaginated(
         page,
         PAGE_SIZE,
         search,
-        true,
+        true
       );
 
-      const formatted = res.items.map((u: any) => ({
+      const formatted: Organizacion[] = res.items.map((u: any) => ({
         id: u.id,
         name: u.razonSocial,
         habilitado: !u.deshabilitado,
@@ -41,13 +43,8 @@ export default function OrganizacionesList() {
       setOrganizaciones(formatted);
       setTotalCount(res.total);
     } catch (error) {
-      console.error('Error al cargar organizaciones:', error);
-
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudieron cargar las organizaciones',
-      });
+      console.error('Error fetch organizaciones:', error);
+      Swal.fire('Error', 'No se pudieron cargar las organizaciones', 'error');
     } finally {
       setLoading(false);
     }
@@ -55,13 +52,19 @@ export default function OrganizacionesList() {
 
   useEffect(() => {
     fetchOrganizaciones();
-  }, [page, search, refreshKey]);
+  }, [page, search]);
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE) || 1;
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(() => {
+      setSearch(value);
+      setPage(1);
+    }, 300);
+  };
 
   const toggleOrganizacion = async (org: Organizacion) => {
     const quiereHabilitar = !org.habilitado;
-
     const title = quiereHabilitar
       ? '¿Habilitar organización?'
       : '¿Deshabilitar organización?';
@@ -84,7 +87,11 @@ export default function OrganizacionesList() {
         await baseApi.organizacion.delete(org.id);
       }
 
-      setRefreshKey((prev) => prev + 1);
+      setOrganizaciones((prev) =>
+        prev.map((o) =>
+          o.id === org.id ? { ...o, habilitado: quiereHabilitar } : o
+        )
+      );
 
       Swal.fire({
         icon: 'success',
@@ -94,25 +101,16 @@ export default function OrganizacionesList() {
         showConfirmButton: false,
       });
     } catch (error: any) {
-      console.error('Error al cambiar estado:', error);
-
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: error.message || 'No se pudo cambiar el estado',
-      });
+      console.error('Error toggle organización:', error);
+      Swal.fire('Error', error.message || 'No se pudo cambiar el estado', 'error');
     }
   };
 
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    setPage(1);
-  };
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE) || 1;
 
-  if (loading) {
-    return <div className={styles.UsersBox}>Cargando...</div>;
-  }
-
+  /* ===============================
+     RENDER
+  ================================ */
   return (
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Organizaciones</h2>
@@ -121,11 +119,13 @@ export default function OrganizacionesList() {
         type="text"
         className={styles.Search}
         placeholder="Buscar organización..."
-        value={search}
-        onChange={(e) => handleSearch(e.target.value)}
+        value={searchInput}
+        onChange={(e) => handleSearchChange(e.target.value)}
       />
 
-      {organizaciones.length === 0 ? (
+      {loading ? (
+        <p className={styles.Empty}>Cargando...</p>
+      ) : organizaciones.length === 0 ? (
         <p className={styles.Empty}>No se encontraron organizaciones</p>
       ) : (
         organizaciones.map((org) => (
@@ -137,16 +137,13 @@ export default function OrganizacionesList() {
                 className={styles.Check}
                 disabled={org.habilitado}
                 onClick={() => toggleOrganizacion(org)}
-                title="Habilitar"
               >
                 ✓
               </button>
-
               <button
                 className={styles.Cross}
                 disabled={!org.habilitado}
                 onClick={() => toggleOrganizacion(org)}
-                title="Deshabilitar"
               >
                 ✕
               </button>
@@ -159,15 +156,10 @@ export default function OrganizacionesList() {
         <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
           Anterior
         </button>
-
         <span>
           Página {page} de {totalPages}
         </span>
-
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage((p) => p + 1)}
-        >
+        <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
           Siguiente
         </button>
       </div>

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Swal from "sweetalert2";
-import styles from "@/styles/Paneles/adminUsersPanel.module.css";
-import { baseApi } from "@/API/baseApi";
+import { useState, useEffect, useRef } from 'react';
+import Swal from 'sweetalert2';
+import styles from '@/styles/Paneles/adminUsersPanel.module.css';
+import { baseApi } from '@/API/baseApi';
 
 type Empresa = {
   id: number;
@@ -16,81 +16,79 @@ const PAGE_SIZE = 10;
 export default function EmpresasList() {
   const [page, setPage] = useState(1);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [empresasCount, setEmpresasCount] = useState(0);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const totalPages = Math.ceil(empresasCount / PAGE_SIZE) || 1;
 
-  const toggleEmpresa = async (empresa: Empresa) => {
-    const nuevoEstado = empresa.enabled;
-
-    Swal.fire({
-      title: empresa.enabled ? "¿Deshabilitar empresa?" : "¿Habilitar empresa?",
-      text: empresa.name,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Sí",
-      cancelButtonText: "Cancelar",
-    }).then(async (res) => {
-      if (!res.isConfirmed) return;
-
-      try {
-        await baseApi.empresa.update(empresa.id, {
-          deshabilitado: nuevoEstado,
-        });
-
-        setEmpresas((prev) =>
-          prev.map((e) =>
-            e.id === empresa.id ? { ...e, enabled: !e.enabled } : e,
-          ),
-        );
-
-        Swal.fire({
-          icon: "success",
-          title: "Actualizado",
-          timer: 1200,
-          showConfirmButton: false,
-        });
-      } catch (error) {
-        Swal.fire("Error", "No se pudo actualizar la empresa", "error");
-      }
-    });
+  const fetchEmpresas = async () => {
+    setLoading(true);
+    try {
+      const res = await baseApi.empresa.getAllPaginated(page, PAGE_SIZE, search);
+      const empresasFormated = res.items.map((u: any) => ({
+        id: u.id,
+        name: u.razon_social,
+        enabled: !u.deshabilitado,
+      }));
+      setEmpresas(empresasFormated);
+      setEmpresasCount(res.total);
+    } catch (error) {
+      console.error('Error del fetch empresas: ', error);
+      Swal.fire('Error', 'No se pudieron cargar las empresas', 'error');
+    } finally {
+      setLoading(false);
+      // Restaurar foco en input
+      if (inputRef.current) inputRef.current.focus();
+    }
   };
 
   useEffect(() => {
-    async function fetchUsers() {
-      setLoading(true);
-
-      try {
-        const res = await baseApi.empresa.getAllPaginated(
-          page,
-          PAGE_SIZE,
-          search,
-        );
-        const empresasFormated = res.items.map((u: any) => ({
-          id: u.id,
-          name: u.razon_social,
-          enabled: !u.deshabilitado,
-        }));
-        console.log(res);
-        setEmpresas(empresasFormated);
-        setEmpresasCount(res.total);
-      } catch (error) {
-        console.error("Error del fetch empresas: ", error);
-      }
-      setLoading(false);
-    }
-
-    fetchUsers();
+    fetchEmpresas();
   }, [page, search]);
 
-  const handleSearch = (value: string) => {
-    setSearch(value);
-    setPage(1);
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setSearch(value);
+      setPage(1);
+    }, 300);
   };
 
-  if (loading) return <p>Cargando empresas...</p>;
+  const toggleEmpresa = async (empresa: Empresa) => {
+    const result = await Swal.fire({
+      title: empresa.enabled ? '¿Deshabilitar empresa?' : '¿Habilitar empresa?',
+      text: empresa.name,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await baseApi.empresa.update(empresa.id, { deshabilitado: empresa.enabled });
+
+      setEmpresas((prev) =>
+        prev.map((e) => (e.id === empresa.id ? { ...e, enabled: !e.enabled } : e))
+      );
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Actualizado',
+        timer: 1200,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire('Error', 'No se pudo actualizar la empresa', 'error');
+    }
+  };
 
   return (
     <div className={styles.UsersBox}>
@@ -98,19 +96,21 @@ export default function EmpresasList() {
 
       <input
         type="text"
+        ref={inputRef}
         className={styles.Search}
         placeholder="Buscar empresa..."
-        value={search}
-        onChange={(e) => handleSearch(e.target.value)}
+        value={searchInput}
+        onChange={(e) => handleSearchChange(e.target.value)}
       />
 
-      {empresas.length === 0 ? (
+      {loading ? (
+        <p>Cargando empresas...</p>
+      ) : empresas.length === 0 ? (
         <p className={styles.Empty}>No se encontraron empresas</p>
       ) : (
         empresas.map((empresa) => (
           <div key={empresa.id} className={styles.UserRow}>
             <strong>{empresa.name}</strong>
-
             <div className={styles.Actions}>
               <button
                 className={styles.Check}
@@ -135,15 +135,10 @@ export default function EmpresasList() {
         <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
           Anterior
         </button>
-
         <span>
           Página {page} de {totalPages}
         </span>
-
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage((p) => p + 1)}
-        >
+        <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
           Siguiente
         </button>
       </div>
