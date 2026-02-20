@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/Tienda/empresaTienda.module.css';
 
-import { Empresa} from '@/API/types/empresas';
+import { Empresa } from '@/API/types/empresas';
 import { baseApi } from '@/API/baseApi';
 import BeneficiosPanel from '@/components/pages/tienda/Beneficios';
 
 // ==================== CONSTANTES ====================
 const PLACEHOLDER_IMG = '/img/placeholder.svg';
+const LIMIT = 12;
 
 // ==================== COMPONENTE LOGO ====================
 function EmpresaLogo({
@@ -35,10 +36,12 @@ function EmpresaLogo({
 
 // ==================== PAGE ====================
 export default function Empresas() {
-  // Empresas paginadas
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
 
   const [empresaActiva, setEmpresaActiva] = useState<number | null>(null);
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,23 +51,23 @@ export default function Empresas() {
     const fetchEmpresas = async () => {
       try {
         setLoading(true);
+        setError(null);
 
-        const [empresasRes] = await Promise.all([
-          baseApi.empresa.getAllPaginated(1, 20),
-        ]);
+        const res = await baseApi.empresa.getAllPaginated(page, LIMIT);
 
-        // 🛡️ Normalización defensiva
-        const empresasData = Array.isArray(empresasRes)
-          ? empresasRes
-          : Array.isArray((empresasRes as any)?.data)
-            ? (empresasRes as any).data
-            : Array.isArray((empresasRes as any)?.items)
-              ? (empresasRes as any).items
-              : [];
+        const items = Array.isArray(res.items)
+          ? res.items
+          : Array.isArray(res)
+          ? res
+          : [];
 
-        setEmpresas(empresasData);
+        setEmpresas(items);
+
+        setTotalPages(
+          Math.ceil((res.total ?? items.length) / LIMIT),
+        );
       } catch (err) {
-        console.error('Error cargando empresas', err);
+        console.error(err);
         setError('Error al cargar empresas');
       } finally {
         setLoading(false);
@@ -72,44 +75,60 @@ export default function Empresas() {
     };
 
     fetchEmpresas();
-  }, []);
-
+  }, [page]);
 
   // ==================== ESTADOS ====================
-  if (loading) return <p>Cargando empresas...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) return <p className={styles.loading}>Cargando empresas...</p>;
+  if (error) return <p className={styles.error}>{error}</p>;
 
   // ==================== RENDER ====================
   return (
     <>
-      {/* LISTA DE EMPRESAS */}
       <section className={styles.container}>
         <h2 className={styles.title}>Empresas</h2>
 
+        {/* ===== GRID ===== */}
         <div className={styles.grid}>
           {empresas
             .filter((empresa) => !empresa.deshabilitado)
-            .map((empresa) => {
+            .map((empresa) => (
+              <button
+                key={empresa.id}
+                className={styles.card}
+                onClick={() => setEmpresaActiva(empresa.id)}
+                aria-label={empresa.nombre_fantasia}
+              >
+                <EmpresaLogo
+                  src={empresa.logo}
+                  alt={empresa.nombre_fantasia}
+                />
+              </button>
+            ))}
+        </div>
 
-              return (
-                <button
-                  key={empresa.id}
-                  className={styles.card}
-                  onClick={() => setEmpresaActiva(empresa.id)}
-                  aria-label={empresa.nombre_fantasia}
-                >
-                  <EmpresaLogo
-                    src={empresa.logo}
-                    alt={empresa.nombre_fantasia}
-                  />
-                </button>
-              );
-            })}
+        {/* ===== PAGINACIÓN ===== */}
+        <div className={styles.pagination}>
+          <button
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page === 1}
+          >
+            Anterior
+          </button>
 
+          <span>
+            Página {page} de {totalPages}
+          </span>
+
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page === totalPages}
+          >
+            Siguiente
+          </button>
         </div>
       </section>
 
-      {/* PANEL DE BENEFICIOS */}
+      {/* ===== PANEL BENEFICIOS ===== */}
       {empresaActiva !== null && (
         <BeneficiosPanel
           idEmpresa={empresaActiva}

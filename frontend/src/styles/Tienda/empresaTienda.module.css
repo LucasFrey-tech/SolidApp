@@ -31,15 +31,18 @@
 /* ===== GRID ===== */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 240px));
+  justify-content: center;
   gap: clamp(16px, 4vw, 24px);
-  justify-items: center;
 }
 
 /* ===== CARD (ESTILO TIENDA) ===== */
 .card {
   position: relative;
+
   width: 100%;
+  max-width: 240px; /* IMPORTANTE */
+
   height: clamp(90px, 18vw, 120px);
   border-radius: 14px;
   background: #0f3d3a;
@@ -117,6 +120,35 @@
 
 .error {
   color: #d32f2f;
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.pagination span {
+  color: #000000;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.pagination button {
+  padding: clamp(8px, 2.5vw, 10px) clamp(14px, 4vw, 18px);
+  border-radius: 10px;
+  border: none;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #c7d2fe;
+  cursor: not-allowed;
 }
 
 /* ===== MOBILE ===== */

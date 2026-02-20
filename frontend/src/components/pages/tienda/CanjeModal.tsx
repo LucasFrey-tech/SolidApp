@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Tienda/canjeModal.module.css';
 
@@ -18,6 +18,8 @@ interface Props {
 export default function CanjeModal({ beneficio, onClose }: Props) {
   const [cantidad, setCantidad] = useState<number>(1);
   const { user } = useUser();
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const incrementar = () => {
     setCantidad((prev) => prev + 1);
@@ -103,23 +105,41 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
           <p className={styles.description}>{beneficio.detalle}</p>
 
           <div className={styles.stock}>
-            Puntos por unidad: <strong>{beneficio.valor} pts</strong>
+            Puntos por unidad: {beneficio.valor} pts
           </div>
 
           {/* CONTADOR */}
-          <div className={styles.counterContainer}>
+          <div
+            className={styles.counterContainer}
+            onClick={() => inputRef.current?.focus()}
+          >
             <button
               className={styles.counterButton}
-              onClick={decrementar}
+              onClick={(e) => {
+                e.stopPropagation();
+                decrementar();
+              }}
             >
               −
             </button>
 
-            <span className={styles.counterValue}>{cantidad}</span>
+            <input
+              ref={inputRef}
+              type="number"
+              min={1}
+              value={cantidad}
+              onChange={(e) =>
+                setCantidad(Number(e.target.value) > 0 ? Number(e.target.value) : 1)
+              }
+              className={styles.counterInput}
+            />
 
             <button
               className={styles.counterButton}
-              onClick={incrementar}
+              onClick={(e) => {
+                e.stopPropagation();
+                incrementar();
+              }}
             >
               +
             </button>

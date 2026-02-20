@@ -28,12 +28,18 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+
 }
 
 .title {
   font-size: 1.3rem;
-  font-weight: 700;
+  text-align: center;
   color: #000000;
+  font-weight: 800;
+}
+.description {
+  font-size: 0.9rem;
+  font-style: italic;
 }
 
 /* ================= CLOSE ================= */
@@ -80,9 +86,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px; /* separación real */
+  gap: 12px;
   margin-top: 12px;
   margin-bottom: 12px;
+  cursor: text; /* indica que se puede clickear para escribir */
 }
 
 .counterButton {
@@ -97,12 +104,21 @@
   cursor: pointer;
 }
 
-.counterValue {
-  min-width: 32px;
+.counterInput {
+  width: 60px;
   text-align: center;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 12px;
+  padding: 6px 4px;
+  -moz-appearance: textfield; /* Firefox */
+}
+
+.counterInput::-webkit-outer-spin-button,
+.counterInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* ================= POINTS ================= */
@@ -163,7 +179,8 @@
     height: 40px;
   }
 
-  .counterValue {
+  .counterInput {
+    width: 50px;
     font-size: 1.1rem;
   }
 
