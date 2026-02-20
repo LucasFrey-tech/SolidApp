@@ -53,31 +53,33 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               </button>
             </li>
 
-            {(user?.userType === 'usuario' || user?.userType === 'empresa') && (
+            {(user?.userType === "usuario" || user?.userType === "empresa") && (
               <li>
-                <button onClick={() => {
-                  if (user.userType === 'usuario') {
-                    onChangeSection('cupons');
-                  } else if (user.userType === 'empresa'){
-                    router.push('/empresaPanel');
-                  } 
-                }}>
+                <button
+                  onClick={() => {
+                    if (user.userType === "usuario") {
+                      onChangeSection("cupons");
+                    } else if (user.userType === "empresa") {
+                      router.push("/empresaPanel");
+                    }
+                  }}
+                >
                   Mis Cupones
                 </button>
               </li>
             )}
 
             <li>
-              <button onClick={() => onChangeSection("data")}>
-                Mis Datos
-              </button>
+              <button onClick={() => onChangeSection("data")}>Mis Datos</button>
             </li>
 
-            <li>
-              <button onClick={() => onChangeSection("donations")}>
-                Historial de Donaciones
-              </button>
-            </li>
+            {user?.userType === "usuario" && (
+              <li>
+                <button onClick={() => onChangeSection("donations")}>
+                  Historial de Donaciones
+                </button>
+              </li>
+            )}
 
             <li className={styles.Logout}>
               <button onClick={handleLogout}>Cerrar Sesión</button>
