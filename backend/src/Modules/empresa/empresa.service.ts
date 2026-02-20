@@ -109,7 +109,9 @@ export class EmpresasService {
         where,
       });
 
-    return { items: empresas, total };
+    const items = empresas.map(this.mapToResponseDto);
+
+    return { items, total };
   }
 
   /**

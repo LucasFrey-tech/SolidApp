@@ -21,4 +21,7 @@ export class EmpresaSummaryDTO {
 
   @ApiProperty({ example: false, description: 'Empresa deshabilitada' })
   deshabilitado: boolean;
+
+  @ApiProperty({ example: 'logo.png', description: 'Logo de la empresa' })
+  logo?: string;
 }

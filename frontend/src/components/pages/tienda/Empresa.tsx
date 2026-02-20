@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/Tienda/empresaTienda.module.css';
 
-import { Empresa, EmpresaImagen } from '@/API/types/empresas';
+import { Empresa} from '@/API/types/empresas';
 import { baseApi } from '@/API/baseApi';
 import BeneficiosPanel from '@/components/pages/tienda/Beneficios';
 
@@ -38,9 +38,6 @@ export default function Empresas() {
   // Empresas paginadas
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
 
-  // Imágenes de empresas
-  const [empresasImagen, setEmpresasImagen] = useState<EmpresaImagen[]>([]);
-
   const [empresaActiva, setEmpresaActiva] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -52,9 +49,8 @@ export default function Empresas() {
       try {
         setLoading(true);
 
-        const [empresasRes, imagenesRes] = await Promise.all([
+        const [empresasRes] = await Promise.all([
           baseApi.empresa.getAllPaginated(1, 20),
-          baseApi.empresa.getImages(),
         ]);
 
         // 🛡️ Normalización defensiva
@@ -67,7 +63,6 @@ export default function Empresas() {
               : [];
 
         setEmpresas(empresasData);
-        setEmpresasImagen(imagenesRes);
       } catch (err) {
         console.error('Error cargando empresas', err);
         setError('Error al cargar empresas');
@@ -95,9 +90,6 @@ export default function Empresas() {
           {empresas
             .filter((empresa) => !empresa.deshabilitado)
             .map((empresa) => {
-              const imagen = empresasImagen.find(
-                (img) => img.empresaId === empresa.id
-              );
 
               return (
                 <button
@@ -107,7 +99,7 @@ export default function Empresas() {
                   aria-label={empresa.nombre_fantasia}
                 >
                   <EmpresaLogo
-                    src={imagen?.logo}
+                    src={empresa.logo}
                     alt={empresa.nombre_fantasia}
                   />
                 </button>

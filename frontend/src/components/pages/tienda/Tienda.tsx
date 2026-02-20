@@ -6,7 +6,6 @@ import styles from '@/styles/Tienda/tienda.module.css';
 
 import { baseApi } from '@/API/baseApi';
 import { Beneficio } from '@/API/types/beneficios';
-import { EmpresaImagen } from '@/API/types/empresas';
 
 import { isBeneficioVisible } from '@/components/Utils/beneficiosUtils';
 
@@ -16,7 +15,6 @@ const LIMIT = 10;
 
 export default function Tienda() {
   const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
-  const [logos, setLogos] = useState<Record<number, string>>({});
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -43,8 +41,8 @@ export default function Tienda() {
         const items = Array.isArray(res.items)
           ? res.items
           : Array.isArray(res)
-          ? res
-          : [];
+            ? res
+            : [];
 
         setBeneficios(items);
 
@@ -62,29 +60,6 @@ export default function Tienda() {
     fetchBeneficios();
   }, [page]);
 
-  /**
-   * =========================
-   * CARGAR LOGOS
-   * =========================
-   */
-  useEffect(() => {
-    const fetchLogos = async () => {
-      try {
-        const images: EmpresaImagen[] =
-          await baseApi.empresa.getImages();
-
-        const map = Object.fromEntries(
-          images.map((img) => [img.empresaId, img.logo]),
-        );
-
-        setLogos(map);
-      } catch (err) {
-        console.error('Error cargando imágenes', err);
-      }
-    };
-
-    fetchLogos();
-  }, []);
 
   return (
     <>
@@ -107,7 +82,7 @@ export default function Tienda() {
                   >
                     <Image
                       src={
-                        logos[beneficio.empresa?.id] ??
+                        beneficio.empresa?.logo ??
                         '/img/placeholder.svg'
                       }
                       alt={
