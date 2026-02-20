@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Edit2 } from "lucide-react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Paneles/organizationPanel.module.css";
@@ -26,7 +26,7 @@ type Donation = {
   campaignId: number;
   campaignTitulo: string;
   estado: DonacionEstado;
-  fecha_estado: string;
+  fecha_estado?: string;
 };
 
 type ViewMode = "campaigns" | "donations";
@@ -88,7 +88,7 @@ export default function OrganizationCampaignsPage() {
     const limit = 8;
 
     const response =
-      await baseApi.organizacion.getDonationsPaginatedByOrganizacion(
+      await baseApi.donation.getAllPaginatedByOrganizacion(
         organizacionId,
         donationsPage,
         limit,
