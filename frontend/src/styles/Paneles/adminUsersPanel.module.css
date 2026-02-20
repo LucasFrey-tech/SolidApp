@@ -163,6 +163,15 @@
   margin-bottom: 16px;
 }
 
+.AdminLabel {
+  color: #facc15;
+  font-weight: 700;
+  background: rgba(250, 204, 21, 0.12);
+  padding: 6px 12px;
+  border-radius: 6px;
+  letter-spacing: 1px;
+}
+
 .Empty {
   text-align: center;
   color: #777;

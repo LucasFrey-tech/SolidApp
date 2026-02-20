@@ -10,6 +10,7 @@ type User = {
   name: string;
   email: string;
   enabled: boolean;
+  role: string;
 };
 
 const PAGE_SIZE = 10;
@@ -26,19 +27,28 @@ export default function UsuariosAdminPanel() {
     async function fetchUsers() {
       try {
         setLoading(true);
-        const res = await baseApi.users.getAllPaginated(page, PAGE_SIZE, search);
+
+        const res = await baseApi.users.getAllPaginated(
+          page,
+          PAGE_SIZE,
+          search
+        );
 
         const formatted = res.items.map((u: any) => ({
           id: u.id,
-          name: `${u.nombre || ''} ${u.apellido || ''}`.trim() || 'Sin nombre',
+          name:
+            `${u.nombre || ''} ${u.apellido || ''}`.trim() ||
+            'Sin nombre',
           email: u.correo,
           enabled: !u.deshabilitado,
+          role: u.rol || 'user',
         }));
 
         setUsers(formatted);
         setUsersCount(res.total);
       } catch (err) {
         console.error('Error al cargar usuarios:', err);
+
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -55,8 +65,21 @@ export default function UsuariosAdminPanel() {
   const totalPages = Math.ceil(usersCount / PAGE_SIZE) || 1;
 
   const toggleUser = async (user: User) => {
+    // PROTECCIÓN: no permitir acciones sobre admin
+    if (user.role?.toLowerCase() === 'admin') {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Acción no permitida',
+        text: 'No se puede modificar un administrador',
+      });
+      return;
+    }
+
     const quiereHabilitar = !user.enabled;
-    const title = quiereHabilitar ? '¿Habilitar usuario?' : '¿Deshabilitar usuario?';
+
+    const title = quiereHabilitar
+      ? '¿Habilitar usuario?'
+      : '¿Deshabilitar usuario?';
 
     const confirmed = await Swal.fire({
       title,
@@ -65,7 +88,7 @@ export default function UsuariosAdminPanel() {
       showCancelButton: true,
       confirmButtonText: 'Sí',
       cancelButtonText: 'Cancelar',
-    }).then(res => res.isConfirmed);
+    }).then((res) => res.isConfirmed);
 
     if (!confirmed) return;
 
@@ -76,21 +99,28 @@ export default function UsuariosAdminPanel() {
         await baseApi.users.delete(user.id);
       }
 
-      // Recargar datos
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger((prev) => prev + 1);
 
       Swal.fire({
         icon: 'success',
-        title: quiereHabilitar ? 'Habilitado' : 'Deshabilitado',
+        title: quiereHabilitar
+          ? 'Usuario habilitado'
+          : 'Usuario deshabilitado',
         timer: 1400,
         showConfirmButton: false,
       });
     } catch (err: any) {
-      console.error('Error al cambiar estado del usuario:', err);
+      console.error(
+        'Error al cambiar estado del usuario:',
+        err
+      );
+
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: err.message || 'No se pudo cambiar el estado del usuario',
+        text:
+          err.message ||
+          'No se pudo cambiar el estado del usuario',
       });
     }
   };
@@ -100,7 +130,12 @@ export default function UsuariosAdminPanel() {
     setPage(1);
   };
 
-  if (loading) return <p className={styles.Empty}>Cargando usuarios...</p>;
+  if (loading)
+    return (
+      <p className={styles.Empty}>
+        Cargando usuarios...
+      </p>
+    );
 
   return (
     <div className={styles.UsersBox}>
@@ -111,49 +146,94 @@ export default function UsuariosAdminPanel() {
         placeholder="Buscar por nombre o email..."
         className={styles.Search}
         value={search}
-        onChange={(e) => handleSearch(e.target.value)}
+        onChange={(e) =>
+          handleSearch(e.target.value)
+        }
       />
 
       {users.length === 0 ? (
-        <p className={styles.Empty}>No se encontraron usuarios</p>
+        <p className={styles.Empty}>
+          No se encontraron usuarios
+        </p>
       ) : (
-        users.map(user => (
-          <div key={user.id} className={styles.UserRow}>
+        users.map((user) => (
+          <div
+            key={user.id}
+            className={styles.UserRow}
+          >
             <div>
               <strong>{user.name}</strong>
-              <div className={styles.Email}>{user.email}</div>
+
+              <div className={styles.Email}>
+                {user.email}
+              </div>
             </div>
 
             <div className={styles.Actions}>
-              <button
-                className={styles.Check}
-                disabled={user.enabled}
-                onClick={() => toggleUser(user)}
-                title={user.enabled ? 'Ya está habilitado' : 'Habilitar usuario'}
-              >
-                ✓
-              </button>
-              <button
-                className={styles.Cross}
-                disabled={!user.enabled}
-                onClick={() => toggleUser(user)}
-                title={user.enabled ? 'Deshabilitar usuario' : 'Ya está deshabilitado'}
-              >
-                ✕
-              </button>
+              {user.role?.toLowerCase() ===
+              'admin' ? (
+                <span
+                  className={styles.AdminLabel}
+                >
+                  ADMIN
+                </span>
+              ) : (
+                <>
+                  <button
+                    className={styles.Check}
+                    disabled={user.enabled}
+                    onClick={() =>
+                      toggleUser(user)
+                    }
+                    title={
+                      user.enabled
+                        ? 'Ya está habilitado'
+                        : 'Habilitar usuario'
+                    }
+                  >
+                    ✓
+                  </button>
+
+                  <button
+                    className={styles.Cross}
+                    disabled={!user.enabled}
+                    onClick={() =>
+                      toggleUser(user)
+                    }
+                    title={
+                      user.enabled
+                        ? 'Deshabilitar usuario'
+                        : 'Ya está deshabilitado'
+                    }
+                  >
+                    ✕
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ))
       )}
 
       <div className={styles.Pagination}>
-        <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+        <button
+          disabled={page === 1}
+          onClick={() =>
+            setPage((p) => p - 1)
+          }
+        >
           Anterior
         </button>
-        <span>Página {page} de {totalPages}</span>
+
+        <span>
+          Página {page} de {totalPages}
+        </span>
+
         <button
           disabled={page === totalPages}
-          onClick={() => setPage(p => p + 1)}
+          onClick={() =>
+            setPage((p) => p + 1)
+          }
         >
           Siguiente
         </button>
