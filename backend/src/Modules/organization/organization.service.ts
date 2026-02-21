@@ -133,16 +133,12 @@ export class OrganizationsService {
    * @throws NotFoundException
    * Si no existe una organización con ese email.
    */
-  async findByEmail(correo: string): Promise<Organizations> {
+  async findByEmail(correo: string): Promise<Organizations | null> {
     const organizacion = await this.organizationRepository.findOne({
       where: { correo },
     });
 
-    if (!organizacion) {
-      throw new NotFoundException(`Usuario con email ${correo} no encontrado`);
-    }
-
-    return organizacion;
+    return organizacion || null;
   }
 
   /**

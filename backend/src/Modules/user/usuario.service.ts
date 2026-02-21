@@ -110,16 +110,10 @@ export class UsuarioService {
    * @returns {Promise<Usuario>}
    * @throws NotFoundException si no existe
    */
-  async findByEmail(correo: string): Promise<Usuario> {
+  async findByEmail(correo: string): Promise<Usuario | null> {
     const usuario = await this.usuarioRepository.findOne({ where: { correo } });
 
-    if (!usuario) {
-      throw new NotFoundException(
-        `Usuario con email ${correo} no encontrado`,
-      );
-    }
-
-    return usuario;
+    return usuario || null;
   }
 
   /**
@@ -154,9 +148,7 @@ export class UsuarioService {
     });
 
     if (existente) {
-      throw new ConflictException(
-        'Ya existe un usuario con ese email',
-      );
+      throw new ConflictException('Ya existe un usuario con ese email');
     }
 
     const usuario = this.usuarioRepository.create({
@@ -264,9 +256,7 @@ export class UsuarioService {
       });
 
       if (usuarioExistente && usuarioExistente.id !== id) {
-        throw new ConflictException(
-          'El email ya está en uso por otro usuario',
-        );
+        throw new ConflictException('El email ya está en uso por otro usuario');
       }
 
       usuario.correo = dto.correo;
@@ -287,9 +277,7 @@ export class UsuarioService {
       );
 
       if (!passwordValida) {
-        throw new UnauthorizedException(
-          'Contraseña actual incorrecta',
-        );
+        throw new UnauthorizedException('Contraseña actual incorrecta');
       }
 
       const hash = await bcrypt.hash(dto.passwordNueva, 10);

@@ -39,6 +39,26 @@ export class AuthService {
     this.logger.log('AuthService inicializado');
   }
 
+  private async hashPassword(clave: string): Promise<string> {
+    return bcrypt.hash(clave, 10);
+  }
+
+  private async verifyPassword(clave: string, hash: string): Promise<void> {
+    const coincidencia = await bcrypt.compare(clave, hash);
+    if (!coincidencia) throw new UnauthorizedException('Contraseña incorrecta');
+  }
+
+  private buildToken(payload: Record<string, any>): { token: string } {
+    return { token: this.jwtService.sign(payload) };
+  }
+
+  private checkDeshabilitado(deshabilitado: boolean): void {
+    if (deshabilitado)
+      throw new ForbiddenException(
+        'Usuario bloqueado. Contacto al administrador.',
+      );
+  }
+
   /**
    * Registra un nuevo Usuario en el sistema.
    *
@@ -50,26 +70,16 @@ export class AuthService {
   async registerUsuario(dto: RegisterUsuarioDto) {
     this.logger.log('Registrando usuario tipo: Usuario');
 
-    try {
-      // Verificar si ya existe el usuario por email.
-      const existingUser = await this.usersService.findByEmail(dto.correo);
-      if (existingUser) {
-        throw new BadRequestException('El correo ya está registrado');
-      }
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-    }
+    const existe = await this.usersService.findByEmail(dto.correo);
 
-    // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(dto.clave, 10);
+    if (existe) throw new BadRequestException('El correo ya esta registrado');
 
-    // Crear el usuario con la contraseña hasheada
+    const clave = await this.hashPassword(dto.clave);
+
     const user = await this.usersService.create({
       documento: dto.documento,
       correo: dto.correo,
-      clave: hashedPassword,
+      clave: clave,
       nombre: dto.nombre,
       apellido: dto.apellido,
       rol: 'usuario',
@@ -90,22 +100,11 @@ export class AuthService {
   async registerEmpresa(dto: RegisterEmpresaDto) {
     this.logger.log('Registrando usuario tipo: Empresa');
 
-    try {
-      // Verificar si ya existe la empresa por email.
-      const existingUser = await this.usersService.findByEmail(dto.correo);
-      if (existingUser) {
-        throw new BadRequestException('El correo ya está registrado');
-      }
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-    }
+    const existe = await this.empresasService.findByEmail(dto.correo);
+    if (existe) throw new BadRequestException('El correo ya está registrado');
 
-    // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(dto.clave, 10);
+    const clave = await this.hashPassword(dto.clave);
 
-    // Crear el usuario de la Empresa con la contraseña hasheada
     const empresa = await this.empresasService.create({
       nroDocumento: dto.documento,
       razon_social: dto.razonSocial,
@@ -117,7 +116,7 @@ export class AuthService {
       rubro: '',
       verificada: false,
       correo: dto.correo,
-      clave: hashedPassword,
+      clave: clave,
     });
 
     return {
@@ -138,22 +137,11 @@ export class AuthService {
   async registerOrganizacion(dto: RegisterOrganizacionDto) {
     this.logger.log('Registrando usuario tipo: Organización');
 
-    try {
-      // Verificar si ya existe la organización por email.
-      const existingUser = await this.organizationsService.findByEmail(
-        dto.correo,
-      );
-      if (existingUser) {
-        throw new BadRequestException('El correo ya está registrado');
-      }
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-    }
+    const existe = await this.organizationsService.findByEmail(dto.correo);
 
-    // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(dto.clave, 10);
+    if (existe) throw new BadRequestException('El correo ya esta registrado');
+
+    const clave = await this.hashPassword(dto.clave);
 
     // Crear usuario con contraseña hasheada
     const organizacion = await this.organizationsService.create({
@@ -164,7 +152,7 @@ export class AuthService {
       telefono: '',
       web: '',
       correo: dto.correo,
-      clave: hashedPassword,
+      clave: clave,
     });
 
     this.logger.log(`Organización creada con ID ${organizacion.id}`);
@@ -195,22 +183,14 @@ export class AuthService {
       );
     }
 
-    if (user.deshabilitado) {
-      throw new ForbiddenException(
-        'Usuario bloqueado. Contacta al administrador.',
-      );
-    }
+    this.checkDeshabilitado(user.deshabilitado);
 
-    // Creamos el payload del JWT
-    const payload = {
+    return this.buildToken({
       email: user.correo,
       sub: user.id,
       rol: user.rol,
       userType: 'usuario',
-    };
-
-    // Devolvemos el token
-    return { token: this.jwtService.sign(payload) };
+    });
   }
 
   /**
@@ -227,20 +207,13 @@ export class AuthService {
       requestBody.clave,
     );
 
-    if (user.deshabilitado) {
-      throw new ForbiddenException(
-        'Usuario bloqueado. Contacta al administrador.',
-      );
-    }
+    this.checkDeshabilitado(user.deshabilitado);
 
-    // Devolvemos el token
-    return {
-      token: this.jwtService.sign({
-        email: user.correo,
-        sub: user.id,
-        userType: 'empresa',
-      }),
-    };
+    return this.buildToken({
+      email: user.correo,
+      sub: user.id,
+      userType: 'empresa',
+    });
   }
 
   /**
@@ -257,20 +230,13 @@ export class AuthService {
       requestBody.clave,
     );
 
-    if (user.deshabilitado) {
-      throw new ForbiddenException(
-        'Usuario bloqueado. Contacta al administrador.',
-      );
-    }
+    this.checkDeshabilitado(user.deshabilitado);
 
-    // Devolvemos el token
-    return {
-      token: this.jwtService.sign({
-        email: user.correo,
-        sub: user.id,
-        userType: 'organizacion',
-      }),
-    };
+    return this.buildToken({
+      email: user.correo,
+      sub: user.id,
+      userType: 'organizacion',
+    });
   }
 
   async validateUser(email: string, pass: string): Promise<Usuario> {

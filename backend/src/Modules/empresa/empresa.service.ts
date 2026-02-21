@@ -52,7 +52,7 @@ export class EmpresasService {
     private readonly empresasRepository: Repository<Empresa>,
 
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   /**
    * Obtiene todas las empresas activas (no deshabilitadas).
@@ -75,8 +75,7 @@ export class EmpresasService {
 
     res.forEach(
       (empresa) =>
-      (empresa.logo =
-        SettingsService.getStaticResourceUrl('servo.png')),
+        (empresa.logo = SettingsService.getStaticResourceUrl('servo.png')),
     );
 
     return res;
@@ -96,18 +95,17 @@ export class EmpresasService {
 
     const where = search
       ? [
-        { razon_social: Like(`%${search}%`) },
-        { nombre_fantasia: Like(`%${search}%`) },
-      ]
+          { razon_social: Like(`%${search}%`) },
+          { nombre_fantasia: Like(`%${search}%`) },
+        ]
       : {};
 
-    const [empresas, total] =
-      await this.empresasRepository.findAndCount({
-        skip: startIndex,
-        take: limit,
-        order: { id: 'ASC' },
-        where,
-      });
+    const [empresas, total] = await this.empresasRepository.findAndCount({
+      skip: startIndex,
+      take: limit,
+      order: { id: 'ASC' },
+      where,
+    });
 
     const items = empresas.map(this.mapToResponseDto);
 
@@ -128,9 +126,7 @@ export class EmpresasService {
     });
 
     if (!empresa) {
-      throw new NotFoundException(
-        `La Empresa con ID ${id} no encontrada`,
-      );
+      throw new NotFoundException(`La Empresa con ID ${id} no encontrada`);
     }
 
     this.logger.log(`La Empresa ${id} obtenida`);
@@ -146,18 +142,12 @@ export class EmpresasService {
    *
    * @returns {Promise<Empresa>}
    */
-  async findByEmail(correo: string): Promise<Empresa> {
+  async findByEmail(correo: string): Promise<Empresa | null> {
     const empresa = await this.empresasRepository.findOne({
       where: { correo },
     });
 
-    if (!empresa) {
-      throw new NotFoundException(
-        `Usuario con email ${correo} no encontrado`,
-      );
-    }
-
-    return empresa;
+    return empresa || null;
   }
 
   /**
@@ -171,17 +161,13 @@ export class EmpresasService {
    *
    * @returns {Promise<EmpresaResponseDTO>}
    */
-  async create(
-    createDto: CreateEmpresaDTO,
-  ): Promise<EmpresaResponseDTO> {
+  async create(createDto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {
     const existente = await this.empresasRepository.findOne({
       where: { nroDocumento: createDto.nroDocumento },
     });
 
     if (existente) {
-      throw new ConflictException(
-        'La Empresa ya está registrada',
-      );
+      throw new ConflictException('La Empresa ya está registrada');
     }
 
     const empresa = this.empresasRepository.create({
@@ -189,8 +175,7 @@ export class EmpresasService {
       verificada: false,
     });
 
-    const savedEmpresa =
-      await this.empresasRepository.save(empresa);
+    const savedEmpresa = await this.empresasRepository.save(empresa);
 
     return this.mapToResponseDto(savedEmpresa);
   }
@@ -215,9 +200,7 @@ export class EmpresasService {
     });
 
     if (!empresa) {
-      throw new NotFoundException(
-        `Empresa con ID ${id} no encontrada`,
-      );
+      throw new NotFoundException(`Empresa con ID ${id} no encontrada`);
     }
 
     Object.keys(updateDto).forEach((key) => {
@@ -234,8 +217,7 @@ export class EmpresasService {
 
     empresa.ultimo_cambio = new Date();
 
-    const updatedEmpresa =
-      await this.empresasRepository.save(empresa);
+    const updatedEmpresa = await this.empresasRepository.save(empresa);
 
     this.logger.log(`Empresa ${id} actualizada`);
 
@@ -255,9 +237,7 @@ export class EmpresasService {
     });
 
     if (!empresa) {
-      throw new NotFoundException(
-        `La Empresa con ID ${id} no encontrada`,
-      );
+      throw new NotFoundException(`La Empresa con ID ${id} no encontrada`);
     }
 
     empresa.deshabilitado = true;
@@ -279,15 +259,11 @@ export class EmpresasService {
     });
 
     if (!empresa) {
-      throw new NotFoundException(
-        `La Empresa con ID ${id} no encontrada`,
-      );
+      throw new NotFoundException(`La Empresa con ID ${id} no encontrada`);
     }
 
     if (!empresa.deshabilitado) {
-      throw new BadRequestException(
-        'La empresa ya se encuentra activa',
-      );
+      throw new BadRequestException('La empresa ya se encuentra activa');
     }
 
     empresa.deshabilitado = false;
@@ -309,10 +285,7 @@ export class EmpresasService {
    *
    * @returns { user: Empresa, token: string }
    */
-  async updateCredentials(
-    id: number,
-    dto: UpdateCredentialsDto,
-  ) {
+  async updateCredentials(id: number, dto: UpdateCredentialsDto) {
     const empresa = await this.empresasRepository.findOne({
       where: { id },
     });
@@ -324,15 +297,12 @@ export class EmpresasService {
     let cambiosRealizados = false;
 
     if (dto.correo && dto.correo !== empresa.correo) {
-      const empresaExistente =
-        await this.empresasRepository.findOne({
-          where: { correo: dto.correo },
-        });
+      const empresaExistente = await this.empresasRepository.findOne({
+        where: { correo: dto.correo },
+      });
 
       if (empresaExistente && empresaExistente.id !== id) {
-        throw new ConflictException(
-          'El email ya está en uso por otro usuario',
-        );
+        throw new ConflictException('El email ya está en uso por otro usuario');
       }
 
       empresa.correo = dto.correo;
@@ -346,9 +316,7 @@ export class EmpresasService {
       );
 
       if (!passwordValida) {
-        throw new UnauthorizedException(
-          'Contraseña actual incorrecta',
-        );
+        throw new UnauthorizedException('Contraseña actual incorrecta');
       }
 
       const hash = await bcrypt.hash(dto.passwordNueva, 10);
