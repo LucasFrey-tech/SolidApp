@@ -23,7 +23,7 @@ export class Empresa {
    * @type {string}
    */
   @ApiProperty({ example: '20-04856975-3', description: 'Cuil de la Empresa' })
-  @Column({ type: 'varchar', length: 13 })
+  @Column({ type: 'varchar', length: 13, unique: true })
   nroDocumento: string;
   
   /**
@@ -151,7 +151,7 @@ export class Empresa {
     example: 'correo@dominio.com',
     description: 'Correo electronico del usuario de la empresa.',
   })
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   correo: string;
   
   /**
