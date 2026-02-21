@@ -208,7 +208,6 @@ export class EmpresasService {
   async update(
     id: number,
     updateDto: UpdateEmpresaDTO,
-    logo?: string,
   ): Promise<EmpresaResponseDTO> {
     const empresa = await this.empresasRepository.findOne({
       where: { id },
@@ -227,10 +226,6 @@ export class EmpresasService {
         empresa[key as keyof Empresa] = value as never;
       }
     });
-
-    if (logo) {
-      empresa.logo = logo;
-    }
 
     empresa.ultimo_cambio = new Date();
 
