@@ -4,57 +4,21 @@ import { LoginRequestBody, AuthResponse } from "../types/auth";
 export class Login extends Crud<LoginRequestBody> {
   protected endPoint = "auth";
 
-  async login(credentials: LoginRequestBody): Promise<
-    | { success: true; data: AuthResponse }
-    | {
-        status: number;
-        success: false;
-        error: string;
-      }
-  > {
-    try {
-      const res = await fetch(`${this.baseUrl}/${this.endPoint}/login`, {
-        method: "POST",
-        headers: this.getHeaders(),
-        body: JSON.stringify(credentials),
-      });
-      const body = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 403) {
-          return { status: 403, success: false, error: "Usuario bloqueado" };
-        }
-        return {
-          status: body.status,
-          success: false,
-          error: "Error al iniciar sesión",
-        };
-      }
-      return { success: true, data: body };
-    } catch (error) {
-      return {
-        status: 500,
-        success: false,
-        error: error instanceof Error ? error.message : "Error desconocido",
-      };
-    }
-  }
-
   async loginUser(credentials: LoginRequestBody): Promise<AuthResponse> {
-    return this.post("/auth/login/usuario", credentials);
+    return this.login(`/${this.endPoint}/sesion/usuario`, credentials);
   }
 
   async loginEmpresa(credentials: LoginRequestBody): Promise<AuthResponse> {
-    return this.post("/auth/login/empresa", credentials);
+    return this.login(`/${this.endPoint}/sesion/empresa`, credentials);
   }
 
   async loginOrganizacion(
     credentials: LoginRequestBody,
   ): Promise<AuthResponse> {
-    return this.post("/auth/login/organizacion", credentials);
+    return this.login(`/${this.endPoint}/sesion/organizacion`, credentials);
   }
 
-  private async post(
+  private async login(
     path: string,
     data: LoginRequestBody,
   ): Promise<AuthResponse> {

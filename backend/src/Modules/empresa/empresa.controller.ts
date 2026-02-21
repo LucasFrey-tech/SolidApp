@@ -29,7 +29,6 @@ import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { NullableImageValidationPipe } from '../../common/pipes/mediaFilePipes';
 
 /**
@@ -60,7 +59,7 @@ import { NullableImageValidationPipe } from '../../common/pipes/mediaFilePipes';
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: EmpresasService) { }
+  constructor(private readonly empresasService: EmpresasService) {}
 
   /**
    * GET /empresas
@@ -220,7 +219,7 @@ export class EmpresaController {
             .replace(/\s+/g, '_');
 
           cb(null, sanitizedName);
-        }
+        },
       }),
     }),
   )
@@ -228,15 +227,12 @@ export class EmpresaController {
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile(new NullableImageValidationPipe())
     file?: Express.Multer.File,
-    @Body() body?: any,
+    @Body() body?: { data: string },
   ): Promise<EmpresaResponseDTO> {
-    let updateDto: UpdateEmpresaDTO;
+    let updateDto: UpdateEmpresaDTO = {};
 
     if (body?.data) {
-      updateDto = JSON.parse(body.data);
-    }
-    else {
-      updateDto = body;
+      updateDto = JSON.parse(body.data) as UpdateEmpresaDTO;
     }
 
     if (file) {
