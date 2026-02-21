@@ -383,17 +383,22 @@ export class DonationsService {
   }
 
   private mapToUserDonationResponse(donation: Donations): UserDonationItemDto {
-    return {
-      id: donation.id,
-      detalle: donation.detalle,
-      cantidad: donation.cantidad,
-      puntos: donation.puntos,
-      estado: donation.estado,
-      fecha_registro: donation.fecha_registro,
-      nombreOrganizacion: donation.campaña.organizacion.nombre_fantasia,
-      tituloCampaña: donation.campaña.titulo,
-      fecha_estado: donation.fecha_estado,
-      motivo_rechazo: donation.motivo_rechazo || '',
-    };
-  }
+  return {
+    id: donation.id,
+    detalle: donation.detalle,
+    cantidad: donation.cantidad,
+    puntos: donation.puntos,
+    estado: donation.estado,
+    fecha_registro: donation.fecha_registro,
+
+    organizacionId: donation.campaña.organizacion.id,
+    nombreOrganizacion: donation.campaña.organizacion.nombre_fantasia,
+
+    direccion: donation.campaña.organizacion.direccion, 
+
+    tituloCampaña: donation.campaña.titulo,
+    fecha_estado: donation.fecha_estado,
+    motivo_rechazo: donation.motivo_rechazo || '',
+  };
+}
 }

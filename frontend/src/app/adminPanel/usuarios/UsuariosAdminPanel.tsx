@@ -60,7 +60,6 @@ export default function UsuariosAdminPanel() {
     fetchUsers();
   }, [page, search]);
 
-  // limpiar debounce
   useEffect(() => {
     return () => {
       if (searchTimeout.current) clearTimeout(searchTimeout.current);
@@ -84,7 +83,7 @@ export default function UsuariosAdminPanel() {
   };
 
   // =============================
-  // HABILITAR / DESHABILITAR (SOFT DELETE)
+  // HABILITAR / DESHABILITAR 
   // =============================
   const toggleUserStatus = async (user: User, enable: boolean) => {
     const confirm = await Swal.fire({
@@ -100,7 +99,7 @@ export default function UsuariosAdminPanel() {
 
     setUpdatingUserId(user.id);
 
-    // 🔥 Actualización optimista
+    // Actualización 
     setUsers((prev) =>
       prev.map((u) =>
         u.id === user.id ? { ...u, enabled: enable } : u
@@ -122,7 +121,6 @@ export default function UsuariosAdminPanel() {
     } catch (err) {
       console.error(err);
 
-      // ❌ revertir si falla
       setUsers((prev) =>
         prev.map((u) =>
           u.id === user.id ? { ...u, enabled: !enable } : u

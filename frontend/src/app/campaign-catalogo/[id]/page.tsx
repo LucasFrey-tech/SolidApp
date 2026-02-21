@@ -99,8 +99,8 @@ export default function CampaignDetallePage() {
               <Image
                 src={selectedImage}
                 alt={campaign.titulo}
-                fill
-                sizes="(max-width: 768px) 100vw, 600px"
+                width={900}
+                height={600}
                 className={styles.image}
                 priority
               />
@@ -133,7 +133,8 @@ export default function CampaignDetallePage() {
                   <Image
                     src={img.url}
                     alt={img.nombre}
-                    fill
+                    width={200}
+                    height={200}
                     className={styles.galleryImage}
                   />
                 </div>
@@ -172,8 +173,8 @@ export default function CampaignDetallePage() {
             <Image
               src={selectedImage}
               alt="Imagen ampliada"
-              width={2000}
-              height={2000}
+              width={1600}
+              height={1200}
               className={styles.lightboxImage}
               priority
             />

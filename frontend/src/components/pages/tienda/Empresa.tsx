@@ -26,7 +26,7 @@ function EmpresaLogo({
     <Image
       src={imgSrc}
       alt={alt}
-      width={120}
+      width={150}
       height={50}
       className={styles.image}
       onError={() => setImgSrc(PLACEHOLDER_IMG)}

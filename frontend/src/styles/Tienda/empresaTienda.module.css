@@ -36,16 +36,16 @@
   gap: clamp(16px, 4vw, 24px);
 }
 
-/* ===== CARD (ESTILO TIENDA) ===== */
+/* ===== CARD ===== */
 .card {
   position: relative;
 
   width: 100%;
-  max-width: 240px; /* IMPORTANTE */
+  max-width: 240px; 
 
-  height: clamp(90px, 18vw, 120px);
+  height: clamp(200px, 18vw, 120px);
   border-radius: 14px;
-  background: #0f3d3a;
+  background: #168f87;
 
   display: flex;
   align-items: center;

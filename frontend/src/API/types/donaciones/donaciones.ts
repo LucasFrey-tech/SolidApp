@@ -46,6 +46,8 @@ export interface donacionUsuario {
   cantidad: string
   fecha_registro: string;
   tituloCampaña: string;
+  organizacionId: number;
+  direccion: string;
   nombreOrganizacion: string;
   fecha_estado: string;
   motivo_rechazo: string;
