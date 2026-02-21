@@ -42,7 +42,6 @@ export default function AdminPage() {
             </button>
           </div>
 
-          {/* Mantenemos todos los paneles en el DOM, solo ocultamos los que no están activos */}
           <div className={view === 'usuarios' ? '' : 'hidden'}>
             <UsuariosAdminPanel />
           </div>

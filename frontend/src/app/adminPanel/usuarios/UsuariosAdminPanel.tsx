@@ -20,14 +20,15 @@ export default function UsuariosAdminPanel() {
   const [users, setUsers] = useState<User[]>([]);
   const [usersCount, setUsersCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [updatingUserId, setUpdatingUserId] = useState<number | null>(null);
 
-  // input separado
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // fetch usuarios
+  // =============================
+  // FETCH USUARIOS
+  // =============================
   useEffect(() => {
     async function fetchUsers() {
       setLoading(true);
@@ -37,6 +38,7 @@ export default function UsuariosAdminPanel() {
           PAGE_SIZE,
           search
         );
+
         const formatted = res.items.map((u: any) => ({
           id: u.id,
           name: `${u.nombre || ''} ${u.apellido || ''}`.trim() || 'Sin nombre',
@@ -44,6 +46,7 @@ export default function UsuariosAdminPanel() {
           enabled: !u.deshabilitado,
           role: u.rol || 'user',
         }));
+
         setUsers(formatted);
         setUsersCount(res.total);
       } catch (err) {
@@ -55,20 +58,88 @@ export default function UsuariosAdminPanel() {
     }
 
     fetchUsers();
-  }, [page, search, refreshTrigger]);
+  }, [page, search]);
 
-  // debounce search
+  // limpiar debounce
+  useEffect(() => {
+    return () => {
+      if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    };
+  }, []);
+
+  // =============================
+  // BUSCADOR
+  // =============================
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
     searchTimeout.current = setTimeout(() => {
       setSearch(value);
       setPage(1);
-    }, 300); // 300ms debounce
+    }, 300);
+  };
+
+  // =============================
+  // HABILITAR / DESHABILITAR (SOFT DELETE)
+  // =============================
+  const toggleUserStatus = async (user: User, enable: boolean) => {
+    const confirm = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: `¿Quieres ${enable ? 'habilitar' : 'deshabilitar'} este usuario?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    setUpdatingUserId(user.id);
+
+    // 🔥 Actualización optimista
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === user.id ? { ...u, enabled: enable } : u
+      )
+    );
+
+    try {
+      if (enable) {
+        await baseApi.users.restore(user.id);
+      } else {
+        await baseApi.users.delete(user.id);
+      }
+
+      Swal.fire(
+        'Éxito',
+        `Usuario ${enable ? 'habilitado' : 'deshabilitado'} correctamente`,
+        'success'
+      );
+    } catch (err) {
+      console.error(err);
+
+      // ❌ revertir si falla
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === user.id ? { ...u, enabled: !enable } : u
+        )
+      );
+
+      Swal.fire('Error', 'No se pudo actualizar el usuario', 'error');
+    } finally {
+      setUpdatingUserId(null);
+    }
   };
 
   const totalPages = Math.ceil(usersCount / PAGE_SIZE) || 1;
 
+  // =============================
+  // RENDER
+  // =============================
   return (
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Usuarios</h2>
@@ -92,13 +163,27 @@ export default function UsuariosAdminPanel() {
               <strong>{user.name}</strong>
               <div className={styles.Email}>{user.email}</div>
             </div>
+
             <div className={styles.Actions}>
               {user.role.toLowerCase() === 'admin' ? (
                 <span className={styles.AdminLabel}>ADMIN</span>
               ) : (
                 <>
-                  <button className={styles.Check} disabled={user.enabled}>✓</button>
-                  <button className={styles.Cross} disabled={!user.enabled}>✕</button>
+                  <button
+                    className={styles.Check}
+                    disabled={user.enabled || updatingUserId === user.id}
+                    onClick={() => toggleUserStatus(user, true)}
+                  >
+                    {updatingUserId === user.id ? '...' : '✓'}
+                  </button>
+
+                  <button
+                    className={styles.Cross}
+                    disabled={!user.enabled || updatingUserId === user.id}
+                    onClick={() => toggleUserStatus(user, false)}
+                  >
+                    {updatingUserId === user.id ? '...' : '✕'}
+                  </button>
                 </>
               )}
             </div>
@@ -107,11 +192,23 @@ export default function UsuariosAdminPanel() {
       )}
 
       <div className={styles.Pagination}>
-        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Anterior</button>
+        <button
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          Anterior
+        </button>
+
         <span>
           Página {page} de {totalPages}
         </span>
-        <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Siguiente</button>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Siguiente
+        </button>
       </div>
     </div>
   );
