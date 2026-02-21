@@ -5,7 +5,7 @@
   align-items: flex-start;
   width: 100%;
   min-height: 100vh;
-  background-color: #b4b4bb; 
+  background-color: #414141; 
   padding: 40px 0;
 }
 
@@ -20,11 +20,11 @@
 
 .Content {
   flex: 1;
-  background-color: #4e4e5c; 
+  background-color: #000000; 
   padding: 32px;
   border-radius: 18px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
-  color: #e0e0e0;
+  color: #fff5f5;
 }
 
 /* ===== SELECTOR ===== */
@@ -53,8 +53,8 @@
 
 /* botón activo */
 .ActiveButton {
-  border-color: #b71c1c;      
-  background-color: #c62828;   
+  border-color: #942929;      
+  background-color: #8b3131;   
   color: #fff;                 
 }
 
