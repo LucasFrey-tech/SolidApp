@@ -1,10 +1,5 @@
 // /backend/src/auth/auth.controller.ts
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import {
   LoginRequestBody,
   RegisterEmpresaDto,
@@ -12,12 +7,7 @@ import {
   RegisterUsuarioDto,
   AuthResponse,
 } from './dto/auth.dto';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 
 /**
@@ -27,17 +17,17 @@ import { AuthService } from './auth.service';
 @ApiTags('Autorización')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   /**
    * Inicio sesión de un usuario y devuelve un token de acceso.
-   * 
+   *
    * @param {LoginRequestBody} data - Objeto con las credenciales del Usuario (email y contraseña).
    * @returns Un objeto con los datos del Usuario.
    */
 
   // Endpoint específico para login de usuario
-  @Post('login/usuario')
+  @Post('sesion/usuario')
   @HttpCode(200)
   @ApiOperation({ summary: 'Login de Usuario' })
   @ApiBody({ type: LoginRequestBody })
@@ -52,12 +42,12 @@ export class AuthController {
 
   /**
    * Inicio sesión de una Empresa y devuelve un token de acceso.
-   * 
+   *
    * @param {LoginRequestBody} data - Objeto con las credenciales de la Empresa (email y contraseña).
    * @returns Un objeto con los datos de la Empresa.
-  */
+   */
   // Endpoint específico para login de empresa
-  @Post('login/empresa')
+  @Post('sesion/empresa')
   @HttpCode(200)
   @ApiOperation({ summary: 'Login de Empresa' })
   @ApiBody({ type: LoginRequestBody })
@@ -72,12 +62,12 @@ export class AuthController {
 
   /**
    * Icicio de sesión de una Organización y devuelve un token de acceso.
-   * 
+   *
    * @param {LoginRequestBody} data - Objeto con las credenciales de la Organización (email y contraseña).
    * @returns Un objeto con los datos de la Organización.
    */
   // Endpoint específico para login de organización
-  @Post('login/organizacion')
+  @Post('sesion/organizacion')
   @HttpCode(200)
   @ApiOperation({ summary: 'Login de Organización' })
   @ApiBody({ type: LoginRequestBody })
@@ -92,7 +82,7 @@ export class AuthController {
 
   /**
    * Registro de un nuevo Usuario en el sistema.
-   * 
+   *
    * @param {RegisterUsuarioDto} data - Objeto con los datos necesarios para el registro del Usuario.
    * @returns Un objeto con los datos del Usuario registrado.
    */
@@ -121,7 +111,7 @@ export class AuthController {
 
   /**
    * Registro de una nueva Empresa en el sistema.
-   * 
+   *
    * @param {RegisterEmpresaDto} data - Objeto con los datos necesarios para el registro de la Empresa.
    * @returns Un objeto con los datos de la Empresa registrada.
    */
@@ -165,7 +155,7 @@ export class AuthController {
 
   /**
    * Registro de una nueva Organización en el sistema.
-   * 
+   *
    * @param {RegisterOrganizacionDto} data - Objeto con los datos necesarios para el registro de la Organización.
    * @returns Un objeto con los datos de la Organización registrada.
    */
