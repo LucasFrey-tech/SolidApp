@@ -42,7 +42,7 @@ export class DonationsService {
     private readonly donationImagenRepository: Repository<Donation_images>,
 
     private readonly rankingService: RankingService,
-  ) {}
+  ) { }
 
   /**
    * Obtiene todas las Donaciones disponibles.
@@ -258,7 +258,7 @@ export class DonationsService {
       async (manager) => {
         const donacion = await manager.findOne(Donations, {
           where: { id: id },
-          relations: ['usuario'],
+          relations: ['usuario', 'campaña'],
         });
 
         if (!donacion) {
@@ -339,7 +339,6 @@ export class DonationsService {
 
     if (nuevoEstado === DonacionEstado.APROBADA) {
       usuario.puntos += donacion.puntos;
-
       await manager.save(usuario);
 
       await this.rankingService.ajustarPuntos(
@@ -347,6 +346,22 @@ export class DonationsService {
         donacion.puntos,
         manager,
       );
+
+      const campaign = await manager.findOne(Campaigns, {
+        where: { id: donacion.campaña.id },
+      });
+
+      if (!campaign) {
+        throw new NotFoundException('Campaña asociada no encontrada');
+      }
+
+      campaign.objetivo -= donacion.cantidad;
+
+      if (campaign.objetivo < 0) {
+        campaign.objetivo = 0;
+      }
+
+      await manager.save(campaign);
     }
   }
 
@@ -379,6 +394,7 @@ export class DonationsService {
       campaignId: donation.campaña.id,
       campaignTitulo: donation.campaña.titulo,
       fecha_estado: donation.fecha_estado,
+      cantidad: donation.cantidad,
     };
   }
 

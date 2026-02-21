@@ -27,6 +27,7 @@ type Donation = {
   campaignTitulo: string;
   estado: DonacionEstado;
   fecha_estado?: string;
+  cantidad: number;
 };
 
 type ViewMode = "campaigns" | "donations";
@@ -136,6 +137,9 @@ export default function OrganizationCampaignsPage() {
           d.id === donation.id ? { ...d, estado: DonacionEstado.APROBADA } : d,
         ),
       );
+
+      await fetchCampaigns();
+
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "No se pudo aceptar la donación", "error");
@@ -364,6 +368,7 @@ export default function OrganizationCampaignsPage() {
                 <th>Campaña</th>
                 <th>Usuario</th>
                 <th>Donación</th>
+                <th>Cantidad</th>
                 <th>Puntos</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -380,6 +385,7 @@ export default function OrganizationCampaignsPage() {
                     <td>{d.campaignTitulo}</td>
                     <td>{d.correo}</td>
                     <td>{d.descripcion}</td>
+                    <td>{d.cantidad}</td>
                     <td>{d.puntos}</td>
                     <td>{DonacionEstado[d.estado]}</td>
 
