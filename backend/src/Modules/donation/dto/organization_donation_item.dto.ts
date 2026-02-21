@@ -49,4 +49,7 @@ export class OrganizationDonationItemDto {
   /** Fecha en la que cambio de estado */
   @ApiProperty({ example: '20/02/26' })
   fecha_estado?: Date;
+
+  @ApiProperty({ example: "objetivo"})
+  cantidad: number;
 }
