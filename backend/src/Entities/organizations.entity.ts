@@ -28,7 +28,7 @@ export class Organizations {
     example: '20-04856975-3',
     description: 'Cuil de la Organización',
   })
-  @Column({ type: 'varchar', length: 13 })
+  @Column({ type: 'varchar', length: 13, unique: true })
   nroDocumento: string;
     
   /**
@@ -160,7 +160,7 @@ export class Organizations {
     example: 'correo@dominio.com',
     description: 'correo electronico del usuario de la empresa.',
   })
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   correo: string;
     
   /**
