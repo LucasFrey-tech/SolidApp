@@ -21,30 +21,39 @@ export default function AdminPage() {
         <section className={styles.Content}>
           <div className={styles.Selector}>
             <button
+              className={`${styles.ButtonBase} ${getButtonClass('usuarios')}`}
               onClick={() => setView('usuarios')}
-              className={getButtonClass('usuarios')}
             >
               Usuarios
             </button>
 
             <button
+              className={`${styles.ButtonBase} ${getButtonClass('empresa')}`}
               onClick={() => setView('empresa')}
-              className={getButtonClass('empresa')}
             >
               Empresas
             </button>
 
             <button
+              className={`${styles.ButtonBase} ${getButtonClass('organizacion')}`}
               onClick={() => setView('organizacion')}
-              className={getButtonClass('organizacion')}
             >
               Organizaciones
             </button>
           </div>
 
-          {view === 'usuarios' && <UsuariosAdminPanel />}
-          {view === 'empresa' && <EmpresasAdminPanel />}
-          {view === 'organizacion' && <OrganizacionesAdminPanel />}
+          {/* Mantenemos todos los paneles en el DOM, solo ocultamos los que no están activos */}
+          <div className={view === 'usuarios' ? '' : 'hidden'}>
+            <UsuariosAdminPanel />
+          </div>
+
+          <div className={view === 'empresa' ? '' : 'hidden'}>
+            <EmpresasAdminPanel />
+          </div>
+
+          <div className={view === 'organizacion' ? '' : 'hidden'}>
+            <OrganizacionesAdminPanel />
+          </div>
         </section>
       </main>
     </div>

@@ -1,11 +1,11 @@
-/* LAYOUT BASE */
+/* ===== LAYOUT BASE ===== */
 .PanelLayout {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   width: 100%;
   min-height: 100vh;
-  background-color: #5a5a5a;
+  background-color: #b4b4bb; 
   padding: 40px 0;
 }
 
@@ -13,57 +13,53 @@
   display: flex;
   width: 85%;
   max-width: 1200px;
-  background-color: #000000;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
   overflow: hidden;
 }
 
 .Content {
   flex: 1;
-  background-color: #000000;
+  background-color: #4e4e5c; 
   padding: 32px;
   border-radius: 18px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  color: #e0e0e0;
 }
-/* ===== SELECTOR ===== */
 
+/* ===== SELECTOR ===== */
 .Selector {
   display: flex;
   justify-content: center;
-  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   gap: 16px;
-  color: black;
   margin-bottom: 32px;
 }
 
-.Selector button {
+/* clase base de todos los botones */
+.ButtonBase {
   padding: 10px 18px;
   border-radius: 8px;
-  border: 1px solid #ddd;
-  background: #fff;
+  border: 1px solid #555;
+  background: #3a3a4d;
+  color: #eee;        
+  font-weight: 800;
   cursor: pointer;
-  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.Selector button:hover {
-  background: #f5f5f5;
+.ButtonBase:hover {
+  background-color: #505066;
 }
 
+/* botón activo */
 .ActiveButton {
-  color: rgb(255, 0, 0);
-  border-color: #c62828;
+  border-color: #b71c1c;      
+  background-color: #c62828;   
+  color: #fff;                 
 }
 
 .ActiveButton:hover {
-  background-color: #b71c1c;
-}
-
-
-/* ===== PLACEHOLDER ===== */
-.Placeholder {
-  text-align: center;
-  color: #777;
+  background-color: #9a1c1c;
 }
 
 /* ===== USERS PANEL ===== */
@@ -75,6 +71,7 @@
   font-size: 50px;
   text-align: center;
   font-weight: 600;
+  color: #fff;
 }
 
 /* ===== USER ROW ===== */
@@ -83,12 +80,33 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: background 0.2s ease;
+  background-color: #3a3a4d;
+}
+
+.UserRow:nth-child(even) {
+  background-color: #2f2f40;
+}
+
+.UserRow:hover {
+  background-color: #505080;
 }
 
 .Email {
   font-size: 14px;
-  color: #666;
+  color: #ccc;
+}
+
+/* ===== ADMIN LABEL ===== */
+.AdminLabel {
+  color: #fff;
+  font-weight: 700;
+  background: #ffb300;
+  padding: 6px 12px;
+  border-radius: 6px;
+  letter-spacing: 1px;
 }
 
 /* ===== ACTIONS ===== */
@@ -105,16 +123,17 @@
   border: none;
   cursor: pointer;
   font-size: 16px;
+  transition: all 0.2s ease;
 }
 
 .Check {
-  background-color: #e6f7ee;
-  color: #2e7d32;
+  background-color: #2e7d32;
+  color: #e6f4ea;
 }
 
 .Cross {
-  background-color: #fdecea;
-  color: #c62828;
+  background-color: #c62828;
+  color: #fdecea;
 }
 
 .Check:disabled,
@@ -130,16 +149,20 @@
   align-items: center;
   gap: 16px;
   margin-top: 24px;
-
 }
 
 .Pagination button {
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid #ddd;
-  background: white;
+  border: 1px solid #555;
+  background: #3a3a4d;
   cursor: pointer;
-    color: black;
+  color: #eee;
+  transition: all 0.2s ease;
+}
+
+.Pagination button:hover:not(:disabled) {
+  background-color: #505066;
 }
 
 .Pagination button:disabled {
@@ -147,37 +170,25 @@
   cursor: not-allowed;
 }
 
-.UserRow strong {
-  color: #ffffff;
-}
-
-.UserRow .Email {
-  color: #ffffff;
-}
-
+/* ===== SEARCH ===== */
 .Search {
   width: 100%;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #555;
+  background: #2f2f40;
+  color: #eee;
   margin-bottom: 16px;
 }
 
-.AdminLabel {
-  color: #facc15;
-  font-weight: 700;
-  background: rgba(250, 204, 21, 0.12);
-  padding: 6px 12px;
-  border-radius: 6px;
-  letter-spacing: 1px;
-}
-
+/* ===== EMPTY ===== */
 .Empty {
   text-align: center;
-  color: #777;
+  color: #aaa;
   margin-top: 12px;
 }
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .Panel {
     width: 95%;
