@@ -58,7 +58,7 @@ export default function OrganizationCampaignsPage() {
     const limit = 8;
 
     const response =
-      await baseApi.organizacion.getOrganizationCampaignsPaginated(
+      await baseApi.campaign.getCampaignsPaginatedByOrganizacion(
         organizacionId,
         campaignsPage,
         limit,

@@ -102,28 +102,6 @@ export class OrganizationsService {
   }
 
   /**
-   * Obtiene campañas asociadas a una organización de forma paginada.
-   *
-   * @param organizacionId - ID de la organización.
-   * @param page - Número de página.
-   * @param limit - Cantidad de registros por página.
-   *
-   * @returns {Promise<any>}
-   * Resultado paginado de campañas.
-   */
-  async findOrganizationCampaignsPaginated(
-    organizacionId: number,
-    page: number,
-    limit: number,
-  ) {
-    return this.campaignService.findByOrganizationPaginated(
-      organizacionId,
-      page,
-      limit,
-    );
-  }
-
-  /**
    * Obtiene una organización por ID.
    *
    * @param id ID de la organización.

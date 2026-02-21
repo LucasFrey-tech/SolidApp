@@ -31,7 +31,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ImagesArrayValidationPipe } from '../../common/pipes/mediaFilePipes';
 import { SettingsService } from '../../common/settings/settings.service';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { ResponseCampaignsPaginatedDto } from './dto/response_campaign_paginated.dto';
 
 /**
  * Controlador para gestionar las operaciones de las Campañas.
@@ -41,7 +41,7 @@ import { extname } from 'path';
 @ApiTags('Campañas')
 @Controller('campaigns')
 export class CampaignsController {
-  constructor(private readonly campaignService: CampaignsService) { }
+  constructor(private readonly campaignService: CampaignsService) {}
 
   /**
    * Obtiene todas las Campañas disponibles.
@@ -126,6 +126,40 @@ export class CampaignsController {
   }
 
   /**
+   * Obtiene las campañas asociadas a una organización
+   * de manera paginada.
+   *
+   * @param organizacionId ID de la organización
+   * @param page Número de página
+   * @param limit Cantidad por página
+   *
+   * @returns Campañas paginadas de la organización
+   */
+  @Get('organizacion/:organizacionId')
+  @ApiOperation({ summary: 'Listar campañas solidarias por organizacion' })
+  @ApiParam({
+    name: 'organizacionId',
+    type: Number,
+    description: 'ID de la organización',
+  })
+  @ApiResponse({
+    status: 200,
+    type: ResponseCampaignsPaginatedDto,
+    isArray: true,
+  })
+  findByOrganizacionPaginated(
+    @Param('organizacionId', ParseIntPipe) organizacionId: number,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    return this.campaignService.findByOrganizationPaginated(
+      organizacionId,
+      Number(page),
+      Number(limit),
+    );
+  }
+
+  /**
    * Crea una nueva Campaña en el sistema.
    *
    * @param {CreateCampaignsDto} createCampaignsDto - Datos de la Campaña a crear
@@ -164,7 +198,7 @@ export class CampaignsController {
             .replace(/\s+/g, '_');
 
           cb(null, sanitizedName);
-        }
+        },
       }),
     }),
   )
@@ -215,7 +249,7 @@ export class CampaignsController {
             .replace(/\s+/g, '_');
 
           cb(null, sanitizedName);
-        }
+        },
       }),
     }),
   )

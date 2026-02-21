@@ -150,25 +150,4 @@ export class OrganizacionesService extends Crud<Organizacion> {
       throw new Error(errorDetails || "Error al restaurar organización");
     }
   }
-
-  async getOrganizationCampaignsPaginated(
-    organizacionId: number,
-    page = 1,
-    limit = 10,
-  ) {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${organizacionId}/campaigns/paginated?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-        headers: this.getHeaders(),
-      },
-    );
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      throw new Error(
-        `Error al obtener campañas de organización (${res.status}): ${errorDetails}`,
-      );
-    }
-    return res.json();
-  }
 }

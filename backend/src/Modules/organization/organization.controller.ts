@@ -123,42 +123,6 @@ export class OrganizationsController {
   }
 
   /**
-   * Obtiene las campañas asociadas a una organización
-   * de manera paginada.
-   *
-   * @param organizacionId ID de la organización
-   * @param page Número de página
-   * @param limit Cantidad por página
-   *
-   * @returns Campañas paginadas de la organización
-   */
-  @Get(':id/campaigns/paginated/')
-  @ApiOperation({
-    summary: 'Listar campañas de la organización (paginado)',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la organización',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado paginado de campañas',
-    type: ResponseCampaignsPaginatedDto,
-  })
-  async findOrganizationCampaignsPaginated(
-    @Param('id', ParseIntPipe) organizacionId: number,
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-  ): Promise<ResponseCampaignsPaginatedDto> {
-    return await this.organizationService.findOrganizationCampaignsPaginated(
-      organizacionId,
-      Number(page),
-      Number(limit),
-    );
-  }
-
-  /**
    * Crea una nueva organización.
    *
    * @param createDto Datos necesarios para la creación
