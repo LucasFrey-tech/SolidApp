@@ -77,7 +77,7 @@ export class EmpresasService extends Crud<Empresa> {
       const formData = new FormData();
 
       formData.append("data", JSON.stringify(data));
-      formData.append("imagen", file);
+      formData.append("logo", file);
 
       body = formData;
 

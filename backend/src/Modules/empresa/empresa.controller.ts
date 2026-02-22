@@ -208,7 +208,7 @@ export class EmpresaController {
     description: 'Empresa no encontrada',
   })
   @UseInterceptors(
-    FileInterceptor('imagen', {
+    FileInterceptor('logo', {
       storage: diskStorage({
         destination: 'C:/StaticResources/Solid/empresas/',
         filename: (req, file, cb) => {
@@ -227,19 +227,19 @@ export class EmpresaController {
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile(new NullableImageValidationPipe())
     file?: Express.Multer.File,
-    @Body() body?: { data: string },
+    @Body('data') data?: string,
   ): Promise<EmpresaResponseDTO> {
     let updateDto: UpdateEmpresaDTO = {};
 
-    if (body?.data) {
-      updateDto = JSON.parse(body.data) as UpdateEmpresaDTO;
+    if (data) {
+      updateDto = JSON.parse(data) as UpdateEmpresaDTO;
     }
 
     if (file) {
       updateDto.logo = file.filename;
     }
 
-    return this.empresasService.update(id, updateDto);
+    return this.empresasService.update(id, updateDto ?? {});
   }
 
   /**
