@@ -55,7 +55,7 @@ export class AuthService {
   private checkDeshabilitado(deshabilitado: boolean): void {
     if (deshabilitado)
       throw new ForbiddenException(
-        'Usuario bloqueado. Contacto al administrador.',
+        'Usuario bloqueado. Contacte al administrador.',
       );
   }
 

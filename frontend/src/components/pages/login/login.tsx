@@ -253,19 +253,18 @@ export default function Login() {
       });
 
       router.replace("/inicio");
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+  console.error("ERROR FINAL:", error);
 
-      await Swal.fire({
-        icon: "error",
-        title: "Error al iniciar sesión",
-        text: "Verifica tus credenciales",
-      });
+  await Swal.fire({
+    icon: "error",
+    title: "Error al iniciar sesión",
+    text: error.message || "Error al iniciar sesión",
+  });
 
-      setErrors({
-        general:
-          "Error al iniciar sesión. Verifica tus credenciales.",
-      });
+  setErrors({
+    general: error.message || "Error al iniciar sesión",
+  })
     } finally {
       setIsLoading(false);
     }
@@ -289,9 +288,8 @@ export default function Login() {
   const getInputClass = (field: keyof LoginData) => {
     const showError = touched[field] && errors[field];
 
-    return `${styles.input} ${
-      showError ? styles.inputError : ""
-    }`;
+    return `${styles.input} ${showError ? styles.inputError : ""
+      }`;
   };
 
   // ==================== JSX ====================
