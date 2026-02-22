@@ -61,34 +61,49 @@ export default function EmpresasList() {
   };
 
   const toggleEmpresa = async (empresa: Empresa) => {
-    const result = await Swal.fire({
-      title: empresa.enabled ? '¿Deshabilitar empresa?' : '¿Habilitar empresa?',
-      text: empresa.name,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'Cancelar',
+  const estaDeshabilitada = !empresa.enabled;
+
+  const result = await Swal.fire({
+    title: estaDeshabilitada
+      ? '¿Habilitar empresa?'
+      : '¿Deshabilitar empresa?',
+    text: empresa.name,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí',
+    cancelButtonText: 'Cancelar',
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    if (estaDeshabilitada) {
+      await baseApi.empresa.restore(empresa.id);
+    } else {
+      await baseApi.empresa.delete(empresa.id);
+    }
+
+    setEmpresas((prev) =>
+      prev.map((e) =>
+        e.id === empresa.id
+          ? { ...e, enabled: !e.enabled }
+          : e
+      )
+    );
+
+    Swal.fire({
+      icon: 'success',
+      title: estaDeshabilitada
+        ? 'Empresa habilitada'
+        : 'Empresa deshabilitada',
+      timer: 1500,
+      showConfirmButton: false,
     });
 
-    if (!result.isConfirmed) return;
-
-    try {
-      await baseApi.empresa.update(empresa.id, { deshabilitado: empresa.enabled });
-
-      setEmpresas((prev) =>
-        prev.map((e) => (e.id === empresa.id ? { ...e, enabled: !e.enabled } : e))
-      );
-
-      Swal.fire({
-        icon: 'success',
-        title: 'Actualizado',
-        timer: 1200,
-        showConfirmButton: false,
-      });
-    } catch (error) {
-      Swal.fire('Error', 'No se pudo actualizar la empresa', 'error');
-    }
-  };
+  } catch (error) {
+    Swal.fire('Error', 'No se pudo actualizar la empresa', 'error');
+  }
+};
 
   return (
     <div className={styles.UsersBox}>

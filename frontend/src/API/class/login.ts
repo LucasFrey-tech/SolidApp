@@ -19,35 +19,26 @@ export class Login extends Crud<LoginRequestBody> {
   }
 
   private async login(
-    path: string,
-    data: LoginRequestBody,
-  ): Promise<AuthResponse> {
-    const url = `${this.baseUrl}${path}`;
-    console.log("POST a:", url);
-    console.log("Con:", data);
+  path: string,
+  data: LoginRequestBody,
+): Promise<AuthResponse> {
+  const url = `${this.baseUrl}${path}`;
 
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      let errorMessage = "Error desconocido";
-      if (res.status === 401) {
-        errorMessage = "Credenciales inválidas. Error al iniciar sesión.";
-      } else if (res.status === 403) {
-        errorMessage = "Usuario bloqueado. Contacte al administrador.";
-      } else if (res.status === 404) {
-        errorMessage = `Endpoint no encontrado: ${url}`;
-      } else if (res.status >= 500) {
-        errorMessage = "Error interno del servidor. Intente más tarde.";
-      }
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
 
-      throw new Error(errorMessage);
-    }
-    const json = await res.json();
-    return json as AuthResponse;
+  const json = await res.json();
+
+  if (!res.ok) {
+  
+    throw new Error(json.message || "Error al iniciar sesión");
   }
+
+  return json as AuthResponse;
+}
 
   async getAll(): Promise<never[]> {
     throw new Error("Method getAll not supported for Auth");

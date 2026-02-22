@@ -137,7 +137,7 @@ export class EmpresasService extends Crud<Empresa> {
    * Restaurar empresa deshabilitada
    */
   async restore(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/restore`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/restaurar`, {
       method: "PATCH",
       headers: this.getHeaders(),
     });
