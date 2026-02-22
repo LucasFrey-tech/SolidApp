@@ -43,10 +43,10 @@ const usuarioSchema = z
 
 const empresaSchema = z
   .object({
-    documento: z
+    cuit_empresa: z
       .string()
-      .min(1, "El documento es obligatorio")
-      .min(3, "El documento debe tener al menos 3 caracteres"),
+      .min(1, "El cuit es obligatorio")
+      .min(3, "El cuit debe tener al menos 3 caracteres"),
     razonSocial: z
       .string()
       .min(1, "La razón social es obligatoria")
@@ -81,10 +81,10 @@ const empresaSchema = z
 
 const organizacionSchema = z
   .object({
-    documento: z
+    cuit_organizacion: z
       .string()
-      .min(1, "El documento es obligatorio")
-      .min(3, "El documento debe tener al menos 3 caracteres"),
+      .min(1, "El cuit es obligatorio")
+      .min(3, "El cuit debe tener al menos 3 caracteres"),
     razonSocial: z
       .string()
       .min(1, "La razón social es obligatoria")
@@ -172,8 +172,8 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
   ],
   empresa: [
     {
-      field: "documento",
-      label: "Número de documento",
+      field: "cuit_empresa",
+      label: "Número de cuit",
       type: "text",
       placeholder: "Ej: 30-12345678-9",
     },
@@ -229,8 +229,8 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
   ],
   organizacion: [
     {
-      field: "documento",
-      label: "Número de documento",
+      field: "cuit_organizacion",
+      label: "Número de cuit",
       type: "text",
       placeholder: "12345",
     },
@@ -282,7 +282,7 @@ export default function Registro() {
   });
 
   const [empresaData, setEmpresaData] = useState<EmpresaData>({
-    documento: "",
+    cuit_empresa: "",
     razonSocial: "",
     nombreFantasia: "",
     clave: "",
@@ -294,7 +294,7 @@ export default function Registro() {
   });
 
   const [organizacionData, setOrganizacionData] = useState<OrganizacionData>({
-    documento: "",
+    cuit_organizacion: "",
     razonSocial: "",
     nombreFantasia: "",
     clave: "",
@@ -454,7 +454,7 @@ export default function Registro() {
         title: "Campos incompletos",
         text: "Por favor, completa todos los campos requeridos.",
         confirmButtonColor: "#9fd46d",
-    });
+      });
       return;
     }
 
@@ -502,11 +502,11 @@ export default function Registro() {
 
       console.log("Registro Exitoso: ", response);
       Swal.fire({
-      icon: "success",
-      title: "Registro exitoso",
-      text: "Tu cuenta fue creada correctamente",
-      confirmButtonColor: "#9fd46d",
-    });
+        icon: "success",
+        title: "Registro exitoso",
+        text: "Tu cuenta fue creada correctamente",
+        confirmButtonColor: "#9fd46d",
+      });
 
       // Reset
       setStep("select");
@@ -523,7 +523,7 @@ export default function Registro() {
         apellido: "",
       });
       setEmpresaData({
-        documento: "",
+        cuit_empresa: "",
         razonSocial: "",
         nombreFantasia: "",
         clave: "",
@@ -534,7 +534,7 @@ export default function Registro() {
         correo: "",
       });
       setOrganizacionData({
-        documento: "",
+        cuit_organizacion: "",
         razonSocial: "",
         nombreFantasia: "",
         clave: "",
@@ -542,32 +542,29 @@ export default function Registro() {
         correo: "",
       });
     } catch (error: any) {
+      console.error("Error al Registrar:", error);
 
-  console.error("Error al Registrar:", error);
+      let errorMessage = "No se pudo registrar el usuario";
 
-  let errorMessage = "No se pudo registrar el usuario";
+      if (error?.response?.message) {
+        if (Array.isArray(error.response.message)) {
+          errorMessage = error.response.message[0];
+        } else {
+          errorMessage = error.response.message;
+        }
+      }
+      // fetch normal
+      else if (error?.message) {
+        errorMessage = error.message;
+      }
 
-  if (error?.response?.message) {
-
-    if (Array.isArray(error.response.message)) {
-      errorMessage = error.response.message[0];
-    } else {
-      errorMessage = error.response.message;
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonColor: "#d33",
+      });
     }
-
-  }
-  // fetch normal
-  else if (error?.message) {
-    errorMessage = error.message;
-  }
-
-  Swal.fire({
-    icon: "error",
-    title: "Error",
-    text: errorMessage,
-    confirmButtonColor: "#d33",
-  });
-}
   };
 
   const handleStepChange = (newStep: Step) => {
@@ -623,9 +620,7 @@ export default function Registro() {
           />
         )}
 
-        {showError && (
-          <span className={styles.errorText}>{errors[field]}</span>
-        )}
+        {showError && <span className={styles.errorText}>{errors[field]}</span>}
       </div>
     );
   };
@@ -691,7 +686,7 @@ export default function Registro() {
               onClick={() => handleStepChange("usuario")}
             >
               <Image
-                src="/Registro/Donador_Registro.svg" 
+                src="/Registro/Donador_Registro.svg"
                 alt="Usuario"
                 width={80}
                 height={80}
@@ -705,7 +700,7 @@ export default function Registro() {
               onClick={() => handleStepChange("empresa")}
             >
               <Image
-                src="/Registro/Empresa_Registro.svg" 
+                src="/Registro/Empresa_Registro.svg"
                 alt="Empresa"
                 width={80}
                 height={80}
@@ -719,7 +714,7 @@ export default function Registro() {
               onClick={() => handleStepChange("organizacion")}
             >
               <Image
-                src="/Registro/Organizacion_Registro.svg" 
+                src="/Registro/Organizacion_Registro.svg"
                 alt="Organización"
                 width={80}
                 height={80}
