@@ -39,10 +39,8 @@
 /* ===== CARD ===== */
 .card {
   position: relative;
-
   width: 100%;
-  max-width: 240px; 
-
+  max-width: 240px;
   height: clamp(200px, 18vw, 120px);
   border-radius: 14px;
   background: #168f87;
@@ -54,6 +52,20 @@
   cursor: pointer;
   overflow: hidden;
   border: none;
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+/* Hover elegante */
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+}
+
+.card:focus-visible {
+  outline: 2px solid #ffd700;
+  outline-offset: 4px;
 }
 
 /* Borde dorado animado */
@@ -73,6 +85,7 @@
   background-size: 500% 500%;
   animation: goldFlow 4s linear infinite;
   z-index: 0;
+  opacity: 0.85;
 }
 
 /* Capa interna */
@@ -91,22 +104,19 @@
   z-index: 2;
 }
 
-/* Hover */
-.card:hover {
-  transform: translateY(-4px);
-}
-
-.card:focus-visible {
-  outline: 2px solid #ffd700;
-  outline-offset: 4px;
-}
-
 /* ===== IMAGE ===== */
 .image {
   max-width: clamp(90px, 25vw, 120px);
   height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+  object-fit: cover;
+
+  border-radius: 12px; 
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.07);
 }
 
 /* ===== STATES ===== */
@@ -144,6 +154,11 @@
   background-color: #2563eb;
   color: white;
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  transform: scale(1.05);
 }
 
 .pagination button:disabled {
@@ -165,10 +180,6 @@
 
 /* ===== ANIMATION ===== */
 @keyframes goldFlow {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
 }

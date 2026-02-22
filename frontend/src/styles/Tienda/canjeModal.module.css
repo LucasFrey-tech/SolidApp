@@ -112,7 +112,7 @@
   border: 2px solid #000000;
   border-radius: 12px;
   padding: 6px 4px;
-  -moz-appearance: textfield; /* Firefox */
+  -moz-appearance: textfield; 
 }
 
 .counterInput::-webkit-outer-spin-button,
