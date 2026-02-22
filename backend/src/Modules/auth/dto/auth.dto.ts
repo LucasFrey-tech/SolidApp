@@ -34,7 +34,6 @@ export class LoginRequestBody {
 }
 
 export class RegisterUsuarioDto {
-  
   /**
    * DNI del Usuario
    * @type {string}
@@ -46,7 +45,7 @@ export class RegisterUsuarioDto {
   @IsString()
   @MinLength(8)
   documento: string;
-  
+
   /**
    * Correo Electrónico del Usuario
    * @type {string}
@@ -54,7 +53,7 @@ export class RegisterUsuarioDto {
   @ApiProperty({ description: 'Email del usuario' })
   @IsEmail()
   correo: string;
-  
+
   /**
    * Contraseña del Usuario
    * @type {string}
@@ -63,7 +62,7 @@ export class RegisterUsuarioDto {
   @IsString()
   @MinLength(6)
   clave: string;
-  
+
   /**
    * Nombre del Usuario
    * @type {string}
@@ -72,7 +71,7 @@ export class RegisterUsuarioDto {
   @IsString()
   @MinLength(2)
   nombre: string;
-  
+
   /**
    * Apellido del Usuario
    * @type {string}
@@ -81,7 +80,7 @@ export class RegisterUsuarioDto {
   @IsString()
   @MinLength(2)
   apellido: string;
-  
+
   /**
    * Imagen de Perfil del Usuario
    * @type {string}
@@ -90,7 +89,7 @@ export class RegisterUsuarioDto {
   @IsString()
   @IsOptional()
   imagen?: string;
-  
+
   /**
    * Nombre de la Calle del Usuario
    * @type {string}
@@ -99,7 +98,7 @@ export class RegisterUsuarioDto {
   @IsString()
   @IsOptional()
   calle?: string;
-  
+
   /**
    * Número de la calle del Usuario
    * @type {string}
@@ -111,16 +110,15 @@ export class RegisterUsuarioDto {
 }
 
 export class RegisterEmpresaDto {
-    
   /**
    * CUIL de la Empresa
    * @type {string}
    */
-  @ApiProperty({ description: 'Número de documento' })
+  @ApiProperty({ description: 'Número de cuit' })
   @IsString()
   @MinLength(3)
-  documento: string;
-    
+  cuit_empresa: string;
+
   /**
    * Nombre Legal de la Empresa
    * @type {string}
@@ -129,7 +127,7 @@ export class RegisterEmpresaDto {
   @IsString()
   @MinLength(3)
   razonSocial: string;
-    
+
   /**
    * Nombre Comercial de la Empresa
    * @type {string}
@@ -138,7 +136,7 @@ export class RegisterEmpresaDto {
   @IsString()
   @MinLength(3)
   nombreFantasia: string;
-    
+
   /**
    * Contraseña del Usuario de la Empresa
    * @type {string}
@@ -147,7 +145,7 @@ export class RegisterEmpresaDto {
   @IsString()
   @MinLength(6)
   clave: string;
-    
+
   /**
    * Teléfono de la Empresa
    * @type {string}
@@ -156,7 +154,7 @@ export class RegisterEmpresaDto {
   @IsString()
   @MinLength(8)
   telefono: string;
-    
+
   /**
    * Dirección de la Empresa
    * @type {string}
@@ -165,7 +163,7 @@ export class RegisterEmpresaDto {
   @IsString()
   @MinLength(5)
   direccion: string;
-    
+
   /**
    * Correo Electrónico de la Empresa
    * @type {string}
@@ -173,7 +171,7 @@ export class RegisterEmpresaDto {
   @ApiProperty({ description: 'Email' })
   @IsEmail()
   correo: string;
-    
+
   /**
    * Página Web de la Empresa
    * @type {string}
@@ -185,16 +183,15 @@ export class RegisterEmpresaDto {
 }
 
 export class RegisterOrganizacionDto {
-      
   /**
    * CUIL de la Organización
    * @type {string}
    */
-  @ApiProperty({ description: 'Número de documento' })
+  @ApiProperty({ description: 'Número de cuit' })
   @IsString()
   @MinLength(3)
-  documento: string;
-      
+  cuit_organizacion: string;
+
   /**
    * Nombre Legal de la Organización
    * @type {string}
@@ -203,7 +200,7 @@ export class RegisterOrganizacionDto {
   @IsString()
   @MinLength(3)
   razonSocial: string;
-      
+
   /**
    * Nombre Comercial de la Organización
    * @type {string}
@@ -212,7 +209,7 @@ export class RegisterOrganizacionDto {
   @IsString()
   @MinLength(3)
   nombreFantasia: string;
-      
+
   /**
    * Contraseña del Usuario de la Organización
    * @type {string}
@@ -221,7 +218,7 @@ export class RegisterOrganizacionDto {
   @IsString()
   @MinLength(6)
   clave: string;
-      
+
   /**
    * Correo Electrónico de la Organización
    * @type {string}
@@ -232,7 +229,6 @@ export class RegisterOrganizacionDto {
 }
 
 export class AuthResponse {
-        
   /**
    * Token
    * @type {string}

@@ -9,7 +9,7 @@ export interface RegisterUsuarioRequest {
 
 // Empresa
 export interface RegisterEmpresaRequest {
-  documento: string;
+  cuit_empresa: string;
   razonSocial: string;
   nombreFantasia: string;
   correo: string;
@@ -21,7 +21,7 @@ export interface RegisterEmpresaRequest {
 
 // Organización
 export interface RegisterOrganizacionRequest {
-  documento: string;
+  cuit_organizacion: string;
   razonSocial: string;
   nombreFantasia: string;
   correo: string;

@@ -106,7 +106,7 @@ export class AuthService {
     const clave = await this.hashPassword(dto.clave);
 
     const empresa = await this.empresasService.create({
-      nroDocumento: dto.documento,
+      cuit_empresa: dto.cuit_empresa,
       razon_social: dto.razonSocial,
       nombre_fantasia: dto.nombreFantasia,
       descripcion: 'Empresa registrada recientemente',
@@ -145,7 +145,7 @@ export class AuthService {
 
     // Crear usuario con contraseña hasheada
     const organizacion = await this.organizationsService.create({
-      nroDocumento: dto.documento,
+      cuit_organizacion: dto.cuit_organizacion,
       razonSocial: dto.razonSocial,
       nombreFantasia: dto.nombreFantasia,
       descripcion: 'Organización registrada recientemente',
@@ -243,8 +243,7 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new UnauthorizedException('Usuario no encontrado');
 
-    const isMatch = await bcrypt.compare(pass, user.clave);
-    if (!isMatch) throw new UnauthorizedException('Contraseña incorrecta');
+    await this.verifyPassword(pass, user.clave);
 
     return user;
   }
@@ -253,8 +252,7 @@ export class AuthService {
     const empresa = await this.empresasService.findByEmail(email);
     if (!empresa) throw new UnauthorizedException('Empresa no encontrada');
 
-    const isMatch = await bcrypt.compare(pass, empresa.clave);
-    if (!isMatch) throw new UnauthorizedException('Contraseña incorrecta');
+    await this.verifyPassword(pass, empresa.clave);
 
     return empresa;
   }
@@ -268,8 +266,7 @@ export class AuthService {
       throw new UnauthorizedException('Organización no encontrada');
     }
 
-    const isMatch = await bcrypt.compare(pass, organizacion.clave);
-    if (!isMatch) throw new UnauthorizedException('Contraseña incorrecta');
+    await this.verifyPassword(pass, organizacion.clave);
 
     return organizacion;
   }

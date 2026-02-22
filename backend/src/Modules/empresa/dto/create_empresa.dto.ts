@@ -19,7 +19,7 @@ export class CreateEmpresaDTO {
   @Matches(/^\d{2}-\d{8}-\d{1}$/, {
     message: 'El CUIL debe tener el formato XX-XXXXXXXX-X',
   })
-  nroDocumento: string;
+  cuit_empresa: string;
 
   @ApiProperty({
     example: 'Supermercados Unidos S.A.',

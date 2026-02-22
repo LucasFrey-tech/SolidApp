@@ -8,7 +8,7 @@ export class UpdateOrganizationDto {
   })
   @IsOptional()
   @IsString()
-  nroDocumento?: string;
+  cuit?: string;
 
   @ApiPropertyOptional({
     example: 'Fundación Ayudar',

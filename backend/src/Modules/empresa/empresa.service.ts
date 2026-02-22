@@ -154,7 +154,7 @@ export class EmpresasService {
    * Crea una nueva empresa.
    *
    * Validaciones:
-   * - Verifica que no exista otra empresa con el mismo nroDocumento.
+   * - Verifica que no exista otra empresa con el mismo cuit.
    *
    * @param createDto Datos de creación.
    * @throws ConflictException si ya existe.
@@ -163,7 +163,7 @@ export class EmpresasService {
    */
   async create(createDto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {
     const existente = await this.empresasRepository.findOne({
-      where: { nroDocumento: createDto.nroDocumento },
+      where: { cuit_empresa: createDto.cuit_empresa },
     });
 
     if (existente) {
@@ -205,9 +205,13 @@ export class EmpresasService {
     Object.keys(updateDto).forEach((key) => {
       const value = updateDto[key as keyof UpdateEmpresaDTO];
 
+      console.log('DATOOOS: ', value);
+
       if (value !== undefined) {
         empresa[key as keyof Empresa] = value as never;
       }
+
+      console.log('DATOOOS: ', empresa);
     });
 
     empresa.ultimo_cambio = new Date();
@@ -350,7 +354,7 @@ export class EmpresasService {
   ): EmpresaResponseDTO => {
     return {
       id: empresa.id,
-      nroDocumento: empresa.nroDocumento,
+      cuit_empresa: empresa.cuit_empresa,
       razon_social: empresa.razon_social,
       nombre_fantasia: empresa.nombre_fantasia,
       descripcion: empresa.descripcion,

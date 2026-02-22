@@ -5,7 +5,7 @@ export class EmpresaResponseDTO {
   id: number;
 
   @ApiProperty({ example: '20-04856975-3', description: 'CUIL de la Empresa' })
-  nroDocumento: string;
+  cuit_empresa: string;
 
   @ApiProperty({
     example: 'empresa@ejemplo.com',

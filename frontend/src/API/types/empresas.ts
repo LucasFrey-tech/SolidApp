@@ -3,7 +3,7 @@
  */
 export interface Empresa {
   id: number;
-  nroDocumento: string;
+  cuit_empresa: string;
   razon_social: string;
   nombre_fantasia: string;
   correo: string;
@@ -23,7 +23,7 @@ export interface Empresa {
  * Crear empresa (CreateEmpresaDTO)
  */
 export interface EmpresaCreateRequest {
-  nroDocumento: string;
+  cuit_empresa: string;
   razon_social: string;
   nombre_fantasia?: string;
   correo: string;
@@ -38,7 +38,7 @@ export interface EmpresaCreateRequest {
  * Actualizar empresa (UpdateEmpresaDTO)
  */
 export interface EmpresaUpdateRequest {
-  nroDocumento?: string;
+  cuit_empresa?: string;
   razon_social?: string;
   nombre_fantasia?: string;
   descripcion?: string;

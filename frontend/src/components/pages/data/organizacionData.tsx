@@ -165,7 +165,7 @@ export default function OrganizacionData() {
               <input
                 className={styles.Input}
                 type="text"
-                value={organizacionData.nroDocumento || ""}
+                value={organizacionData.cuit_organizacion || ""}
                 readOnly
               />
             </div>

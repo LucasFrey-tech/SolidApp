@@ -2,7 +2,7 @@
 
 export interface Organizacion {
   id: number;
-  nroDocumento: string;
+  cuit_organizacion: string;
   razonSocial: string;
   nombreFantasia: string;
   descripcion: string;
@@ -19,7 +19,7 @@ export interface Organizacion {
 }
 
 export interface OrganizacionCreateRequest {
-  nroDocumento: string;
+  cuit_organizacion: string;
   razonSocial: string;
   nombreFantasia: string;
   descripcion: string;
@@ -30,7 +30,7 @@ export interface OrganizacionCreateRequest {
 }
 
 export interface OrganizacionUpdateRequest {
-  nroDocumento?: string;
+  cuit_organizacion: string;
   razonSocial?: string;
   nombreFantasia?: string;
   descripcion?: string;

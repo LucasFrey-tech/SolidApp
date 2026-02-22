@@ -11,7 +11,7 @@ export class ResponseOrganizationDto {
     example: '30-71234567-8',
     description: 'Número de documento o CUIT de la organización',
   })
-  nroDocumento: string;
+  cuit_organizacion: string;
 
   @ApiProperty({
     example: 'organizacion@ejemplo.com',

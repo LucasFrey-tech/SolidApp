@@ -155,7 +155,7 @@ export class OrganizationsService {
     createDto: CreateOrganizationDto,
   ): Promise<ResponseOrganizationDto> {
     const existente = await this.organizationRepository.findOne({
-      where: { nroDocumento: createDto.nroDocumento },
+      where: { cuit_organizacion: createDto.cuit_organizacion },
     });
 
     if (existente) {
@@ -360,7 +360,7 @@ export class OrganizationsService {
     organization: Organizations,
   ): ResponseOrganizationDto => ({
     id: organization.id,
-    nroDocumento: organization.nroDocumento,
+    cuit_organizacion: organization.cuit_organizacion,
     razonSocial: organization.razon_social,
     nombreFantasia: organization.nombre_fantasia,
     descripcion: organization.descripcion,

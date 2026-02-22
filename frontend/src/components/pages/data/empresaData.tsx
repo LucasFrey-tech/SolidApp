@@ -202,7 +202,7 @@ export default function EmpresaData() {
               <label className={styles.Label}>Número de CUIT/CUIL</label>
               <NumericInput
                 className={styles.Input}
-                value={empresaData.nroDocumento || ""}
+                value={empresaData.cuit_empresa || ""}
                 readOnly
               />
             </div>
