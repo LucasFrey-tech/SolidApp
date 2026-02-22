@@ -190,6 +190,7 @@ export default function CampaignDetallePage() {
           campaignTitle={campaign.titulo}
           userId={user.sub}
           puntosPorArticulo={campaign.puntos}
+          objetivoRestante = {campaign.objetivo}
         />
       )}
     </>

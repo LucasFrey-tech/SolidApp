@@ -20,6 +20,7 @@ import { OrganizationDonationItemDto } from './dto/organization_donation_item.dt
 import { UpdateDonacionEstadoDto } from './dto/update_donation_estado.dto';
 import { PaginatedUserDonationsResponseDto } from './dto/response_donation_paginatedByUser.dto';
 import { UserDonationItemDto } from './dto/usuario_donation_item.dto';
+import { CampaignEstado } from '../campaign/enum';
 
 /**
  * Servicio que maneja la lógica de negocio para las Donaciones.
@@ -222,15 +223,18 @@ export class DonationsService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
+    const cantidadFinal = Math.min(createDto.cantidad, campaign.objetivo)
+    const puntosFinales = cantidadFinal * campaign.puntos;
+
     // Crear donación
     const donation = this.donationsRepository.create({
       titulo: `Donación Solidaria de ${usuario.nombre} ${usuario.apellido}`,
       detalle: createDto.detalle,
-      cantidad: createDto.cantidad,
+      cantidad: cantidadFinal,
       usuario: usuario,
       campaña: campaign,
       estado: DonacionEstado.PENDIENTE,
-      puntos: createDto.puntos,
+      puntos: puntosFinales,
       fecha_estado: new Date(),
     });
 
@@ -357,8 +361,9 @@ export class DonationsService {
 
       campaign.objetivo -= donacion.cantidad;
 
-      if (campaign.objetivo < 0) {
+      if (campaign.objetivo <= 0) {
         campaign.objetivo = 0;
+        campaign.estado = CampaignEstado.FINALIZADA
       }
 
       await manager.save(campaign);
