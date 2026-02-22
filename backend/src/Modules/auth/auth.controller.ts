@@ -93,12 +93,13 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
+        documento: { type: 'string', example: '123454567898' },
         correo: { type: 'string', example: 'ejemplo@email.com' },
         clave: { type: 'string', example: 'password123' },
         nombre: { type: 'string', example: 'Juan' },
         apellido: { type: 'string', example: 'Pérez' },
       },
-      required: ['correo', 'clave', 'nombre', 'apellido'],
+      required: ['documento', 'correo', 'clave', 'nombre', 'apellido'],
     },
   })
   @ApiResponse({
@@ -122,7 +123,7 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
-        documento: { type: 'string', example: '30-12345678-9' },
+        cuit_empresa: { type: 'string', example: '30-12345678-9' },
         razonSocial: { type: 'string', example: 'Empresa S.A.' },
         nombreFantasia: { type: 'string', example: 'Mi Empresa' },
         clave: { type: 'string', example: 'password123' },
@@ -135,7 +136,7 @@ export class AuthController {
         },
       },
       required: [
-        'documento',
+        'cuit_empresa',
         'razonSocial',
         'nombreFantasia',
         'clave',
@@ -166,7 +167,7 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
-        documento: { type: 'string', example: '12345' },
+        cuit_organizacion: { type: 'string', example: '12345' },
         razonSocial: {
           type: 'string',
           example: 'Organización Sin Fines de Lucro',
@@ -175,7 +176,13 @@ export class AuthController {
         clave: { type: 'string', example: 'password123' },
         correo: { type: 'string', example: 'organizacion@email.com' },
       },
-      required: ['documento', 'razonSocial', 'nombre', 'clave', 'correo'],
+      required: [
+        'cuit_organizacion',
+        'razonSocial',
+        'nombre',
+        'clave',
+        'correo',
+      ],
     },
   })
   @ApiResponse({
