@@ -20,6 +20,8 @@ async function bootstrap() {
   // Setup users image directory
   if (!existsSync(SettingsService.getStaticResourcesPath())) {
     mkdirSync(SettingsService.getStaticResourcesPath());
+    console.log('PREFIX:', SettingsService.getStaticResourcesPrefix());
+    console.log('PATH:', SettingsService.getStaticResourcesPath());
   }
 
   /**

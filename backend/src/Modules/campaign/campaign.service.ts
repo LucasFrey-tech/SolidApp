@@ -96,17 +96,18 @@ export class CampaignsService {
    * @param {number} limit - Cantidad de Campañas por página
    * @returns  Lista de Campañas paginadas
    */
-  async findByOrganizationPaginated(
+    async findByOrganizationPaginated(
     organizacionId: number,
     page: number,
     limit: number,
   ) {
     const [campaigns, total] = await this.campaignsRepository.findAndCount({
       where: { organizacion: { id: organizacionId } },
-      relations: ['organizacion'],
+      relations: ['organizacion', 'imagenes'], 
       skip: (page - 1) * limit,
       take: limit,
     });
+
     return {
       items: campaigns.map(this.mapToResponseDto),
       total,
