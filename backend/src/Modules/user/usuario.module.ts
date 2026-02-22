@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 
 import { UsuarioController } from './usuario.controller';
 import { UsuarioService } from './usuario.service';
-import { Usuario } from '../../Entities/usuario.entity';
+import { Usuario } from '../../Entities/perfil_Usuario.entity';
 import { CommonMulterModule } from '../../common/multer/multer.module';
 
 /**

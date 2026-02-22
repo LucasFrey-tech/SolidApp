@@ -6,7 +6,7 @@ import {
     JoinColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Usuario } from './usuario.entity';
+import { Usuario } from './perfil_Usuario.entity';
 
 @Entity('ranking_donador')
 export class RankingDonador {

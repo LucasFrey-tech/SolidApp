@@ -3,19 +3,17 @@ import {
   Logger,
   NotFoundException,
   ConflictException,
-  BadRequestException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
-import { Empresa } from '../../Entities/empresa.entity';
+import { Repository } from 'typeorm';
+import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { SettingsService } from '../../common/settings/settings.service';
-import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
-import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { CuentaService } from '../cuenta/cuenta.service';
+import { RolCuenta } from '../../Entities/cuenta.entity';
 
 /**
  * ============================================================
@@ -44,13 +42,13 @@ import { JwtService } from '@nestjs/jwt';
  * ============================================================
  */
 @Injectable()
-export class EmpresasService {
-  private readonly logger = new Logger(EmpresasService.name);
+export class PerfilEmpresaService {
+  private readonly logger = new Logger(PerfilEmpresaService.name);
 
   constructor(
-    @InjectRepository(Empresa)
-    private readonly empresasRepository: Repository<Empresa>,
-
+    @InjectRepository(PerfilEmpresa)
+    private readonly empresaRepository: Repository<PerfilEmpresa>,
+    private readonly cuentaService: CuentaService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -65,13 +63,18 @@ export class EmpresasService {
    * @returns {Promise <EmpresaResponseDTO[]>}
    */
   async findAll(): Promise<EmpresaResponseDTO[]> {
-    const empresas = await this.empresasRepository.find({
-      where: { deshabilitado: false },
+    const empresas = await this.empresaRepository.find({
+      relations: ['cuenta'],
+      where: {
+        cuenta: {
+          deshabilitado: false,
+        },
+      },
     });
 
     this.logger.log(`Se obtuvieron ${empresas.length} Empresas`);
 
-    const res = empresas.map(this.mapToResponseDto);
+    const res = empresas.map((res) => this.mapToResponseDto(res));
 
     res.forEach(
       (empresa) =>
@@ -91,23 +94,27 @@ export class EmpresasService {
    * @returns { items: Empresa[], total: number }
    */
   async findPaginated(page: number, limit: number, search: string) {
-    const startIndex = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    const where = search
-      ? [
-          { razon_social: Like(`%${search}%`) },
-          { nombre_fantasia: Like(`%${search}%`) },
-        ]
-      : {};
+    const queryBuilder = this.empresaRepository
+      .createQueryBuilder('perfil')
+      .leftJoinAndSelect('perfil.cuenta', 'cuenta')
+      .where('cuenta.deshabilitado = :deshabilitado', { deshabilitado: false });
 
-    const [empresas, total] = await this.empresasRepository.findAndCount({
-      skip: startIndex,
-      take: limit,
-      order: { id: 'ASC' },
-      where,
-    });
+    if (search) {
+      queryBuilder.andWhere(
+        '(perfil.razon_social LIKE :search OR perfil.nombre_empresa LIKE :search OR cuenta.correo LIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
 
-    const items = empresas.map(this.mapToResponseDto);
+    const [empresas, total] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .orderBy('perfil.id', 'ASC')
+      .getManyAndCount();
+
+    const items = empresas.map((emp) => this.mapToResponseDto(emp));
 
     return { items, total };
   }
@@ -121,8 +128,9 @@ export class EmpresasService {
    * @returns {Promise<EmpresaResponseDTO>}
    */
   async findOne(id: number): Promise<EmpresaResponseDTO> {
-    const empresa = await this.empresasRepository.findOne({
-      where: { id, deshabilitado: false },
+    const empresa = await this.empresaRepository.findOne({
+      where: { id, cuenta: { deshabilitado: false } },
+      relations: ['cuenta'],
     });
 
     if (!empresa) {
@@ -135,19 +143,21 @@ export class EmpresasService {
   }
 
   /**
-   * Busca una empresa por correo electrónico.
-   *
-   * @param correo Email de la empresa.
-   * @throws NotFoundException si no existe.
-   *
-   * @returns {Promise<Empresa>}
+   * Busca un perfil por ID de cuenta.
    */
-  async findByEmail(correo: string): Promise<Empresa | null> {
-    const empresa = await this.empresasRepository.findOne({
-      where: { correo },
+  async findByCuentaId(cuentaId: number): Promise<PerfilEmpresa> {
+    const perfil = await this.empresaRepository.findOne({
+      where: { cuenta: { id: cuentaId } },
+      relations: ['cuenta'],
     });
 
-    return empresa || null;
+    if (!perfil) {
+      throw new NotFoundException(
+        `Perfil de empresa para cuenta ${cuentaId} no encontrado`,
+      );
+    }
+
+    return perfil;
   }
 
   /**
@@ -161,21 +171,37 @@ export class EmpresasService {
    *
    * @returns {Promise<EmpresaResponseDTO>}
    */
-  async create(createDto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {
-    const existente = await this.empresasRepository.findOne({
-      where: { cuit_empresa: createDto.cuit_empresa },
+  async create(
+    createDto: CreateEmpresaDTO,
+    cuentaId,
+  ): Promise<EmpresaResponseDTO> {
+    const cuenta = await this.cuentaService.findById(cuentaId);
+
+    if (!cuenta) throw new NotFoundException('Cuenta no encontrada');
+
+    if (cuenta.role !== RolCuenta.EMPRESA) {
+      throw new ConflictException('La cuenta no es de tipo EMPRESA');
+    }
+
+    const existente = await this.empresaRepository.findOne({
+      where: { cuit: createDto.cuit_empresa },
     });
 
     if (existente) {
       throw new ConflictException('La Empresa ya está registrada');
     }
 
-    const empresa = this.empresasRepository.create({
-      ...createDto,
+    const empresa = this.empresaRepository.create({
+      cuit: createDto.cuit_empresa,
+      razon_social: createDto.razon_social,
+      nombre_empresa: createDto.nombre_empresa,
+      descripcion: createDto.descripcion,
+      web: createDto.web,
       verificada: false,
+      cuenta,
     });
 
-    const savedEmpresa = await this.empresasRepository.save(empresa);
+    const savedEmpresa = await this.empresaRepository.save(empresa);
 
     return this.mapToResponseDto(savedEmpresa);
   }
@@ -194,29 +220,21 @@ export class EmpresasService {
     id: number,
     updateDto: UpdateEmpresaDTO,
   ): Promise<EmpresaResponseDTO> {
-    const empresa = await this.empresasRepository.findOne({
+    const empresa = await this.empresaRepository.findOne({
       where: { id },
+      relations: ['cuenta'],
     });
 
     if (!empresa) {
       throw new NotFoundException(`Empresa con ID ${id} no encontrada`);
     }
 
-    Object.keys(updateDto).forEach((key) => {
-      const value = updateDto[key as keyof UpdateEmpresaDTO];
+    if (updateDto.descripcion !== undefined)
+      empresa.descripcion = updateDto.descripcion;
+    if (updateDto.web !== undefined) empresa.web = updateDto.web;
+    if (updateDto.logo !== undefined) empresa.logo = updateDto.logo;
 
-      console.log('DATOOOS: ', value);
-
-      if (value !== undefined) {
-        empresa[key as keyof Empresa] = value as never;
-      }
-
-      console.log('DATOOOS: ', empresa);
-    });
-
-    empresa.ultimo_cambio = new Date();
-
-    const updatedEmpresa = await this.empresasRepository.save(empresa);
+    const updatedEmpresa = await this.empresaRepository.save(empresa);
 
     this.logger.log(`Empresa ${id} actualizada`);
 
@@ -224,122 +242,22 @@ export class EmpresasService {
   }
 
   /**
-   * Realiza un borrado lógico (soft delete).
-   * Marca la empresa como deshabilitada.
-   *
-   * @param id ID de la empresa.
-   * @throws NotFoundException si no existe.
+   * Marca una empresa como verificada.
    */
-  async delete(id: number): Promise<void> {
-    const empresa = await this.empresasRepository.findOne({
+  async verify(id: number): Promise<EmpresaResponseDTO> {
+    const empresa = await this.empresaRepository.findOne({
       where: { id },
+      relations: ['cuenta'],
     });
 
     if (!empresa) {
-      throw new NotFoundException(`La Empresa con ID ${id} no encontrada`);
+      throw new NotFoundException(`Empresa con ID ${id} no encontrada`);
     }
 
-    empresa.deshabilitado = true;
-    await this.empresasRepository.save(empresa);
+    empresa.verificada = true;
+    const updated = await this.empresaRepository.save(empresa);
 
-    this.logger.log(`Empresa ${id} deshabilitada`);
-  }
-
-  /**
-   * Restaura una empresa previamente deshabilitada.
-   *
-   * @param id ID de la empresa.
-   * @throws NotFoundException si no existe la empresa.
-   * @throws BadRequestException si ya está activa la empresa.
-   */
-  async restore(id: number): Promise<void> {
-    const empresa = await this.empresasRepository.findOne({
-      where: { id },
-    });
-
-    if (!empresa) {
-      throw new NotFoundException(`La Empresa con ID ${id} no encontrada`);
-    }
-
-    if (!empresa.deshabilitado) {
-      throw new BadRequestException('La empresa ya se encuentra activa');
-    }
-
-    empresa.deshabilitado = false;
-    await this.empresasRepository.save(empresa);
-
-    this.logger.log(`Empresa ${id} restaurada`);
-  }
-
-  /**
-   * Actualiza credenciales (correo y/o contraseña).
-   *
-   * Reglas:
-   * - El email no puede estar en uso por otra empresa.
-   * - Para cambiar contraseña se debe validar la actual.
-   * - Se genera un nuevo JWT tras cambios.
-   *
-   * @param id ID de la empresa.
-   * @param dto Datos de actualización.
-   *
-   * @returns { user: Empresa, token: string }
-   */
-  async updateCredentials(id: number, dto: UpdateCredentialsDto) {
-    const empresa = await this.empresasRepository.findOne({
-      where: { id },
-    });
-
-    if (!empresa) {
-      throw new NotFoundException('Empresa no encontrada');
-    }
-
-    let cambiosRealizados = false;
-
-    if (dto.correo && dto.correo !== empresa.correo) {
-      const empresaExistente = await this.empresasRepository.findOne({
-        where: { correo: dto.correo },
-      });
-
-      if (empresaExistente && empresaExistente.id !== id) {
-        throw new ConflictException('El email ya está en uso por otro usuario');
-      }
-
-      empresa.correo = dto.correo;
-      cambiosRealizados = true;
-    }
-
-    if (dto.passwordNueva) {
-      const passwordValida = await bcrypt.compare(
-        dto.passwordActual,
-        empresa.clave,
-      );
-
-      if (!passwordValida) {
-        throw new UnauthorizedException('Contraseña actual incorrecta');
-      }
-
-      const hash = await bcrypt.hash(dto.passwordNueva, 10);
-      empresa.clave = hash;
-      cambiosRealizados = true;
-    }
-
-    if (cambiosRealizados) {
-      empresa.ultimo_cambio = new Date();
-      await this.empresasRepository.save(empresa);
-    }
-
-    const payload = {
-      sub: empresa.id,
-      email: empresa.correo,
-      userType: 'empresa',
-    };
-
-    const newToken = this.jwtService.sign(payload);
-
-    return {
-      user: empresa,
-      token: newToken,
-    };
+    return this.mapToResponseDto(updated);
   }
 
   /**
@@ -349,27 +267,38 @@ export class EmpresasService {
    * @param empresa Entidad Empresa.
    * @returns {EmpresaResponseDTO}
    */
-  private readonly mapToResponseDto = (
-    empresa: Empresa,
-  ): EmpresaResponseDTO => {
-    return {
-      id: empresa.id,
-      cuit_empresa: empresa.cuit_empresa,
-      razon_social: empresa.razon_social,
-      nombre_fantasia: empresa.nombre_fantasia,
-      descripcion: empresa.descripcion,
-      rubro: empresa.rubro,
-      telefono: empresa.telefono,
-      direccion: empresa.direccion,
-      web: empresa.web,
-      verificada: empresa.verificada,
-      deshabilitado: empresa.deshabilitado,
-      fecha_registro: empresa.fecha_registro,
-      ultimo_cambio: empresa.ultimo_cambio,
-      logo: empresa.logo
-        ? SettingsService.getEmpresaImageUrl(empresa.logo)
-        : '',
-      correo: empresa.correo,
-    };
-  };
+  private mapToResponseDto(empresa: PerfilEmpresa): EmpresaResponseDTO {
+    const dto = new EmpresaResponseDTO();
+
+    // Datos del perfil
+    dto.id = empresa.id;
+    dto.cuit_empresa = empresa.cuit;
+    dto.razon_social = empresa.razon_social;
+    dto.nombre_empresa = empresa.nombre_empresa;
+    dto.descripcion = empresa.descripcion;
+    dto.rubro = empresa.rubro;
+    dto.web = empresa.web;
+    dto.logo = empresa.logo
+      ? SettingsService.getEmpresaImageUrl(empresa.logo)
+      : '';
+    dto.verificada = empresa.verificada;
+
+    if (empresa.cuenta) {
+      dto.correo = empresa.cuenta.correo;
+      dto.deshabilitado = empresa.cuenta.deshabilitado;
+      dto.verificada = empresa.cuenta.verificada;
+      dto.fecha_registro = empresa.cuenta.fecha_registro;
+      dto.ultimo_cambio = empresa.cuenta.ultimo_cambio;
+      dto.ultima_conexion = empresa.cuenta.ultima_conexion;
+      dto.calle = empresa.cuenta.calle;
+      dto.numero = empresa.cuenta.numero;
+      dto.codigo_postal = empresa.cuenta.codigo_postal;
+      dto.ciudad = empresa.cuenta.ciudad;
+      dto.provincia = empresa.cuenta.provincia;
+      dto.prefijo = empresa.cuenta.prefijo;
+      dto.telefono = empresa.cuenta.telefono;
+    }
+
+    return dto;
+  }
 }

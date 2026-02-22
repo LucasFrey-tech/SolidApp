@@ -8,18 +8,6 @@ export class CreateUsuarioDto {
   documento: string;
 
   @ApiProperty({
-    example: 'usuario@email.com',
-    description: 'Correo electrónico del usuario',
-  })
-  correo: string;
-
-  @ApiProperty({
-    example: 'PasswordSegura123',
-    description: 'Clave del usuario (se almacena hasheada)',
-  })
-  clave: string;
-
-  @ApiProperty({
     example: 'Juan',
     description: 'Nombre del usuario',
   })
@@ -32,8 +20,9 @@ export class CreateUsuarioDto {
   apellido: string;
 
   @ApiProperty({
-    example: 'USER',
-    description: 'Rol del usuario dentro del sistema (USER, ADMIN)',
+    example: 0,
+    description: 'Puntos iniciales del usuario',
+    default: 0,
   })
-  rol: string;
+  puntos?: number;
 }

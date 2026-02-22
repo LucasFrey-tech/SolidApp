@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { OrganizationsController } from './organization.controller';
-import { OrganizationsService } from './organization.service';
-import { Organizations } from '../../Entities/organizations.entity';
+import { OrganizationsController } from './organizacion.controller';
+import { OrganizationsService } from './organizacion.service';
+import { Organizations } from '../../Entities/perfil_organizacion.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { Campaigns } from '../../Entities/campaigns.entity';

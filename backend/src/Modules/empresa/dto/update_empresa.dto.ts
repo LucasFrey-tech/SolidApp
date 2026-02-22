@@ -1,22 +1,20 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateEmpresaDTO } from './create_empresa.dto';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, MaxLength } from 'class-validator';
 
-export class UpdateEmpresaDTO extends PartialType(CreateEmpresaDTO) {
-  @ApiProperty({
-    example: false,
-    description: 'Indica si la empresa está deshabilitada',
-    required: false,
-  })
+export class UpdateEmpresaDTO {
+  @ApiPropertyOptional({ example: 'Nueva descripción de la empresa' })
   @IsOptional()
-  deshabilitado?: boolean;
+  @IsString()
+  @MaxLength(500)
+  descripcion?: string;
 
-  @ApiProperty({
-    example: '/resources/empresas/logo123.png',
-    description: 'Ruta del logo de la empresa',
-    required: false,
-  })
+  @ApiPropertyOptional({ example: 'https://nueva-web.com' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  web?: string;
+
+  @ApiPropertyOptional({ example: 'nuevo-logo.png' })
   @IsOptional()
   @IsString()
   @MaxLength(255)

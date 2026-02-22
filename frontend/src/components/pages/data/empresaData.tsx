@@ -218,7 +218,7 @@ export default function EmpresaData() {
             </div>
 
             <div className={styles.Field}>
-              <label className={styles.Label}>Nombre de Fantasía</label>
+              <label className={styles.Label}>Nombre de Empresa</label>
               <input
                 className={styles.Input}
                 type="text"

@@ -8,10 +8,11 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UserModule } from '../user/usuario.module';
 import { EmpresaModule } from '../empresa/empresa.module';
-import { OrganizationModule } from '../organization/organization.module';
-import { Empresa } from '../../Entities/empresa.entity';
-import { Organizations } from '../../Entities/organizations.entity';
+import { OrganizationModule } from '../organization/organizacion.module';
 import { CommonMulterModule } from '../../common/multer/multer.module';
+import { Cuenta } from '../../Entities/cuenta.entity';
+import { CuentaService } from '../cuenta/cuenta.service';
+import { JwtStrategy } from './estrategias/jwt.strategy';
 
 /**
  * Módulo de NestJS que agrupa los componentes relacionados a la Autenticación:
@@ -26,7 +27,7 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
     OrganizationModule,
     PassportModule,
     ConfigModule,
-    TypeOrmModule.forFeature([Empresa, Organizations]),
+    TypeOrmModule.forFeature([Cuenta]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -38,6 +39,7 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
     CommonMulterModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, CuentaService, JwtStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}

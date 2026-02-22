@@ -3,7 +3,6 @@ import {
   IsString,
   IsNotEmpty,
   MaxLength,
-  IsBoolean,
   IsOptional,
   Matches,
 } from 'class-validator';
@@ -42,19 +41,7 @@ export class CreateEmpresaDTO {
   @MaxLength(50, {
     message: 'El nombre ficticio no puede superar los 50 caracteres',
   })
-  nombre_fantasia?: string;
-
-  @ApiProperty({
-    example:
-      'Supermercados Unidos impulsa la solidaridad mediante bonificaciones...',
-    description: 'Descripción de la empresa y su participación',
-  })
-  @IsString()
-  @IsNotEmpty({ message: 'La descripción es Obligatoria' })
-  @MaxLength(255, {
-    message: 'La descripción no puede superar los 255 caracteres',
-  })
-  descripcion: string;
+  nombre_empresa?: string;
 
   @ApiProperty({
     example: 'Supermercado',
@@ -64,26 +51,6 @@ export class CreateEmpresaDTO {
   @IsOptional()
   @MaxLength(15, { message: 'El Rubro no puede superar los 15 caracteres' })
   rubro?: string;
-
-  @ApiProperty({
-    example: '+54 11 4567-8900',
-    description: 'Teléfono de contacto',
-  })
-  @IsString()
-  @IsNotEmpty({ message: 'El telefono de contacto es Obligatorio' })
-  @MaxLength(25, { message: 'El Telefono no puede superar los 25 caracteres' })
-  telefono: string;
-
-  @ApiProperty({
-    example: 'Calle falsa 123',
-    description: 'Dirección física de la empresa',
-  })
-  @IsString()
-  @IsNotEmpty({ message: 'La dirección es Oligatoria' })
-  @MaxLength(255, {
-    message: 'La dirección no puede superar los 255 caracteres',
-  })
-  direccion: string;
 
   @ApiProperty({
     example: 'www.supermercadosunidos.com.ar',
@@ -96,35 +63,4 @@ export class CreateEmpresaDTO {
     message: 'La dirección no puede superar los 150 caracteres',
   })
   web?: string;
-
-  @ApiProperty({
-    example: true,
-    description: 'Indica si la empresa está verificada',
-    default: false,
-  })
-  @IsBoolean({ message: 'Él campo Verificada debe ser booleano' })
-  @IsOptional()
-  verificada?: boolean;
-
-  @ApiProperty({
-    example: 'correo@dominio.com',
-    description: 'Correo electronico del usuario de la empresa.',
-  })
-  @IsString()
-  @IsNotEmpty({ message: 'El correo es obligatorio.' })
-  @MaxLength(255, {
-    message: 'El correo no puede superar los 255 caracteres.',
-  })
-  correo: string;
-
-  @ApiProperty({
-    example: 'password123',
-    description: 'Contraseña del usuario de la empresa.',
-  })
-  @IsString()
-  @IsNotEmpty({ message: 'El correo es Oligatorio.' })
-  @MaxLength(255, {
-    message: 'El correo no puede superar los 255 caracteres',
-  })
-  clave: string;
 }

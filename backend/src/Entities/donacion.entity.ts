@@ -8,11 +8,11 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
-import { Usuario } from './usuario.entity';
+import { PerfilUsuario } from './perfil_Usuario.entity';
 import { DonacionEstado } from '../Modules/donation/enum';
 
 @Entity('donaciones')
-export class Donations {
+export class Donaciones {
   /**
    * ID único de la Donación
    * @type {number}
@@ -110,6 +110,6 @@ export class Donations {
    * Usuarios asociados
    * @type {Usuario}
    */
-  @ManyToOne(() => Usuario, (user) => user.donaciones)
-  usuario: Usuario;
+  @ManyToOne(() => PerfilUsuario, (user) => user.donaciones)
+  usuario: PerfilUsuario;
 }

@@ -6,7 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Donations } from './donations.entity';
+import { Donations } from './donacion.entity';
 
 @Entity('imagenes_donacion')
 export class Donation_images {

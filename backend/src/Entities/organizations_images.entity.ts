@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Organizations } from './organizations.entity';
+import { Organizations } from './perfil_organizacion.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('imagenes_organizacion')

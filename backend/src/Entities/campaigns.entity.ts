@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Organizations } from './organizations.entity';
-import { Donations } from './donations.entity';
+import { Organizations } from './perfil_organizacion.entity';
+import { Donations } from './donacion.entity';
 import { CampaignEstado } from '../Modules/campaign/enum';
 import { Campaigns_images } from './campaigns_images.entity';
 

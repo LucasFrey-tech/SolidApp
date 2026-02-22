@@ -7,13 +7,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Like, Repository } from 'typeorm';
 import { Beneficios } from '../../Entities/beneficio.entity';
-import { Empresa } from '../../Entities/empresa.entity';
+import { Empresa } from '../../Entities/perfil_empresa.entity';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { EmpresaSummaryDTO } from '../empresa/dto/summary_empresa.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
-import { Usuario } from '../../Entities/usuario.entity';
+import { Usuario } from '../../Entities/perfil_Usuario.entity';
 import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
 import { SettingsService } from '../../common/settings/settings.service';
 

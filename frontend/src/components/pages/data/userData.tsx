@@ -144,13 +144,6 @@ export default function UserData() {
             </div>
 
             <div className={styles.Field}>
-              <label className={styles.Label}>
-                Departamento <span className={styles.Optional}>(opcional)</span>
-              </label>
-              <input className={styles.Input} type="text" value={editableData?.departamento || ''} onChange={(e) => handleInputChange('departamento', e.target.value)} placeholder="A, 1º," />
-            </div>
-
-            <div className={styles.Field}>
               <label className={styles.Label}>Código Postal</label>
               <NumericInput className={styles.Input} value={editableData?.codigoPostal || ''} onChange={(e) => handleInputChange('codigoPostal', e.target.value)} placeholder="1234" />
             </div>

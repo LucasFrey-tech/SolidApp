@@ -20,12 +20,12 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 
-import { OrganizationsService } from './organization.service';
+import { OrganizationsService } from './organizacion.service';
 import { CreateOrganizationDto } from './dto/create_organization.dto';
-import { UpdateOrganizationDto } from './dto/update_organization.dto';
-import { ResponseOrganizationDto } from './dto/response_organization.dto';
+import { UpdateOrganizationDto } from './dto/update_organizacion.dto';
+import { ResponseOrganizationDto } from './dto/response_organizacion.dto';
 import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
-import { ResponseOrganizationPaginatedDto } from './dto/response_organization_paginated.dto';
+import { ResponseOrganizationPaginatedDto } from './dto/response_organizacion_paginated.dto';
 import { ResponseCampaignsPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
 
 /**

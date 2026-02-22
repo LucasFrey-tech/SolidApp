@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { OrganizationSummaryDto } from '../../organization/dto/summary_organization.dto';
+import { OrganizationSummaryDto } from '../../organization/dto/summary_organizacion.dto';
 
 /**
  * DTO para la respuesta de las Campañas.

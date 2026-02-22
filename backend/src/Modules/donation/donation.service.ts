@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { Donations } from '../../Entities/donations.entity';
+import { Donations } from '../../Entities/donacion.entity';
 import { Campaigns } from '../../Entities/campaigns.entity';
-import { Usuario } from '../../Entities/usuario.entity';
+import { Usuario } from '../../Entities/perfil_Usuario.entity';
 import { Donation_images } from '../../Entities/donation_images.entity';
 import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { CreateDonationDto } from './dto/create_donation.dto';
