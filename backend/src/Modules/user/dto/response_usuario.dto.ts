@@ -19,12 +19,6 @@ export class ResponseUsuarioDto {
   @ApiProperty({ example: 'Pérez', description: 'Apellido del usuario' })
   apellido: string;
 
-  @ApiProperty({
-    example: 'https://misitio.com/avatar.png',
-    description: 'Imagen de perfil',
-  })
-  imagen: string;
-
   @ApiPropertyOptional({ example: 'Av. Siempre Viva', description: 'Calle' })
   calle?: string;
 

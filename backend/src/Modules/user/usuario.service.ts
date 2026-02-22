@@ -317,7 +317,6 @@ export class UsuarioService {
     correo: usuario.correo,
     nombre: usuario.nombre,
     apellido: usuario.apellido,
-    imagen: usuario.imagen,
     calle: usuario.calle,
     numero: usuario.numero,
     rol: usuario.rol,
