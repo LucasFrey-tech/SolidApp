@@ -25,7 +25,7 @@ export class UsuarioBeneficio {
   @JoinColumn({ name: 'id_usuario' })
   usuario: Usuario;
 
-  @ManyToOne(() => Beneficios, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Beneficios)
   @JoinColumn({ name: 'id_beneficio' })
   beneficio: Beneficios;
 

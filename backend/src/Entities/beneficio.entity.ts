@@ -12,7 +12,6 @@ import { Empresa } from './empresa.entity';
 
 @Entity('beneficios')
 export class Beneficios {
-
   /**
    * ID unico del Beneficio
    * @type {number}
@@ -94,7 +93,7 @@ export class Beneficios {
   })
   @Column({ type: 'int' })
   valor: number;
-  
+
   /**
    * Estado del Beneficio
    * @type {string}
@@ -103,7 +102,7 @@ export class Beneficios {
     example: 'pendiente',
     description: 'Estado del Beneficio',
   })
-  @Column({ type: 'varchar', length: 20, default: 'pendiente' }) 
+  @Column({ type: 'varchar', length: 20, default: 'pendiente' })
   estado: 'pendiente' | 'aprobado' | 'rechazado';
 
   /**
@@ -111,7 +110,7 @@ export class Beneficios {
    * @type {Empresa}
    */
   @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })
-  @ManyToOne(() => Empresa, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Empresa)
   @JoinColumn({ name: 'id_empresa' })
   empresa: Empresa;
 }
