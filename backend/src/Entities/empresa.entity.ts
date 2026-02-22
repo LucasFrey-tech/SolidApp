@@ -1,175 +1,72 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+// empresa.entity.ts
+import { Entity, ChildEntity, Column } from 'typeorm';
+import { BaseAccount } from './cuenta_base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('empresas')
-export class Empresa {
-  
-  /**
-   * ID único de la Empresa
-   * @type {number}
-   */
-  @ApiProperty({ example: 1, description: 'Id única de la Empresa' })
-  @PrimaryGeneratedColumn()
-  id: number;
-  
-  /**
-   * CUIL de la Empresa
-   * @type {string}
-   */
-  @ApiProperty({ example: '20-04856975-3', description: 'Cuil de la Empresa' })
-  @Column({ type: 'varchar', length: 13, unique: true })
-  nroDocumento: string;
-  
-  /**
-   * Nombre Legal de la Empresa
-   * @type {string}
-   */
+@ChildEntity('empresa')
+export class Empresa extends BaseAccount {
   @ApiProperty({
-    example: 'Supermercados Unidos S.A.',
-    description: 'El nombre legal registrado de la empresa colaboradora',
+    description: 'CUIT único de la empresa',
+    example: '30-12345678-9',
+  })
+  @Column({ type: 'varchar', length: 13, unique: true })
+  cuit_empresa: string;
+
+  @ApiProperty({
+    description: 'Razón social registrada de la empresa',
+    example: 'Comercializadora Ejemplo S.A.',
   })
   @Column({ type: 'varchar', length: 255 })
   razon_social: string;
-  
-  /**
-   * Nombre Comercial de la Empresa
-   * @type {string}
-   */
-  @ApiProperty({ example: 'INSERT-NOMBRE', description: 'Nombre Comercial de la Empresa' })
-  @Column({ type: 'varchar', length: 50 })
-  nombre_fantasia: string; // Hace falta realmente ¿? Reemplazar por mail ¿?
-  
-  /**
-   * Descripción de la Empresa
-   * @type {string}
-   */
+
   @ApiProperty({
-    example:
-      'Supermercados Unidos S.A. impulsa la solidaridad mediante bonificaciones a clientes que donan a causas sociales.',
-    description:
-      'Descripción de la empresa colaboradora y su rol en la iniciativa de donaciones',
+    description: 'Nombre de fantasía o comercial de la empresa',
+    example: 'Ejemplo Market',
+  })
+  @Column({ type: 'varchar', length: 50 })
+  nombre_fantasia: string;
+
+  @ApiProperty({
+    description: 'Descripción breve de la empresa',
+    example: 'Empresa dedicada a la venta de productos tecnológicos.',
   })
   @Column({ type: 'varchar', length: 255 })
   descripcion: string;
-  
-  /**
-   * Rubro de la Empresa
-   * @type {string}
-   */
-  @ApiProperty({ example: 'Supermercado', description: 'Rubro de la Empresa' })
+
+  @ApiProperty({
+    description: 'Rubro o sector económico de la empresa',
+    example: 'Tecnología',
+  })
   @Column({ type: 'varchar', length: 15 })
   rubro: string;
-  
-  /**
-   * Teléfono de la Empresa
-   * @type {string}
-   */
+
   @ApiProperty({
-    example: '+54 11 4567-8900',
-    description: 'Telefono de la Empresa',
+    description: 'Teléfono de contacto de la empresa',
+    example: '+54 11 4444-5555',
   })
   @Column({ type: 'varchar', length: 25 })
   telefono: string;
-  
-  /**
-   * Dirección de la Empresa
-   * @type {string}
-   */
+
   @ApiProperty({
-    example: 'Calle falsa 123',
-    description: 'La dirección donde reside la Empresa',
+    description: 'Dirección física de la empresa',
+    example: 'Av. Siempre Viva 742, Buenos Aires',
   })
   @Column({ type: 'varchar', length: 150 })
   direccion: string;
-  
-  /**
-   * Sitio Web de la Empresa
-   * @type {string}
-   */
+
   @ApiProperty({
-    example: 'www.supermercadosunidos.com.ar',
-    description: 'Sitio Web de la Empresa',
+    description: 'Sitio web oficial de la empresa',
+    example: 'https://www.ejemplo.com',
   })
   @Column({ type: 'varchar', length: 255 })
   web: string;
-  
-  /**
-   * // TEXTO
-   * @type {boolean}
-   */
-  @ApiProperty({
-    example: true,
-    description: 'Representa si la Empresa es legítima',
-  })
-  @Column({ type: 'bit', default: false })
-  verificada: boolean;
-  
-  /**
-   * // TEXTO
-   * @type {boolean}
-   */
-  @ApiProperty({
-    example: false,
-    description: 'Indica si la Empresa esta deshabilitada en el sitio',
-  })
-  @Column({ type: 'bit', default: false })
-  deshabilitado: boolean;
-  
-  /**
-   * Fecha de Registro de la Empresa
-   * @type {Date}
-   */
-  @ApiProperty({
-    example: '2025-12-15T10:30:45Z',
-    description: 'Fecha del Registro de la Empresa en el sitio',
-  })
-  @CreateDateColumn({ type: 'datetime2' })
-  fecha_registro: Date;
-  
-  /**
-   * Fecha del último cambio de la Empresa
-   * @type {Date}
-   */
-  @ApiProperty({
-    example: '2025-12-15T10:30:45Z',
-    description: 'Fecha del ultimo cambio de información de la Empresa',
-  })
-  @UpdateDateColumn({ type: 'datetime2' })
-  ultimo_cambio: Date;
-  
-  /**
-   * Correo Electrónico de la Empresa
-   * @type {string}
-   */
-  @ApiProperty({
-    example: 'correo@dominio.com',
-    description: 'Correo electronico del usuario de la empresa.',
-  })
-  @Column({ type: 'varchar', length: 255, unique: true })
-  correo: string;
-  
-  /**
-   * Contraseña del Usuario de la Empresa
-   * @type {string}
-   */
-  @ApiProperty({
-    example: 'password123',
-    description: 'Contraseña del usuario de la empresa.',
-  })
-  @Column({ type: 'varchar', length: 255 })
-  clave: string;
 
-  /**
-   * Logo de la empresa
-   * @type {string}
-   */
-  @ApiProperty({ example: 'logo.jpg', description: 'Loog de la Empresa' })
-  @Column({ type: 'varchar', length: 255, nullable: true})
-  logo: string;
+  @ApiProperty({
+    description: 'Logo de la empresa en formato URL (opcional)',
+    example: 'https://cdn.ejemplo.com/logo.png',
+    required: false,
+  })
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  logo?: string;
 }
