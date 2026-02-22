@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { CampaignCreateRequest } from "@/API/types/campañas/campaigns";
-import { CampaignEstado } from "@/API/types/campañas/enum";
 import styles from "@/styles/Paneles/campaignPanel.module.css";
 import { NumericInput } from "@/components/Utils/NumericInputProp";
 
@@ -40,7 +39,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
       fecha_Inicio: "",
       fecha_Fin: "",
       imagenes: [],
-      estado: CampaignEstado.PENDIENTE,
     },
   });
 
@@ -205,23 +203,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
           <span className={styles.error}>{errors.puntos.message}</span>
         )}
       </div>
-
-      {/* ESTADO */}
-      {isEditMode && (
-        <div className={styles.field}>
-          <label>Estado</label>
-          <select
-            className={styles.select}
-            {...register("estado", { required: "Obligatorio" })}
-          >
-            {Object.values(CampaignEstado).map((estado) => (
-              <option key={estado} value={estado}>
-                {estado}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
 
       {/* IMÁGENES */}
       <div className={styles.field}>
