@@ -104,7 +104,9 @@ export default function OrganizationCampaignsPage() {
         estado: item.estado as DonacionEstado,
       })),
     );
-    setDonationsTotalPages(Math.ceil(response.total / limit));
+    
+    const totalPages = Math.max(1, Math.ceil(response.total / limit));
+    setDonationsTotalPages(totalPages);
   };
 
   useEffect(() => {
