@@ -1,37 +1,36 @@
-// Usuario
-export interface RegisterUsuarioRequest {
-  documento: string;
+export interface RegistroUsuarioDto {
   nombre: string;
   apellido: string;
-  correo: string;
-  clave: string;
+  documento: string;
 }
 
-// Empresa
-export interface RegisterEmpresaRequest {
+export interface RegistroEmpresaDto {
   cuit_empresa: string;
-  razonSocial: string;
-  nombreFantasia: string;
-  correo: string;
-  clave: string;
-  telefono: string;
-  direccion: string;
+  razon_social: string;
+  nombre_empresa: string;
   web?: string;
 }
 
-// Organización
-export interface RegisterOrganizacionRequest {
+export interface RegistroOrganizacionDto {
   cuit_organizacion: string;
-  razonSocial: string;
-  nombreFantasia: string;
-  correo: string;
-  clave: string;
+  razon_social: string;
+  nombre_organizacion: string;
+  web?: string;
 }
 
+export enum RolCuenta {
+  USUARIO = 'USUARIO',
+  EMPRESA = 'EMPRESA',
+  ORGANIZACION = 'ORGANIZACION',
+  ADMIN = 'ADMIN',
+}
 export interface Register {
-  usuario: RegisterUsuarioRequest;
-  empresa: RegisterEmpresaRequest;
-  organizacion: RegisterOrganizacionRequest;
+  correo: string;
+  clave: string;
+  role: RolCuenta;
+  perfilUsuario?: RegistroUsuarioDto;
+  perfilEmpresa?: RegistroEmpresaDto;
+  perfilOrganizacion?: RegistroOrganizacionDto;
 }
 
 export interface AuthResponse {

@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EmpresaSummaryDTO } from '../../empresa/dto/summary_empresa.dto';
 
-/** 
+/**
  * DTO para la respuesta de los Beneficios.
  */
 export class BeneficiosResponseDTO {
-
   /** ID del Beneficio */
   @ApiProperty({ example: 1, description: 'ID del beneficio' })
   id: number;

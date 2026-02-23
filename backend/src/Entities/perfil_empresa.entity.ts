@@ -31,7 +31,7 @@ export class PerfilEmpresa {
     description: 'CUIT único de la empresa',
     example: '30-12345678-9',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 20, unique: true })
   cuit: string;
 
   /**
@@ -42,14 +42,14 @@ export class PerfilEmpresa {
     description: 'Razón social registrada de la empresa',
     example: 'Comercializadora Ejemplo S.A.',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   razon_social: string;
 
   /**Rubro de la Empresa
    * @type {string}
    * */
   @ApiProperty({ example: 'Supermercado', description: 'Rubro de la Empresa' })
-  @Column({ type: 'varchar', length: 15 })
+  @Column({ type: 'varchar', length: 50, default: '' })
   rubro: string;
 
   /**
@@ -60,7 +60,7 @@ export class PerfilEmpresa {
     description: 'Nombre comercial o de fantasía de la empresa',
     example: 'Ejemplo Market',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 15 })
   nombre_empresa: string;
 
   /**
@@ -71,7 +71,7 @@ export class PerfilEmpresa {
     description: 'Descripción breve de la empresa',
     example: 'Empresa dedicada a la venta de productos tecnológicos.',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 15, default: '' })
   descripcion: string;
 
   /**
@@ -83,7 +83,7 @@ export class PerfilEmpresa {
     example: true,
     default: false,
   })
-  @Column()
+  @Column({ default: false })
   verificada: boolean;
 
   /**
@@ -94,7 +94,7 @@ export class PerfilEmpresa {
     description: 'Logo de la empresa en formato URL',
     example: 'https://cdn.ejemplo.com/logo.png',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   logo: string;
 
   /**
@@ -105,7 +105,7 @@ export class PerfilEmpresa {
     description: 'Sitio web oficial de la empresa',
     example: 'https://www.ejemplo.com',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 255, nullable: true })
   web: string;
 
   /**

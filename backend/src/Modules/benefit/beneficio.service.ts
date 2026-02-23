@@ -7,15 +7,16 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Like, Repository } from 'typeorm';
 import { Beneficios } from '../../Entities/beneficio.entity';
-import { Empresa } from '../../Entities/perfil_empresa.entity';
+import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { EmpresaSummaryDTO } from '../empresa/dto/summary_empresa.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
-import { Usuario } from '../../Entities/perfil_Usuario.entity';
+import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
 import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
 import { SettingsService } from '../../common/settings/settings.service';
+import { RolCuenta } from '../../Entities/cuenta.entity';
 
 /**
  * Servicio que maneja la lógica de negocio para los Beneficios.
@@ -28,21 +29,21 @@ export class BeneficioService {
     @InjectRepository(Beneficios)
     private readonly beneficiosRepository: Repository<Beneficios>,
 
-    @InjectRepository(Empresa)
-    private readonly empresasRepository: Repository<Empresa>,
+    @InjectRepository(PerfilEmpresa)
+    private readonly empresasRepository: Repository<PerfilEmpresa>,
 
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   /**
    * Obtiene todos los Beneficios disponibles.
-   * 
+   *
    * @returns {Promise<BeneficiosResponseDTO[]>} lista de todos los beneficios activos de las empresas.
    */
   async findAll(): Promise<BeneficiosResponseDTO[]> {
     const beneficios = await this.beneficiosRepository.find({
       relations: ['empresa'],
-      where: { empresa: { deshabilitado: false } },
+      where: { empresa: { cuenta: { deshabilitado: false } } },
     });
 
     return beneficios.map(this.mapToResponseDto);
@@ -50,8 +51,8 @@ export class BeneficioService {
 
   /**
    * Busca un Beneficio específico por ID.
-   * 
-   * @param {number} id - ID del beneficio a buscar 
+   *
+   * @param {number} id - ID del beneficio a buscar
    * @returns {Promise<BeneficiosResponseDTO>} DTO del Beneficio encontrado
    * @throws {NotFoundException} Si no encuentra ningún beneficio con el ID especificado
    */
@@ -69,17 +70,17 @@ export class BeneficioService {
   }
 
   /**
-   * 
-   * @param page 
-   * @param limit 
-   * @returns 
+   *
+   * @param page
+   * @param limit
+   * @returns
    */
   async findAllPaginated(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
     const [beneficios, total] = await this.beneficiosRepository.findAndCount({
       relations: ['empresa'],
-      where: { empresa: { deshabilitado: false } },
+      where: { empresa: { cuenta: { deshabilitado: false } } },
       skip,
       take: limit,
       order: { fecha_registro: 'DESC' },
@@ -92,11 +93,11 @@ export class BeneficioService {
   }
 
   /**
-   * 
-   * @param page 
-   * @param limit 
-   * @param search 
-   * @returns 
+   *
+   * @param page
+   * @param limit
+   * @param search
+   * @returns
    */
   async findPaginated(page: number, limit: number, search: string) {
     const startIndex = (page - 1) * limit;
@@ -107,25 +108,25 @@ export class BeneficioService {
       order: { id: 'ASC' },
       where: [
         { titulo: Like(`%${search}%`) },
-        { detalle: Like(`%${search}%`) }
+        { detalle: Like(`%${search}%`) },
       ],
     });
 
     return {
       items: beneficios.map(this.mapToResponseDto),
-      total
+      total,
     };
   }
 
   /**
    * Obtiene todos los beneficios de una empresa específica
-   * 
+   *
    * @param {number} idEmpresa - ID de la empresa específica
    * @returns {Promise<BeneficiosResponseDTO[]>} Lista de Beneficios de una empresa especifica
    */
   async findByEmpresa(idEmpresa: number): Promise<BeneficiosResponseDTO[]> {
     const empresa = await this.empresasRepository.findOne({
-      where: { id: idEmpresa, deshabilitado: false },
+      where: { id: idEmpresa, cuenta: { deshabilitado: false } },
     });
 
     if (!empresa) {
@@ -144,8 +145,8 @@ export class BeneficioService {
 
   /**
    * Obtiene todos los Beneficios disponibles con paginación.
-   * 
-   * @param {number} idEmpresa - ID de la empresa 
+   *
+   * @param {number} idEmpresa - ID de la empresa
    * @param {number} page Página solicitada
    * @param {number} limit Cantidad de Beneficios por página
    * @returns {Promise<PaginatedBeneficiosResponseDTO>} Lista de Beneficios paginados y total de registros
@@ -157,7 +158,34 @@ export class BeneficioService {
   ): Promise<PaginatedBeneficiosResponseDTO> {
     const [beneficios, total] = await this.beneficiosRepository.findAndCount({
       relations: ['empresa'],
-      where: { empresa: { id: idEmpresa, deshabilitado: false } },
+      where: { empresa: { id: idEmpresa, cuenta: { deshabilitado: false } } },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { fecha_registro: 'DESC' },
+    });
+
+    return {
+      items: beneficios.map(this.mapToResponseDto),
+      total: total,
+    };
+  }
+
+  /**
+   * Obtiene todos los Beneficios disponibles con paginación.
+   *
+   * @param {number} idEmpresa - ID de la empresa
+   * @param {number} page Página solicitada
+   * @param {number} limit Cantidad de Beneficios por página
+   * @returns {Promise<PaginatedBeneficiosResponseDTO>} Lista de Beneficios paginados y total de registros
+   */
+  async findByUsuarioPaginated(
+    idUsuario: number,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedBeneficiosResponseDTO> {
+    const [beneficios, total] = await this.beneficiosRepository.findAndCount({
+      relations: ['usuario'],
+      where: { usuario: { id: idUsuario, cuenta: { deshabilitado: false } } },
       skip: (page - 1) * limit,
       take: limit,
       order: { fecha_registro: 'DESC' },
@@ -171,7 +199,7 @@ export class BeneficioService {
 
   /**
    * Crea un nuevo Beneficio en el sistema
-   * 
+   *
    * @param {CreateBeneficiosDTO} createDto - Objeto de transferencia de datos con la información del beneficio a crear.
    * @returns {Promise<BeneficiosResponseDTO>} Promesa que resuelve con la entidad del beneficio recién creado.
    * @throws {NotFoundException}  Cuando alguna de las Empresas no se encuenta o esta deshabilitada.
@@ -179,7 +207,7 @@ export class BeneficioService {
    */
   async create(createDto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO> {
     const empresa = await this.empresasRepository.findOne({
-      where: { id: createDto.id_empresa, deshabilitado: false },
+      where: { id: createDto.id_empresa, cuenta: { deshabilitado: false } },
     });
 
     if (!empresa) {
@@ -209,29 +237,25 @@ export class BeneficioService {
 
   /**
    * Canje de un Beneficio por puntos para un Usuario
-   * 
+   *
    * @param {number} beneficioId - ID del Beneficio canjeado
    * @param {number} userId - ID del Usuario que canjeó el Beneficio
    * @param {number} cantidad - Cantidad canjeada de un mismo Beneficio
    * @returns Resultado del canje con información del estado final
-   * 
+   *
    * @throws {NotFoundException} cuando:
    * - No se encontró el Beneficio deseado.
    * - No se encontró el Usuario.
-   * 
+   *
    * @throws {BadRequestException} cuando:
    * - No hay stock suficiente del beneficio.
    * - El usuario no tiene suficientes puntos.
    * - Si alguien que no sea un Usuario quiere realizar el canje.
    */
-  async canjear(
-    beneficioId: number,
-    userId: number,
-    cantidad: number,
-  ) {
+  async canjear(beneficioId: number, userId: number, cantidad: number) {
     return this.dataSource.transaction(async (manager) => {
       const beneficioRepo = manager.getRepository(Beneficios);
-      const usuarioRepo = manager.getRepository(Usuario);
+      const usuarioRepo = manager.getRepository(PerfilUsuario);
       const usuarioBeneficioRepo = manager.getRepository(UsuarioBeneficio);
 
       const beneficio = await beneficioRepo.findOne({
@@ -248,7 +272,7 @@ export class BeneficioService {
       }
 
       const usuario = await usuarioRepo.findOne({
-        where: { id: userId, deshabilitado: false },
+        where: { id: userId, cuenta: { deshabilitado: false } },
         lock: { mode: 'pessimistic_write' },
       });
 
@@ -256,7 +280,7 @@ export class BeneficioService {
         throw new NotFoundException('Usuario no encontrado');
       }
 
-      if (usuario.rol !== 'usuario') {
+      if (usuario.cuenta.role != RolCuenta.USUARIO) {
         throw new BadRequestException(
           'Solo los usuarios pueden canjear beneficios',
         );
@@ -288,7 +312,7 @@ export class BeneficioService {
         await usuarioBeneficioRepo.save(existente);
       } else {
         const nuevo = usuarioBeneficioRepo.create({
-          usuario: { id: userId } as Usuario,
+          usuario: { id: userId } as PerfilUsuario,
           beneficio: { id: beneficioId } as Beneficios,
           cantidad,
           usados: 0,
@@ -310,13 +334,13 @@ export class BeneficioService {
 
   /**
    * Actualiza un Beneficio en el sistema.
-   * 
+   *
    * @param {number} id - ID del Beneficio a actualizar
    * @param {UpdateBeneficiosDTO} updateDto - DTO con los nuevos datos para el Beneficio
    * @returns {Promise<BeneficiosResponseDTO>} Promesa que resuelve con el DTO de Beneficios actualizado
-   * 
+   *
    * @throws {NotFoundException} cuando no se encuentra el ID del beneficio deseado.
-   * 
+   *
    * @throws {BadRequestException} cuando:
    * - La cantidad del Beneficio es menor a 0 (cero).
    * - El valor del Beneficio es menor a 0 (cero).
@@ -371,11 +395,11 @@ export class BeneficioService {
 
   /**
    * Actualiza el estado de un Beneficio
-   * 
+   *
    * @param {number} id - ID del Beneficio a actualizar
-   * @param {string} estado - Nuevo Estado del Beneficio 
+   * @param {string} estado - Nuevo Estado del Beneficio
    * @returns {Promise<BeneficiosResponseDTO>} Promesa que resuelve con el estado actualizado del Beneficio seleccionado.
-   * 
+   *
    * @throws {NotFoundException} cuando el Beneficio seleccionado no es encontrado.
    */
   async updateEstado(
@@ -395,18 +419,15 @@ export class BeneficioService {
 
     const updated = await this.beneficiosRepository.save(beneficio);
 
-    this.logger.log(
-      `Estado del beneficio ${id} actualizado a ${estado}`,
-    );
+    this.logger.log(`Estado del beneficio ${id} actualizado a ${estado}`);
 
     return this.mapToResponseDto(updated);
   }
 
-
   /**
    * Elimina el Beneficio seleccionado (hard delete)
-   * 
-   * @param {number} id - ID del beneficio a eliminar 
+   *
+   * @param {number} id - ID del beneficio a eliminar
    */
   async delete(id: number): Promise<void> {
     const beneficio = await this.beneficiosRepository.findOne({
@@ -422,7 +443,7 @@ export class BeneficioService {
 
   /**
    * Mapea una entidad Beneficios a su DTO de respuesta.
-   * 
+   *
    * @param {Beneficios} beneficio - Entidad Beneficios con la relación empresa cargada.
    * @returns {BeneficiosResponseDTO} DTO listo para ser enviado como respuesta de la API
    */
@@ -432,11 +453,11 @@ export class BeneficioService {
     const empresaSummary: EmpresaSummaryDTO = {
       id: beneficio.empresa.id,
       razon_social: beneficio.empresa.razon_social,
-      nombre_fantasia: beneficio.empresa.nombre_fantasia,
+      nombre_fantasia: beneficio.empresa.nombre_empresa,
       rubro: beneficio.empresa.rubro,
       verificada: beneficio.empresa.verificada,
-      deshabilitado: beneficio.empresa.deshabilitado,
-      logo: beneficio.empresa.logo 
+      deshabilitado: beneficio.empresa.cuenta.deshabilitado,
+      logo: beneficio.empresa.logo
         ? SettingsService.getEmpresaImageUrl(beneficio.empresa.logo)
         : null,
     };

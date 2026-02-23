@@ -32,7 +32,7 @@ export class BeneficioController {
 
   /**
    * Obtiene todos los Beneficios disponibles.
-   * 
+   *
    * @returns {Promise<BeneficiosResponseDTO[]>} Lista de todos los beneficios activos
    */
   @Get()
@@ -42,7 +42,7 @@ export class BeneficioController {
 
   /**
    * Obtiene todos los Beneficios disponibles con paginación.
-   * 
+   *
    * @param {number} page - Página solicitada (basada en 1)
    * @param {number} limit - Cantidad de Beneficios por página
    * @returns Lista de Beneficios paginados.
@@ -54,10 +54,10 @@ export class BeneficioController {
 
   /**
    * Obtiene todos beneficios que hayan sido canjeados por un mismo usuario.
-   * 
+   *
    * @param {number} page - Página solicitada (basada en 1)
    * @param {number} limit - Cantidad de Beneficios por página
-   * @param {string} search - Término de busqueda. 
+   * @param {string} search - Término de busqueda.
    * @returns Lista paginada de Beneficios canjeados por un mismo usuario
    */
   @Get('/list/paginated/')
@@ -77,7 +77,7 @@ export class BeneficioController {
 
   /**
    * Obtiene todos los beneficios paginados pertenecientes a una misma empresa
-   * 
+   *
    * @param {number} idEmpresa - ID de la empresa a filtrar
    * @param {number} page - Página solicitada (basada en 1)
    * @param {number} limit - Cantidad de Beneficios por página
@@ -98,8 +98,8 @@ export class BeneficioController {
 
   /**
    * Obtiene todos los Beneficios pertenecientes a una misma Empresa.
-   * 
-   * @param {number} idEmpresa - ID de la empresa a filtrar 
+   *
+   * @param {number} idEmpresa - ID de la empresa a filtrar
    * @returns {Promise<BeneficiosResponseDTO[]>} Lista de los beneficios paginados y total de registros.
    */
   @Get('empresa/:idEmpresa')
@@ -111,8 +111,8 @@ export class BeneficioController {
 
   /**
    * Obtiene un Beneficio específico por su ID.
-   * 
-   * @param {number} id - ID del Beneficio a buscar 
+   *
+   * @param {number} id - ID del Beneficio a buscar
    * @returns {Promise<BeneficiosResponseDTO>} Beneficio encontrado.
    */
   @Get(':id')
@@ -124,8 +124,8 @@ export class BeneficioController {
 
   /**
    * Crea un nuevo Beneficio en el sistema.
-   * 
-   * @param {CreateBeneficiosDTO} dto - Datos del Beneficio a crear 
+   *
+   * @param {CreateBeneficiosDTO} dto - Datos del Beneficio a crear
    * @returns {Promise<BeneficiosResponseDTO>} Beneficio creado
    */
   @Post()
@@ -138,7 +138,7 @@ export class BeneficioController {
 
   /**
    * Canjea un Beneficio por puntos para un usuario.
-   * 
+   *
    * @param {number} id - ID del beneficio
    * @param {CanjearBeneficioDto} dto - Datos del canje (ID del usuario y cantidad a canjear)
    * @returns Resultado del canje con información del estado final
@@ -155,10 +155,10 @@ export class BeneficioController {
 
   /**
    * Actualiza un Beneficio existente.
-   * 
+   *
    * @param {number} id - ID del Beneficio a actualizar
    * @param {UpdateBeneficiosDTO} dto - Datos actualizados del beneficio
-   * @returns {Promise<BeneficiosResponseDTO>} Beneficio actualizado 
+   * @returns {Promise<BeneficiosResponseDTO>} Beneficio actualizado
    */
   @Patch(':id')
   async update(
@@ -170,7 +170,7 @@ export class BeneficioController {
 
   /**
    * Actualiza el estado del Beneficio.
-   * 
+   *
    * @param {number} id - ID del Beneficio a actualizar
    * @param {UpdateEstadoBeneficioDTO} dto - Estado actualizado del Beneficio
    * @returns Beneficio actualizado
@@ -185,8 +185,8 @@ export class BeneficioController {
 
   /**
    * Elimina un Beneficio del sistema (hard delete).
-   * 
-   * @param {number} id - ID del Beneficio a eliminar 
+   *
+   * @param {number} id - ID del Beneficio a eliminar
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)

@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
+  IsOptional,
   IsString,
   MinLength,
   ValidateNested,
@@ -48,10 +49,6 @@ export class RegisterDto {
   @MinLength(6)
   clave: string;
 
-  @ApiProperty({ example: 'Password123' })
-  @IsString()
-  confirmar_clave: string;
-
   @ApiProperty({
     enum: RolCuenta,
     example: RolCuenta.USUARIO,
@@ -59,12 +56,20 @@ export class RegisterDto {
   @IsEnum(RolCuenta)
   role: RolCuenta;
 
-  @ApiProperty({
-    description: 'Datos del perfil según el rol',
-  })
+  @IsOptional()
   @ValidateNested()
-  @Type(() => Object)
-  perfil: RegistroUsuarioDto | RegistroEmpresaDto | RegistroOrganizacionDto;
+  @Type(() => RegistroUsuarioDto)
+  perfilUsuario?: RegistroUsuarioDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => RegistroEmpresaDto)
+  perfilEmpresa?: RegistroEmpresaDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => RegistroOrganizacionDto)
+  perfilOrganizacion?: RegistroOrganizacionDto;
 }
 
 export class AuthResponse {

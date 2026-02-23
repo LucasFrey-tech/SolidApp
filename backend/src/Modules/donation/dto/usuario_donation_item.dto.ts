@@ -49,7 +49,7 @@ export class UserDonationItemDto {
     example: 'Innovar ONG',
     description: 'Nombre de la organización',
   })
-  nombreOrganizacion: string;
+  nombre_organizacion: string;
 
   /** Título de la Campaña asociada */
   @ApiProperty({

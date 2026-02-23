@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ResponseOrganizationDto } from './response_organizacion.dto';
+import { ResponseOrganizacionDto } from './response_organizacion.dto';
 
 export class ResponseOrganizationPaginatedDto {
-  @ApiProperty({ type: [ResponseOrganizationDto] })
-  items: ResponseOrganizationDto[];
+  @ApiProperty({ type: [ResponseOrganizacionDto] })
+  items: ResponseOrganizacionDto[];
 
   @ApiProperty({ example: 42 })
   total: number;

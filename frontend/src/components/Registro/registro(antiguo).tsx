@@ -5,7 +5,6 @@ import styles from "../../styles/login-registro/registro.module.css";
 import { baseApi } from "@/API/baseApi";
 import { NumericInput } from "../Utils/NumericInputProp";
 import Swal from "sweetalert2";
-import { RolCuenta } from "@/API/types/register";
 
 // ==================== ESQUEMAS ZOD ====================
 const usuarioSchema = z
@@ -43,11 +42,11 @@ const empresaSchema = z
       .string()
       .min(1, "El cuit es obligatorio")
       .min(3, "El cuit debe tener al menos 3 caracteres"),
-    razon_social: z
+    razonSocial: z
       .string()
       .min(1, "La razón social es obligatoria")
       .min(3, "La razón social debe tener al menos 3 caracteres"),
-    nombre_empresa: z
+    nombreFantasia: z
       .string()
       .min(1, "El nombre de fantasía es obligatorio")
       .min(3, "El nombre de fantasía debe tener al menos 3 caracteres"),
@@ -60,14 +59,10 @@ const empresaSchema = z
       .string()
       .min(1, "El teléfono es obligatorio")
       .min(8, "El teléfono debe tener al menos 8 caracteres"),
-    calle: z
+    direccion: z
       .string()
-      .min(1, "El nombre de la calle de la dirección")
-      .min(3, "El nombre de la calle debe tener al menos 3"),
-    numero: z
-      .string()
-      .min(1, "El número de la dirección")
-      .min(3, "El número debe tener al menos 3"),
+      .min(1, "La dirección es obligatoria")
+      .min(5, "La dirección debe tener al menos 5 caracteres"),
     correo: z
       .string()
       .min(1, "El correo es obligatorio")
@@ -85,11 +80,11 @@ const organizacionSchema = z
       .string()
       .min(1, "El cuit es obligatorio")
       .min(3, "El cuit debe tener al menos 3 caracteres"),
-    razon_social: z
+    razonSocial: z
       .string()
       .min(1, "La razón social es obligatoria")
       .min(3, "La razón social debe tener al menos 3 caracteres"),
-    nombre_organizacion: z
+    nombreFantasia: z
       .string()
       .min(1, "El nombre es obligatorio")
       .min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -133,74 +128,174 @@ type FieldConfig = {
 
 const fieldConfigs: Record<FormType, FieldConfig[]> = {
   usuario: [
-    { field: "documento", label: "Documento", type: "text", placeholder: "DNI" },
-    { field: "correo", label: "Correo electrónico", type: "email", placeholder: "ejemplo@email.com" },
-    { field: "clave", label: "Contraseña", type: "password", placeholder: "••••••••" },
-    { field: "confirmarClave", label: "Repetir contraseña", type: "password", placeholder: "••••••••" },
-    { field: "nombre", label: "Nombre", type: "text", placeholder: "Tu nombre" },
-    { field: "apellido", label: "Apellido", type: "text", placeholder: "Tu apellido" },
+    {
+      field: "documento",
+      label: "Documento",
+      type: "text",
+      placeholder: "DNI",
+    },
+    {
+      field: "correo",
+      label: "Correo electrónico",
+      type: "email",
+      placeholder: "ejemplo@email.com",
+    },
+    {
+      field: "clave",
+      label: "Contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "confirmarClave",
+      label: "Repetir contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "nombre",
+      label: "Nombre",
+      type: "text",
+      placeholder: "Tu nombre",
+    },
+    {
+      field: "apellido",
+      label: "Apellido",
+      type: "text",
+      placeholder: "Tu apellido",
+    },
   ],
   empresa: [
-     { field: "cuit_empresa", label: "Número de CUIT", type: "text", placeholder: "Ej: 30-12345678-9" },
-    { field: "razon_social", label: "Razón Social", type: "text", placeholder: "Nombre legal" },
-    { field: "nombre_empresa", label: "Nombre de Fantasía", type: "text", placeholder: "Nombre comercial" },
-    { field: "correo", label: "Correo electrónico", type: "email", placeholder: "ejemplo@empresa.com" },
-    { field: "clave", label: "Contraseña", type: "password", placeholder: "••••••••" },
-    { field: "confirmarClave", label: "Repetir contraseña", type: "password", placeholder: "••••••••" },
-    { field: "telefono", label: "Teléfono", type: "text", placeholder: "+54 11 1234-5678" },
-    { field: "calle", label: "Calle", type: "text", placeholder: "Av. Siempre Viva" },
-    { field: "numero", label: "Número", type: "text", placeholder: "742" },
-    { field: "web", label: "Web", type: "text", placeholder: "https://...", optional: true },
+    {
+      field: "cuit_empresa",
+      label: "Número de cuit",
+      type: "text",
+      placeholder: "Ej: 30-12345678-9",
+    },
+    {
+      field: "razonSocial",
+      label: "Razón Social",
+      type: "text",
+      placeholder: "Nombre legal",
+    },
+    {
+      field: "nombreFantasia",
+      label: "Nombre Fantasía",
+      type: "text",
+      placeholder: "Nombre comercial",
+    },
+    {
+      field: "clave",
+      label: "Contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "confirmarClave",
+      label: "Repetir contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "telefono",
+      label: "Teléfono",
+      type: "text",
+      placeholder: "+54 11 1234-5678",
+    },
+    {
+      field: "direccion",
+      label: "Dirección",
+      type: "text",
+      placeholder: "Calle y número",
+    },
+    {
+      field: "correo",
+      label: "Correo electrónico",
+      type: "email",
+      placeholder: "ejemplo@empresa.com",
+    },
+    {
+      field: "web",
+      label: "Web",
+      type: "text",
+      placeholder: "https://...",
+      optional: true,
+    },
   ],
   organizacion: [
-    { field: "cuit_organizacion", label: "Número de CUIT", type: "text", placeholder: "12345" },
-    { field: "razon_social", label: "Razón Social", type: "text", placeholder: "Nombre legal" },
-    { field: "nombre_organizacion", label: "Nombre", type: "text", placeholder: "Nombre de uso común" },
-    { field: "correo", label: "Correo electrónico", type: "email", placeholder: "ejemplo@organizacion.com" },
-    { field: "clave", label: "Contraseña", type: "password", placeholder: "••••••••" },
-    { field: "confirmarClave", label: "Repetir contraseña", type: "password", placeholder: "••••••••" },
+    {
+      field: "cuit_organizacion",
+      label: "Número de cuit",
+      type: "text",
+      placeholder: "12345",
+    },
+    {
+      field: "razonSocial",
+      label: "Razón Social",
+      type: "text",
+      placeholder: "Nombre legal",
+    },
+    {
+      field: "nombreFantasia",
+      label: "Nombre",
+      type: "text",
+      placeholder: "Nombre de uso común",
+    },
+    {
+      field: "clave",
+      label: "Contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "confirmarClave",
+      label: "Repetir contraseña",
+      type: "password",
+      placeholder: "••••••••",
+    },
+    {
+      field: "correo",
+      label: "Correo electrónico",
+      type: "email",
+      placeholder: "ejemplo@organizacion.com",
+    },
   ],
-};
-
-// ==================== ESTADO INICIAL ====================
-const initialUsuarioData: UsuarioData = {
-  documento: "",
-  correo: "",
-  clave: "",
-  confirmarClave: "",
-  nombre: "",
-  apellido: "",
-};
-
-const initialEmpresaData: EmpresaData = {
-  cuit_empresa: "",
-  razon_social: "",
-  nombre_empresa: "",
-  clave: "",
-  confirmarClave: "",
-  telefono: "",
-  calle: "",
-  numero: "",
-  web: "",
-  correo: "",
-};
-
-const initialOrganizacionData: OrganizacionData = {
-  cuit_organizacion: "",
-  razon_social: "",
-  nombre_organizacion: "",
-  clave: "",
-  confirmarClave: "",
-  correo: "",
 };
 
 // ==================== COMPONENTE ====================
 export default function Registro() {
   const [step, setStep] = useState<Step>("select");
 
-  const [usuarioData, setUsuarioData] = useState<UsuarioData>(initialUsuarioData);
-  const [empresaData, setEmpresaData] = useState<EmpresaData>(initialEmpresaData);
-  const [organizacionData, setOrganizacionData] = useState<OrganizacionData>(initialOrganizacionData);
+  // ==================== ESTADOS INDEPENDIENTES ====================
+  const [usuarioData, setUsuarioData] = useState<UsuarioData>({
+    documento: "",
+    correo: "",
+    clave: "",
+    confirmarClave: "",
+    nombre: "",
+    apellido: "",
+  });
+
+  const [empresaData, setEmpresaData] = useState<EmpresaData>({
+    cuit_empresa: "",
+    razonSocial: "",
+    nombreFantasia: "",
+    clave: "",
+    confirmarClave: "",
+    telefono: "",
+    direccion: "",
+    web: "",
+    correo: "",
+  });
+
+  const [organizacionData, setOrganizacionData] = useState<OrganizacionData>({
+    cuit_organizacion: "",
+    razonSocial: "",
+    nombreFantasia: "",
+    clave: "",
+    confirmarClave: "",
+    correo: "",
+  });
 
   const [errors, setErrors] = useState<Errors>({});
   const [touchedFields, setTouchedFields] = useState<Touched>({});
@@ -208,24 +303,49 @@ export default function Registro() {
   // ==================== MAPEO SIMPLE ====================
   const getCurrentData = () => {
     switch (step) {
-      case "usuario": return usuarioData;
-      case "empresa": return empresaData;
-      case "organizacion": return organizacionData;
-      default: return null;
+      case "usuario":
+        return usuarioData;
+      case "empresa":
+        return empresaData;
+      case "organizacion":
+        return organizacionData;
+      default:
+        return null;
     }
   };
 
   const getCurrentSchema = () => {
     switch (step) {
-      case "usuario": return usuarioSchema;
-      case "empresa": return empresaSchema;
-      case "organizacion": return organizacionSchema;
-      default: return null;
+      case "usuario":
+        return usuarioSchema;
+      case "empresa":
+        return empresaSchema;
+      case "organizacion":
+        return organizacionSchema;
+      default:
+        return null;
+    }
+  };
+
+  const getCurrentStrategy = () => {
+    switch (step) {
+      case "usuario":
+        return new RegisterUsuarioStrategy(baseApi.register);
+      case "empresa":
+        return new RegisterEmpresaStrategy(baseApi.register);
+      case "organizacion":
+        return new RegisterOrganizacionStrategy(baseApi.register);
+      default:
+        return null;
     }
   };
 
   // ==================== VALIDACIÓN ====================
-  const validateField = (field: string, value: string, isBlur = false): string | null => {
+  const validateField = (
+    field: string,
+    value: string,
+    isBlur = false,
+  ): string | null => {
     if (!isBlur && !touchedFields[field]) return null;
 
     const schema = getCurrentSchema();
@@ -246,12 +366,16 @@ export default function Registro() {
   };
 
   const validateAllFields = () => {
-    if (step === "select") return { isValid: false, errors: {} as Errors };
+    if (step === "select") {
+      return { isValid: false, errors: {} as Errors };
+    }
 
     const schema = getCurrentSchema();
     const data = getCurrentData();
 
-    if (!schema || !data) return { isValid: false, errors: {} as Errors };
+    if (!schema || !data) {
+      return { isValid: false, errors: {} as Errors };
+    }
 
     try {
       schema.parse(data);
@@ -274,14 +398,17 @@ export default function Registro() {
   const handleChange = (field: string, value: string) => {
     if (step === "select") return;
 
-    const sanitized = ["correo", "clave", "confirmarClave"].includes(field)
-    ? value.trim()
-    : value;
-
+    // Actualizar el estado correspondiente
     switch (step) {
-      case "usuario": setUsuarioData((prev) => ({ ...prev, [field]: sanitized })); break;
-      case "empresa": setEmpresaData((prev) => ({ ...prev, [field]: sanitized })); break;
-      case "organizacion": setOrganizacionData((prev) => ({ ...prev, [field]: sanitized })); break;
+      case "usuario":
+        setUsuarioData((prev) => ({ ...prev, [field]: value }));
+        break;
+      case "empresa":
+        setEmpresaData((prev) => ({ ...prev, [field]: value }));
+        break;
+      case "organizacion":
+        setOrganizacionData((prev) => ({ ...prev, [field]: value }));
+        break;
     }
 
     if (touchedFields[field]) {
@@ -301,25 +428,21 @@ export default function Registro() {
     setErrors((prev) => ({ ...prev, [field]: error || undefined }));
   };
 
-  const resetForms = () => {
-    setUsuarioData(initialUsuarioData);
-    setEmpresaData(initialEmpresaData);
-    setOrganizacionData(initialOrganizacionData);
-    setErrors({});
-    setTouchedFields({});
-    setStep("select");
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (step === "select") return;
 
     const validation = validateAllFields();
     if (!validation.isValid) {
       setErrors(validation.errors);
+
       const allFields: Touched = {};
       const data = getCurrentData();
-      if (data) Object.keys(data).forEach((k) => (allFields[k] = true));
+      if (data) {
+        Object.keys(data).forEach((k) => (allFields[k] = true));
+      }
+
       setTouchedFields(allFields);
       Swal.fire({
         icon: "warning",
@@ -330,40 +453,49 @@ export default function Registro() {
       return;
     }
 
+    console.log("Datos válidos:", {
+      usuario: usuarioData,
+      empresa: empresaData,
+      organizacion: organizacionData,
+    });
+
     try {
+      const strategy = getCurrentStrategy();
+      const data = getCurrentData();
+
+      if (!strategy || !data) {
+        throw new Error("Formulario no válido");
+      }
+
+      // Type-safe casting basado en el tipo actual
+      let response;
       switch (step) {
         case "usuario": {
-          const { confirmarClave, correo, clave,...perfilUsuario } = usuarioData;
-          await baseApi.register.register({
-            correo: correo,
-            clave: clave,
-            role: RolCuenta.USUARIO,
-            perfilUsuario,
-          });
+          const { confirmarClave, ...dataToSend } = data as UsuarioData;
+          response = await (strategy as RegisterUsuarioStrategy).register(
+            dataToSend as UsuarioData,
+          );
           break;
         }
         case "empresa": {
-          const { confirmarClave, correo, clave, ...perfilEmpresa } = empresaData;
-          await baseApi.register.register({
-            correo: correo,
-            clave: clave,
-            role: RolCuenta.EMPRESA,
-            perfilEmpresa,
-          });
+          const { confirmarClave, ...dataToSend } = data as EmpresaData;
+          response = await (strategy as RegisterEmpresaStrategy).register(
+            dataToSend as EmpresaData,
+          );
           break;
         }
         case "organizacion": {
-          const { confirmarClave, correo, clave,...perfilOrganizacion } = organizacionData;
-          await baseApi.register.register({
-            correo: correo,
-            clave: clave,
-            role: RolCuenta.ORGANIZACION,
-            perfilOrganizacion,
-          });
+          const { confirmarClave, ...dataToSend } = data as OrganizacionData;
+          response = await (strategy as RegisterOrganizacionStrategy).register(
+            dataToSend as OrganizacionData,
+          );
           break;
         }
+        default:
+          throw new Error("Tipo de formulario no soportado");
       }
 
+      console.log("Registro Exitoso: ", response);
       Swal.fire({
         icon: "success",
         title: "Registro exitoso",
@@ -371,12 +503,55 @@ export default function Registro() {
         confirmButtonColor: "#9fd46d",
       });
 
-      resetForms();
+      // Reset
+      setStep("select");
+      setErrors({});
+      setTouchedFields({});
+
+      // Resetear cada formulario
+      setUsuarioData({
+        documento: "",
+        correo: "",
+        clave: "",
+        confirmarClave: "",
+        nombre: "",
+        apellido: "",
+      });
+      setEmpresaData({
+        cuit_empresa: "",
+        razonSocial: "",
+        nombreFantasia: "",
+        clave: "",
+        confirmarClave: "",
+        telefono: "",
+        direccion: "",
+        web: "",
+        correo: "",
+      });
+      setOrganizacionData({
+        cuit_organizacion: "",
+        razonSocial: "",
+        nombreFantasia: "",
+        clave: "",
+        confirmarClave: "",
+        correo: "",
+      });
     } catch (error: any) {
       console.error("Error al Registrar:", error);
 
       let errorMessage = "No se pudo registrar el usuario";
-      if (error?.message) errorMessage = error.message;
+
+      if (error?.response?.message) {
+        if (Array.isArray(error.response.message)) {
+          errorMessage = error.response.message[0];
+        } else {
+          errorMessage = error.response.message;
+        }
+      }
+      // fetch normal
+      else if (error?.message) {
+        errorMessage = error.message;
+      }
 
       Swal.fire({
         icon: "error",
@@ -409,8 +584,10 @@ export default function Registro() {
   ) => {
     const optional = options.optional ?? false;
     const showError = touchedFields[field] && errors[field];
+
     const data = getCurrentData();
     const value = data ? (data as Record<string, string>)[field] || "" : "";
+
     const isNumeric = numericFields.includes(field);
 
     return (
@@ -464,12 +641,24 @@ export default function Registro() {
           </div>
 
           <div className={styles.scrollableFields}>
-            {configs.map(({ field, label, type, placeholder, optional }, index) =>
-              renderField(field, label, type, placeholder, { optional }, `${formType}-${field}-${index}`),
+            {configs.map(
+              ({ field, label, type, placeholder, optional }, index) =>
+                renderField(
+                  field,
+                  label,
+                  type,
+                  placeholder,
+                  { optional },
+                  `${formType}-${field}-${index}`, // ← Pasar key única
+                ),
             )}
           </div>
 
-          <button disabled={!isFormValid()} className={styles.btn} type="submit">
+          <button
+            disabled={!isFormValid()}
+            className={styles.btn}
+            type="submit"
+          >
             {formType === "usuario" ? "Crear cuenta" : `Registrar ${formType}`}
           </button>
           <p className={styles.requiredHint}>* Campos obligatorios</p>
@@ -486,18 +675,45 @@ export default function Registro() {
           <h2 className={styles.title}>Elige tu tipo de registro</h2>
 
           <div className={styles.cards}>
-            <div className={styles.card} onClick={() => handleStepChange("usuario")}>
-              <Image src="/Registro/Donador_Registro.svg" alt="Usuario" width={80} height={80} />
+            {/* USUARIO */}
+            <div
+              className={styles.card}
+              onClick={() => handleStepChange("usuario")}
+            >
+              <Image
+                src="/Registro/Donador_Registro.svg"
+                alt="Usuario"
+                width={80}
+                height={80}
+              />
               <p className={styles.cardText}>Usuario</p>
             </div>
 
-            <div className={styles.card} onClick={() => handleStepChange("empresa")}>
-              <Image src="/Registro/Empresa_Registro.svg" alt="Empresa" width={80} height={80} />
+            {/* EMPRESA */}
+            <div
+              className={styles.card}
+              onClick={() => handleStepChange("empresa")}
+            >
+              <Image
+                src="/Registro/Empresa_Registro.svg"
+                alt="Empresa"
+                width={80}
+                height={80}
+              />
               <p className={styles.cardText}>Empresa</p>
             </div>
 
-            <div className={styles.card} onClick={() => handleStepChange("organizacion")}>
-              <Image src="/Registro/Organizacion_Registro.svg" alt="Organización" width={80} height={80} />
+            {/* ORGANIZACION */}
+            <div
+              className={styles.card}
+              onClick={() => handleStepChange("organizacion")}
+            >
+              <Image
+                src="/Registro/Organizacion_Registro.svg"
+                alt="Organización"
+                width={80}
+                height={80}
+              />
               <p className={styles.cardText}>Organización</p>
             </div>
           </div>
@@ -506,6 +722,7 @@ export default function Registro() {
         </>
       )}
 
+      {/* === FORMULARIOS DINÁMICOS === */}
       {step !== "select" && renderForm(step)}
     </div>
   );

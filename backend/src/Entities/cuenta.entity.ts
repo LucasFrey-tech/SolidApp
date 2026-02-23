@@ -10,8 +10,9 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export enum RolCuenta {
   USUARIO = 'USUARIO',
-  EMPRESA = 'COMPANIA',
+  EMPRESA = 'EMPRESA',
   ORGANIZACION = 'ORGANIZACION',
+  ADMIN = 'ADMIN',
 }
 
 @Entity()

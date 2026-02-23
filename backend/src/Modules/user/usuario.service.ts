@@ -5,26 +5,18 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
 import { CreateUsuarioDto } from './dto/create_usuario.dto';
-import { UpdateUsuarioDto } from './dto/update_usuario.dto';
+import { UpdatePuntosDto } from './dto/update_puntos_usuario.dto';
 import { ResponseUsuarioDto } from './dto/response_usuario.dto';
-import { JwtService } from '@nestjs/jwt';
 import { CuentaService } from '../cuenta/cuenta.service';
-import { RolCuenta } from '../../Entities/cuenta.entity';
+import { DonacionService } from '../donation/donacion.service';
+import { BeneficioService } from '../benefit/beneficio.service';
+import { CreateDonationDto } from '../donation/dto/create_donation.dto';
+import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
+import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 
-/**
- * Servicio encargado de la lógica de negocio
- * relacionada con los usuarios del sistema.
- *
- * Responsabilidades:
- * - CRUD de usuarios
- * - Soft delete y restauración
- * - Paginación y búsqueda
- * - Gestión de credenciales
- * - Generación de JWT al actualizar credenciales
- */
 @Injectable()
 export class PerfilUsuarioService {
   private readonly logger = new Logger(PerfilUsuarioService.name);
@@ -33,36 +25,162 @@ export class PerfilUsuarioService {
     @InjectRepository(PerfilUsuario)
     private readonly usuarioRepository: Repository<PerfilUsuario>,
     private readonly cuentaService: CuentaService,
-    private readonly jwtService: JwtService,
+    private readonly donacionService: DonacionService,
+    private readonly beneficioService: BeneficioService,
   ) {}
 
   /**
-   * Obtiene todos los usuarios activos (no deshabilitados).
-   *
-   * @returns {Promise<ResponseUsuarioDto[]>} - Lista de usuarios activos
+   * Crea un nuevo usuario.
    */
-  async findAll(): Promise<ResponseUsuarioDto[]> {
-    const usuario = await this.usuarioRepository.find({
-      relations: ['cuenta'],
-      where: {
-        cuenta: {
-          deshabilitado: false,
-        },
-      },
+  async create(
+    createDto: CreateUsuarioDto,
+    cuentaId: number,
+    manager?: EntityManager,
+  ): Promise<ResponseUsuarioDto> {
+    const repo = manager
+      ? manager.getRepository(PerfilUsuario)
+      : this.usuarioRepository;
+
+    const existente = await repo.findOne({
+      where: { cuenta: { id: cuentaId } },
     });
 
-    return usuario.map((usuario) => this.mapToResponseDto(usuario));
+    if (existente) {
+      throw new ConflictException('Ya existe un perfil para esta cuenta');
+    }
+
+    const usuario = repo.create({
+      ...createDto,
+      cuenta: { id: cuentaId },
+      puntos: 0,
+    });
+
+    const saved = await repo.save(usuario);
+    this.logger.log(`Usuario creado con ID ${saved.id}`);
+
+    return this.mapToResponseDto(saved);
   }
 
   /**
+   * Busca un perfil por ID de cuenta.
+   */
+  async findByCuentaId(cuentaId: number): Promise<PerfilUsuario> {
+    const perfil = await this.usuarioRepository.findOne({
+      where: { cuenta: { id: cuentaId } },
+      relations: ['cuenta'],
+    });
+
+    if (!perfil) {
+      throw new NotFoundException(
+        `Perfil de usuario para cuenta ${cuentaId} no encontrado`,
+      );
+    }
+
+    return perfil;
+  }
+
+  // ================ Panel Usuario ===================
+
+  /**
+   * Obtiene las donaciones del usuario
+   */
+  async getDonaciones(usuarioId: number, page: number, limit: number) {
+    return this.donacionService.findAllPaginatedByUser(usuarioId, page, limit);
+  }
+
+  /**
+   * Realiza la donacion
+   */
+  async donar(usuarioId: number, dto: CreateDonationDto) {
+    return this.donacionService.create(usuarioId, dto);
+  }
+
+  /**
+   * Obtiene los cupones
+   */
+  async getCupones(usuarioId: number) {
+    return this.beneficioService.findByUsuarioPaginated(usuarioId, 1, 10);
+  }
+
+  /**
+   * Canjea un cupon o varios
+   */
+  async canjearCupon(usuarioId: number, cuponId: number, cantidad: number) {
+    return this.beneficioService.canjear(usuarioId, cuponId, cantidad);
+  }
+
+  /**
+   * Actualiza las credenciales del usuario
+   */
+  async updateCredenciales(cuentaId: number, dto: UpdateCredencialesDto) {
+    return this.cuentaService.updateCredenciales(cuentaId, dto);
+  }
+
+  /**
+   * Actualiza los datos del usuario
+   */
+  async updateUsuario(
+    userId: number,
+    dto: UpdateUsuarioDto,
+  ): Promise<ResponseUsuarioDto> {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id: userId },
+      relations: ['cuenta'],
+    });
+
+    if (!usuario)
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
+
+    await this.cuentaService.updateUsuario(usuario.cuenta.id, dto);
+
+    Object.assign(usuario.cuenta, dto);
+
+    return this.mapToResponseDto(usuario);
+  }
+
+  /**
+   * Actualiza los puntos del usuario
+   */
+  async updatePuntos(
+    id: number,
+    updateDto: UpdatePuntosDto,
+  ): Promise<ResponseUsuarioDto> {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id },
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    Object.assign(usuario, updateDto);
+
+    const updated = await this.usuarioRepository.save(usuario);
+    this.logger.log(`Usuario ${id} actualizado`);
+
+    return this.mapToResponseDto(updated);
+  }
+
+  /**
+   * Obtiene los puntos de un usuario específico.
+   */
+  async getPoints(id: number): Promise<{ id: number; puntos: number }> {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id },
+      select: ['id', 'puntos'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    return { id: usuario.id, puntos: usuario.puntos ?? 0 };
+  }
+
+  // Panel Admin
+
+  /**
    * Obtiene usuarios de forma paginada.
-   * Incluye activos y deshabilitados (uso administrativo).
-   *
-   * @param page Número de página
-   * @param limit Cantidad de registros por página
-   * @param search Texto opcional para búsqueda
-   *
-   * @returns {ResponseUsuarioDto[]}
    */
   async findPaginated(
     page: number,
@@ -85,7 +203,7 @@ export class PerfilUsuarioService {
 
     const [usuarios, total] = await queryBuilder
       .skip(skip)
-      .limit(limit)
+      .take(limit) // ✅ corregido de .limit() a .take()
       .orderBy('perfil.id', 'ASC')
       .getManyAndCount();
 
@@ -97,10 +215,6 @@ export class PerfilUsuarioService {
 
   /**
    * Obtiene un usuario por su ID.
-   *
-   * @param id ID del usuario
-   * @returns {Promise<ResponseUsuarioDto>} - Usuario encontrado
-   * @throws NotFoundException si no existe
    */
   async findOne(id: number): Promise<ResponseUsuarioDto> {
     const usuario = await this.usuarioRepository.findOne({
@@ -116,131 +230,41 @@ export class PerfilUsuarioService {
   }
 
   /**
-   * Busca un perfil por ID de cuenta.
-   */
-  async findByCuentaId(cuentaId: number): Promise<PerfilUsuario> {
-    const perfil = await this.usuarioRepository.findOne({
-      where: { cuenta: { id: cuentaId } },
-      relations: ['cuenta'],
-    });
-
-    if (!perfil) {
-      throw new NotFoundException(
-        `Perfil de usuario para cuenta ${cuentaId} no encontrado`,
-      );
-    }
-
-    return perfil;
-  }
-
-  /**
-   * Obtiene los puntos de un usuario específico.
-   *
-   * @param id ID del usuario
-   * @returns {Promise<{ id: number; puntos: number }>} - Objeto con id y puntos
-   */
-  async getPoints(id: number): Promise<{ id: number; puntos: number }> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-      select: ['id', 'puntos'],
-    });
-
-    if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
-    }
-
-    return { id: usuario.id, puntos: usuario.puntos ?? 0 };
-  }
-
-  /**
-   * Crea un nuevo usuario.
-   *
-   * @param createDto Datos necesarios para creación
-   * @returns {Promise<ResponseUsuarioDto>} - Usuario creado
-   * @throws ConflictException si el email ya existe
-   */
-  async create(
-    createDto: CreateUsuarioDto,
-    cuentaId: number,
-  ): Promise<ResponseUsuarioDto> {
-    const cuenta = await this.cuentaService.findById(cuentaId);
-
-    if (!cuenta) throw new NotFoundException('Cuenta no encontrada');
-
-    if (cuenta.role !== RolCuenta.USUARIO) {
-      throw new ConflictException('La cuenta no es de tipo USUARIO');
-    }
-
-    const existente = await this.usuarioRepository.findOne({
-      where: { cuenta: { id: cuentaId } },
-    });
-
-    if (existente) {
-      throw new ConflictException('Ya existe un usuario con ese email');
-    }
-
-    const usuario = this.usuarioRepository.create({
-      ...createDto,
-      cuenta,
-      puntos: 0,
-    });
-
-    const saved = await this.usuarioRepository.save(usuario);
-    this.logger.log(`Usuario creado con ID ${saved.id}`);
-
-    return this.mapToResponseDto(saved);
-  }
-
-  /**
-   * Actualiza los datos de un usuario existente.
-   *
-   * @param id ID del usuario
-   * @param updateDto Datos a modificar
-   * @returns {Promise<ResponseUsuarioDto>} - Usuario actualizado
-   */
-  async update(
-    id: number,
-    updateDto: UpdateUsuarioDto,
-  ): Promise<ResponseUsuarioDto> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-      relations: ['cuenta'],
-    });
-
-    if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
-    }
-
-    Object.assign(usuario, updateDto);
-
-    const updated = await this.usuarioRepository.save(usuario);
-    this.logger.log(`Usuario ${id} actualizado`);
-
-    return this.mapToResponseDto(updated);
-  }
-
-  /**
-   * Deshabilita un usuario (soft delete).
-   *
-   * @param id - ID del usuario
+   * Deshabilita un usuario (soft delete sobre la Cuenta).
    */
   async delete(id: number): Promise<void> {
-    const usuario = await this.usuarioRepository.findOne({ where: { id } });
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id },
+      relations: ['cuenta'],
+    });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    await this.usuarioRepository.save(usuario);
-
+    await this.cuentaService.deshabilitar(usuario.cuenta.id);
     this.logger.log(`Usuario ${id} deshabilitado`);
   }
 
   /**
-   * Mapea la entidad Usuario al DTO de respuesta.
-   *
-   * @param usuario Entidad Usuario
-   * @returns {ResponseUsuarioDto}
+   * Restaura un usuario deshabilitado.
+   */
+  async restore(id: number): Promise<void> {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id },
+      relations: ['cuenta'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    await this.cuentaService.habilitar(usuario.cuenta.id);
+    this.logger.log(`Usuario ${id} restaurado`);
+  }
+
+  /**
+   * Mapea la entidad PerfilUsuario al DTO de respuesta.
    */
   private mapToResponseDto(perfil: PerfilUsuario): ResponseUsuarioDto {
     const dto = new ResponseUsuarioDto();

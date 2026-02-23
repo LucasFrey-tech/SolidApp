@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { OrganizationsController } from './organizacion.controller';
-import { OrganizationsService } from './organizacion.service';
-import { Organizations } from '../../Entities/perfil_organizacion.entity';
+import { PerfilOrganizacionService } from './organizacion.service';
+import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { CampaignModule } from '../campaign/campaign.module';
-import { DonationModule } from '../donation/donation.module';
+import { DonationModule } from '../donation/donacion.module';
+import { CuentaModule } from '../cuenta/cuenta.module';
 
 /**
  * OrganizationModule
@@ -50,7 +51,7 @@ import { DonationModule } from '../donation/donation.module';
      * - Organizations
      * - Campaigns
      */
-    TypeOrmModule.forFeature([Organizations, Campaigns]),
+    TypeOrmModule.forFeature([PerfilOrganizacion, Campaigns]),
 
     /**
      * Importación del módulo de campañas.
@@ -61,6 +62,7 @@ import { DonationModule } from '../donation/donation.module';
      */
     CampaignModule,
     DonationModule,
+    CuentaModule,
   ],
 
   /**
@@ -72,12 +74,12 @@ import { DonationModule } from '../donation/donation.module';
   /**
    * Providers disponibles dentro del módulo.
    */
-  providers: [OrganizationsService],
+  providers: [PerfilOrganizacionService],
 
   /**
    * Exporta el servicio para que pueda ser
    * utilizado en otros módulos si es necesario.
    */
-  exports: [OrganizationsService],
+  exports: [PerfilOrganizacionService],
 })
 export class OrganizationModule {}

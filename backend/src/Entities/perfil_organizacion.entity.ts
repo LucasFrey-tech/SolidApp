@@ -32,7 +32,7 @@ export class PerfilOrganizacion {
     description: 'CUIT único de la organización',
     example: '30-12345678-9',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 20, unique: true })
   cuit: string;
 
   /**
@@ -43,7 +43,7 @@ export class PerfilOrganizacion {
     description: 'Razón social registrada de la organización',
     example: 'Fundación Ejemplo',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   razon_social: string;
 
   /**
@@ -54,7 +54,7 @@ export class PerfilOrganizacion {
     description: 'Nombre de la organización',
     example: 'Fundación Esperanza',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   nombre_organizacion: string;
 
   /**
@@ -65,7 +65,7 @@ export class PerfilOrganizacion {
     description: 'Descripción breve de la organización',
     example: 'Organización sin fines de lucro dedicada a la educación.',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 255, default: '' })
   descripcion: string;
 
   /**
@@ -77,7 +77,7 @@ export class PerfilOrganizacion {
     example: true,
     default: false,
   })
-  @Column()
+  @Column({ default: false })
   verificada: boolean;
 
   /**
@@ -88,7 +88,7 @@ export class PerfilOrganizacion {
     description: 'Sitio web oficial de la organización',
     example: 'https://www.fundacion-ejemplo.org',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 255, default: '' })
   web: string;
 
   /**

@@ -1,6 +1,5 @@
 import {
   Controller,
-  Post,
   Get,
   Param,
   Body,
@@ -18,8 +17,7 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
-import { DonationsService } from './donation.service';
-import { CreateDonationDto } from './dto/create_donation.dto';
+import { DonacionService } from './donacion.service';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { PaginatedOrganizationDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
@@ -36,7 +34,7 @@ import { PaginatedUserDonationsResponseDto } from './dto/response_donation_pagin
 // @UseGuards(JwtAuthGuard)
 @Controller('donations')
 export class DonationsController {
-  constructor(private readonly donationsService: DonationsService) {}
+  constructor(private readonly donationsService: DonacionService) {}
 
   /**
    * Obtiene todas las Donaciones disponibles.
@@ -150,33 +148,6 @@ export class DonationsController {
   })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ResponseDonationDto> {
     return this.donationsService.findOne(id);
-  }
-
-  /**
-   * Crea una Donación nueva en el sistema.
-   *
-   * @param {CreateDonationDto} createDto - Datos de la Donación a crear
-   * @param {JwtPayload} user - ID de la Organización que crea la Donación
-   * @returns {Promise<ResponseDonationDto>} Donación creada.
-   */
-  @Post()
-  @ApiOperation({
-    summary: 'Crear una donación',
-    description:
-      'Permite a un usuario autenticado realizar una donación a una campaña',
-  })
-  @ApiParam({
-    name: 'campaignId',
-    description: 'ID de la campaña a la que se dona',
-    type: Number,
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Donación creada exitosamente',
-    type: ResponseDonationDto,
-  })
-  create(@Body() createDto: CreateDonationDto): Promise<ResponseDonationDto> {
-    return this.donationsService.create(createDto);
   }
 
   /**

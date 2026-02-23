@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { PerfilEmpresa } from './perfil_empresa.entity';
+import { PerfilUsuario } from './perfil_Usuario.entity';
 
 @Entity('beneficios')
 export class Beneficios {
@@ -113,4 +114,13 @@ export class Beneficios {
   @ManyToOne(() => PerfilEmpresa, (empresa) => empresa.beneficios)
   @JoinColumn({ name: 'id_empresa' })
   empresa: PerfilEmpresa;
+
+  /**
+   * Empresa dueña del Beneficio
+   * @type {PerfilUsuario}
+   */
+  @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })
+  @ManyToOne(() => PerfilUsuario, (usuario) => usuario.beneficios)
+  @JoinColumn({ name: 'id_usuario' })
+  usuario: PerfilUsuario;
 }

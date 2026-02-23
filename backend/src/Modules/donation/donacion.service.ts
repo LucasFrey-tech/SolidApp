@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { Donations } from '../../Entities/donacion.entity';
+import { Donaciones } from '../../Entities/donacion.entity';
 import { Campaigns } from '../../Entities/campaigns.entity';
-import { Usuario } from '../../Entities/perfil_Usuario.entity';
+import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
 import { Donation_images } from '../../Entities/donation_images.entity';
 import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { CreateDonationDto } from './dto/create_donation.dto';
@@ -25,24 +25,24 @@ import { UserDonationItemDto } from './dto/usuario_donation_item.dto';
  * Servicio que maneja la lógica de negocio para las Donaciones.
  */
 @Injectable()
-export class DonationsService {
-  private readonly logger = new Logger(DonationsService.name);
+export class DonacionService {
+  private readonly logger = new Logger(DonacionService.name);
 
   constructor(
-    @InjectRepository(Donations)
-    private readonly donationsRepository: Repository<Donations>,
+    @InjectRepository(Donaciones)
+    private readonly donacionRepository: Repository<Donaciones>,
 
     @InjectRepository(Campaigns)
     private readonly campaignsRepository: Repository<Campaigns>,
 
-    @InjectRepository(Usuario)
-    private readonly usuarioRepository: Repository<Usuario>,
+    @InjectRepository(PerfilUsuario)
+    private readonly perfilUsuarioRepository: Repository<PerfilUsuario>,
 
     @InjectRepository(Donation_images)
     private readonly donationImagenRepository: Repository<Donation_images>,
 
     private readonly rankingService: RankingService,
-  ) { }
+  ) {}
 
   /**
    * Obtiene todas las Donaciones disponibles.
@@ -50,7 +50,7 @@ export class DonationsService {
    * @returns {Promise<ResponseDonationDto[]>} Lista de todas las Donaciones activas
    */
   async findAll(): Promise<ResponseDonationDto[]> {
-    const donations = await this.donationsRepository.find({
+    const donations = await this.donacionRepository.find({
       relations: ['campaña', 'usuario'],
     });
 
@@ -65,7 +65,7 @@ export class DonationsService {
    */
   async findIMG(): Promise<DonacionImagenDTO[]> {
     const images = await this.donationImagenRepository.find({
-      relations: ['id_donacion'],
+      relations: ['id_donacion', 'id_donacion.campaña'],
     });
 
     this.logger.log(
@@ -87,7 +87,7 @@ export class DonationsService {
    * @throws {NotFoundException} cuando no encuentra ninguna Donación con el ID específico
    */
   async findOne(id: number): Promise<ResponseDonationDto> {
-    const donation = await this.donationsRepository.findOne({
+    const donation = await this.donacionRepository.findOne({
       where: { id },
       relations: ['campaña', 'usuario'],
     });
@@ -115,7 +115,7 @@ export class DonationsService {
     page: number;
     limit: number;
   }> {
-    const [donations, total] = await this.donationsRepository.findAndCount({
+    const [donations, total] = await this.donacionRepository.findAndCount({
       relations: ['campaña', 'usuario'],
       order: { fecha_registro: 'DESC' },
       skip: (page - 1) * limit,
@@ -148,7 +148,7 @@ export class DonationsService {
     limit = 10,
   ): Promise<PaginatedOrganizationDonationsResponseDto> {
     const startIndex = (page - 1) * limit;
-    const [donations, total] = await this.donationsRepository.findAndCount({
+    const [donations, total] = await this.donacionRepository.findAndCount({
       where: {
         campaña: {
           organizacion: { id: organizacionId },
@@ -183,7 +183,7 @@ export class DonationsService {
     limit = 10,
   ): Promise<PaginatedUserDonationsResponseDto> {
     const startIndex = (page - 1) * limit;
-    const [donations, total] = await this.donationsRepository.findAndCount({
+    const [donations, total] = await this.donacionRepository.findAndCount({
       where: {
         usuario: { id: userId },
       },
@@ -205,7 +205,10 @@ export class DonationsService {
   /**
    * Crear una Donación
    */
-  async create(createDto: CreateDonationDto): Promise<ResponseDonationDto> {
+  async create(
+    usuarioId: number,
+    createDto: CreateDonationDto,
+  ): Promise<ResponseDonationDto> {
     const campaign = await this.campaignsRepository.findOne({
       where: { id: createDto.campaignId },
     });
@@ -214,8 +217,8 @@ export class DonationsService {
       throw new NotFoundException('Campaña no encontrada');
     }
 
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id: createDto.userId, deshabilitado: false },
+    const usuario = await this.perfilUsuarioRepository.findOne({
+      where: { id: createDto.userId, cuenta: { deshabilitado: false } },
     });
 
     if (!usuario) {
@@ -223,7 +226,7 @@ export class DonationsService {
     }
 
     // Crear donación
-    const donation = this.donationsRepository.create({
+    const donation = this.donacionRepository.create({
       titulo: `Donación Solidaria de ${usuario.nombre} ${usuario.apellido}`,
       detalle: createDto.detalle,
       cantidad: createDto.cantidad,
@@ -234,9 +237,9 @@ export class DonationsService {
       fecha_estado: new Date(),
     });
 
-    const savedDonation = await this.donationsRepository.save(donation);
+    const savedDonation = await this.donacionRepository.save(donation);
 
-    await this.usuarioRepository.save(usuario);
+    await this.perfilUsuarioRepository.save(usuario);
 
     this.logger.log(
       `Donación ${savedDonation.id} creada | Usuario ${usuario.id} +${createDto.cantidad} puntos`,
@@ -254,9 +257,9 @@ export class DonationsService {
     console.log('Tipo de nuevoEstado:', typeof dto.estado);
     console.log('Motivo:', dto.motivo);
 
-    return await this.donationsRepository.manager.transaction(
+    return await this.donacionRepository.manager.transaction(
       async (manager) => {
-        const donacion = await manager.findOne(Donations, {
+        const donacion = await manager.findOne(Donaciones, {
           where: { id: id },
           relations: ['usuario', 'campaña'],
         });
@@ -332,7 +335,7 @@ export class DonationsService {
 
   private async aplicarEfectosDeEstado(
     manager: EntityManager,
-    donacion: Donations,
+    donacion: Donaciones,
     nuevoEstado: DonacionEstado,
   ) {
     const usuario = donacion.usuario;
@@ -366,7 +369,7 @@ export class DonationsService {
   }
 
   private readonly mapToResponseDto = (
-    donation: Donations,
+    donation: Donaciones,
   ): ResponseDonationDto => ({
     id: donation.id,
     titulo: donation.titulo,
@@ -382,7 +385,7 @@ export class DonationsService {
   });
 
   private mapToOrganizationDonationsResponse(
-    donation: Donations,
+    donation: Donaciones,
   ): OrganizationDonationItemDto {
     return {
       id: donation.id,
@@ -390,7 +393,7 @@ export class DonationsService {
       descripcion: donation.detalle,
       estado: donation.estado,
       userId: donation.usuario.id,
-      correo: donation.usuario.correo,
+      correo: donation.usuario.cuenta.correo,
       campaignId: donation.campaña.id,
       campaignTitulo: donation.campaña.titulo,
       fecha_estado: donation.fecha_estado,
@@ -398,7 +401,7 @@ export class DonationsService {
     };
   }
 
-  private mapToUserDonationResponse(donation: Donations): UserDonationItemDto {
+  private mapToUserDonationResponse(donation: Donaciones): UserDonationItemDto {
     return {
       id: donation.id,
       detalle: donation.detalle,
@@ -406,7 +409,7 @@ export class DonationsService {
       puntos: donation.puntos,
       estado: donation.estado,
       fecha_registro: donation.fecha_registro,
-      nombreOrganizacion: donation.campaña.organizacion.nombre_fantasia,
+      nombre_organizacion: donation.campaña.organizacion.nombre_organizacion,
       tituloCampaña: donation.campaña.titulo,
       fecha_estado: donation.fecha_estado,
       motivo_rechazo: donation.motivo_rechazo || '',

@@ -4,49 +4,24 @@ import { LoginRequestBody, AuthResponse } from "../types/auth";
 export class Login extends Crud<LoginRequestBody> {
   protected endPoint = "auth";
 
-  async loginUser(credentials: LoginRequestBody): Promise<AuthResponse> {
-    return this.login(`/${this.endPoint}/sesion/usuario`, credentials);
-  }
-
-  async loginEmpresa(credentials: LoginRequestBody): Promise<AuthResponse> {
-    return this.login(`/${this.endPoint}/sesion/empresa`, credentials);
-  }
-
-  async loginOrganizacion(
-    credentials: LoginRequestBody,
-  ): Promise<AuthResponse> {
-    return this.login(`/${this.endPoint}/sesion/organizacion`, credentials);
-  }
-
-  private async login(
-    path: string,
-    data: LoginRequestBody,
-  ): Promise<AuthResponse> {
-    const url = `${this.baseUrl}${path}`;
-    console.log("POST a:", url);
-    console.log("Con:", data);
-
+  async login(credentials: LoginRequestBody): Promise<AuthResponse> {
+    const url = `${this.baseUrl}/${this.endPoint}/login`;
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(credentials),
     });
+
     if (!res.ok) {
       let errorMessage = "Error desconocido";
-      if (res.status === 401) {
-        errorMessage = "Credenciales inválidas. Error al iniciar sesión.";
-      } else if (res.status === 403) {
+      if (res.status === 401) errorMessage = "Credenciales inválidas.";
+      else if (res.status === 403)
         errorMessage = "Usuario bloqueado. Contacte al administrador.";
-      } else if (res.status === 404) {
-        errorMessage = `Endpoint no encontrado: ${url}`;
-      } else if (res.status >= 500) {
-        errorMessage = "Error interno del servidor. Intente más tarde.";
-      }
-
+      else if (res.status >= 500) errorMessage = "Error interno del servidor.";
       throw new Error(errorMessage);
     }
-    const json = await res.json();
-    return json as AuthResponse;
+
+    return res.json();
   }
 
   async getAll(): Promise<never[]> {

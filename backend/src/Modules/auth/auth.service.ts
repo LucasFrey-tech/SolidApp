@@ -13,13 +13,11 @@ import { PerfilEmpresaService } from '../empresa/empresa.service';
 import { PerfilOrganizacionService } from '../organization/organizacion.service';
 import { Cuenta, RolCuenta } from '../../Entities/cuenta.entity';
 
-import { RegisterDto } from './dto/auth.dto';
-import { LoginDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { CuentaService } from '../cuenta/cuenta.service';
 
-import { RegistroUsuarioDto } from '../user/dto/registro_usuario.dto';
-import { RegistroEmpresaDto } from '../empresa/dto/registro_empresa.dto';
-import { RegistroOrganizacionDto } from '../organization/dto/registro_organizacion.dto';
+import { DataSource } from 'typeorm';
+import { RegisterAdminDto } from './dto/register_admin.dto';
 
 /**
  * Servicio que maneja la lógica de negocio para el Sistema de Autenticación
@@ -33,6 +31,7 @@ export class AuthService {
     private readonly perfilUsuarioService: PerfilUsuarioService,
     private readonly perfilEmpresaService: PerfilEmpresaService,
     private readonly perfilOrganizacionService: PerfilOrganizacionService,
+    private dataSource: DataSource,
     private readonly jwtService: JwtService,
   ) {
     this.logger.log('AuthService inicializado');
@@ -75,41 +74,56 @@ export class AuthService {
 
     const clave = await this.hashPassword(dto.clave);
 
-    const cuenta = await this.cuentaService.create({
-      correo: dto.correo,
-      clave: clave,
-      role: dto.role,
-    });
+    return this.dataSource.transaction(async (manager) => {
+      const cuenta = await this.cuentaService.create(
+        {
+          correo: dto.correo,
+          clave,
+          role: dto.role,
+        },
+        manager,
+      );
 
-    if (!Object.values(RolCuenta).includes(dto.role)) {
-      throw new BadRequestException('Rol inválido');
-    }
-
-    try {
       switch (dto.role) {
         case RolCuenta.USUARIO:
+          if (!dto.perfilUsuario)
+            throw new BadRequestException('Faltan datos del perfil');
           await this.perfilUsuarioService.create(
-            dto.perfil as RegistroUsuarioDto,
+            dto.perfilUsuario,
             cuenta.id,
+            manager,
           );
           break;
         case RolCuenta.EMPRESA:
+          if (!dto.perfilEmpresa)
+            throw new BadRequestException('Faltan datos del perfil');
           await this.perfilEmpresaService.create(
-            dto.perfil as RegistroEmpresaDto,
+            dto.perfilEmpresa,
             cuenta.id,
+            manager,
           );
           break;
         case RolCuenta.ORGANIZACION:
+          if (!dto.perfilOrganizacion)
+            throw new BadRequestException('Faltan datos del perfil');
           await this.perfilOrganizacionService.create(
-            dto.perfil as RegistroOrganizacionDto,
+            dto.perfilOrganizacion,
             cuenta.id,
+            manager,
           );
           break;
       }
-    } catch (error) {
-      this.logger.error(`Error creando perfil: ${error.message}`);
-      throw new BadRequestException('Error al crear el perfil');
-    }
+
+      return this.buildToken(cuenta);
+    });
+  }
+
+  async registerAdmin(dto: RegisterAdminDto) {
+    const cuenta = await this.cuentaService.create({
+      correo: dto.correo,
+      clave: await this.hashPassword(dto.clave),
+      role: RolCuenta.ADMIN,
+    });
 
     return this.buildToken(cuenta);
   }
@@ -117,11 +131,11 @@ export class AuthService {
   async login(dto: LoginDto) {
     const cuenta = await this.cuentaService.findByEmail(dto.correo);
 
-    if (!cuenta) throw new UnauthorizedException();
-
-    await this.verifyPassword(dto.clave, cuenta.clave);
+    if (!cuenta) throw new UnauthorizedException('Credenciales incorrectas');
 
     this.checkDeshabilitado(cuenta.deshabilitado);
+
+    await this.verifyPassword(dto.clave, cuenta.clave);
 
     await this.cuentaService.actualizarUltimaConexion(cuenta.id);
 

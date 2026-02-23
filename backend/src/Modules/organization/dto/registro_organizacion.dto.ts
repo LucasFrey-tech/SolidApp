@@ -6,15 +6,6 @@ export class RegistroOrganizacionDto {
   @IsString()
   cuit_organizacion: string;
 
-  @ApiProperty({ example: 'organizacion@email.com' })
-  @IsEmail()
-  correo: string;
-
-  @ApiProperty({ example: 'Password123' })
-  @IsString()
-  @MinLength(6)
-  clave: string;
-
   @ApiProperty({ example: 'Fundación Esperanza' })
   @IsString()
   razon_social: string;

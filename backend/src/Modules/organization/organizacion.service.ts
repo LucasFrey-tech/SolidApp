@@ -5,16 +5,16 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
-import { CreateOrganizationDto } from './dto/create_organization.dto';
+import { CreateOrganizacionDto } from './dto/create_organization.dto';
 import { UpdateOrganizacionDto } from './dto/update_organizacion.dto';
 import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
 import { JwtService } from '@nestjs/jwt';
 import { CampaignsService } from '../campaign/campaign.service';
-import { DonationsService } from '../donation/donation.service';
+import { DonacionService } from '../donation/donacion.service';
 import { CuentaService } from '../cuenta/cuenta.service';
-import { RolCuenta } from '../../Entities/cuenta.entity';
+import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 
 /**
  * ============================================================
@@ -50,7 +50,7 @@ export class PerfilOrganizacionService {
     @InjectRepository(PerfilOrganizacion)
     private readonly organizacionRepository: Repository<PerfilOrganizacion>,
     private readonly campaignService: CampaignsService,
-    private readonly donationService: DonationsService,
+    private readonly donacionService: DonacionService,
     private readonly cuentaService: CuentaService,
     private readonly jwtService: JwtService,
   ) {}
@@ -160,35 +160,40 @@ export class PerfilOrganizacionService {
    * Si la organización ya está registrada.
    */
   async create(
-    createDto: CreateOrganizationDto,
+    createDto: CreateOrganizacionDto,
     cuentaId: number,
+    manager?: EntityManager,
   ): Promise<ResponseOrganizacionDto> {
-    const cuenta = await this.cuentaService.findById(cuentaId);
+    const repo = manager
+      ? manager.getRepository(PerfilOrganizacion)
+      : this.organizacionRepository;
 
-    if (!cuenta) throw new NotFoundException('No se encontro la cuenta');
+    const perfilExistente = await repo.findOne({
+      where: { cuenta: { id: cuentaId } },
+    });
 
-    if (cuenta.role !== RolCuenta.ORGANIZACION) {
-      throw new ConflictException('La cuenta no es de tipo ORGANIZACION');
+    if (perfilExistente) {
+      throw new ConflictException('Ya existe un perfil para esta cuenta');
     }
 
-    const existente = await this.organizacionRepository.findOne({
+    const cuitExistente = await repo.findOne({
       where: { cuit: createDto.cuit_organizacion },
     });
 
-    if (existente) {
+    if (cuitExistente) {
       throw new ConflictException('La organización ya se encuentra registrada');
     }
 
-    const organizacion = this.organizacionRepository.create({
+    const organizacion = repo.create({
       cuit: createDto.cuit_organizacion,
       razon_social: createDto.razon_social,
       nombre_organizacion: createDto.nombre_organizacion,
       web: createDto.web,
       verificada: false,
-      cuenta,
+      cuenta: { id: cuentaId },
     });
 
-    const saved = await this.organizacionRepository.save(organizacion);
+    const saved = await repo.save(organizacion);
     this.logger.log(`Organización creada con ID ${saved.id}`);
 
     return this.mapToResponseDto(saved);
@@ -228,6 +233,13 @@ export class PerfilOrganizacionService {
   }
 
   /**
+   * Actualiza las credenciales del usuario
+   */
+  async updateCredenciales(cuentaId: number, dto: UpdateCredencialesDto) {
+    return this.cuentaService.updateCredenciales(cuentaId, dto);
+  }
+
+  /**
    * Marca una organización como verificada.
    */
   async verify(id: number): Promise<ResponseOrganizacionDto> {
@@ -259,6 +271,40 @@ export class PerfilOrganizacionService {
     }
 
     return this.campaignService.findByOrganizationPaginated(id, 1, 10);
+  }
+
+  /**
+   * Deshabilita un usuario (soft delete sobre la Cuenta).
+   */
+  async delete(id: number): Promise<void> {
+    const usuario = await this.organizacionRepository.findOne({
+      where: { id },
+      relations: ['cuenta'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    await this.cuentaService.deshabilitar(usuario.cuenta.id);
+    this.logger.log(`Usuario ${id} deshabilitado`);
+  }
+
+  /**
+   * Restaura un usuario deshabilitado.
+   */
+  async restore(id: number): Promise<void> {
+    const usuario = await this.organizacionRepository.findOne({
+      where: { id },
+      relations: ['cuenta'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    await this.cuentaService.habilitar(usuario.cuenta.id);
+    this.logger.log(`Usuario ${id} restaurado`);
   }
 
   /**

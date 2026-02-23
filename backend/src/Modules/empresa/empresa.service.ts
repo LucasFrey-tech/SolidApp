@@ -5,7 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
@@ -13,7 +13,7 @@ import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { SettingsService } from '../../common/settings/settings.service';
 import { JwtService } from '@nestjs/jwt';
 import { CuentaService } from '../cuenta/cuenta.service';
-import { RolCuenta } from '../../Entities/cuenta.entity';
+import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 
 /**
  * ============================================================
@@ -173,35 +173,39 @@ export class PerfilEmpresaService {
    */
   async create(
     createDto: CreateEmpresaDTO,
-    cuentaId,
+    cuentaId: number,
+    manager?: EntityManager,
   ): Promise<EmpresaResponseDTO> {
-    const cuenta = await this.cuentaService.findById(cuentaId);
+    const repo = manager
+      ? manager.getRepository(PerfilEmpresa)
+      : this.empresaRepository;
 
-    if (!cuenta) throw new NotFoundException('Cuenta no encontrada');
+    const perfilExistente = await repo.findOne({
+      where: { cuenta: { id: cuentaId } },
+    });
 
-    if (cuenta.role !== RolCuenta.EMPRESA) {
-      throw new ConflictException('La cuenta no es de tipo EMPRESA');
+    if (perfilExistente) {
+      throw new ConflictException('Ya existe un perfil para esta cuenta');
     }
 
-    const existente = await this.empresaRepository.findOne({
+    const cuitExistente = await repo.findOne({
       where: { cuit: createDto.cuit_empresa },
     });
 
-    if (existente) {
+    if (cuitExistente) {
       throw new ConflictException('La Empresa ya está registrada');
     }
 
-    const empresa = this.empresaRepository.create({
+    const empresa = repo.create({
       cuit: createDto.cuit_empresa,
       razon_social: createDto.razon_social,
       nombre_empresa: createDto.nombre_empresa,
-      descripcion: createDto.descripcion,
       web: createDto.web,
       verificada: false,
-      cuenta,
+      cuenta: { id: cuentaId },
     });
 
-    const savedEmpresa = await this.empresaRepository.save(empresa);
+    const savedEmpresa = await repo.save(empresa);
 
     return this.mapToResponseDto(savedEmpresa);
   }
@@ -242,6 +246,13 @@ export class PerfilEmpresaService {
   }
 
   /**
+   * Actualiza las credenciales del usuario
+   */
+  async updateCredenciales(cuentaId: number, dto: UpdateCredencialesDto) {
+    return this.cuentaService.updateCredenciales(cuentaId, dto);
+  }
+
+  /**
    * Marca una empresa como verificada.
    */
   async verify(id: number): Promise<EmpresaResponseDTO> {
@@ -261,6 +272,40 @@ export class PerfilEmpresaService {
   }
 
   /**
+   * Deshabilita un usuario (soft delete sobre la Cuenta).
+   */
+  async delete(id: number): Promise<void> {
+    const usuario = await this.empresaRepository.findOne({
+      where: { id },
+      relations: ['cuenta'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    await this.cuentaService.deshabilitar(usuario.cuenta.id);
+    this.logger.log(`Usuario ${id} deshabilitado`);
+  }
+
+  /**
+   * Restaura un usuario deshabilitado.
+   */
+  async restore(id: number): Promise<void> {
+    const usuario = await this.empresaRepository.findOne({
+      where: { id },
+      relations: ['cuenta'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    await this.cuentaService.habilitar(usuario.cuenta.id);
+    this.logger.log(`Usuario ${id} restaurado`);
+  }
+
+  /**
    * Transforma la entidad Empresa en un DTO de respuesta.
    * Oculta datos sensibles como la contraseña.
    *
@@ -276,7 +321,7 @@ export class PerfilEmpresaService {
     dto.razon_social = empresa.razon_social;
     dto.nombre_empresa = empresa.nombre_empresa;
     dto.descripcion = empresa.descripcion;
-    dto.rubro = empresa.rubro;
+    dto.rubro = empresa.rubro ?? '';
     dto.web = empresa.web;
     dto.logo = empresa.logo
       ? SettingsService.getEmpresaImageUrl(empresa.logo)

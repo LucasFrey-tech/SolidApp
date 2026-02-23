@@ -14,7 +14,7 @@ export class EmpresaSummaryDTO {
   nombre_fantasia: string;
 
   @ApiProperty({ example: 'Supermercado', description: 'Rubro' })
-  rubro: string;
+  rubro?: string;
 
   @ApiProperty({ example: true, description: 'Empresa verificada' })
   verificada: boolean;

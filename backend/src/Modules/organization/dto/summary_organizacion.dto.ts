@@ -5,7 +5,7 @@ export class OrganizationSummaryDto {
   id: number;
 
   @ApiProperty({ example: 'Fundación Ayudar' })
-  nombreFantasia: string;
+  nombre_organizacion: string;
 
   @ApiProperty({ example: true })
   verificada: boolean;

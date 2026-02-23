@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Put,
   Delete,
   Patch,
@@ -11,6 +10,8 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -20,13 +21,16 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 
-import { OrganizationsService } from './organizacion.service';
-import { CreateOrganizationDto } from './dto/create_organization.dto';
-import { UpdateOrganizationDto } from './dto/update_organizacion.dto';
-import { ResponseOrganizationDto } from './dto/response_organizacion.dto';
-import { UpdateCredentialsDto } from '../user/dto/panelUsuario.dto';
+import { PerfilOrganizacionService } from './organizacion.service';
+import { UpdateOrganizacionDto } from './dto/update_organizacion.dto';
+import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
+import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { ResponseOrganizationPaginatedDto } from './dto/response_organizacion_paginated.dto';
-import { ResponseCampaignsPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
+import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
+import { AuthGuard } from '@nestjs/passport';
+import { RolCuenta } from '../../Entities/cuenta.entity';
+import { Roles } from '../auth/decoradores/roles.decorador';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 /**
  * Controlador encargado de gestionar las operaciones HTTP
@@ -44,26 +48,13 @@ import { ResponseCampaignsPaginatedDto } from '../campaign/dto/response_campaign
  * Base path: /organizations
  */
 @ApiTags('Organizaciones')
-@Controller('organizations')
+@Controller('organizaciones')
 export class OrganizationsController {
-  constructor(private readonly organizationService: OrganizationsService) {}
+  constructor(
+    private readonly organizacionService: PerfilOrganizacionService,
+  ) {}
 
-  /**
-   * Obtiene el listado completo de organizaciones activas.
-   *
-   * @returns Lista de organizaciones en formato ResponseOrganizationDto[]
-   */
-  @Get()
-  @ApiOperation({ summary: 'Listar organizaciones activas' })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de organizaciones',
-    type: ResponseOrganizationDto,
-    isArray: true,
-  })
-  findAll(): Promise<ResponseOrganizationDto[]> {
-    return this.organizationService.findAll();
-  }
+  // ================= PanelOrganizacion ===================
 
   /**
    * Obtiene una organización específica por su ID.
@@ -72,7 +63,8 @@ export class OrganizationsController {
    * @returns Organización encontrada
    * @throws NotFoundException si no existe
    */
-  @Get(':id')
+  @Get('perfil')
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Obtener organización por ID' })
   @ApiParam({
     name: 'id',
@@ -82,16 +74,96 @@ export class OrganizationsController {
   @ApiResponse({
     status: 200,
     description: 'Organización encontrada',
-    type: ResponseOrganizationDto,
+    type: ResponseOrganizacionDto,
   })
   @ApiResponse({
     status: 404,
     description: 'Organización no encontrada',
   })
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<ResponseOrganizationDto> {
-    return this.organizationService.findOne(id);
+  getMiPerfil(@Req() req: RequestConUsuario): Promise<ResponseOrganizacionDto> {
+    return this.organizacionService.findOne(req.user.perfil.id);
+  }
+
+  /**
+   * Actualiza los datos de una organización existente.
+   *
+   * @param id ID de la organización
+   * @param updateDto Datos a modificar
+   * @returns Organización actualizada
+   */
+  @Put('perfil')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Actualizar una organización' })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID de la organización',
+  })
+  @ApiBody({ type: UpdateOrganizacionDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Organización actualizada correctamente',
+    type: ResponseOrganizacionDto,
+  })
+  updateMiPerfil(
+    @Req() req: RequestConUsuario,
+    @Body() updateDto: UpdateOrganizacionDto,
+  ): Promise<ResponseOrganizacionDto> {
+    return this.organizacionService.update(req.user.cuenta.id, updateDto);
+  }
+
+  /**
+   * Permite actualizar el correo y/o contraseña
+   * de la organización.
+   *
+   * @param id ID de la organización
+   * @param dto Datos de actualización de credenciales
+   * @returns Usuario actualizado + nuevo token JWT
+   */
+  @Patch(':id/credenciales')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({
+    summary: 'Actualizar correo y/o contraseña de la organización',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID de la organización',
+  })
+  @ApiBody({ type: UpdateCredencialesDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Credenciales actualizadas correctamente',
+  })
+  async updateMisCredenciales(
+    @Req() req: RequestConUsuario,
+    @Body() dto: UpdateCredencialesDto,
+  ) {
+    return await this.organizacionService.updateCredenciales(
+      req.user.cuenta.id,
+      dto,
+    );
+  }
+
+  // ====== Panel Admin ======
+
+  /**
+   * Obtiene el listado completo de organizaciones activas.
+   *
+   * @returns Lista de organizaciones en formato ResponseOrganizationDto[]
+   */
+  @Get()
+  @Roles(RolCuenta.ADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @ApiOperation({ summary: 'Listar organizaciones activas' })
+  @ApiResponse({
+    status: 200,
+    description: 'Listado de organizaciones',
+    type: ResponseOrganizacionDto,
+    isArray: true,
+  })
+  findAll(): Promise<ResponseOrganizacionDto[]> {
+    return this.organizacionService.findAll();
   }
 
   /**
@@ -103,7 +175,9 @@ export class OrganizationsController {
    *
    * @returns Objeto con items y total de registros
    */
-  @Get('/list/paginated/')
+  @Get('list')
+  @Roles(RolCuenta.ADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Listar organizaciones paginadas' })
   @ApiResponse({
     status: 200,
@@ -115,59 +189,32 @@ export class OrganizationsController {
     @Query('limit') limit = 10,
     @Query('search') search = '',
   ): Promise<ResponseOrganizationPaginatedDto> {
-    return await this.organizationService.findPaginated(
+    return await this.organizacionService.findPaginated(
       Number(page),
       Number(limit),
       search,
     );
   }
 
-  /**
-   * Crea una nueva organización.
-   *
-   * @param createDto Datos necesarios para la creación
-   * @returns Organización creada
-   * @throws ConflictException si ya existe
-   */
-  @Post()
-  @ApiOperation({ summary: 'Crear una organización' })
-  @ApiBody({ type: CreateOrganizationDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Organización creada correctamente',
-    type: ResponseOrganizationDto,
-  })
-  create(
-    @Body() createDto: CreateOrganizationDto,
-  ): Promise<ResponseOrganizationDto> {
-    return this.organizationService.create(createDto);
+  @Get(':id')
+  @Roles(RolCuenta.ADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @ApiOperation({ summary: 'Obtener organización por ID (admin)' })
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ResponseOrganizacionDto> {
+    return this.organizacionService.findOne(id);
   }
 
-  /**
-   * Actualiza los datos de una organización existente.
-   *
-   * @param id ID de la organización
-   * @param updateDto Datos a modificar
-   * @returns Organización actualizada
-   */
-  @Put(':id')
-  @ApiOperation({ summary: 'Actualizar una organización' })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la organización',
-  })
-  @ApiBody({ type: UpdateOrganizationDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Organización actualizada correctamente',
-    type: ResponseOrganizationDto,
-  })
+  @Patch(':id')
+  @Roles(RolCuenta.ADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @ApiOperation({ summary: 'Actualizar organización (admin)' })
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateDto: UpdateOrganizationDto,
-  ): Promise<ResponseOrganizationDto> {
-    return this.organizationService.update(id, updateDto);
+    @Body() dto: UpdateOrganizacionDto,
+  ): Promise<ResponseOrganizacionDto> {
+    return this.organizacionService.update(id, dto);
   }
 
   /**
@@ -188,7 +235,7 @@ export class OrganizationsController {
     description: 'Organización deshabilitada correctamente',
   })
   delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.organizationService.delete(id);
+    return this.organizacionService.delete(id);
   }
 
   /**
@@ -209,35 +256,6 @@ export class OrganizationsController {
     description: 'Organización restaurada correctamente',
   })
   async restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return await this.organizationService.restore(id);
-  }
-
-  /**
-   * Permite actualizar el correo y/o contraseña
-   * de la organización.
-   *
-   * @param id ID de la organización
-   * @param dto Datos de actualización de credenciales
-   * @returns Usuario actualizado + nuevo token JWT
-   */
-  @Patch(':id/credenciales')
-  @ApiOperation({
-    summary: 'Actualizar correo y/o contraseña de la organización',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la organización',
-  })
-  @ApiBody({ type: UpdateCredentialsDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Credenciales actualizadas correctamente',
-  })
-  async updateCredentials(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateCredentialsDto,
-  ) {
-    return await this.organizationService.updateCredentials(id, dto);
+    return await this.organizacionService.restore(id);
   }
 }

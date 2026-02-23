@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateOrganizationDto {
+export class CreateOrganizacionDto {
   @ApiProperty({
     example: '30-71234567-8',
     description: 'Número de documento o CUIT de la organización',

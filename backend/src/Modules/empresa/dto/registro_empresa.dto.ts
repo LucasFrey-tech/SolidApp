@@ -1,23 +1,10 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegistroEmpresaDto {
   @ApiProperty({ example: '30-12345678-9' })
   @IsString()
   cuit_empresa: string;
-
-  @ApiProperty({ example: 'empresa@email.com' })
-  @IsEmail()
-  correo: string;
-
-  @ApiProperty({ example: 'Password123' })
-  @IsString()
-  @MinLength(6)
-  clave: string;
-
-  @ApiProperty({ example: 'Password123' })
-  @IsString()
-  confirmarClave: string;
 
   @ApiProperty({ example: 'Empresa S.A.' })
   @IsString()
@@ -33,7 +20,7 @@ export class RegistroEmpresaDto {
 
   @ApiProperty({ example: 'Av. Siempre Viva' })
   @IsString()
-  direccion: string;
+  calle: string;
 
   @ApiProperty({ example: '742' })
   @IsString()

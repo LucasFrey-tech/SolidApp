@@ -6,7 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Donations } from './donacion.entity';
+import { Donaciones } from './donacion.entity';
 
 @Entity('imagenes_donacion')
 export class Donation_images {
@@ -31,12 +31,12 @@ export class Donation_images {
 
   /**
    * Donación asociada
-   * @type {Donations}
+   * @type {Donaciones}
    */
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Donación' })
-  @ManyToOne(() => Donations, {
+  @ManyToOne(() => Donaciones, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'donaciones_id' })
-  id_donacion: Donations;
+  id_donacion: Donaciones;
 }

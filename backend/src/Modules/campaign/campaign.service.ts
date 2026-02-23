@@ -11,7 +11,7 @@ import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { OrganizationSummaryDto } from '../organization/dto/summary_organizacion.dto';
-import { Organizations } from '../../Entities/perfil_organizacion.entity';
+import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
 import { CampaignEstado } from './enum';
 import { Campaigns_images } from '../../Entities/campaigns_images.entity';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
@@ -28,8 +28,8 @@ export class CampaignsService {
     @InjectRepository(Campaigns)
     private readonly campaignsRepository: Repository<Campaigns>,
 
-    @InjectRepository(Organizations)
-    private readonly organizationsRepository: Repository<Organizations>,
+    @InjectRepository(PerfilOrganizacion)
+    private readonly organizacionRepository: Repository<PerfilOrganizacion>,
 
     @InjectRepository(Campaigns_images)
     private readonly campaignsImagesRepository: Repository<Campaigns_images>,
@@ -43,7 +43,7 @@ export class CampaignsService {
   async findAll(): Promise<ResponseCampaignsDto[]> {
     const campaigns = await this.campaignsRepository.find({
       relations: ['organizacion'],
-      where: { organizacion: { deshabilitado: false } },
+      where: { organizacion: { cuenta: { deshabilitado: false } } },
     });
 
     this.logger.log(`Se obtuvieron ${campaigns.length} Campañas Solidarias`);
@@ -169,8 +169,11 @@ export class CampaignsService {
     imagenes: string[],
   ): Promise<ResponseCampaignsDto> {
     // Validar que la organización existe y esta activa
-    const organizacion = await this.organizationsRepository.findOne({
-      where: { id: createDto.id_organizacion, deshabilitado: false },
+    const organizacion = await this.organizacionRepository.findOne({
+      where: {
+        id: createDto.id_organizacion,
+        cuenta: { deshabilitado: false },
+      },
     });
 
     if (!organizacion) {
@@ -247,10 +250,10 @@ export class CampaignsService {
     }
 
     if (updateDto.id_organizacion !== undefined) {
-      const organizacion = await this.organizationsRepository.findOne({
+      const organizacion = await this.organizacionRepository.findOne({
         where: {
           id: updateDto.id_organizacion,
-          deshabilitado: false,
+          cuenta: { deshabilitado: false },
         },
       });
 
@@ -344,7 +347,7 @@ export class CampaignsService {
   ): ResponseCampaignsDto => {
     const organizationSummary: OrganizationSummaryDto = {
       id: campaign.organizacion.id,
-      nombreFantasia: campaign.organizacion.nombre_fantasia,
+      nombre_organizacion: campaign.organizacion.nombre_organizacion,
       verificada: campaign.organizacion.verificada,
     };
 

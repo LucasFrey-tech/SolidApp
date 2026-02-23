@@ -11,6 +11,7 @@ import { Cuenta } from './cuenta.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Donaciones } from './donacion.entity';
 import { UsuarioBeneficio } from './usuario-beneficio.entity';
+import { Beneficios } from './beneficio.entity';
 
 @Entity()
 export class PerfilUsuario {
@@ -33,7 +34,7 @@ export class PerfilUsuario {
     description: 'Documento único del usuario (DNI)',
     example: '12345678',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 15, unique: true })
   documento: string;
 
   /**
@@ -44,7 +45,7 @@ export class PerfilUsuario {
     description: 'Nombre del usuario',
     example: 'Lucas',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 50 })
   nombre: string;
 
   /**
@@ -55,7 +56,7 @@ export class PerfilUsuario {
     description: 'Apellido del usuario',
     example: 'Pérez',
   })
-  @Column()
+  @Column({ type: 'varchar', length: 50 })
   apellido: string;
 
   /**
@@ -95,4 +96,15 @@ export class PerfilUsuario {
    */
   @OneToMany(() => Donaciones, (donacion) => donacion.usuario)
   donaciones: Donaciones[];
+
+  /**
+   * Beneficios de la empresa
+   * @type {Beneficios}
+   */
+  @ApiProperty({
+    description: 'Cupones asociados a al usuario',
+    type: () => Beneficios,
+  })
+  @OneToMany(() => Beneficios, (beneficio) => beneficio.usuario)
+  beneficios: Beneficios[];
 }

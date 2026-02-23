@@ -13,6 +13,7 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
 import { Cuenta } from '../../Entities/cuenta.entity';
 import { CuentaService } from '../cuenta/cuenta.service';
 import { JwtStrategy } from './estrategias/jwt.strategy';
+import { RolesGuard } from './guards/roles.guard';
 
 /**
  * Módulo de NestJS que agrupa los componentes relacionados a la Autenticación:
@@ -39,7 +40,7 @@ import { JwtStrategy } from './estrategias/jwt.strategy';
     CommonMulterModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, CuentaService, JwtStrategy],
-  exports: [AuthService],
+  providers: [AuthService, CuentaService, JwtStrategy, RolesGuard],
+  exports: [AuthService, RolesGuard],
 })
 export class AuthModule {}
