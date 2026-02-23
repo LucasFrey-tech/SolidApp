@@ -12,10 +12,10 @@ export default function Footer() {
 
     const siteMapLinks: FooterLink[] = [
         { label: "Inicio", href: "/" },
+        { label: "Donar", href: "/campaign-catalogo" },
+        { label: "Tienda", href: "/tienda" },
         { label: "Ranking", href: "/ranking" },
-        { label: "Formación", href: "/formacion" },
-        { label: "Participá", href: "/como-participar" },
-        { label: "Contacto", href: "/contacto" },
+        
     ];
 
     const legalLinks: FooterLink[] = [
