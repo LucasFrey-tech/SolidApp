@@ -11,8 +11,7 @@ export type CampaignFormValues = Omit<
   "id_organizacion"
 > & {
   imagenes?: File[];
-  puntos: number;
-  imagenesExistentes?: string[]; // 👈 URLs que ya existen en backend
+  imagenesExistentes?: string[];
 };
 
 type Props = {
@@ -32,7 +31,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue,
     watch,
   } = useForm<CampaignFormValues>({
-    defaultValues: initialValues ?? {
+    defaultValues: {
       titulo: "",
       descripcion: "",
       objetivo: 1,
@@ -41,6 +40,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
       fecha_Fin: "",
       imagenes: [],
       imagenesExistentes: [],
+      ...initialValues,
     },
   });
 
@@ -49,14 +49,18 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // 🔹 Nuevas imágenes
+  /* ===============================
+     ESTADOS
+  ================================ */
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-
-  // 🔹 Imágenes existentes (URLs)
   const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  // Cargar valores iniciales cuando editás
+  /* ===============================
+     CARGA INICIAL (EDIT MODE)
+  ================================ */
+
   useEffect(() => {
     if (initialValues) {
       reset(initialValues);
@@ -67,7 +71,10 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     }
   }, [initialValues, reset]);
 
-  // Agregar archivos nuevos
+  /* ===============================
+     MANEJO DE NUEVAS IMÁGENES
+  ================================ */
+
   const handleFiles = (files: FileList) => {
     const newFiles = Array.from(files);
     const updatedFiles = [...selectedFiles, ...newFiles];
@@ -76,13 +83,12 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file),
+      URL.createObjectURL(file)
     );
 
     setPreviews(updatedPreviews);
   };
 
-  // Eliminar imagen nueva
   const removeNewImage = (index: number) => {
     const updatedFiles = selectedFiles.filter((_, i) => i !== index);
 
@@ -92,25 +98,35 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file),
+      URL.createObjectURL(file)
     );
 
     setPreviews(updatedPreviews);
   };
 
-  // Eliminar imagen existente
+  /* ===============================
+     MANEJO DE IMÁGENES EXISTENTES
+  ================================ */
+
   const removeExistingImage = (index: number) => {
     const updated = existingImages.filter((_, i) => i !== index);
     setExistingImages(updated);
     setValue("imagenesExistentes", updated);
   };
 
-  // Limpiar URLs al desmontar
+  /* ===============================
+     LIMPIEZA URLS
+  ================================ */
+
   useEffect(() => {
     return () => {
       previews.forEach((url) => URL.revokeObjectURL(url));
     };
   }, [previews]);
+
+  /* ===============================
+     SUBMIT
+  ================================ */
 
   const submit = (data: CampaignFormValues) => {
     onSubmit({
@@ -119,6 +135,10 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
       imagenesExistentes: existingImages,
     });
   };
+
+  /* ===============================
+     RENDER
+  ================================ */
 
   return (
     <form className={styles.form} onSubmit={handleSubmit(submit)}>
@@ -156,7 +176,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             required: "Obligatorio",
             validate: (value) => {
               if (!fechaFin) return true;
-
               return (
                 new Date(fechaFin) > new Date(value) ||
                 "La fecha inicio debe ser anterior a la fecha fin"
@@ -178,7 +197,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             required: "Obligatorio",
             validate: (value) => {
               if (!fechaInicio) return true;
-
               return (
                 new Date(value) > new Date(fechaInicio) ||
                 "La fecha fin debe ser posterior a la fecha inicio"
@@ -208,7 +226,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
 
       {/* PUNTOS */}
       <div className={styles.field}>
-        <label>Puntos por unidad donada:</label>
+        <label>Puntos por unidad donada</label>
         <NumericInput
           {...register("puntos", {
             required: "Obligatorio",
@@ -237,8 +255,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
         >
           {existingImages.length > 0 || previews.length > 0 ? (
             <div className={styles.previewContainer}>
-              
-              {/* EXISTENTES */}
               {existingImages.map((src, index) => (
                 <div key={`existing-${index}`} className={styles.previewWrapper}>
                   <img src={src} className={styles.previewImage} />
@@ -252,7 +268,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
                 </div>
               ))}
 
-              {/* NUEVAS */}
               {previews.map((src, index) => (
                 <div key={`new-${index}`} className={styles.previewWrapper}>
                   <img src={src} className={styles.previewImage} />
@@ -265,7 +280,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
                   </button>
                 </div>
               ))}
-
             </div>
           ) : (
             <p>Arrastrá imágenes acá</p>
