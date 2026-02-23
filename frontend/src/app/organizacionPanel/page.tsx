@@ -77,7 +77,7 @@ export default function OrganizationCampaignsPage() {
   const fetchCampaigns = async () => {
     if (!organizacionId) return;
 
-    const limit = 8;
+    const limit = 5;
 
     const response =
       await baseApi.campaign.getCampaignsPaginatedByOrganizacion(
@@ -100,10 +100,14 @@ export default function OrganizationCampaignsPage() {
     fetchCampaigns();
   }, [organizacionId, campaignsPage]);
 
+  /* ===============================
+     DONACIONES
+  ================================ */
+
   const fetchDonations = async () => {
     if (!organizacionId) return;
 
-    const limit = 8;
+    const limit = 5;
 
     const response =
       await baseApi.donation.getAllPaginatedByOrganizacion(
@@ -242,7 +246,12 @@ export default function OrganizationCampaignsPage() {
           estado: data.estado,
         };
 
-        await baseApi.campaign.update(editingCampaign.id, updateData, files, data.imagenesExistentes);
+        await baseApi.campaign.update(
+          editingCampaign.id,
+          updateData,
+          files,
+          data.imagenesExistentes
+        );
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
       } else {
@@ -293,16 +302,18 @@ export default function OrganizationCampaignsPage() {
 
       <div className={styles.tabs}>
         <button
-          className={`${styles.tabButton} ${view === "campaigns" ? styles.active : ""
-            }`}
+          className={`${styles.tabButton} ${
+            view === "campaigns" ? styles.active : ""
+          }`}
           onClick={() => setView("campaigns")}
         >
           Campañas
         </button>
 
         <button
-          className={`${styles.tabButton} ${view === "donations" ? styles.active : ""
-            }`}
+          className={`${styles.tabButton} ${
+            view === "donations" ? styles.active : ""
+          }`}
           onClick={() => setView("donations")}
         >
           Donaciones
@@ -318,16 +329,16 @@ export default function OrganizationCampaignsPage() {
             {campaigns.map((c) => (
               <li key={c.id} className={styles.card}>
                 <div>
-                  <strong>{c.titulo}</strong> — {c.descripcion} —{" "}
-                  <strong>Objetivo: {c.objetivo}</strong> —{" "}
-                  <strong>Puntos: {c.puntos}</strong> — Estado:{" "}
+                  <strong>{c.titulo}</strong> — {c.descripcion} —
+                  <strong> Objetivo: {c.objetivo}</strong> —
+                  <strong> Puntos: {c.puntos}</strong> — Estado:
                   <span
                     style={{
                       color: getStatusColor(c.estado),
                       fontWeight: "bold",
                     }}
                   >
-                    {c.estado}
+                    {" "}{c.estado}
                   </span>
                 </div>
 
@@ -343,10 +354,36 @@ export default function OrganizationCampaignsPage() {
               </li>
             ))}
           </ul>
+
+          <div className={styles.pagination}>
+            <button
+              onClick={() =>
+                setCampaignsPage((prev) => Math.max(prev - 1, 1))
+              }
+              disabled={campaignsPage === 1}
+            >
+              Anterior
+            </button>
+
+            <span>
+              Página {campaignsPage} de {campaignsTotalPages}
+            </span>
+
+            <button
+              onClick={() =>
+                setCampaignsPage((prev) =>
+                  Math.min(prev + 1, campaignsTotalPages)
+                )
+              }
+              disabled={campaignsPage === campaignsTotalPages}
+            >
+              Siguiente
+            </button>
+          </div>
         </>
       )}
 
-      {/* DONACIONES (se mantiene completo) */}
+      {/* DONACIONES */}
       {view === "donations" && (
         <>
           <table className={styles.table}>
@@ -361,6 +398,7 @@ export default function OrganizationCampaignsPage() {
                 <th>Acciones</th>
               </tr>
             </thead>
+
             <tbody>
               {donations.map((d) => (
                 <tr key={d.id}>
@@ -369,16 +407,43 @@ export default function OrganizationCampaignsPage() {
                   <td>{d.descripcion}</td>
                   <td>{d.cantidad}</td>
                   <td>{d.puntos}</td>
-                  <td>{DonacionEstado[d.estado]}</td>
+
                   <td>
+                    <span
+                      className={`${styles.badge} ${
+                        d.estado === DonacionEstado.APROBADA
+                          ? styles.badgeAprobada
+                          : d.estado === DonacionEstado.RECHAZADA
+                          ? styles.badgeRechazada
+                          : styles.badgePendiente
+                      }`}
+                    >
+                      {DonacionEstado[d.estado]}
+                    </span>
+                  </td>
+
+                  <td className={styles.actions}>
                     <button
+                      className={
+                        puedeAceptar(d)
+                          ? styles.approveButton
+                          : styles.disabledButton
+                      }
                       disabled={!puedeAceptar(d)}
                       onClick={() => handleAcceptDonation(d)}
                     >
                       <Check size={18} />
                     </button>
+
                     <button
-                      disabled={d.estado !== DonacionEstado.PENDIENTE}
+                      className={
+                        d.estado === DonacionEstado.PENDIENTE
+                          ? styles.rejectButton
+                          : styles.disabledButton
+                      }
+                      disabled={
+                        d.estado !== DonacionEstado.PENDIENTE
+                      }
                       onClick={() => handleRejectDonation(d)}
                     >
                       <X size={18} />
@@ -388,6 +453,36 @@ export default function OrganizationCampaignsPage() {
               ))}
             </tbody>
           </table>
+
+          <div className={styles.pagination}>
+            <button
+              onClick={() =>
+                setDonationsPage((prev) =>
+                  Math.max(prev - 1, 1)
+                )
+              }
+              disabled={donationsPage === 1}
+            >
+              Anterior
+            </button>
+
+            <span>
+              Página {donationsPage} de {donationsTotalPages}
+            </span>
+
+            <button
+              onClick={() =>
+                setDonationsPage((prev) =>
+                  Math.min(prev + 1, donationsTotalPages)
+                )
+              }
+              disabled={
+                donationsPage === donationsTotalPages
+              }
+            >
+              Siguiente
+            </button>
+          </div>
         </>
       )}
 
@@ -402,16 +497,18 @@ export default function OrganizationCampaignsPage() {
           initialValues={
             editingCampaign
               ? {
-                titulo: editingCampaign.titulo,
-                descripcion: editingCampaign.descripcion,
-                objetivo: editingCampaign.objetivo,
-                puntos: editingCampaign.puntos,
-                fecha_Inicio: editingCampaign.fecha_Inicio,
-                fecha_Fin: editingCampaign.fecha_Fin,
-                estado: editingCampaign.estado,
-                imagenesExistentes:
-                  editingCampaign.imagenes?.map((img) => img.url) ?? [],
-              }
+                  titulo: editingCampaign.titulo,
+                  descripcion: editingCampaign.descripcion,
+                  objetivo: editingCampaign.objetivo,
+                  puntos: editingCampaign.puntos,
+                  fecha_Inicio: editingCampaign.fecha_Inicio,
+                  fecha_Fin: editingCampaign.fecha_Fin,
+                  estado: editingCampaign.estado,
+                  imagenesExistentes:
+                    editingCampaign.imagenes?.map(
+                      (img) => img.url
+                    ) ?? [],
+                }
               : undefined
           }
           onSubmit={handleSubmitCampaign}
