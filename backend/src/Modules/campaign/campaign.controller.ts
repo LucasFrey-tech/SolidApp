@@ -41,7 +41,7 @@ import { ResponseCampaignsPaginatedDto } from './dto/response_campaign_paginated
 @ApiTags('Campañas')
 @Controller('campaigns')
 export class CampaignsController {
-  constructor(private readonly campaignService: CampaignsService) {}
+  constructor(private readonly campaignService: CampaignsService) { }
 
   /**
    * Obtiene todas las Campañas disponibles.
@@ -247,7 +247,6 @@ export class CampaignsController {
             .replace(/[\u0300-\u036f]/g, '')
             .replace(/[^a-zA-Z0-9.]/g, '_')
             .replace(/\s+/g, '_');
-
           cb(null, sanitizedName);
         },
       }),

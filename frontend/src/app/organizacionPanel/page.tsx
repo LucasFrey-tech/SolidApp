@@ -242,7 +242,7 @@ export default function OrganizationCampaignsPage() {
           estado: data.estado,
         };
 
-        await baseApi.campaign.update(editingCampaign.id, updateData, files);
+        await baseApi.campaign.update(editingCampaign.id, updateData, files, data.imagenesExistentes);
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
       } else {

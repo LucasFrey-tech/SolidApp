@@ -33,7 +33,7 @@ export class CampaignsService {
 
     @InjectRepository(Campaigns_images)
     private readonly campaignsImagesRepository: Repository<Campaigns_images>,
-  ) {}
+  ) { }
 
   /**
    * Obtiene todas las Campañas Solidarias
@@ -96,14 +96,14 @@ export class CampaignsService {
    * @param {number} limit - Cantidad de Campañas por página
    * @returns  Lista de Campañas paginadas
    */
-    async findByOrganizationPaginated(
+  async findByOrganizationPaginated(
     organizacionId: number,
     page: number,
     limit: number,
   ) {
     const [campaigns, total] = await this.campaignsRepository.findAndCount({
       where: { organizacion: { id: organizacionId } },
-      relations: ['organizacion', 'imagenes'], 
+      relations: ['organizacion', 'imagenes'],
       skip: (page - 1) * limit,
       take: limit,
     });
@@ -169,6 +169,7 @@ export class CampaignsService {
     createDto: CreateCampaignsDto,
     imagenes: string[],
   ): Promise<ResponseCampaignsDto> {
+    
     // Validar que la organización existe y esta activa
     const organizacion = await this.organizationsRepository.findOne({
       where: { id: createDto.id_organizacion, deshabilitado: false },
@@ -269,7 +270,7 @@ export class CampaignsService {
     }
 
     Object.keys(updateDto).forEach((key) => {
-      if (key !== 'id_organizacion' && updateDto[key] !== undefined) {
+      if (key !== 'id_organizacion' && key !== 'imagenesExistentes' && updateDto[key] !== undefined) {
         campaign[key as keyof Omit<Campaigns, 'organizacion'>] = updateDto[
           key as keyof UpdateCampaignsDto
         ] as never;
@@ -290,22 +291,36 @@ export class CampaignsService {
     campaign.ultimo_cambio = new Date();
 
     const updatedCampaign = await this.campaignsRepository.save(campaign);
-
     this.logger.log(`Campaña Solidaria ${id} actualizada`);
 
-    if (imagenes && imagenes.length > 0) {
-      await this.campaignsImagesRepository.delete({
-        id_campaign: { id },
+    const imagenesExistentesAConservar: string[] = updateDto.imagenesExistentes ?? [];
+    const hayNuevasImagenes = imagenes && imagenes.length > 0;
+
+    if (hayNuevasImagenes || updateDto.imagenesExistentes !== undefined) {
+      const imagenesActuales = await this.campaignsImagesRepository.find({
+        where: { id_campaign: { id } },
       });
+      
+      const imagenesAEliminar = imagenesActuales.filter(
+        (img) => !imagenesExistentesAConservar.includes(img.imagen),
+      );
 
-      for (let index = 0; index < imagenes.length; index++) {
-        const newImage = new Campaigns_images();
+      if (imagenesAEliminar.length > 0) {
+        await this.campaignsImagesRepository.remove(imagenesAEliminar);
+      }
 
-        newImage.id_campaign = campaign;
-        newImage.imagen = imagenes[index];
-        newImage.esPortada = index === 0;
+      if (hayNuevasImagenes) {
+        const hayPortadaExistente = await this.campaignsImagesRepository.findOne({
+          where: { id_campaign: { id }, esPortada: true },
+        });
 
-        await this.campaignsImagesRepository.save(newImage);
+        for (let index = 0; index < imagenes!.length; index++ ) {
+          const newImage = new Campaigns_images();
+          newImage.id_campaign = campaign;
+          newImage.imagen = imagenes![index];
+          newImage.esPortada = !hayPortadaExistente && index === 0;
+          await this.campaignsImagesRepository.save(newImage);
+        }
       }
     }
 

@@ -1,14 +1,16 @@
 import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { CreateCampaignsDto } from './create_campaigns.dto';
 import {
+  IsArray,
   IsDateString,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   MaxLength,
   Min,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 /**
  * DTO para la actualización de datos de las Campañas.
@@ -80,4 +82,10 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
   @Min(1)
   @IsNumber()
   puntos?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []))
+  @IsArray()
+  @IsString({ each: true })
+  imagenesExistentes?: string[];
 }

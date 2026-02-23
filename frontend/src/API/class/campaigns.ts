@@ -87,7 +87,6 @@ export class campaignService extends Crud<Campaign> {
   async create(data: CampaignCreateRequest, files?: File[]): Promise<Campaign> {
     const formData = new FormData();
 
-    // Agregar los campos de datos
     formData.append("titulo", data.titulo);
     formData.append("descripcion", data.descripcion);
     formData.append("fecha_Inicio", data.fecha_Inicio);
@@ -138,46 +137,53 @@ export class campaignService extends Crud<Campaign> {
     id: number,
     data: CampaignUpdateRequest,
     files?: File[],
+    imagenesExistentes?: string[],
   ): Promise<Campaign> {
     const formData = new FormData();
 
-    // Agregar los campos de datos solo si están definidos
-    if (data.titulo !== undefined) {
-      formData.append("titulo", data.titulo);
-    }
-    if (data.descripcion !== undefined) {
-      formData.append("descripcion", data.descripcion);
-    }
-    if (data.fecha_Inicio !== undefined) {
-      formData.append("fecha_Inicio", data.fecha_Inicio);
-    }
-    if (data.fecha_Fin !== undefined) {
-      formData.append("fecha_Fin", data.fecha_Fin);
-    }
-    if (data.objetivo !== undefined) {
-      formData.append("objetivo", data.objetivo.toString());
-    }
-    if (data.puntos !== undefined) {
-      formData.append("puntos", data.puntos.toString());
-    }
-    if (data.estado !== undefined) {
-      formData.append("estado", data.estado);
+    const stringFields: (keyof CampaignUpdateRequest)[] = [
+      "titulo",
+      "descripcion",
+      "fecha_Inicio",
+      "fecha_Fin",
+      "estado",
+    ];
+
+    const numberFields: (keyof CampaignUpdateRequest)[] = [
+      "objetivo",
+      "puntos",
+    ];
+
+    stringFields.forEach((key) => {
+      const value = data[key];
+      if (value !== undefined) {
+        formData.append(key, value as string);
+      }
+    });
+
+    numberFields.forEach((key) => {
+      const value = data[key];
+      if (value !== undefined) {
+        formData.append(key, String(value));
+      }
+    });
+
+    files?.forEach((file) => formData.append("files", file));
+
+    if (imagenesExistentes && imagenesExistentes.length > 0) {
+      imagenesExistentes.forEach((url) =>
+        formData.append("imagenesExistentes", url)
+      );
+    } else {
+      formData.append("imagenesExistentes", "");
     }
 
-    // Agregar archivos si existen
-    if (files && files.length > 0) {
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-    }
-
-    // IMPORTANTE: No incluir Content-Type en headers
     const headers = this.getHeaders();
     delete headers["Content-Type"];
 
     const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
       method: "PUT",
-      headers: headers,
+      headers,
       body: formData,
     });
 
