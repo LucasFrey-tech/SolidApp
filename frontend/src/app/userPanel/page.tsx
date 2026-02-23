@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "@/styles/UserPanel/userPanel.module.css";
 
 import MyAccount from "@/components/pages/perfil/MyAccount";
@@ -10,40 +10,27 @@ import EmpresaData from "@/components/pages/data/empresaData";
 import OrganizacionData from "@/components/pages/data/organizacionData";
 import HistorialDonacionUsuario from "@/components/pages/perfil/historialDonacionUsuario";
 import UserCoupons from "@/components/pages/perfil/cuponesUsuarios";
+import { RolCuenta } from "@/API/types/register";
+import { useUser } from "../context/UserContext";
 
-type Section = 'data' | 'user&pass' | 'cupons' | 'donations';
+type Section = "data" | "user&pass" | "cupons" | "donations";
 
 export default function Panel() {
-  const [activeSection, setActiveSection] = useState<Section>('data');
-  const [userType, setUserType] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUserType(payload.userType || 'usuario');
-    } catch (error) {
-      console.error("Error al decodificar token:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [activeSection, setActiveSection] = useState<Section>("data");
+  const { user, loading } = useUser();
 
   const renderDataSection = () => {
-    if (loading) {
-      return <p>Cargando datos...</p>;
-    }
+    console.log("loading:", loading);
+    console.log("user:", user);
+    console.log("user.role:", user?.role);
 
-    switch (userType) {
-      case 'empresa':
+    if (loading) return <p>Cargando datos...</p>;
+    if (!user) return <p>No hay usuario</p>;
+
+    switch (user?.role) {
+      case RolCuenta.EMPRESA:
         return <EmpresaData />;
-      case 'organizacion':
+      case RolCuenta.ORGANIZACION:
         return <OrganizacionData />;
       default:
         return <UserData />;
@@ -53,15 +40,13 @@ export default function Panel() {
   return (
     <div className={styles.PanelLayout}>
       <main className={styles.Panel}>
-        {/* CONTENIDO */}
         <section className={styles.Content}>
-          {activeSection === 'data' && renderDataSection()}
-          {activeSection === 'user&pass' && <UserAndPass />}
-          {activeSection === 'cupons' && <UserCoupons />}
-          {activeSection === 'donations' && <HistorialDonacionUsuario />}
+          {activeSection === "data" && renderDataSection()}
+          {activeSection === "user&pass" && <UserAndPass />}
+          {activeSection === "cupons" && <UserCoupons />}
+          {activeSection === "donations" && <HistorialDonacionUsuario />}
         </section>
 
-        {/* MENÚ */}
         <MyAccount onChangeSection={setActiveSection} />
       </main>
     </div>

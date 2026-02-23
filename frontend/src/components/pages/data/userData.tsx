@@ -8,7 +8,7 @@ import { User } from '@/API/types/user';
 import { useUser } from '@/app/context/UserContext';
 
 type EditableUserFields = Pick<User, 
-  'calle' | 'numero' | 'departamento' | 'codigoPostal' | 
+  'calle' | 'numero' | 'departamento' | 'codigo_postal' | 
   'provincia' | 'ciudad' | 'prefijo' | 'telefono'
 >;
 
@@ -16,7 +16,7 @@ const defaultEditableData: EditableUserFields = {
   calle: '',
   numero: '',
   departamento: '',
-  codigoPostal: '',
+  codigo_postal: '',
   provincia: '',
   ciudad: '',
   prefijo: '',
@@ -39,19 +39,19 @@ export default function UserData() {
 
       setLoading(true);
       try {
-        const response = await baseApi.users.getOne(user.sub);
+        const response = await baseApi.users.getPerfil();
 
         if (!response) {
           throw new Error('Error al obtener los datos');
         }
       
         setUserData(response);
-        const { calle, numero, departamento, codigoPostal, provincia, ciudad, prefijo, telefono } = response;
+        const { calle, numero, departamento, codigo_postal, provincia, ciudad, prefijo, telefono } = response;
         setEditableData({
           calle: calle || '',
           numero: numero || '',
           departamento: departamento || '',
-          codigoPostal: codigoPostal || '',
+          codigo_postal: codigo_postal || '',
           provincia: provincia || '',
           ciudad: ciudad || '',
           prefijo: prefijo || '',
@@ -86,13 +86,10 @@ export default function UserData() {
     setSuccess(false);
 
     try {
-      await baseApi.users.update(userData.id, editableData);
+      const updated = await baseApi.users.updatePerfil(editableData);
       
+      setUserData(updated);
       setSuccess(true);
-      
-      const updatedUser = await baseApi.users.getOne(userData.id);
-      setUserData(updatedUser);
-      
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Error al guardar cambios');
     } finally {
@@ -145,7 +142,7 @@ export default function UserData() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Código Postal</label>
-              <NumericInput className={styles.Input} value={editableData?.codigoPostal || ''} onChange={(e) => handleInputChange('codigoPostal', e.target.value)} placeholder="1234" />
+              <NumericInput className={styles.Input} value={editableData?.codigo_postal || ''} onChange={(e) => handleInputChange('codigo_postal', e.target.value)} placeholder="1234" />
             </div>
 
             <div className={styles.Field}>

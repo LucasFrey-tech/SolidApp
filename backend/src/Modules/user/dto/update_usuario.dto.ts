@@ -1,59 +1,80 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Column } from 'typeorm';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateUsuarioDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Nombre de la calle del domicilio (opcional)',
     example: 'Av. Libertador',
     required: false,
   })
-  @Column({ type: 'varchar', length: 80, nullable: true })
-  calle: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  calle?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Número de la dirección (opcional)',
     example: '742',
     required: false,
   })
-  @Column({ type: 'varchar', length: 10, nullable: true })
-  numero: string;
-  @ApiProperty({
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  numero?: string;
+
+  @ApiPropertyOptional({
     description: 'Código postal (opcional)',
     example: 'B1638',
     required: false,
   })
-  @Column({ type: 'varchar', length: 10, nullable: true })
-  codigo_postal: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  codigo_postal?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Ciudad de residencia (opcional)',
     example: 'Villa Ballester',
     required: false,
   })
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  ciudad: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  ciudad?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Provincia de residencia (opcional)',
     example: 'Buenos Aires',
     required: false,
   })
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  provincia: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  provincia?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Prefijo telefónico (opcional)',
     example: '+54',
     required: false,
   })
-  @Column({ type: 'varchar', length: 5, nullable: true })
-  prefijo: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(5)
+  prefijo?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Número de teléfono (opcional)',
     example: '11-4444-5555',
     required: false,
   })
-  @Column({ type: 'varchar', length: 20, nullable: true })
-  telefono: string;
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  telefono?: string;
+
+  @ApiPropertyOptional({ example: '2B' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
+  departamento?: string;
 }

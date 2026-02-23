@@ -59,6 +59,14 @@ export class PerfilUsuario {
   @Column({ type: 'varchar', length: 50 })
   apellido: string;
 
+  @ApiProperty({
+    description: 'Departamento/piso del usuario',
+    example: '2B',
+    required: false,
+  })
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  departamento: string;
+
   /**
    * Puntos acumulados del Usuario
    * @type {number}

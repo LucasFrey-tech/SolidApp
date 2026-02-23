@@ -129,7 +129,7 @@ export class UsuarioController {
 
   // Panel Admin
 
-  @Get()
+  @Get('users/admin/list')
   @Roles(RolCuenta.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Listar todos los usuarios (admin)' })
@@ -144,7 +144,7 @@ export class UsuarioController {
     return this.userService.findPaginated(page, limit, search);
   }
 
-  @Get(':id/admin')
+  @Get('users/:id/admin/')
   @Roles(RolCuenta.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Obtener cualquier usuario por ID (admin)' })

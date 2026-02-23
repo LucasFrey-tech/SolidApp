@@ -4,6 +4,7 @@ import styles from "@/styles/UserPanel/usuario/myAccountMenu.module.css";
 import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
+import { RolCuenta } from "@/API/types/register";
 
 type AccountSection = "data" | "user&pass" | "cupons" | "donations";
 
@@ -53,13 +54,13 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               </button>
             </li>
 
-            {(user?.userType === "usuario" || user?.userType === "empresa") && (
+            {(user?.role === RolCuenta.USUARIO || user?.role === RolCuenta.EMPRESA) && (
               <li>
                 <button
                   onClick={() => {
-                    if (user.userType === "usuario") {
+                    if (user?.role === RolCuenta.USUARIO) {
                       onChangeSection("cupons");
-                    } else if (user.userType === "empresa") {
+                    } else if (user?.role === RolCuenta.EMPRESA) {
                       router.push("/empresaPanel");
                     }
                   }}
@@ -73,7 +74,7 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               <button onClick={() => onChangeSection("data")}>Mis Datos</button>
             </li>
 
-            {user?.userType === "usuario" && (
+            {user?.role === RolCuenta.USUARIO && (
               <li>
                 <button onClick={() => onChangeSection("donations")}>
                   Historial de Donaciones

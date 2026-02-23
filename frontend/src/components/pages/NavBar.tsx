@@ -9,6 +9,7 @@ import styles from "@/styles/navbar.module.css";
 import { baseApi } from "@/API/baseApi";
 
 import { NavbarRole, USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
+import { RolCuenta } from "@/API/types/register";
 
 export default function Navbar() {
   const router = useRouter();
@@ -30,9 +31,9 @@ export default function Navbar() {
   };
 
   const navbarKey: NavbarRole | null = user
-    ? user.rol === "admin"
+    ? user.role === RolCuenta.ADMIN
       ? "admin"
-      : user.userType
+      : user.role
     : null;
 
   const navbarConfig = navbarKey ? USER_NAVBAR_CONFIG[navbarKey] : null;

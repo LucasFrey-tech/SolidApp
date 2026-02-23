@@ -131,9 +131,15 @@ export class PerfilUsuarioService {
     if (!usuario)
       throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
 
-    await this.cuentaService.updateUsuario(usuario.cuenta.id, dto);
+    const { departamento, ...cuentaFields } = dto;
 
-    Object.assign(usuario.cuenta, dto);
+    await this.cuentaService.updateUsuario(usuario.cuenta.id, cuentaFields);
+    Object.assign(usuario.cuenta, cuentaFields);
+
+    if (departamento !== undefined) {
+      usuario.departamento = departamento;
+      await this.usuarioRepository.save(usuario);
+    }
 
     return this.mapToResponseDto(usuario);
   }
@@ -284,7 +290,8 @@ export class PerfilUsuarioService {
       dto.ultima_conexion = perfil.cuenta.ultima_conexion;
       dto.calle = perfil.cuenta.calle;
       dto.numero = perfil.cuenta.numero;
-      dto.codigoPostal = perfil.cuenta.codigo_postal;
+      dto.departamento = perfil.departamento;
+      dto.codigo_postal = perfil.cuenta.codigo_postal;
       dto.ciudad = perfil.cuenta.ciudad;
       dto.provincia = perfil.cuenta.provincia;
       dto.prefijo = perfil.cuenta.prefijo;

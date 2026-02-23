@@ -34,8 +34,11 @@ export class ResponseUsuarioDto {
   @ApiPropertyOptional({ example: '742', description: 'Número' })
   numero?: string;
 
+  @ApiPropertyOptional({ example: '2B', description: 'Departamento/piso' })
+  departamento?: string;
+
   @ApiPropertyOptional({ example: '1638', description: 'Código Postal' })
-  codigoPostal?: string;
+  codigo_postal?: string;
 
   @ApiPropertyOptional({ example: 'Buenos Aires', description: 'Provincia' })
   provincia?: string;

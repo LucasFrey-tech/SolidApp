@@ -10,7 +10,7 @@ export interface User {
   prefijo: string;
   telefono: string;
   departamento?: string;
-  codigoPostal: string;
+  codigo_postal: string;
   provincia: string;
   ciudad: string;
   deshabilitado: boolean; 
