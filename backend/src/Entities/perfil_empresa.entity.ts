@@ -71,7 +71,7 @@ export class PerfilEmpresa {
     description: 'Descripción breve de la empresa',
     example: 'Empresa dedicada a la venta de productos tecnológicos.',
   })
-  @Column({ type: 'varchar', length: 15, default: '' })
+  @Column({ type: 'varchar', length: 500, default: '' })
   descripcion: string;
 
   /**

@@ -49,7 +49,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
  */
 @ApiTags('Organizaciones')
 @Controller('organizaciones')
-export class OrganizationsController {
+export class OrganizacionesController {
   constructor(
     private readonly organizacionService: PerfilOrganizacionService,
   ) {}
@@ -91,7 +91,7 @@ export class OrganizationsController {
    * @param updateDto Datos a modificar
    * @returns Organización actualizada
    */
-  @Put('perfil')
+  @Patch('perfil')
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Actualizar una organización' })
   @ApiParam({
@@ -109,7 +109,8 @@ export class OrganizationsController {
     @Req() req: RequestConUsuario,
     @Body() updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.update(req.user.cuenta.id, updateDto);
+    console.log('Datos que llegan al controller: ', updateDto);
+    return this.organizacionService.update(req.user.perfil.id, updateDto);
   }
 
   /**

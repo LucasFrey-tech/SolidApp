@@ -7,7 +7,7 @@ export class UpdateCredencialesDto {
 
   @IsOptional()
   @IsString()
-  passwordActual: string;
+  passwordActual?: string;
 
   @IsOptional()
   @IsString()

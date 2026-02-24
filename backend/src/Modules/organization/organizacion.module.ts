@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { OrganizationsController } from './organizacion.controller';
+import { OrganizacionesController } from './organizacion.controller';
 import { PerfilOrganizacionService } from './organizacion.service';
 import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -69,7 +69,7 @@ import { CuentaModule } from '../cuenta/cuenta.module';
    * Controladores que manejan las rutas HTTP
    * relacionadas a organizaciones.
    */
-  controllers: [OrganizationsController],
+  controllers: [OrganizacionesController],
 
   /**
    * Providers disponibles dentro del módulo.

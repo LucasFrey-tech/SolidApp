@@ -24,8 +24,7 @@ export default function Panel() {
     console.log("user:", user);
     console.log("user.role:", user?.role);
 
-    if (loading) return <p>Cargando datos...</p>;
-    if (!user) return <p>No hay usuario</p>;
+    if (loading || !user) return <p>Cargando...</p>;
 
     switch (user?.role) {
       case RolCuenta.EMPRESA:

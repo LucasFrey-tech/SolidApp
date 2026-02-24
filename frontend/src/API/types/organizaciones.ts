@@ -1,21 +1,23 @@
-//import { Campaigns } from './campaigns';
-
 export interface Organizacion {
   id: number;
   cuit_organizacion: string;
-  razonSocial: string;
-  nombreFantasia: string;
+  razon_social: string;
+  nombre_organizacion: string;
   descripcion: string;
+  prefijo: string;
   telefono: string;
-  direccion: string;
+  calle: string;
+  numero: string
+  provincia: string;
+  ciudad: string;
+  codigo_postal: string;
   web: string;
   correo: string;
   clave: string;
   verificada: boolean;
   deshabilitado: boolean;
-  fechaRegistro: Date;
-  ultimoCambio: Date;
-  //campaigns?: Campaigns[];
+  fecha_registro: Date;
+  ultimo_Cambio: Date;
 }
 
 export interface OrganizacionCreateRequest {

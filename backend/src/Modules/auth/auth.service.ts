@@ -1,4 +1,3 @@
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import {
   Injectable,
@@ -18,6 +17,7 @@ import { CuentaService } from '../cuenta/cuenta.service';
 
 import { DataSource } from 'typeorm';
 import { RegisterAdminDto } from './dto/register_admin.dto';
+import { HashService } from '../../common/bcryptService/hashService';
 
 /**
  * Servicio que maneja la lógica de negocio para el Sistema de Autenticación
@@ -33,17 +33,9 @@ export class AuthService {
     private readonly perfilOrganizacionService: PerfilOrganizacionService,
     private dataSource: DataSource,
     private readonly jwtService: JwtService,
+    private readonly hashService: HashService,
   ) {
     this.logger.log('AuthService inicializado');
-  }
-
-  private async hashPassword(clave: string): Promise<string> {
-    return bcrypt.hash(clave, 10);
-  }
-
-  private async verifyPassword(clave: string, hash: string): Promise<void> {
-    const coincidencia = await bcrypt.compare(clave, hash);
-    if (!coincidencia) throw new UnauthorizedException('Contraseña incorrecta');
   }
 
   private buildToken(cuenta: Cuenta) {
@@ -72,7 +64,7 @@ export class AuthService {
       throw new BadRequestException('Rol inválido');
     }
 
-    const clave = await this.hashPassword(dto.clave);
+    const clave = await this.hashService.hash(dto.clave);
 
     return this.dataSource.transaction(async (manager) => {
       const cuenta = await this.cuentaService.create(
@@ -121,7 +113,7 @@ export class AuthService {
   async registerAdmin(dto: RegisterAdminDto) {
     const cuenta = await this.cuentaService.create({
       correo: dto.correo,
-      clave: await this.hashPassword(dto.clave),
+      clave: await this.hashService.hash(dto.clave),
       role: RolCuenta.ADMIN,
     });
 
@@ -135,7 +127,7 @@ export class AuthService {
 
     this.checkDeshabilitado(cuenta.deshabilitado);
 
-    await this.verifyPassword(dto.clave, cuenta.clave);
+    await this.hashService.compare(dto.clave, cuenta.clave);
 
     await this.cuentaService.actualizarUltimaConexion(cuenta.id);
 

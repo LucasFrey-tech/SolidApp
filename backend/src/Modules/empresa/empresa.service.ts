@@ -224,6 +224,7 @@ export class PerfilEmpresaService {
     id: number,
     updateDto: UpdateEmpresaDTO,
   ): Promise<EmpresaResponseDTO> {
+    console.log('updateDto recibido:', updateDto);
     const empresa = await this.empresaRepository.findOne({
       where: { id },
       relations: ['cuenta'],
@@ -233,10 +234,48 @@ export class PerfilEmpresaService {
       throw new NotFoundException(`Empresa con ID ${id} no encontrada`);
     }
 
-    if (updateDto.descripcion !== undefined)
-      empresa.descripcion = updateDto.descripcion;
-    if (updateDto.web !== undefined) empresa.web = updateDto.web;
-    if (updateDto.logo !== undefined) empresa.logo = updateDto.logo;
+    const camposEmpresa: (keyof UpdateEmpresaDTO)[] = [
+      'descripcion',
+      'rubro',
+      'web',
+      'logo',
+    ];
+
+    Object.assign(
+      empresa,
+      Object.fromEntries(
+        Object.entries(updateDto).filter(
+          ([k, v]) =>
+            camposEmpresa.includes(k as keyof UpdateEmpresaDTO) &&
+            v !== undefined,
+        ),
+      ),
+    );
+
+    const camposCuenta: (keyof UpdateEmpresaDTO)[] = [
+      'telefono',
+      'calle',
+      'numero',
+      'prefijo',
+      'provincia',
+      'ciudad',
+      'codigo_postal',
+    ];
+
+    const cuentaUpdate = Object.fromEntries(
+      Object.entries(updateDto).filter(
+        ([k, v]) =>
+          camposCuenta.includes(k as keyof UpdateEmpresaDTO) && v !== undefined,
+      ),
+    );
+
+    if (Object.keys(cuentaUpdate).length > 0) {
+      await this.cuentaService.updateUsuario(empresa.cuenta.id, cuentaUpdate);
+      Object.assign(empresa.cuenta, cuentaUpdate);
+    }
+
+    console.log('cuentaUpdate:', cuentaUpdate);
+    console.log('empresa.cuenta.id:', empresa.cuenta.id);
 
     const updatedEmpresa = await this.empresaRepository.save(empresa);
 

@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Put,
   Delete,
   Patch,
   Param,
@@ -118,7 +117,8 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
-  @Put(':id')
+  @Patch('perfil')
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Actualizar una empresa' })
   @ApiParam({
     name: 'id',
@@ -157,6 +157,8 @@ export class EmpresaController {
     file?: Express.Multer.File,
     @Body('data') data?: string,
   ): Promise<EmpresaResponseDTO> {
+    console.log('data recibida en controller:', data);
+    console.log('file recibido:', file);
     let updateDto: UpdateEmpresaDTO = {};
 
     if (data) {

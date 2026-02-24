@@ -5,33 +5,23 @@ export interface Empresa {
   id: number;
   cuit_empresa: string;
   razon_social: string;
-  nombre_fantasia: string;
+  nombre_empresa: string;
   correo: string;
-  descripcion: string;
-  rubro: string;
+  descripcion?: string;
+  rubro?: string;
+  prefijo?: string;
   telefono: string;
-  direccion: string;
-  web: string;
+  calle: string;
+  numero: string;
+  provincia?: string;
+  ciudad?: string;
+  codigo_postal?: string;
+  web?: string;
   verificada: boolean;
   deshabilitado: boolean;
   fecha_registro: string;
   ultimo_cambio: string;
-  logo: string;
-}
-
-/**
- * Crear empresa (CreateEmpresaDTO)
- */
-export interface EmpresaCreateRequest {
-  cuit_empresa: string;
-  razon_social: string;
-  nombre_fantasia?: string;
-  correo: string;
-  descripcion: string;
-  rubro: string;
-  telefono: string;
-  direccion: string;
-  web?: string;
+  logo?: string;
 }
 
 /**
@@ -47,17 +37,4 @@ export interface EmpresaUpdateRequest {
   direccion?: string;
   web?: string;
   deshabilitado?: boolean;
-}
-
-/**
- * Resumen de empresa (EmpresaSummaryDTO)
- */
-export interface EmpresaSummary {
-  id: number;
-  razon_social: string;
-  nombre_fantasia: string;
-  rubro: string;
-  verificada: boolean;
-  deshabilitado: boolean;
-  logo?: string;
 }

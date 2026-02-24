@@ -1,4 +1,3 @@
-// /backend/src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
@@ -14,6 +13,7 @@ import { Cuenta } from '../../Entities/cuenta.entity';
 import { CuentaService } from '../cuenta/cuenta.service';
 import { JwtStrategy } from './estrategias/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
+import { CommonModule } from '../../common/common.module';
 
 /**
  * Módulo de NestJS que agrupa los componentes relacionados a la Autenticación:
@@ -23,6 +23,7 @@ import { RolesGuard } from './guards/roles.guard';
  */
 @Module({
   imports: [
+    CommonModule,
     UserModule,
     EmpresaModule,
     OrganizationModule,

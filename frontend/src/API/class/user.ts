@@ -1,7 +1,7 @@
 import { Crud, PaginatedResponse } from "../service";
 import { Beneficio } from "../types/beneficios";
 import { Donation } from "../types/donaciones/donaciones";
-import { UpdateCredentialsPayload } from "../types/panelUsuario/updateCredenciales";
+import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 import { User, UserPoints } from "../types/user";
 
 export class Users extends Crud<User> {
@@ -33,7 +33,7 @@ export class Users extends Crud<User> {
     return res.json();
   }
   
-  async updateCredentials(data: UpdateCredentialsPayload): Promise<void> {
+  async updateCredenciales(data: UpdateCredencialesPayload): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/credenciales`, {
       method: "PATCH",
       headers: this.getHeaders(),

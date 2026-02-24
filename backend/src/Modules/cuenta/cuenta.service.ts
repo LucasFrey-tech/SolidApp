@@ -1,9 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Cuenta } from '../../Entities/cuenta.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { UpdateUsuarioDto } from '../user/dto/update_usuario.dto';
+import { HashService } from '../../common/bcryptService/hashService';
 
 @Injectable()
 export class CuentaService {
@@ -12,6 +19,7 @@ export class CuentaService {
   constructor(
     @InjectRepository(Cuenta)
     private readonly cuentaRepository: Repository<Cuenta>,
+    private readonly hashService: HashService,
   ) {}
 
   async findByEmail(correo: string): Promise<Cuenta | null> {
@@ -44,10 +52,31 @@ export class CuentaService {
     id: number,
     dto: UpdateCredencialesDto,
   ): Promise<void> {
-    await this.cuentaRepository.update(id, {
-      correo: dto.correo,
-      clave: dto.passwordNueva,
-    });
+    const cuenta = await this.cuentaRepository.findOne({ where: { id } });
+
+    if (!cuenta) throw new NotFoundException('Cuenta no encontrada');
+
+    if (dto.passwordNueva) {
+      if (!dto.passwordActual) {
+        throw new BadRequestException('Debés ingresar la contraseña actual');
+      }
+
+      const coincide = await this.hashService.compare(
+        dto.passwordActual,
+        cuenta.clave,
+      );
+      if (!coincide) {
+        throw new UnauthorizedException('La contraseña actual es incorrecta');
+      }
+
+      cuenta.clave = await this.hashService.hash(dto.passwordNueva);
+    }
+
+    if (dto.correo) {
+      cuenta.correo = dto.correo;
+    }
+
+    await this.cuentaRepository.save(cuenta);
   }
 
   async findById(id: number): Promise<Cuenta | null> {

@@ -214,6 +214,8 @@ export class PerfilOrganizacionService {
     id: number,
     updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
+    console.log('Datos que llegan al service del back: ', updateDto);
+
     const organizacion = await this.organizacionRepository.findOne({
       where: { id },
       relations: ['cuenta'],
@@ -223,8 +225,46 @@ export class PerfilOrganizacionService {
       throw new NotFoundException(`Organización con ID ${id} no encontrada`);
     }
 
-    if (updateDto.descripcion) organizacion.descripcion = updateDto.descripcion;
-    if (updateDto.web) organizacion.web = updateDto.web;
+    const camposOrganizacion: (keyof UpdateOrganizacionDto)[] = [
+      'descripcion',
+      'web',
+    ];
+    Object.assign(
+      organizacion,
+      Object.fromEntries(
+        Object.entries(updateDto).filter(
+          ([k, v]) =>
+            camposOrganizacion.includes(k as keyof UpdateOrganizacionDto) &&
+            v !== undefined,
+        ),
+      ),
+    );
+
+    const camposCuenta: (keyof UpdateOrganizacionDto)[] = [
+      'prefijo',
+      'telefono',
+      'calle',
+      'numero',
+      'provincia',
+      'ciudad',
+      'codigo_postal',
+    ];
+
+    const cuentaUpdate = Object.fromEntries(
+      Object.entries(updateDto).filter(
+        ([k, v]) =>
+          camposCuenta.includes(k as keyof UpdateOrganizacionDto) &&
+          v !== undefined,
+      ),
+    );
+
+    if (Object.keys(cuentaUpdate).length > 0) {
+      await this.cuentaService.updateUsuario(
+        organizacion.cuenta.id,
+        cuentaUpdate,
+      );
+      Object.assign(organizacion.cuenta, cuentaUpdate);
+    }
 
     const updated = await this.organizacionRepository.save(organizacion);
     this.logger.log(`Organización ${id} actualizada`);
