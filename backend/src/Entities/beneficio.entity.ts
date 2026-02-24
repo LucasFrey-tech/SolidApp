@@ -6,10 +6,12 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { PerfilEmpresa } from './perfil_empresa.entity';
-import { PerfilUsuario } from './perfil_Usuario.entity';
+import { BeneficioEstado } from '../Modules/benefit/dto/enum/enum';
+import { UsuarioBeneficio } from './usuario-beneficio.entity';
 
 @Entity('beneficios')
 export class Beneficios {
@@ -103,8 +105,8 @@ export class Beneficios {
     example: 'pendiente',
     description: 'Estado del Beneficio',
   })
-  @Column({ type: 'varchar', length: 20, default: 'pendiente' })
-  estado: 'pendiente' | 'aprobado' | 'rechazado';
+  @Column({ type: 'varchar', length: 20, default: BeneficioEstado.PENDIENTE })
+  estado: BeneficioEstado;
 
   /**
    * Empresa dueña del Beneficio
@@ -115,12 +117,6 @@ export class Beneficios {
   @JoinColumn({ name: 'id_empresa' })
   empresa: PerfilEmpresa;
 
-  /**
-   * Empresa dueña del Beneficio
-   * @type {PerfilUsuario}
-   */
-  @ApiProperty({ example: 1, description: 'Id Foranea de la Empresa' })
-  @ManyToOne(() => PerfilUsuario, (usuario) => usuario.beneficios)
-  @JoinColumn({ name: 'id_usuario' })
-  usuario: PerfilUsuario;
+  @OneToMany(() => UsuarioBeneficio, (ub) => ub.beneficio)
+  usuariosCanje: UsuarioBeneficio[];
 }

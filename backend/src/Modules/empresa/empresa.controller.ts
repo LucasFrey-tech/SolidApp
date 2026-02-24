@@ -13,6 +13,7 @@ import {
   UploadedFile,
   UseGuards,
   Req,
+  Post,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -34,6 +35,9 @@ import { RequestConUsuario } from '../auth/interfaces/authenticated_request.inte
 import { Roles } from '../auth/decoradores/roles.decorador';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { RolCuenta } from '../../Entities/cuenta.entity';
+import { PaginatedBeneficiosResponseDTO } from '../benefit/dto/response_paginated_beneficios';
+import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
+import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 
 /**
  * ============================================================
@@ -157,8 +161,6 @@ export class EmpresaController {
     file?: Express.Multer.File,
     @Body('data') data?: string,
   ): Promise<EmpresaResponseDTO> {
-    console.log('data recibida en controller:', data);
-    console.log('file recibido:', file);
     let updateDto: UpdateEmpresaDTO = {};
 
     if (data) {
@@ -170,6 +172,44 @@ export class EmpresaController {
     }
 
     return this.empresasService.update(req.user.perfil.id, updateDto ?? {});
+  }
+
+  @Get('cupones')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Obtener los cupones paginados de una empresa' })
+  @ApiResponse({
+    status: 200,
+    description: 'Cupones encontrados',
+    type: EmpresaResponseDTO,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Cupones no encontrados',
+  })
+  async getMisCupones(
+    @Req() req: RequestConUsuario,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ): Promise<PaginatedBeneficiosResponseDTO> {
+    return this.empresasService.getCupones(req.user.perfil.id, page, limit);
+  }
+
+  @Post('cupones')
+  @UseGuards(AuthGuard('jwt'))
+  async createCupon(
+    @Req() req: RequestConUsuario,
+    @Body() dto: CreateBeneficiosDTO,
+  ) {
+    return await this.empresasService.createCupon(req.user.perfil.id, dto);
+  }
+
+  @Patch('cupones/:cuponId')
+  @UseGuards(AuthGuard('jwt'))
+  async updateCupon(
+    @Param('cuponId', ParseIntPipe) cuponId: number,
+    @Body() dto: UpdateBeneficiosDTO,
+  ) {
+    return await this.empresasService.updateCupon(cuponId, dto);
   }
 
   /**
@@ -232,6 +272,14 @@ export class EmpresaController {
     return this.empresasService.findAll();
   }
 
+  @Get(':id')
+  @Roles(RolCuenta.ADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @ApiOperation({ summary: 'Obtener empresa por ID (admin)' })
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<EmpresaResponseDTO> {
+    return this.empresasService.findOne(id);
+  }
+
   /**
    * GET /list
    *
@@ -259,14 +307,6 @@ export class EmpresaController {
     @Query('search') search = '',
   ) {
     return await this.empresasService.findPaginated(page, limit, search);
-  }
-
-  @Get(':id')
-  @Roles(RolCuenta.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @ApiOperation({ summary: 'Obtener empresa por ID (admin)' })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<EmpresaResponseDTO> {
-    return this.empresasService.findOne(id);
   }
 
   /**

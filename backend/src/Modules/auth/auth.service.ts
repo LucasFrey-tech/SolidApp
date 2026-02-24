@@ -121,7 +121,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const cuenta = await this.cuentaService.findByEmail(dto.correo);
+    const cuenta = await this.cuentaService.findByEmailRol(dto.correo, dto.rol);
 
     if (!cuenta) throw new UnauthorizedException('Credenciales incorrectas');
 

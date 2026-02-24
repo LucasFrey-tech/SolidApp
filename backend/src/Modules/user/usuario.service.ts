@@ -16,6 +16,7 @@ import { BeneficioService } from '../benefit/beneficio.service';
 import { CreateDonationDto } from '../donation/dto/create_donation.dto';
 import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
+import { UsuarioBeneficioService } from './usuario-beneficio/usuario-beneficio.service';
 
 @Injectable()
 export class PerfilUsuarioService {
@@ -27,6 +28,7 @@ export class PerfilUsuarioService {
     private readonly cuentaService: CuentaService,
     private readonly donacionService: DonacionService,
     private readonly beneficioService: BeneficioService,
+    private readonly usuarioBeneficioService: UsuarioBeneficioService,
   ) {}
 
   /**
@@ -95,11 +97,12 @@ export class PerfilUsuarioService {
     return this.donacionService.create(usuarioId, dto);
   }
 
-  /**
-   * Obtiene los cupones
-   */
-  async getCupones(usuarioId: number) {
-    return this.beneficioService.findByUsuarioPaginated(usuarioId, 1, 10);
+  async getMisCuponesCanjeados(usuarioId: number) {
+    return this.usuarioBeneficioService.getByUsuario(usuarioId);
+  }
+
+  async usarCupon(usuarioBeneficioId: number) {
+    return this.usuarioBeneficioService.usarBeneficio(usuarioBeneficioId);
   }
 
   /**

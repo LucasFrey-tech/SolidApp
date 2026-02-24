@@ -25,7 +25,6 @@ export function CouponForm({ coupon, onClose, onSuccess }: Props) {
   const [titulo, setTitulo] = useState("");
   const [detalle, setDetalle] = useState("");
 
-  // usar string permite vacío sin forzar 0
   const [cantidad, setCantidad] = useState("1");
   const [valor, setValor] = useState("");
 
@@ -84,7 +83,6 @@ export function CouponForm({ coupon, onClose, onSuccess }: Props) {
         titulo,
         detalle,
 
-        // convertir correctamente sin forzar 0 si está vacío
         cantidad:
           cantidad.trim() === ""
             ? 0
@@ -176,13 +174,11 @@ export function CouponForm({ coupon, onClose, onSuccess }: Props) {
 
               const val = e.target.value;
 
-              // permite vacío
               if (val === "") {
                 setCantidad("");
                 return;
               }
 
-              // solo números positivos
               if (/^\d+$/.test(val)) {
                 setCantidad(val);
               }

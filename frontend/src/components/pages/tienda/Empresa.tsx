@@ -96,11 +96,11 @@ export default function Empresas() {
                 key={empresa.id}
                 className={styles.card}
                 onClick={() => setEmpresaActiva(empresa.id)}
-                aria-label={empresa.nombre_fantasia}
+                aria-label={empresa.nombre_empresa}
               >
                 <EmpresaLogo
                   src={empresa.logo}
-                  alt={empresa.nombre_fantasia}
+                  alt={empresa.nombre_empresa}
                 />
               </button>
             ))}

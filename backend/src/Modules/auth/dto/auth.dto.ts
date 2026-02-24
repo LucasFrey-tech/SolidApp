@@ -33,6 +33,14 @@ export class LoginDto {
   @IsString()
   @MinLength(6)
   clave: string;
+
+  @ApiProperty({
+    example: 'usuario',
+    description: 'Rol de la cuenta (usuario, empresa, organizacion)',
+    enum: RolCuenta,
+  })
+  @IsEnum(RolCuenta)
+  rol: RolCuenta;
 }
 
 export class RegisterDto {

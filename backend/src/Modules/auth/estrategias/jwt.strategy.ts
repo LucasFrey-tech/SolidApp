@@ -52,19 +52,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     );
 
     try {
-      // 1. Buscar la cuenta
       const cuenta = await this.cuentaService.findById(payload.sub);
 
       if (!cuenta) {
         throw new UnauthorizedException('Cuenta no encontrada');
       }
 
-      // 2. Verificar que no esté deshabilitada
       if (cuenta.deshabilitado) {
         throw new UnauthorizedException('Cuenta deshabilitada');
       }
 
-      // 3. Cargar el perfil según el rol
       let perfil: PerfilAsociado;
 
       switch (cuenta.role) {

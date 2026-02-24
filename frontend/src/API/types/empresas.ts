@@ -38,3 +38,8 @@ export interface EmpresaUpdateRequest {
   web?: string;
   deshabilitado?: boolean;
 }
+
+export interface EmpresaSummary {
+  nombre_empresa: string;
+  logo: string;
+}

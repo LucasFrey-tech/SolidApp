@@ -15,17 +15,18 @@ import Swal from "sweetalert2";
 import { LoginUsuarioStrategy } from "@/API/class/login/usuario";
 import { LoginEmpresaStrategy } from "@/API/class/login/empresa";
 import { LoginOrganizacionStrategy } from "@/API/class/login/organizacion";
-import { decode } from "punycode";
+
 import { RolCuenta } from "@/API/types/register";
 
 // ==================== TIPOS ====================
 
-type UserType = "usuario" | "empresa" | "organizacion";
-type Step = "select" | UserType;
+type Step = "select" | RolCuenta;
+type ValidatableField = "correo" | "clave";
 
 interface LoginData {
   correo: string;
   clave: string;
+  rol: RolCuenta;
 }
 
 interface Errors {
@@ -59,6 +60,13 @@ interface DecodedToken {
   role: RolCuenta;
 }
 
+const STEP_TO_ROL: Record<Exclude<Step, "select">, RolCuenta> = {
+  USUARIO: RolCuenta.USUARIO,
+  EMPRESA: RolCuenta.EMPRESA,
+  ORGANIZACION: RolCuenta.ORGANIZACION,
+  ADMIN: RolCuenta.ADMIN,
+};
+
 // ==================== COMPONENTE ====================
 
 export default function Login() {
@@ -70,25 +78,29 @@ export default function Login() {
   const [loginData, setLoginData] = useState<LoginData>({
     correo: "",
     clave: "",
+    rol: RolCuenta.USUARIO,
   });
 
   const [errors, setErrors] = useState<Errors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [touched, setTouched] = useState<Record<ValidatableField, boolean>>({
+    correo: false,
+    clave: false,
+  });
 
   // ==================== STRATEGY ====================
 
-  const getCurrentStrategy = (): loginStrategy | null => {
+  const getStrategy = (): loginStrategy | null => {
     if (step === "select") return null;
 
     switch (step) {
-      case "usuario":
+      case RolCuenta.USUARIO:
         return new LoginUsuarioStrategy(baseApi.log);
 
-      case "empresa":
+      case RolCuenta.EMPRESA:
         return new LoginEmpresaStrategy(baseApi.log);
 
-      case "organizacion":
+      case RolCuenta.ORGANIZACION:
         return new LoginOrganizacionStrategy(baseApi.log);
 
       default:
@@ -98,7 +110,7 @@ export default function Login() {
 
   // ==================== VALIDACIÓN ====================
 
-  const validateField = (field: keyof LoginData, value: string): string => {
+  const validateField = (field: ValidatableField, value: string): string => {
     switch (field) {
       case "correo":
         return validateEmail(value);
@@ -124,7 +136,7 @@ export default function Login() {
 
   // ==================== INPUT EVENTS ====================
 
-  const handleChange = (field: keyof LoginData, value: string) => {
+  const handleChange = (field: ValidatableField, value: string) => {
     setLoginData((prev) => ({ ...prev, [field]: value }));
 
     if (touched[field]) {
@@ -132,22 +144,20 @@ export default function Login() {
 
       setErrors((prev) => ({
         ...prev,
-        [field]: error || undefined,
+        [field]: validateField(field, value) || undefined,
       }));
     }
   };
 
-  const handleBlur = (field: keyof LoginData) => {
+  const handleBlur = (field: ValidatableField) => {
     setTouched((prev) => ({
       ...prev,
       [field]: true,
     }));
 
-    const error = validateField(field, loginData[field]);
-
     setErrors((prev) => ({
       ...prev,
-      [field]: error || undefined,
+      [field]: validateField(field, loginData[field]) || undefined,
     }));
   };
 
@@ -171,9 +181,12 @@ export default function Login() {
     setErrors((prev) => ({ ...prev, general: undefined }));
 
     try {
-      const response = await baseApi.log.login(loginData);
+      const strategy = getStrategy();
+      if (!strategy) throw new Error("No se pudo determinar el tipo de login");
 
-      const token = response.token;
+      const res = await strategy.login(loginData);
+
+      const token = res.token;
       if (!token) throw new Error("No se recibió token");
 
       localStorage.setItem("token", token);
@@ -184,7 +197,7 @@ export default function Login() {
         email: decoded.email || loginData.correo,
         sub: decoded.sub,
         username: decoded.username || loginData.correo.split("@")[0],
-        role: decoded.role
+        role: decoded.role,
       });
 
       refreshUser();
@@ -221,18 +234,18 @@ export default function Login() {
 
     setErrors({});
 
-    setTouched({});
+    setTouched({ correo: false, clave: false });
 
-    setLoginData({
-      correo: "",
-      clave: "",
-    });
+    if (newStep !== "select") {
+      setLoginData((prev) => ({
+        ...prev,
+        rol: newStep as RolCuenta,
+      }));
+    }
   };
 
-  const getInputClass = (field: keyof LoginData) => {
-    const showError = touched[field] && errors[field];
-
-    return `${styles.input} ${showError ? styles.inputError : ""}`;
+  const getInputClass = (field: ValidatableField) => {
+    return `${styles.input} ${touched[field] && errors[field] ? styles.inputError : ""}`;
   };
 
   // ==================== JSX ====================
@@ -248,7 +261,7 @@ export default function Login() {
           <div className={styles.cards}>
             <div
               className={styles.card}
-              onClick={() => handleStepChange("usuario")}
+              onClick={() => handleStepChange(RolCuenta.USUARIO)}
             >
               <Image
                 src="/Registro/Donador_Registro.svg"
@@ -262,7 +275,7 @@ export default function Login() {
 
             <div
               className={styles.card}
-              onClick={() => handleStepChange("empresa")}
+              onClick={() => handleStepChange(RolCuenta.EMPRESA)}
             >
               <Image
                 src="/Registro/Empresa_Registro.svg"
@@ -276,7 +289,7 @@ export default function Login() {
 
             <div
               className={styles.card}
-              onClick={() => handleStepChange("organizacion")}
+              onClick={() => handleStepChange(RolCuenta.ORGANIZACION)}
             >
               <Image
                 src="/Registro/Organizacion_Registro.svg"

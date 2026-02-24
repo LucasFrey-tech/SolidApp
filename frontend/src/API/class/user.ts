@@ -1,5 +1,5 @@
 import { Crud, PaginatedResponse } from "../service";
-import { Beneficio } from "../types/beneficios";
+import { Beneficio, UsuarioBeneficio } from "../types/beneficios";
 import { donacionUsuario } from "../types/donaciones/donaciones";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 import { User, UserPoints } from "../types/user";
@@ -71,15 +71,6 @@ export class Users extends Crud<User> {
     return res.json();
   }
   
-  async getCupones(): Promise<Beneficio[]> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/cupones`, {
-      method: "GET",
-      headers: this.getHeaders(),
-    });
-    if (!res.ok) throw new Error(`Error al obtener cupones (${res.status})`);
-    return res.json();
-  }
-  
   async canjearCupon(cuponId: number, cantidad = 1): Promise<Beneficio> {
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/cupones/${cuponId}/canjear?cantidad=${cantidad}`,
@@ -88,6 +79,24 @@ export class Users extends Crud<User> {
     if (!res.ok) throw new Error(`Error al canjear cupón (${res.status})`);
     return res.json();
   }
+  
+  async getMisCuponesCanjeados(): Promise<UsuarioBeneficio[]> {
+  const res = await fetch(`${this.baseUrl}/${this.endPoint}/cupones`, {
+    method: "GET",
+    headers: this.getHeaders(),
+  });
+  if (!res.ok) throw new Error(`Error al obtener cupones (${res.status})`);
+  return res.json();
+}
+
+async usarCupon(usuarioBeneficioId: number): Promise<void> {
+  const res = await fetch(
+    `${this.baseUrl}/${this.endPoint}/cupones/${usuarioBeneficioId}`,
+    { method: "POST", headers: this.getHeaders() },
+  );
+  if (!res.ok) throw new Error(`Error al usar cupón (${res.status})`);
+}
+  
   
   // =====Panel Admin=====
   

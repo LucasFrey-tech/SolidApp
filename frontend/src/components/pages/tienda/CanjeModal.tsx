@@ -8,6 +8,7 @@ import { Beneficio } from '@/API/types/beneficios';
 
 import { baseApi } from '@/API/baseApi';
 import { useUser } from '@/app/context/UserContext';
+import { RolCuenta } from '@/API/types/register';
 
 
 interface Props {
@@ -38,7 +39,7 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
       return;
     }
 
-    if (user.userType !== 'usuario') {
+    if (user.role !== RolCuenta.USUARIO) {
       Swal.fire(
         'Acción no permitida',
         'Solo los usuarios pueden canjear beneficios',

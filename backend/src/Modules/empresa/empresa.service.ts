@@ -14,6 +14,10 @@ import { SettingsService } from '../../common/settings/settings.service';
 import { JwtService } from '@nestjs/jwt';
 import { CuentaService } from '../cuenta/cuenta.service';
 import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
+import { PaginatedBeneficiosResponseDTO } from '../benefit/dto/response_paginated_beneficios';
+import { BeneficioService } from '../benefit/beneficio.service';
+import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
+import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 
 /**
  * ============================================================
@@ -49,6 +53,7 @@ export class PerfilEmpresaService {
     @InjectRepository(PerfilEmpresa)
     private readonly empresaRepository: Repository<PerfilEmpresa>,
     private readonly cuentaService: CuentaService,
+    private readonly beneficioService: BeneficioService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -158,6 +163,22 @@ export class PerfilEmpresaService {
     }
 
     return perfil;
+  }
+
+  async getCupones(
+    id: number,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedBeneficiosResponseDTO> {
+    return await this.beneficioService.findByEmpresaPaginated(id, page, limit);
+  }
+
+  async createCupon(id_empresa: number, dto: CreateBeneficiosDTO) {
+    return this.beneficioService.create({ ...dto, id_empresa });
+  }
+
+  async updateCupon(cuponId: number, dto: UpdateBeneficiosDTO) {
+    return this.beneficioService.update(cuponId, dto);
   }
 
   /**

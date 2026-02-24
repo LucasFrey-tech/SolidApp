@@ -111,9 +111,16 @@ export class UsuarioController {
 
   @Get('cupones')
   @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'Obtener mis cupones disponibles' })
-  async getMisCupones(@Req() req: RequestConUsuario) {
-    return this.userService.getCupones(req.user.perfil.id);
+  @ApiOperation({ summary: 'Obtener mis cupones canjeados' })
+  async getMisCuponesCanjeados(@Req() req: RequestConUsuario) {
+    return this.userService.getMisCuponesCanjeados(req.user.perfil.id);
+  }
+
+  @Post('cupones/:id/')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Usar un cupón canjeado' })
+  async usarCupon(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.usarCupon(id);
   }
 
   @Post('cupones/:cuponId/canjear')
@@ -124,7 +131,7 @@ export class UsuarioController {
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Query('cantidad', ParseIntPipe) cantidad: number,
   ) {
-    return this.userService.canjearCupon(req.user.perfil.id, cuponId, cantidad); // beneficioService
+    return this.userService.canjearCupon(req.user.perfil.id, cuponId, cantidad);
   }
 
   // Panel Admin
@@ -162,14 +169,6 @@ export class UsuarioController {
     @Query('limit') limit = 10,
   ) {
     return this.userService.getDonaciones(id, page, limit); // donacionService
-  }
-
-  @Get(':id/cupones')
-  @Roles(RolCuenta.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @ApiOperation({ summary: 'Obtener cupones de un usuario (admin)' })
-  async getCuponesDeUsuario(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.getCupones(id);
   }
 
   @Delete(':id')

@@ -1,4 +1,5 @@
 import { Crud, PaginatedResponse } from "../service";
+import { Beneficio, BeneficioCreateRequest, BeneficioUpdateRequest } from "../types/beneficios";
 import { Empresa, EmpresaUpdateRequest } from "../types/empresas";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
@@ -12,6 +13,53 @@ export class EmpresasService extends Crud<Empresa> {
       headers: this.getHeaders(),
     });
     if (!res.ok) throw new Error(`Error al obtener perfil (${res.status})`);
+    return res.json();
+  }
+
+  /**
+   *  Beneficios paginados por empresa
+   */
+  async getCuponesPaginated(
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResponse<Beneficio>> {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/cupones?page=${page}&limit=${limit}`,
+      {
+        headers: this.getHeaders(),
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error("Error al obtener beneficios paginados por empresa");
+    }
+
+    return res.json();
+  }
+
+  async createCupon(data: BeneficioCreateRequest,): Promise<Beneficio> {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/cupones`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`Error al crear cupón (${res.status})`);
+    return res.json();
+  }
+
+  async updateCupon(
+    cuponId: number,
+    data: BeneficioUpdateRequest,
+  ): Promise<Beneficio> {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/cupones/${cuponId}`,
+      {
+        method: "PATCH",
+        headers: this.getHeaders(),
+        body: JSON.stringify(data),
+      },
+    );
+    if (!res.ok) throw new Error(`Error al actualizar cupón (${res.status})`);
     return res.json();
   }
 
@@ -75,7 +123,7 @@ export class EmpresasService extends Crud<Empresa> {
     search: string = "",
   ): Promise<PaginatedResponse<Empresa>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/list?page=${page}&limit=${limit}&search=${search}`,
+      `${this.baseUrl}/${this.endPoint}/empresas/list?page=${page}&limit=${limit}&search=${search}`,
       {
         method: "GET",
         headers: this.getHeaders(),

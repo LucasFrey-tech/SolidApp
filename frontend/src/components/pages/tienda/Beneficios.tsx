@@ -1,29 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import styles from '@/styles/Tienda/beneficios.module.css';
+import { useEffect, useState } from "react";
+import styles from "@/styles/Tienda/beneficios.module.css";
 
-import { BeneficiosService } from '@/API/class/beneficios';
-import { Beneficio } from '@/API/types/beneficios';
+import { BeneficiosService } from "@/API/class/beneficios";
+import { Beneficio } from "@/API/types/beneficios";
 
-import CanjeModal from '@/components/pages/tienda/CanjeModal';
+import CanjeModal from "@/components/pages/tienda/CanjeModal";
 
 /* ==================== HELPERS ==================== */
-import { isBeneficioVisible } from '../../Utils/beneficiosUtils';
+import { isBeneficioVisible } from "../../Utils/beneficiosUtils";
+
+import { baseApi } from "@/API/baseApi";
 
 /* ==================== PROPS ==================== */
 interface Props {
   idEmpresa?: number;
-  modo?: 'empresa' | 'general';
+  modo?: "empresa" | "general";
   onClose: () => void;
 }
 
 /* ==================== COMPONENT ==================== */
-export default function BeneficiosPanel({
-  idEmpresa,
-  modo = 'empresa',
-  onClose,
-}: Props) {
+export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
   const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -35,16 +33,10 @@ export default function BeneficiosPanel({
     const fetchBeneficios = async () => {
       try {
         setLoading(true);
-        const service = new BeneficiosService();
-
-        const data =
-          modo === 'general'
-            ? await service.getGenerales()
-            : await service.getByEmpresa(idEmpresa!);
-
+        const data = await baseApi.beneficio.getByEmpresa(idEmpresa!);
         setBeneficios(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error('Error cargando beneficios', error);
+        console.error("Error cargando beneficios", error);
         setBeneficios([]);
       } finally {
         setLoading(false);
@@ -52,7 +44,7 @@ export default function BeneficiosPanel({
     };
 
     fetchBeneficios();
-  }, [idEmpresa, modo]);
+  }, [idEmpresa]);
 
   /* ==================== BENEFICIOS VISIBLES ==================== */
   const beneficiosVisibles = beneficios.filter(isBeneficioVisible);
@@ -68,18 +60,16 @@ export default function BeneficiosPanel({
               Volver
             </button>
 
-            <h2 className={styles.titleBeneficios}>
-              {modo === 'general'
-                ? 'Beneficios generales'
-                : 'Beneficios'}
-            </h2>
+            <h2 className={styles.titleBeneficios}>Beneficios Empresas</h2>
           </header>
 
           {/* ESTADOS */}
           {loading && <p>Cargando beneficios...</p>}
 
           {!loading && beneficiosVisibles.length === 0 && (
-            <p className={styles.emptyState}>No hay beneficios disponibles, vuelve mas tarde!</p>
+            <p className={styles.emptyState}>
+              No hay beneficios disponibles, vuelve mas tarde!
+            </p>
           )}
 
           {/* LISTA */}
@@ -88,21 +78,15 @@ export default function BeneficiosPanel({
               {beneficiosVisibles.map((beneficio) => (
                 <div key={beneficio.id} className={styles.card}>
                   <div className={styles.logo}>
-                    {beneficio.empresa.nombre_fantasia}
+                    {beneficio.empresa.nombre_empresa}
                   </div>
 
                   <div className={styles.mainInfo}>
-                    <div className={styles.discount}>
-                      {beneficio.titulo}
-                    </div>
-                    <div className={styles.subtitle}>
-                      {beneficio.tipo}
-                    </div>
+                    <div className={styles.discount}>{beneficio.titulo}</div>
+                    <div className={styles.subtitle}>{beneficio.tipo}</div>
                   </div>
 
-                  <div className={styles.detail}>
-                    {beneficio.detalle}
-                  </div>
+                  <div className={styles.detail}>{beneficio.detalle}</div>
 
                   <div className={styles.valor}>
                     <span>Puntos</span>
@@ -113,13 +97,9 @@ export default function BeneficiosPanel({
                     <button
                       className={styles.canjearBtn}
                       disabled={beneficio.cantidad === 0}
-                      onClick={() =>
-                        setBeneficioSeleccionado(beneficio)
-                      }
+                      onClick={() => setBeneficioSeleccionado(beneficio)}
                     >
-                      {beneficio.cantidad === 0
-                        ? 'Sin stock'
-                        : 'Canjear'}
+                      {beneficio.cantidad === 0 ? "Sin stock" : "Canjear"}
                     </button>
                   </div>
                 </div>

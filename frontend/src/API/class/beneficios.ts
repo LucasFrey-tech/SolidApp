@@ -27,7 +27,7 @@ export class BeneficiosService extends Crud<Beneficio> {
     search: string = "",
   ): Promise<PaginatedResponse<Beneficio>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endpoint}/list/paginated?page=${page}&limit=${limit}&search=${search}`,
+      `${this.baseUrl}/${this.endpoint}/cupones?page=${page}&limit=${limit}&search=${search}`,
       {
         method: "GET",
         headers: this.getHeaders(),
@@ -177,7 +177,7 @@ export class BeneficiosService extends Crud<Beneficio> {
     limit: number,
   ): Promise<PaginatedResponse<Beneficio>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endpoint}/empresa/${idEmpresa}/paginated?page=${page}&limit=${limit}`,
+      `${this.baseUrl}/${this.endpoint}/empresa/${idEmpresa}?page=${page}&limit=${limit}`,
       {
         headers: this.getHeaders(),
       },
@@ -185,22 +185,6 @@ export class BeneficiosService extends Crud<Beneficio> {
 
     if (!res.ok) {
       throw new Error("Error al obtener beneficios paginados por empresa");
-    }
-
-    return res.json();
-  }
-
-  /**
-   * Beneficios generales (TIENDA)
-   * GET /beneficios/general
-   */
-  async getGenerales(): Promise<Beneficio[]> {
-    const res = await fetch(`${this.baseUrl}/${this.endpoint}/general`, {
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Error al obtener beneficios generales");
     }
 
     return res.json();

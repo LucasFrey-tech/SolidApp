@@ -5,6 +5,7 @@ import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { CuentaModule } from '../cuenta/cuenta.module';
+import { BeneficioModule } from '../benefit/beneficio.module';
 
 /**
  * ============================================================
@@ -63,6 +64,7 @@ import { CuentaModule } from '../cuenta/cuenta.module';
      */
     TypeOrmModule.forFeature([PerfilEmpresa]),
     CuentaModule,
+    BeneficioModule,
   ],
 
   /**

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn } from 'class-validator';
+import { BeneficioEstado } from './enum/enum';
 
 /**
  * DTO para la actualizacion del estado de los Beneficios
@@ -7,9 +7,8 @@ import { IsIn } from 'class-validator';
 export class UpdateEstadoBeneficioDTO {
   /** Estados del Beneficio */
   @ApiProperty({
-    example: 'aprobado',
-    enum: ['pendiente', 'aprobado', 'rechazado'],
+    example: BeneficioEstado.APROBADO,
+    enum: BeneficioEstado,
   })
-  @IsIn(['pendiente', 'aprobado', 'rechazado'])
-  estado: 'pendiente' | 'aprobado' | 'rechazado';
+  estado: BeneficioEstado;
 }

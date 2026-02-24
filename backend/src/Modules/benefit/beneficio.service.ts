@@ -17,6 +17,7 @@ import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
 import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
 import { SettingsService } from '../../common/settings/settings.service';
 import { RolCuenta } from '../../Entities/cuenta.entity';
+import { BeneficioEstado, BeneficiosUsuarioEstado } from './dto/enum/enum';
 
 /**
  * Servicio que maneja la lógica de negocio para los Beneficios.
@@ -157,7 +158,7 @@ export class BeneficioService {
     limit: number,
   ): Promise<PaginatedBeneficiosResponseDTO> {
     const [beneficios, total] = await this.beneficiosRepository.findAndCount({
-      relations: ['empresa'],
+      relations: ['empresa', 'empresa.cuenta'],
       where: { empresa: { id: idEmpresa, cuenta: { deshabilitado: false } } },
       skip: (page - 1) * limit,
       take: limit,
@@ -184,8 +185,13 @@ export class BeneficioService {
     limit: number,
   ): Promise<PaginatedBeneficiosResponseDTO> {
     const [beneficios, total] = await this.beneficiosRepository.findAndCount({
-      relations: ['usuario'],
-      where: { usuario: { id: idUsuario, cuenta: { deshabilitado: false } } },
+      relations: ['beneficio', 'beneficio.empresa'],
+      where: {
+        usuariosCanje: {
+          id: idUsuario,
+          usuario: { cuenta: { deshabilitado: false } },
+        },
+      },
       skip: (page - 1) * limit,
       take: limit,
       order: { fecha_registro: 'DESC' },
@@ -208,6 +214,7 @@ export class BeneficioService {
   async create(createDto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO> {
     const empresa = await this.empresasRepository.findOne({
       where: { id: createDto.id_empresa, cuenta: { deshabilitado: false } },
+      relations: ['cuenta'],
     });
 
     if (!empresa) {
@@ -225,14 +232,19 @@ export class BeneficioService {
     }
 
     const beneficio = this.beneficiosRepository.create({
-      ...createDto,
+      titulo: createDto.titulo,
+      tipo: createDto.tipo,
+      detalle: createDto.detalle,
+      cantidad: createDto.cantidad,
+      valor: createDto.valor,
+      estado: createDto.estado ?? BeneficioEstado.PENDIENTE,
       empresa,
     });
 
     const saved = await this.beneficiosRepository.save(beneficio);
     this.logger.log(`Beneficio creado ID ${saved.id}`);
 
-    return this.mapToResponseDto(saved);
+    return this.mapToResponseDto({ ...saved, empresa });
   }
 
   /**
@@ -302,7 +314,7 @@ export class BeneficioService {
         where: {
           usuario: { id: userId },
           beneficio: { id: beneficioId },
-          estado: 'activo',
+          estado: BeneficiosUsuarioEstado.ACTIVO,
         },
         lock: { mode: 'pessimistic_write' },
       });
@@ -316,7 +328,7 @@ export class BeneficioService {
           beneficio: { id: beneficioId } as Beneficios,
           cantidad,
           usados: 0,
-          estado: 'activo',
+          estado: BeneficiosUsuarioEstado.ACTIVO,
         });
 
         await usuarioBeneficioRepo.save(nuevo);
@@ -404,7 +416,7 @@ export class BeneficioService {
    */
   async updateEstado(
     id: number,
-    estado: 'pendiente' | 'aprobado' | 'rechazado',
+    estado: BeneficioEstado,
   ): Promise<BeneficiosResponseDTO> {
     const beneficio = await this.beneficiosRepository.findOne({
       where: { id },

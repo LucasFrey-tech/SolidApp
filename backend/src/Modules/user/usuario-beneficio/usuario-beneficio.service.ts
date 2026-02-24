@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsuarioBeneficio } from '../../../Entities/usuario-beneficio.entity';
+import { BeneficiosUsuarioEstado } from '../../benefit/dto/enum/enum';
 
 /**
  * =============================================================================
@@ -81,11 +82,10 @@ export class UsuarioBeneficioService {
       where: {
         usuario: { id: usuarioId },
         beneficio: { id: beneficioId },
-        estado: 'activo',
+        estado: BeneficiosUsuarioEstado.ACTIVO,
       },
     });
 
-    // Si ya existe → acumular
     if (existing) {
       existing.cantidad += 1;
 
@@ -98,13 +98,12 @@ export class UsuarioBeneficioService {
       return updated;
     }
 
-    // Si no existe → crear nuevo
     const nuevo = this.usuarioBeneficioRepo.create({
-      usuario: { id: usuarioId } as any,
-      beneficio: { id: beneficioId } as any,
+      usuario: { id: usuarioId },
+      beneficio: { id: beneficioId },
       cantidad: 1,
       usados: 0,
-      estado: 'activo',
+      estado: BeneficiosUsuarioEstado.ACTIVO,
       fecha_reclamo: new Date(),
     });
 
@@ -154,7 +153,7 @@ export class UsuarioBeneficioService {
       throw new NotFoundException('Beneficio no encontrado');
     }
 
-    if (registro.estado !== 'activo') {
+    if (registro.estado !== BeneficiosUsuarioEstado.ACTIVO) {
       throw new BadRequestException('El beneficio no está activo');
     }
 
@@ -165,7 +164,7 @@ export class UsuarioBeneficioService {
     registro.usados += 1;
 
     if (registro.usados === registro.cantidad) {
-      registro.estado = 'usado';
+      registro.estado = BeneficiosUsuarioEstado.USADO;
       registro.fecha_uso = new Date();
     }
 

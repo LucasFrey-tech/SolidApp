@@ -11,7 +11,6 @@ import { Cuenta } from './cuenta.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Donaciones } from './donacion.entity';
 import { UsuarioBeneficio } from './usuario-beneficio.entity';
-import { Beneficios } from './beneficio.entity';
 
 @Entity()
 export class PerfilUsuario {
@@ -95,8 +94,8 @@ export class PerfilUsuario {
    * Beneficios asociados al Usuario
    * @type {UsuarioBeneficio}
    */
-  @OneToMany(() => UsuarioBeneficio, (ub) => ub.beneficio)
-  usuarios: UsuarioBeneficio[];
+  @OneToMany(() => UsuarioBeneficio, (ub) => ub.usuario)
+  beneficiosCanjeados: UsuarioBeneficio[];
 
   /**
    * Donaciones del usuario
@@ -104,15 +103,4 @@ export class PerfilUsuario {
    */
   @OneToMany(() => Donaciones, (donacion) => donacion.usuario)
   donaciones: Donaciones[];
-
-  /**
-   * Beneficios de la empresa
-   * @type {Beneficios}
-   */
-  @ApiProperty({
-    description: 'Cupones asociados a al usuario',
-    type: () => Beneficios,
-  })
-  @OneToMany(() => Beneficios, (beneficio) => beneficio.usuario)
-  beneficios: Beneficios[];
 }

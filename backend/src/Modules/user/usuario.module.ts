@@ -9,6 +9,7 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
 import { CuentaModule } from '../cuenta/cuenta.module';
 import { DonationModule } from '../donation/donacion.module';
 import { BeneficioModule } from '../benefit/beneficio.module';
+import { UsuarioBeneficioModule } from './usuario-beneficio/usuario-beneficio.module';
 
 /**
  * -----------------------------------------------------------------------------
@@ -40,7 +41,7 @@ import { BeneficioModule } from '../benefit/beneficio.module';
      * - El usuario cambia su contraseña
      */
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'defaultSecret', // ⚠️ En producción SIEMPRE usar variable de entorno
+      secret: process.env.JWT_SECRET || 'defaultSecret',
       signOptions: { expiresIn: '2h' }, // Token válido por 2 horas
     }),
 
@@ -53,6 +54,7 @@ import { BeneficioModule } from '../benefit/beneficio.module';
     CuentaModule,
     DonationModule,
     BeneficioModule,
+    UsuarioBeneficioModule,
 
     /**
      * Módulo personalizado para manejo de archivos

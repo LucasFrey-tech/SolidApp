@@ -1,6 +1,9 @@
+import { RolCuenta } from "./register";
+
 export interface LoginRequestBody {
   correo: string;
   clave: string;
+  rol: RolCuenta;
 }
 
 export interface RegisterRequestBody {

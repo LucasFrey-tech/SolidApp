@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Cuenta } from '../../Entities/cuenta.entity';
+import { Cuenta, RolCuenta } from '../../Entities/cuenta.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
@@ -22,8 +22,16 @@ export class CuentaService {
     private readonly hashService: HashService,
   ) {}
 
-  async findByEmail(correo: string): Promise<Cuenta | null> {
-    return this.cuentaRepository.findOne({ where: { correo } });
+  async findByEmailRol(correo: string, rol: RolCuenta): Promise<Cuenta | null> {
+    return this.cuentaRepository.findOne({
+      where: { correo: correo, role: rol },
+    });
+  }
+
+  async findByEmail(email: string): Promise<Cuenta | null> {
+    return this.cuentaRepository.findOne({
+      where: { correo: email },
+    });
   }
 
   async create(

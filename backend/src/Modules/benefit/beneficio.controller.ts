@@ -10,6 +10,8 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BeneficioService } from './beneficio.service';
@@ -17,8 +19,11 @@ import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
-import { CanjearBeneficioDto } from './dto/canjear_beneficio.dto';
 import { UpdateEstadoBeneficioDTO } from './dto/update_estado_beneficio.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from '../auth/decoradores/roles.decorador';
+import { RolCuenta } from '../../Entities/cuenta.entity';
+import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 
 /**
  * Controlador para gestionar las operaciones de los Beneficios.
@@ -47,7 +52,7 @@ export class BeneficioController {
    * @param {number} limit - Cantidad de Beneficios por página
    * @returns Lista de Beneficios paginados.
    */
-  @Get('paginated')
+  @Get('cupones')
   async findAllPaginated(@Query('page') page = 1, @Query('limit') limit = 10) {
     return this.beneficiosService.findAllPaginated(Number(page), Number(limit));
   }
@@ -60,8 +65,10 @@ export class BeneficioController {
    * @param {string} search - Término de busqueda.
    * @returns Lista paginada de Beneficios canjeados por un mismo usuario
    */
-  @Get('/list/paginated/')
-  @ApiOperation({ summary: 'Listar usuarios paginados' })
+  @Get('list')
+  @ApiOperation({
+    summary: 'Listar cupones canjeados por un mismo usuario paginados',
+  })
   @ApiResponse({
     status: 200,
     type: BeneficiosResponseDTO,
@@ -83,7 +90,7 @@ export class BeneficioController {
    * @param {number} limit - Cantidad de Beneficios por página
    * @returns {Promise<PaginatedBeneficiosResponseDTO>} Lista de Beneficios paginados.
    */
-  @Get('empresa/:idEmpresa/paginated')
+  @Get('empresa/:idEmpresa/cupones')
   async findByEmpresaPaginated(
     @Param('idEmpresa', ParseIntPipe) idEmpresa: number,
     @Query('page') page = 1,
@@ -94,19 +101,6 @@ export class BeneficioController {
       page,
       limit,
     );
-  }
-
-  /**
-   * Obtiene todos los Beneficios pertenecientes a una misma Empresa.
-   *
-   * @param {number} idEmpresa - ID de la empresa a filtrar
-   * @returns {Promise<BeneficiosResponseDTO[]>} Lista de los beneficios paginados y total de registros.
-   */
-  @Get('empresa/:idEmpresa')
-  async findByEmpresa(
-    @Param('idEmpresa', ParseIntPipe) idEmpresa: number,
-  ): Promise<BeneficiosResponseDTO[]> {
-    return this.beneficiosService.findByEmpresa(idEmpresa);
   }
 
   /**
@@ -144,13 +138,16 @@ export class BeneficioController {
    * @returns Resultado del canje con información del estado final
    */
   @Post(':id/canjear')
+  @UseGuards(AuthGuard('jwt'))
+  @Roles(RolCuenta.USUARIO)
   @ApiOperation({ summary: 'Canjear beneficio por puntos' })
   @ApiParam({ name: 'id', type: Number })
   canjear(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: CanjearBeneficioDto,
+    @Req() req: RequestConUsuario,
+    @Query('cantidad') cantidad = 1,
   ) {
-    return this.beneficiosService.canjear(id, dto.userId, dto.cantidad);
+    return this.beneficiosService.canjear(id, req.user.perfil.id, cantidad);
   }
 
   /**
