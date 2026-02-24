@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DonationsController } from './donacion.controller';
+import { DonacionesController } from './donacion.controller';
 import { DonacionService } from './donacion.service';
 import { Donaciones } from '../../Entities/donacion.entity';
 import { Donation_images } from '../../Entities/donation_images.entity';
@@ -26,7 +26,7 @@ import { RankingModule } from '../ranking/ranking.module';
     ]),
     RankingModule,
   ],
-  controllers: [DonationsController],
+  controllers: [DonacionesController],
   providers: [DonacionService],
   exports: [DonacionService],
 })

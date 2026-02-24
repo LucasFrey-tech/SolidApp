@@ -24,6 +24,7 @@ export enum RolCuenta {
   ORGANIZACION = 'ORGANIZACION',
   ADMIN = 'ADMIN',
 }
+
 export interface Register {
   correo: string;
   clave: string;

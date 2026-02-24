@@ -9,32 +9,42 @@ import { DonacionEstado } from "@/API/types/donaciones/enum";
 import styles from "@/styles/UserPanel/usuario/historialDonaciones.module.css";
 
 export default function HistorialDonacionUsuario() {
-  const [donacion, setDonacion] = useState<donacionUsuario[]>([]);
-  const [donacionesPage, setDonacionesPage] = useState(1);
-  const [donacionesTotalPages, setDonacionesTotalPages] = useState(1);
+  const [donaciones, setDonaciones] = useState<donacionUsuario[]>([]);
+  const [page, setPage] = useState(1);
+  const [TotalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const { user } = useUser();
 
   useEffect(() => {
+    if (!user) return;
+
     const fetchDonaciones = async () => {
-      if (!user) return;
-      const res = await baseApi.donation.getAllPaginatedByUser(
-        user?.sub,
-        1,
-        10,
-      );
-      setDonacion(res.items);
+      setLoading(true);
+      try {
+        const res = await baseApi.users.getDonaciones(page, 10);
+        setDonaciones(res.items);
+        setTotalPages(Math.ceil(res.total / 10));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchDonaciones();
-  }, [user]);
+  }, [user, page]);
+
+  if (loading) return <p>Cargando donaciones...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <section className={styles.container}>
       <h2 className={styles.title}>Historial de donaciones</h2>
 
       <div className={styles.grid}>
-        {donacion.map((donacion) => (
+        {donaciones.map((donacion) => (
           <div key={donacion.id} className={styles.card}>
             <p className={styles.fecha}>
               {new Date(donacion.fecha_registro).toLocaleDateString()}
@@ -73,22 +83,22 @@ export default function HistorialDonacionUsuario() {
           </div>
         ))}
       </div>
-      
+
       <div className={styles.pagination}>
         <button
-          disabled={donacionesPage === 1}
-          onClick={() => setDonacionesPage((p) => p - 1)}
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
         >
           Anterior
         </button>
 
         <span>
-          Página {donacionesPage} de {donacionesTotalPages}
+          Página {page} de {TotalPages}
         </span>
 
         <button
-          disabled={donacionesPage === donacionesTotalPages}
-          onClick={() => setDonacionesPage((p) => p + 1)}
+          disabled={page === TotalPages}
+          onClick={() => setPage((p) => p + 1)}
         >
           Siguiente
         </button>

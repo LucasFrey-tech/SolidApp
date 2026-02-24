@@ -3,13 +3,13 @@ import type {
   DonacionImagen,
   CreateDonation,
   donacionUsuario,
-  DonationResponsePanel,
+  DonacionResponsePanel,
 } from "@/API/types/donaciones/donaciones";
 import { Crud, PaginatedResponse } from "../service";
 import { DonacionEstado } from "../types/donaciones/enum";
 
-export class DonationsService extends Crud<Donation> {
-  protected endPoint = "/donations";
+export class DonacionesService extends Crud<Donation> {
+  protected endPoint = "/donaciones";
 
   async create(data: CreateDonation): Promise<Donation> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
@@ -90,7 +90,7 @@ export class DonationsService extends Crud<Donation> {
     organizacionId: number,
     page = 1,
     limit = 10
-  ): Promise<PaginatedResponse<DonationResponsePanel>> {
+  ): Promise<PaginatedResponse<DonacionResponsePanel>> {
     const res = await fetch(
       `${this.baseUrl}${this.endPoint}/organizacion/${organizacionId}?page=${page}&limit=${limit}`,
       {

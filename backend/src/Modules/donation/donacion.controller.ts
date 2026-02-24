@@ -7,6 +7,7 @@ import {
   //UseGuards,
   Query,
   Patch,
+  Req,
 } from '@nestjs/common';
 //import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import {
@@ -23,6 +24,7 @@ import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { PaginatedOrganizationDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
 import { UpdateDonacionEstadoDto } from './dto/update_donation_estado.dto';
 import { PaginatedUserDonationsResponseDto } from './dto/response_donation_paginatedByUser.dto';
+import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 
 /**
  * Controlador para gestionar las operaciones de las Donaciones.
@@ -32,8 +34,8 @@ import { PaginatedUserDonationsResponseDto } from './dto/response_donation_pagin
 @ApiTags('Donaciones')
 @ApiBearerAuth()
 // @UseGuards(JwtAuthGuard)
-@Controller('donations')
-export class DonationsController {
+@Controller('donaciones')
+export class DonacionesController {
   constructor(private readonly donationsService: DonacionService) {}
 
   /**
@@ -93,15 +95,15 @@ export class DonationsController {
    * @param {number} limit - Cantidad de Donaciones por página
    * @returns {Promise<PaginatedUserDonationsResponseDto>} - Lista paginada de Donaciones
    */
-  @Get('usuario/:userId')
+  @Get('donaciones')
   @ApiOperation({ summary: 'Obtener donaciones de un usuario' })
-  async getDonationsByUser(
-    @Param('userId', ParseIntPipe) userId: number,
+  async getDonacionesByUser(
+    @Req() req: RequestConUsuario,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ): Promise<PaginatedUserDonationsResponseDto> {
     return this.donationsService.findAllPaginatedByUser(
-      userId,
+      req.user.perfil.id,
       Number(page),
       Number(limit),
     );

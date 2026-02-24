@@ -1,6 +1,6 @@
 import { Crud, PaginatedResponse } from "../service";
 import { Beneficio } from "../types/beneficios";
-import { Donation } from "../types/donaciones/donaciones";
+import { donacionUsuario } from "../types/donaciones/donaciones";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 import { User, UserPoints } from "../types/user";
 
@@ -62,7 +62,7 @@ export class Users extends Crud<User> {
     return res.json();
   }
   
-  async getDonaciones(page = 1, limit = 10): Promise<PaginatedResponse<Donation>> {
+  async getDonaciones(page = 1, limit = 10): Promise<PaginatedResponse<donacionUsuario>> {
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/donaciones?page=${page}&limit=${limit}`,
       { method: "GET", headers: this.getHeaders() },

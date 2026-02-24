@@ -5,7 +5,7 @@ import { EmpresasService } from "./class/empresas";
 import { OrganizacionesService } from "./class/organizaciones";
 import { BeneficiosService } from "./class/beneficios";
 import { RankingService } from "./class/ranking";
-import { DonationsService } from "./class/donaciones";
+import { DonacionesService } from "./class/donaciones";
 import { campaignService } from "./class/campaigns";
 
 export class BaseApi {
@@ -16,7 +16,7 @@ export class BaseApi {
     public readonly register: RegisterService;
     public readonly beneficio: BeneficiosService;
     public readonly ranking: RankingService;
-    public readonly donation: DonationsService;
+    public readonly donation: DonacionesService;
     public readonly campaign: campaignService;
 
     constructor(private token?:string){
@@ -27,7 +27,7 @@ export class BaseApi {
         this.organizacion = new OrganizacionesService();
         this.beneficio = new BeneficiosService();
         this.ranking = new RankingService();
-        this.donation = new DonationsService();
+        this.donation = new DonacionesService();
         this.campaign = new campaignService();
     }
 
