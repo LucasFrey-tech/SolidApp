@@ -60,13 +60,6 @@ interface DecodedToken {
   role: RolCuenta;
 }
 
-const STEP_TO_ROL: Record<Exclude<Step, "select">, RolCuenta> = {
-  USUARIO: RolCuenta.USUARIO,
-  EMPRESA: RolCuenta.EMPRESA,
-  ORGANIZACION: RolCuenta.ORGANIZACION,
-  ADMIN: RolCuenta.ADMIN,
-};
-
 // ==================== COMPONENTE ====================
 
 export default function Login() {
@@ -140,8 +133,6 @@ export default function Login() {
     setLoginData((prev) => ({ ...prev, [field]: value }));
 
     if (touched[field]) {
-      const error = validateField(field, value);
-
       setErrors((prev) => ({
         ...prev,
         [field]: validateField(field, value) || undefined,
@@ -366,7 +357,6 @@ export default function Login() {
                 )}
               </div>
             </div>
-
             <button type="submit" disabled={isLoading} className={styles.btn}>
               {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
             </button>

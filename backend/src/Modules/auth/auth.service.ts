@@ -121,13 +121,18 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const cuenta = await this.cuentaService.findByEmailRol(dto.correo, dto.rol);
+    const correo = dto.correo.trim();
+    const clave = dto.clave.trim();
+    const cuenta = await this.cuentaService.findByEmailRol(correo, dto.rol);
 
     if (!cuenta) throw new UnauthorizedException('Credenciales incorrectas');
 
     this.checkDeshabilitado(cuenta.deshabilitado);
 
-    await this.hashService.compare(dto.clave, cuenta.clave);
+    const claveValida = await this.hashService.compare(clave, cuenta.clave);
+
+    if (!claveValida)
+      throw new UnauthorizedException('Credenciales incorrectas');
 
     await this.cuentaService.actualizarUltimaConexion(cuenta.id);
 
