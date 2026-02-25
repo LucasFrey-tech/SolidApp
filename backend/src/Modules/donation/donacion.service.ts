@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Donaciones } from '../../Entities/donacion.entity';
 import { Campaigns } from '../../Entities/campaigns.entity';
+import { CampaignEstado } from '../campaign/enum';
 import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
 import { Donation_images } from '../../Entities/donation_images.entity';
 import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
@@ -225,14 +226,18 @@ export class DonacionService {
       throw new NotFoundException('Usuario no encontrado');
     }
 
+    const cantidadFinal = Math.min(createDto.cantidad, campaign.objetivo);
+
+    const puntosFinales = cantidadFinal * campaign.puntos;
+
     const donation = this.donacionRepository.create({
       titulo: `Donación Solidaria de ${usuario.nombre} ${usuario.apellido}`,
       detalle: createDto.detalle,
-      cantidad: createDto.cantidad,
+      cantidad: cantidadFinal,
       usuario: usuario,
       campaña: campaign,
       estado: DonacionEstado.PENDIENTE,
-      puntos: createDto.puntos,
+      puntos: puntosFinales,
       fecha_estado: new Date(),
     });
 
@@ -359,8 +364,9 @@ export class DonacionService {
 
       campaign.objetivo -= donacion.cantidad;
 
-      if (campaign.objetivo < 0) {
+      if (campaign.objetivo <= 0) {
         campaign.objetivo = 0;
+        campaign.estado = CampaignEstado.FINALIZADA;
       }
 
       await manager.save(campaign);

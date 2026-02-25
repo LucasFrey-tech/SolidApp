@@ -13,6 +13,7 @@ interface Props {
   campaignTitle: string;
   usuarioId: number;
   puntosPorArticulo: number;
+  objetivoRestante: number;
 }
 
 export default function DonarModal({
@@ -22,6 +23,7 @@ export default function DonarModal({
   campaignTitle,
   usuarioId,
   puntosPorArticulo,
+  objetivoRestante,
 }: Props) {
   const [detalle, setDetalle] = useState("");
   const [cantidad, setCantidad] = useState(1);
@@ -30,6 +32,7 @@ export default function DonarModal({
   if (!isOpen) return null;
 
   const puntos = cantidad * puntosPorArticulo;
+  const maxCantidad = objetivoRestante;
 
   const handleSubmit = async () => {
     if (!detalle.trim()) {
@@ -131,15 +134,34 @@ export default function DonarModal({
           <input
             type="number"
             min={1}
+            max={maxCantidad}
             value={cantidad}
             onChange={(e) => {
-              const val = parseInt(e.target.value, 10);
-              if (!isNaN(val) && val > 0) setCantidad(val);
+              let val = parseInt(e.target.value, 10);
+
+              if (isNaN(val) || val < 1) {
+                val = 1;
+              }
+
+              if (val > maxCantidad) {
+                val = maxCantidad;
+              }
+
+              setCantidad(val);
             }}
             className={styles.inputCantidad}
           />
 
-          <button onClick={() => setCantidad(cantidad + 1)}>+</button>
+          <button
+            onClick={() => {
+              if (cantidad < maxCantidad) {
+                setCantidad(cantidad + 1);
+              }
+            }}
+            disabled={cantidad >= maxCantidad}
+          >
+            +
+          </button>
         </div>
 
         <p className={styles.puntos}>

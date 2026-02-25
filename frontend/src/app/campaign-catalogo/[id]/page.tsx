@@ -10,7 +10,6 @@ import { baseApi } from "@/API/baseApi";
 import DonarModal from "@/components/pages/donaciones/DonarModal";
 import { useUser } from "@/app/context/UserContext";
 import { RolCuenta } from "@/API/types/register";
-import Swal from "sweetalert2";
 
 export default function CampaignDetallePage() {
   const params = useParams();
@@ -190,6 +189,7 @@ export default function CampaignDetallePage() {
           campaignTitle={campaign.titulo}
           usuarioId={user.sub}
           puntosPorArticulo={campaign.puntos}
+          objetivoRestante={campaign.objetivo}
         />
       )}
     </>
