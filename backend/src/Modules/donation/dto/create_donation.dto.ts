@@ -24,15 +24,6 @@ export class CreateDonationDto {
   @IsInt()
   cantidad: number;
 
-  /** ID del Usuario Asociado*/
-  @ApiProperty({
-    example: 5,
-    description: 'Identificador del usuario asociado a la donación',
-  })
-  @Type(() => Number)
-  @IsInt()
-  userId: number;
-
   /** ID de la Campaña asociada */
   @ApiProperty({
     example: 3,

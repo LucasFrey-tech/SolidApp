@@ -154,7 +154,7 @@ export class DonacionService {
           organizacion: { id: organizacionId },
         },
       },
-      relations: { campaña: true, usuario: true },
+      relations: { campaña: true, usuario: { cuenta: true } },
       order: {
         estado: 'ASC',
         fecha_registro: 'DESC',
@@ -218,14 +218,13 @@ export class DonacionService {
     }
 
     const usuario = await this.perfilUsuarioRepository.findOne({
-      where: { id: createDto.userId, cuenta: { deshabilitado: false } },
+      where: { id: usuarioId, cuenta: { deshabilitado: false } },
     });
 
     if (!usuario) {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-    // Crear donación
     const donation = this.donacionRepository.create({
       titulo: `Donación Solidaria de ${usuario.nombre} ${usuario.apellido}`,
       detalle: createDto.detalle,

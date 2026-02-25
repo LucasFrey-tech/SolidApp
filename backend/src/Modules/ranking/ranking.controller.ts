@@ -1,5 +1,5 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RankingService } from './ranking.service';
 import { RankingDTO } from './dto/ranking.dto';
 
@@ -9,22 +9,22 @@ import { RankingDTO } from './dto/ranking.dto';
 @ApiTags('Ranking')
 @Controller('ranking')
 export class RankingController {
-    constructor(private readonly rankingService: RankingService) {}
+  constructor(private readonly rankingService: RankingService) {}
 
-    /**
-     * Obtiene a los diez Usuarios con mayor puntaje acumulado.
-     * 
-     * @returns {Promise<RankingDTO[]>} Lista de los 10 usuarios con mayor puntaje acumulado.
-     */
-    @Get('top')
-    @ApiOperation({ summary: 'Obtener Top 10 usuarios por puntaje' })
-    @ApiResponse({
-        status: 200,
-        description: 'Top 10 de usaurios',
-        type: RankingDTO,
-        isArray: true,
-    })
-    getTop10(): Promise<RankingDTO[]> {
-        return this.rankingService.getTop10();
-    }
+  /**
+   * Obtiene a los diez Usuarios con mayor puntaje acumulado.
+   *
+   * @returns {Promise<RankingDTO[]>} Lista de los 10 usuarios con mayor puntaje acumulado.
+   */
+  @Get('top')
+  @ApiOperation({ summary: 'Obtener Top 10 usuarios por puntaje' })
+  @ApiResponse({
+    status: 200,
+    description: 'Top 10 de usaurios',
+    type: RankingDTO,
+    isArray: true,
+  })
+  getTop10(): Promise<RankingDTO[]> {
+    return this.rankingService.getTop10();
+  }
 }

@@ -248,6 +248,35 @@ export class EmpresaController {
     );
   }
 
+  /**
+   * GET /list
+   *
+   * Devuelve empresas de manera paginada con opción de búsqueda.
+   *
+   * @param page Número de página (default: 1)
+   * @param limit Cantidad de registros por página (default: 10)
+   * @param search Texto opcional para filtrar por razón social o nombre fantasía
+   *
+   * @returns Promise<{ items: EmpresaResponseDTO[], total: number }>
+   * Objeto con:
+   * - items: lista de empresas
+   * - total: cantidad total de registros
+   */
+  @Get('list')
+  @ApiOperation({ summary: 'Listar empresas paginadas' })
+  @ApiResponse({
+    status: 200,
+    type: EmpresaResponseDTO,
+    isArray: true,
+  })
+  async findPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+  ) {
+    return await this.empresasService.findPaginated(page, limit, search);
+  }
+
   // =====Panel Admin=====
 
   /**
@@ -281,35 +310,6 @@ export class EmpresaController {
   }
 
   /**
-   * GET /list
-   *
-   * Devuelve empresas de manera paginada con opción de búsqueda.
-   *
-   * @param page Número de página (default: 1)
-   * @param limit Cantidad de registros por página (default: 10)
-   * @param search Texto opcional para filtrar por razón social o nombre fantasía
-   *
-   * @returns Promise<{ items: EmpresaResponseDTO[], total: number }>
-   * Objeto con:
-   * - items: lista de empresas
-   * - total: cantidad total de registros
-   */
-  @Get('list')
-  @ApiOperation({ summary: 'Listar empresas paginadas' })
-  @ApiResponse({
-    status: 200,
-    type: EmpresaResponseDTO,
-    isArray: true,
-  })
-  async findPaginated(
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-    @Query('search') search = '',
-  ) {
-    return await this.empresasService.findPaginated(page, limit, search);
-  }
-
-  /**
    * DELETE /empresas/:id
    *
    * Realiza un Soft Delete de la empresa.
@@ -324,8 +324,8 @@ export class EmpresaController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Roles(RolCuenta.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(RolCuenta.ADMIN)
   @ApiOperation({ summary: 'Deshabilitar una empresa' })
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.empresasService.delete(id);

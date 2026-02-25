@@ -14,6 +14,7 @@ export default function RankingPage() {
     async function fetchRanking() {
       try {
         const res = await baseApi.ranking.getTop10();
+        console.log(res);
         setRanking(res);
       } catch (error) {
         console.error("Error en el fetch de ranking", error);

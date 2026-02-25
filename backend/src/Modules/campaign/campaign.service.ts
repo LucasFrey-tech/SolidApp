@@ -59,7 +59,7 @@ export class CampaignsService {
    * @param {string} search - Término de busqueda
    * @returns Lista de Campañas paginadas
    */
-  async findPaginate(page: number, limit: number, search: string) {
+  async findPaginated(page: number, limit: number, search: string) {
     const startIndex = (page - 1) * limit;
 
     const query = this.campaignsRepository
@@ -77,6 +77,7 @@ export class CampaignsService {
           search: `%${search}%`,
         },
       )
+      .andWhere('campaign.estado = :estado', { estado: CampaignEstado.ACTIVA })
       .orderBy('campaign.id', 'ASC')
       .skip(startIndex)
       .take(limit);
@@ -104,7 +105,7 @@ export class CampaignsService {
   ): Promise<ResponseCampaignsDetailPaginatedDto> {
     const [campaigns, total] = await this.campaignsRepository.findAndCount({
       where: { organizacion: { id: organizacionId } },
-      relations: ['organizacion'],
+      relations: ['organizacion', 'imagenes'],
       skip: (page - 1) * limit,
       take: limit,
     });

@@ -105,7 +105,7 @@ export class CampaignsController {
     @Query('limit') limit = 10,
     @Query('search') search = '',
   ) {
-    return this.campaignService.findPaginate(page, limit, search);
+    return this.campaignService.findPaginated(page, limit, search);
   }
 
   /**

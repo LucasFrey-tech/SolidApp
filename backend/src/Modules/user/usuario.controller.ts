@@ -56,6 +56,7 @@ export class UsuarioController {
   // Panel de Usuario
 
   @Get('perfil')
+  @Roles(RolCuenta.USUARIO)
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Obtener mi perfil completo' })
   async getMiPerfil(
@@ -66,6 +67,7 @@ export class UsuarioController {
 
   @Patch('perfil')
   @UseGuards(AuthGuard('jwt'))
+  @Roles(RolCuenta.USUARIO)
   @ApiOperation({ summary: 'Actualizar mis datos personales' })
   async updateMiPerfil(
     @Req() req: RequestConUsuario,
@@ -75,6 +77,7 @@ export class UsuarioController {
   }
 
   @Patch('credenciales')
+  @Roles(RolCuenta.USUARIO)
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Actualizar mi email y/o contraseña' })
   async updateMisCredenciales(
@@ -93,6 +96,7 @@ export class UsuarioController {
 
   @Get('donaciones')
   @UseGuards(AuthGuard('jwt'))
+  @Roles(RolCuenta.USUARIO)
   @ApiOperation({ summary: 'Obtener mis donaciones' })
   async getMisDonaciones(
     @Req() req: RequestConUsuario,
@@ -104,19 +108,26 @@ export class UsuarioController {
 
   @Post('donaciones')
   @UseGuards(AuthGuard('jwt'))
+  @Roles(RolCuenta.USUARIO)
   @ApiOperation({ summary: 'Realizar una donación' })
   async donar(@Req() req: RequestConUsuario, @Body() dto: CreateDonationDto) {
+    console.log('🎯 ENDPOINT DONACIONES ALCANZADO');
+    console.log('req.user:', req.user);
+    console.log('req.user?.cuenta?.role:', req.user?.cuenta?.role);
+    console.log('dto:', dto);
     return this.userService.donar(req.user.perfil.id, dto);
   }
 
   @Get('cupones')
   @UseGuards(AuthGuard('jwt'))
+  @Roles(RolCuenta.USUARIO)
   @ApiOperation({ summary: 'Obtener mis cupones canjeados' })
   async getMisCuponesCanjeados(@Req() req: RequestConUsuario) {
     return this.userService.getMisCuponesCanjeados(req.user.perfil.id);
   }
 
   @Post('cupones/:id/')
+  @Roles(RolCuenta.USUARIO)
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Usar un cupón canjeado' })
   async usarCupon(@Param('id', ParseIntPipe) id: number) {
@@ -124,6 +135,7 @@ export class UsuarioController {
   }
 
   @Post('cupones/:cuponId/canjear')
+  @Roles(RolCuenta.USUARIO)
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Canjear un cupón' })
   async canjearCupon(

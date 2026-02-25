@@ -6,6 +6,7 @@ import {
   CampaignUpdateRequest,
 } from "../types/campañas/campaigns";
 import { DonacionResponsePanel } from "../types/donaciones/donaciones";
+import { DonacionEstado } from "../types/donaciones/enum";
 import {
   Organizacion,
   OrganizacionCreateRequest,
@@ -191,7 +192,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
 
     if (imagenesExistentes && imagenesExistentes.length > 0) {
       imagenesExistentes.forEach((url) =>
-        formData.append("imagenesExistentes", url)
+        formData.append("imagenesExistentes", url),
       );
     } else {
       formData.append("imagenesExistentes", "");
@@ -208,6 +209,24 @@ export class OrganizacionesService extends Crud<Organizacion> {
 
     if (!res.ok) {
       throw new Error("Error al actualizar campaña");
+    }
+
+    return res.json();
+  }
+
+  async updateDonationStatus(
+    id: number,
+    data: { estado: DonacionEstado; motivo?: string },
+  ): Promise<DonacionEstado> {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/donaciones/${id}`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Error ${res.status}: ${errorText}`);
     }
 
     return res.json();

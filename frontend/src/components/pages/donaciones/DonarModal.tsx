@@ -4,13 +4,14 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Donar/donarModal.module.css";
 import { baseApi } from "@/API/baseApi";
+import { useUser } from "@/app/context/UserContext";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   campaignId: number;
   campaignTitle: string;
-  userId: number;
+  usuarioId: number;
   puntosPorArticulo: number;
 }
 
@@ -19,11 +20,12 @@ export default function DonarModal({
   onClose,
   campaignId,
   campaignTitle,
-  userId,
+  usuarioId,
   puntosPorArticulo,
 }: Props) {
   const [detalle, setDetalle] = useState("");
   const [cantidad, setCantidad] = useState(1);
+  const { user } = useUser();
 
   if (!isOpen) return null;
 
@@ -64,14 +66,18 @@ export default function DonarModal({
       detalle,
       cantidad,
       campaignId,
-      userId,
+      usuarioId,
       puntos,
     };
 
     try {
       console.log("DONACION:", body);
 
-      await baseApi.donation.create(body);
+      console.log("Token antes de enviar:", localStorage.getItem("token"));
+      console.log("Usuario actual:", user);
+      console.log("Rol del usuario:", user?.role);
+
+      await baseApi.users.createDonacion(body);
 
       await Swal.fire({
         icon: "success",
@@ -147,7 +153,6 @@ export default function DonarModal({
           <button onClick={handleSubmit} className={styles.confirm}>
             Confirmar donación
           </button>
-
         </div>
       </div>
     </div>

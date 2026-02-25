@@ -35,6 +35,7 @@ export default function Tienda() {
         setError(null);
 
         const res = await baseApi.beneficio.getAllPaginated(page, LIMIT);
+        console.log(res);
 
         const items = Array.isArray(res.items)
           ? res.items

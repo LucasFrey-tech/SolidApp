@@ -45,8 +45,8 @@ export interface OrganizacionUpdateRequest {
 
 export interface OrganizacionSummary {
   id: number;
-  razonSocial: string;
-  nombreFantasia: string;
+  razon_social: string;
+  nombre_organizacion: string;
   verificada: boolean;
   total_campaigns: number;
 }

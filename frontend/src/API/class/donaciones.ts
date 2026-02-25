@@ -109,24 +109,6 @@ export class DonacionesService extends Crud<Donation> {
     return res.json();
   }
 
-  async updateDonationStatus(
-    id: number,
-    data: { estado: DonacionEstado; motivo?: string },
-  ): Promise<DonacionEstado> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
-      method: "PATCH",
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Error ${res.status}: ${errorText}`);
-    }
-
-    return res.json();
-  }
-
   getOne(_id: number): Promise<Donation> {
     throw new Error("Method not implemented.");
   }

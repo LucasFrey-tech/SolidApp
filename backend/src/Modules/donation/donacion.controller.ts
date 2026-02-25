@@ -6,7 +6,6 @@ import {
   ParseIntPipe,
   //UseGuards,
   Query,
-  Patch,
   Req,
 } from '@nestjs/common';
 //import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -16,13 +15,11 @@ import {
   ApiResponse,
   ApiParam,
   ApiBearerAuth,
-  ApiBody,
 } from '@nestjs/swagger';
 import { DonacionService } from './donacion.service';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { PaginatedOrganizationDonationsResponseDto } from './dto/response_donation_paginatedByOrganizacion.dto';
-import { UpdateDonacionEstadoDto } from './dto/update_donation_estado.dto';
 import { PaginatedUserDonationsResponseDto } from './dto/response_donation_paginatedByUser.dto';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 
@@ -150,58 +147,5 @@ export class DonacionesController {
   })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<ResponseDonationDto> {
     return this.donationsService.findOne(id);
-  }
-
-  /**
-   * Actualiza el estado de una donación.
-   *
-   * Permite cambiar el estado de la donación (por ejemplo, a RECHAZADA)
-   * y registrar información adicional como el motivo del rechazo.
-   *
-   * @param {number} id - ID de la donación a actualizar.
-   * @param {string} motivo - Motivo del rechazo (opcional, requerido si estado=RECHAZADA).
-   * @returns {Promise<void>} Resultado de la operación.
-   */
-  @Patch(':id')
-  @ApiOperation({
-    summary: 'Actualizar el estado de la donación',
-    description: 'Modifica el estado de una donación (ej. RECHAZADA)',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la donación a actualizar',
-    example: 5,
-  })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        estado: {
-          type: 'string',
-          enum: ['ACEPTADA', 'RECHAZADA'],
-          example: 'RECHAZADA',
-        },
-        motivo: {
-          type: 'string',
-          example: 'La imagen comprobante no es legible',
-        },
-      },
-      required: ['estado'],
-    },
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Donación actualizada correctamente.',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Donación no encontrada.',
-  })
-  async actualizarEstadoDonación(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateDonacionEstadoDto,
-  ) {
-    return this.donationsService.confirmarDonacion(id, dto);
   }
 }

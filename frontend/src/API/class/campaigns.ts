@@ -19,13 +19,17 @@ export class campaignService extends Crud<Campaign> {
   async getAllPaginated(
     page = 1,
     limit = 20,
+    search?: string,
   ): Promise<PaginatedResponse<Campaign>> {
-    const res = await fetch(
-      `${this.baseUrl}${this.endPoint}/list/paginated/?page=${page}&limit=${limit}`,
-      {
-        headers: this.getHeaders(),
-      },
-    );
+    let url = `${this.baseUrl}${this.endPoint}/list/paginated/?page=${page}&limit=${limit}`;
+
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: this.getHeaders(),
+    });
 
     if (!res.ok) {
       throw new Error("Error al obtener organizaciones paginadas");

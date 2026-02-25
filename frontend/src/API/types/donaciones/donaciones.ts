@@ -34,7 +34,7 @@ export interface DonacionResponsePanel {
 export interface CreateDonation {
   detalle: string;
   cantidad: number;
-  userId: number;
+  usuarioId: number;
   campaignId: number;
   puntos: number;
 }

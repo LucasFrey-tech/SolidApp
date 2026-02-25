@@ -1,14 +1,18 @@
 import { Crud, PaginatedResponse } from "../service";
 import { Beneficio, UsuarioBeneficio } from "../types/beneficios";
-import { donacionUsuario } from "../types/donaciones/donaciones";
+import {
+  CreateDonation,
+  donacionUsuario,
+  Donation,
+} from "../types/donaciones/donaciones";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 import { User, UserPoints } from "../types/user";
 
 export class Users extends Crud<User> {
   private endPoint = "users";
-  
+
   // =====Panel del usuario=====
-  
+
   async getPerfil(): Promise<User> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/perfil`, {
       method: "GET",
@@ -17,22 +21,24 @@ export class Users extends Crud<User> {
     if (!res.ok) throw new Error(`Error al obtener perfil (${res.status})`);
     return res.json();
   }
-  
+
   async updatePerfil(data: Partial<User>): Promise<User> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/perfil`, {
       method: "PATCH",
       headers: this.getHeaders(),
       body: JSON.stringify(data),
     });
-    
+
     if (!res.ok) {
       const errorDetails = await res.json().catch(() => res.text());
-    throw new Error(`Error al actualizar perfil (${res.status}): ${JSON.stringify(errorDetails)}`);
+      throw new Error(
+        `Error al actualizar perfil (${res.status}): ${JSON.stringify(errorDetails)}`,
+      );
     }
 
     return res.json();
   }
-  
+
   async updateCredenciales(data: UpdateCredencialesPayload): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/credenciales`, {
       method: "PATCH",
@@ -47,7 +53,7 @@ export class Users extends Crud<User> {
       );
     }
   }
-  
+
   async getPoints(): Promise<UserPoints> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/puntos`, {
       method: "GET",
@@ -56,13 +62,37 @@ export class Users extends Crud<User> {
     if (!res.ok) {
       const errorDetails = await res.text();
       throw new Error(
-        `Error al obtener puntos (${res.status}): ${errorDetails}`
+        `Error al obtener puntos (${res.status}): ${errorDetails}`,
       );
     }
     return res.json();
   }
-  
-  async getDonaciones(page = 1, limit = 10): Promise<PaginatedResponse<donacionUsuario>> {
+
+  async createDonacion(data: CreateDonation): Promise<Donation> {
+    const url = `${this.baseUrl}/${this.endPoint}/donaciones`;
+    console.log("URL COMPLETA:", url);
+    console.log("baseUrl:", this.baseUrl);
+    console.log("endPoint:", this.endPoint);
+    console.log("Headers:", this.getHeaders());
+
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/donaciones`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Error ${res.status}: ${errorText}`);
+    }
+
+    return res.json();
+  }
+
+  async getDonaciones(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResponse<donacionUsuario>> {
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/donaciones?page=${page}&limit=${limit}`,
       { method: "GET", headers: this.getHeaders() },
@@ -70,7 +100,7 @@ export class Users extends Crud<User> {
     if (!res.ok) throw new Error(`Error al obtener donaciones (${res.status})`);
     return res.json();
   }
-  
+
   async canjearCupon(cuponId: number, cantidad = 1): Promise<Beneficio> {
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/cupones/${cuponId}/canjear?cantidad=${cantidad}`,
@@ -79,27 +109,26 @@ export class Users extends Crud<User> {
     if (!res.ok) throw new Error(`Error al canjear cupón (${res.status})`);
     return res.json();
   }
-  
-  async getMisCuponesCanjeados(): Promise<UsuarioBeneficio[]> {
-  const res = await fetch(`${this.baseUrl}/${this.endPoint}/cupones`, {
-    method: "GET",
-    headers: this.getHeaders(),
-  });
-  if (!res.ok) throw new Error(`Error al obtener cupones (${res.status})`);
-  return res.json();
-}
 
-async usarCupon(usuarioBeneficioId: number): Promise<void> {
-  const res = await fetch(
-    `${this.baseUrl}/${this.endPoint}/cupones/${usuarioBeneficioId}`,
-    { method: "POST", headers: this.getHeaders() },
-  );
-  if (!res.ok) throw new Error(`Error al usar cupón (${res.status})`);
-}
-  
-  
+  async getMisCuponesCanjeados(): Promise<UsuarioBeneficio[]> {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/cupones`, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+    if (!res.ok) throw new Error(`Error al obtener cupones (${res.status})`);
+    return res.json();
+  }
+
+  async usarCupon(usuarioBeneficioId: number): Promise<void> {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/cupones/${usuarioBeneficioId}`,
+      { method: "POST", headers: this.getHeaders() },
+    );
+    if (!res.ok) throw new Error(`Error al usar cupón (${res.status})`);
+  }
+
   // =====Panel Admin=====
-  
+
   async getAllPaginated(
     page: number = 1,
     limit: number = 10,
@@ -120,7 +149,7 @@ async usarCupon(usuarioBeneficioId: number): Promise<void> {
     }
     return res.json();
   }
-  
+
   async delete(id: number): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
       method: "DELETE",
@@ -133,15 +162,18 @@ async usarCupon(usuarioBeneficioId: number): Promise<void> {
       );
     }
   }
-  
+
   async restore(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/restaurar`, {
-      method: "PATCH",
-      headers: this.getHeaders(),
-    });
-    
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/${id}/restaurar`,
+      {
+        method: "PATCH",
+        headers: this.getHeaders(),
+      },
+    );
+
     if (!res.ok) {
-      const errorDetails = await res.text().catch(() => 'Error desconocido');
+      const errorDetails = await res.text().catch(() => "Error desconocido");
       throw new Error(
         `Error al restaurar/habilitar usuario (${res.status}): ${errorDetails}`,
       );

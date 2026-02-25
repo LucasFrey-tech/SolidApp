@@ -12,8 +12,8 @@ import { DonacionEstado } from "@/API/types/donaciones/enum";
 import { Check, X } from "lucide-react";
 
 import {
-  Campaign,
   CampaignCreateRequest,
+  CampaignDetalle,
   CampaignUpdateRequest,
 } from "@/API/types/campañas/campaigns";
 
@@ -38,7 +38,7 @@ export default function OrganizationCampaignsPage() {
   const { user } = useUser();
   const organizacionId = user?.sub;
 
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaigns, setCampaigns] = useState<CampaignDetalle[]>([]);
   const [campaignsPage, setCampaignsPage] = useState(1);
   const [campaignsTotalPages, setCampaignsTotalPages] = useState(1);
 
@@ -47,7 +47,8 @@ export default function OrganizationCampaignsPage() {
   const [donationsTotalPages, setDonationsTotalPages] = useState(1);
 
   const [open, setOpen] = useState(false);
-  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [editingCampaign, setEditingCampaign] =
+    useState<CampaignDetalle | null>(null);
 
   /* ===============================
      CAMPAÑAS
@@ -127,7 +128,7 @@ export default function OrganizationCampaignsPage() {
     if (!res.isConfirmed) return;
 
     try {
-      await baseApi.donation.updateDonationStatus(donation.id, {
+      await baseApi.organizacion.updateDonationStatus(donation.id, {
         estado: DonacionEstado.APROBADA,
       });
 
@@ -181,7 +182,7 @@ export default function OrganizationCampaignsPage() {
     if (!reason) return;
 
     try {
-      await baseApi.donation.updateDonationStatus(donation.id, {
+      await baseApi.organizacion.updateDonationStatus(donation.id, {
         estado: DonacionEstado.RECHAZADA,
         motivo: reason,
       });
@@ -224,7 +225,12 @@ export default function OrganizationCampaignsPage() {
           estado: data.estado,
         };
 
-        await baseApi.organizacion.updateCampaign(editingCampaign.id, updateData, files, data.imagenesExistentes);
+        await baseApi.organizacion.updateCampaign(
+          editingCampaign.id,
+          updateData,
+          files,
+          data.imagenesExistentes,
+        );
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
       } else {
@@ -375,54 +381,62 @@ export default function OrganizationCampaignsPage() {
             </thead>
 
             <tbody>
-              {donations.map((d) => {
-                const puedeAceptarDonacion = puedeAceptar(d);
-                const puedeRechazar = d.estado === DonacionEstado.PENDIENTE;
+              {donations.map((d) => (
+                <tr key={d.id}>
+                  <td>{d.campaignTitulo}</td>
+                  <td>{d.correo}</td>
+                  <td>{d.descripcion}</td>
+                  <td>{d.cantidad}</td>
+                  <td>{d.puntos}</td>
 
-                return (
-                  <tr key={d.id}>
-                    <td>{d.campaignTitulo}</td>
-                    <td>{d.correo}</td>
-                    <td>{d.descripcion}</td>
-                    <td>{d.cantidad}</td>
-                    <td>{d.puntos}</td>
-                    <td>{DonacionEstado[d.estado]}</td>
+                  <td>
+                    <span
+                      className={`${styles.badge} ${
+                        d.estado === DonacionEstado.APROBADA
+                          ? styles.badgeAprobada
+                          : d.estado === DonacionEstado.RECHAZADA
+                            ? styles.badgeRechazada
+                            : styles.badgePendiente
+                      }`}
+                    >
+                      {DonacionEstado[d.estado]}
+                    </span>
+                  </td>
 
-                    <td>
-                      <div className={styles.actions}>
-                        <button
-                          className={styles.accept}
-                          disabled={!puedeAceptarDonacion}
-                          onClick={() => handleAcceptDonation(d)}
-                        >
-                          <Check
-                            size={20}
-                            color={puedeAceptarDonacion ? "#22c55e" : "#9ca3af"}
-                          />
-                        </button>
+                  <td className={styles.actions}>
+                    <button
+                      className={
+                        puedeAceptar(d)
+                          ? styles.approveButton
+                          : styles.disabledButton
+                      }
+                      disabled={!puedeAceptar(d)}
+                      onClick={() => handleAcceptDonation(d)}
+                    >
+                      <Check size={18} />
+                    </button>
 
-                        <button
-                          className={styles.reject}
-                          disabled={!puedeRechazar}
-                          onClick={() => handleRejectDonation(d)}
-                        >
-                          <X
-                            size={20}
-                            color={puedeRechazar ? "#ef4444" : "#9ca3af"}
-                          />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                    <button
+                      className={
+                        d.estado === DonacionEstado.PENDIENTE
+                          ? styles.rejectButton
+                          : styles.disabledButton
+                      }
+                      disabled={d.estado !== DonacionEstado.PENDIENTE}
+                      onClick={() => handleRejectDonation(d)}
+                    >
+                      <X size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
 
           <div className={styles.pagination}>
             <button
+              onClick={() => setDonationsPage((prev) => Math.max(prev - 1, 1))}
               disabled={donationsPage === 1}
-              onClick={() => setDonationsPage((p) => p - 1)}
             >
               Anterior
             </button>
@@ -432,8 +446,12 @@ export default function OrganizationCampaignsPage() {
             </span>
 
             <button
+              onClick={() =>
+                setDonationsPage((prev) =>
+                  Math.min(prev + 1, donationsTotalPages),
+                )
+              }
               disabled={donationsPage === donationsTotalPages}
-              onClick={() => setDonationsPage((p) => p + 1)}
             >
               Siguiente
             </button>
@@ -449,7 +467,21 @@ export default function OrganizationCampaignsPage() {
         }}
       >
         <CampaignForm
-          initialValues={editingCampaign ?? undefined}
+          initialValues={
+            editingCampaign
+              ? {
+                  titulo: editingCampaign.titulo,
+                  descripcion: editingCampaign.descripcion,
+                  objetivo: editingCampaign.objetivo,
+                  puntos: editingCampaign.puntos,
+                  fecha_Inicio: editingCampaign.fecha_Inicio,
+                  fecha_Fin: editingCampaign.fecha_Fin,
+                  estado: editingCampaign.estado,
+                  imagenesExistentes:
+                    editingCampaign.imagenes?.map((img) => img.url) ?? [],
+                }
+              : undefined
+          }
           onSubmit={handleSubmitCampaign}
           onCancel={() => {
             setOpen(false);

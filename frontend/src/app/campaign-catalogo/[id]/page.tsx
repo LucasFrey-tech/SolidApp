@@ -9,6 +9,8 @@ import { CampaignDetalle } from "@/API/types/campañas/campaigns";
 import { baseApi } from "@/API/baseApi";
 import DonarModal from "@/components/pages/donaciones/DonarModal";
 import { useUser } from "@/app/context/UserContext";
+import { RolCuenta } from "@/API/types/register";
+import Swal from "sweetalert2";
 
 export default function CampaignDetallePage() {
   const params = useParams();
@@ -116,7 +118,7 @@ export default function CampaignDetallePage() {
             </p>
             <p>
               <strong>Organización:</strong>{" "}
-              {campaign.organizacion.nombreFantasia}
+              {campaign.organizacion.nombre_organizacion}
             </p>
           </div>
 
@@ -141,22 +143,21 @@ export default function CampaignDetallePage() {
             </div>
           )}
 
-          <button
-            className={styles.donateButton}
-            onClick={() => {
-              if (!user) {
-                router.push("/login");
-                return;
-              }
-              setIsModalOpen(true);
-            }}
-          >
-            Donar ahora
-          </button>
-
-          <Link href="/campaign-catalogo" className={styles.backButton}>
-            ← Volver al catálogo
-          </Link>
+          {user?.role === RolCuenta.USUARIO ? (
+            <button
+              className={styles.donateButton}
+              onClick={() => setIsModalOpen(true)}
+            >
+              Donar ahora
+            </button>
+          ) : (
+            <div className={styles.noDonation}>
+              <p>Solo los usuarios pueden realizar donaciones</p>
+              <Link href="/campaign-catalogo" className={styles.backButton}>
+                ← Volver al catálogo
+              </Link>
+            </div>
+          )}
         </section>
       </main>
 
@@ -187,7 +188,7 @@ export default function CampaignDetallePage() {
           onClose={() => setIsModalOpen(false)}
           campaignId={campaign.id}
           campaignTitle={campaign.titulo}
-          userId={user.sub}
+          usuarioId={user.sub}
           puntosPorArticulo={campaign.puntos}
         />
       )}

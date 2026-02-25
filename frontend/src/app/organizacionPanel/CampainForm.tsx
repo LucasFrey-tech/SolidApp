@@ -83,7 +83,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file)
+      URL.createObjectURL(file),
     );
 
     setPreviews(updatedPreviews);
@@ -98,7 +98,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file)
+      URL.createObjectURL(file),
     );
 
     setPreviews(updatedPreviews);
@@ -256,7 +256,10 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
           {existingImages.length > 0 || previews.length > 0 ? (
             <div className={styles.previewContainer}>
               {existingImages.map((src, index) => (
-                <div key={`existing-${index}`} className={styles.previewWrapper}>
+                <div
+                  key={`existing-${index}`}
+                  className={styles.previewWrapper}
+                >
                   <img src={src} className={styles.previewImage} />
                   <button
                     type="button"

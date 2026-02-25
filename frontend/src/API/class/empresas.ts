@@ -120,15 +120,18 @@ export class EmpresasService extends Crud<Empresa> {
   async getAllPaginated(
     page = 1,
     limit = 10,
-    search: string = "",
+    search?: string,
   ): Promise<PaginatedResponse<Empresa>> {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/empresas/list?page=${page}&limit=${limit}&search=${search}`,
-      {
-        method: "GET",
-        headers: this.getHeaders(),
-      },
-    );
+    let url = `${this.baseUrl}/${this.endPoint}/list?page=${page}&limit=${limit}`;
+
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: this.getHeaders(),
+    });
+    
     if (!res.ok) {
       const errorDetails = await res.text();
       throw new Error(

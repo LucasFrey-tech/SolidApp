@@ -80,7 +80,7 @@ export class BeneficioService {
     const skip = (page - 1) * limit;
 
     const [beneficios, total] = await this.beneficiosRepository.findAndCount({
-      relations: ['empresa'],
+      relations: ['empresa', 'empresa.cuenta'],
       where: { empresa: { cuenta: { deshabilitado: false } } },
       skip,
       take: limit,

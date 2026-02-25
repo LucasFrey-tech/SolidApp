@@ -43,6 +43,7 @@ import { SettingsService } from '../../common/settings/settings.service';
 import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
 import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
 import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
+import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.dto';
 
 /**
  * Controlador encargado de gestionar las operaciones HTTP
@@ -261,6 +262,59 @@ export class OrganizacionesController {
   }
 
   /**
+   * Actualiza el estado de una donación.
+   *
+   * Permite cambiar el estado de la donación (por ejemplo, a RECHAZADA)
+   * y registrar información adicional como el motivo del rechazo.
+   *
+   * @param {number} id - ID de la donación a actualizar.
+   * @param {string} motivo - Motivo del rechazo (opcional, requerido si estado=RECHAZADA).
+   * @returns {Promise<void>} Resultado de la operación.
+   */
+  @Patch('donaciones/:id')
+  @ApiOperation({
+    summary: 'Actualizar el estado de la donación',
+    description: 'Modifica el estado de una donación (ej. RECHAZADA)',
+  })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    description: 'ID de la donación a actualizar',
+    example: 5,
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        estado: {
+          type: 'string',
+          enum: ['ACEPTADA', 'RECHAZADA'],
+          example: 'RECHAZADA',
+        },
+        motivo: {
+          type: 'string',
+          example: 'La imagen comprobante no es legible',
+        },
+      },
+      required: ['estado'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Donación actualizada correctamente.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Donación no encontrada.',
+  })
+  async actualizarEstadoDonación(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateDonacionEstadoDto,
+  ) {
+    return await this.organizacionService.confirmarDonacion(id, dto);
+  }
+
+  /**
    * Actualiza los datos de una organización existente.
    *
    * @param id ID de la organización
@@ -401,6 +455,8 @@ export class OrganizacionesController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthGuard('jwt'))
+  @Roles(RolCuenta.ADMIN)
   @ApiOperation({ summary: 'Deshabilitar una organización' })
   @ApiParam({
     name: 'id',
@@ -422,6 +478,8 @@ export class OrganizacionesController {
    */
   @Patch(':id/restaurar')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthGuard('jwt'))
+  @Roles(RolCuenta.ADMIN)
   @ApiOperation({ summary: 'Restaurar una organización deshabilitada' })
   @ApiParam({
     name: 'id',

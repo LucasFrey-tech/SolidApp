@@ -20,6 +20,7 @@ import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/respo
 import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
 import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
 import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
+import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.dto';
 
 /**
  * ============================================================
@@ -168,6 +169,10 @@ export class PerfilOrganizacionService {
     limit: number,
   ): Promise<PaginatedOrganizationDonationsResponseDto> {
     return this.donacionService.findAllPaginatedByOrganizacion(id, page, limit);
+  }
+
+  async confirmarDonacion(id: number, dto: UpdateDonacionEstadoDto) {
+    return await this.donacionService.confirmarDonacion(id, dto);
   }
 
   async createCampaign(
