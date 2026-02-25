@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Put,
   Delete,
   Patch,
   Param,
@@ -12,6 +11,9 @@ import {
   HttpStatus,
   Req,
   UseGuards,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -31,6 +33,16 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolCuenta } from '../../Entities/cuenta.entity';
 import { Roles } from '../auth/decoradores/roles.decorador';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { ResponseCampaignDetalleDto } from '../campaign/dto/response_campaignDetalle.dto';
+import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
+import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { ImagesArrayValidationPipe } from '../../common/pipes/mediaFilePipes';
+import { SettingsService } from '../../common/settings/settings.service';
+import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
+import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
+import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
 
 /**
  * Controlador encargado de gestionar las operaciones HTTP
@@ -82,6 +94,170 @@ export class OrganizacionesController {
   })
   getMiPerfil(@Req() req: RequestConUsuario): Promise<ResponseOrganizacionDto> {
     return this.organizacionService.findOne(req.user.perfil.id);
+  }
+
+  @Get('campanas')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Obtener campañas de la organizacion' })
+  @ApiResponse({
+    status: 200,
+    description: 'Campañas encontradas',
+    type: ResponseCampaignDetalleDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Campañas no encontradas',
+  })
+  async getMisCampañas(
+    @Req() req: RequestConUsuario,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ): Promise<ResponseCampaignsDetailPaginatedDto> {
+    return await this.organizacionService.getCampaigns(
+      req.user.perfil.id,
+      page,
+      limit,
+    );
+  }
+
+  /**
+   * Crea una nueva Campaña en el sistema.
+   *
+   * @param {CreateCampaignsDto} createCampaignsDto - Datos de la Campaña a crear
+   * @param {Express.Multer.File} files - Imagenes de la Campaña
+   * @returns {Promise<ResponseCampaignsDto>} Campaña creada
+   */
+  @Post('campana')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Crear nueva Campaña Solidaria' })
+  @ApiBody({
+    type: CreateCampaignsDto,
+    description: 'Datos para crear una nueva Campaña Solidaria',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Campaña creada exitosamente',
+    type: ResponseCampaignsDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos Invalidos',
+  })
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        destination: 'C:/StaticResources/Solid/campaigns/',
+        filename: (req, file, cb) => {
+          const sanitizedName = file.originalname
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-zA-Z0-9.]/g, '_')
+            .replace(/\s+/g, '_');
+
+          cb(null, sanitizedName);
+        },
+      }),
+    }),
+  )
+  async createMiCampaign(
+    @Req() req: RequestConUsuario,
+    @Body() createCampaignsDto: CreateCampaignsDto,
+    @UploadedFiles(new ImagesArrayValidationPipe())
+    files: Express.Multer.File[],
+  ): Promise<ResponseCampaignsDto> {
+    const imagenes = files.map((x) =>
+      SettingsService.getCampaignImageUrl(x.filename),
+    );
+    return this.organizacionService.createCampaign(
+      req.user.perfil.id,
+      createCampaignsDto,
+      imagenes,
+    );
+  }
+
+  /**
+   * Actualiza una Campaña existente.
+   *
+   * @param {number} id - ID de la Campaña a actualizar
+   * @param {UpdateCampaignsDto} updateCampaignsDto - Datos actualizados de la Campaña
+   * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
+   */
+  @Patch('campana')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Actualizar Campaña Solidaria existente' })
+  @ApiParam({
+    name: 'id',
+    required: true,
+    description: 'Id de la Campaña Solidaria',
+    type: Number,
+  })
+  @ApiBody({
+    type: UpdateCampaignsDto,
+    description: 'Datos para actualizar la campaña Solidaria',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Campaña Solidaria actualizada exitosamente',
+    type: ResponseCampaignsDto,
+  })
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      storage: diskStorage({
+        destination: 'C:/StaticResources/Solid/campaigns/',
+        filename: (req, file, cb) => {
+          const sanitizedName = file.originalname
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-zA-Z0-9.]/g, '_')
+            .replace(/\s+/g, '_');
+
+          cb(null, sanitizedName);
+        },
+      }),
+    }),
+  )
+  async updateMiCampaign(
+    @Req() req: RequestConUsuario,
+    @Body() updateCampaignsDto: UpdateCampaignsDto,
+    @UploadedFiles(new ImagesArrayValidationPipe())
+    files?: Express.Multer.File[],
+  ): Promise<ResponseCampaignsDto> {
+    let imagenes: string[] | undefined;
+    if (files && files.length > 0) {
+      imagenes = files.map((x) =>
+        SettingsService.getCampaignImageUrl(x.filename),
+      );
+    }
+    return this.organizacionService.updateCampaign(
+      req.user.perfil.id,
+      updateCampaignsDto,
+      imagenes,
+    );
+  }
+
+  @Get('donaciones')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
+  @ApiResponse({
+    status: 200,
+    description: 'Donaciones encontradas',
+    type: ResponseCampaignDetalleDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Donaciones no encontradas',
+  })
+  async getMisDonaciones(
+    @Req() req: RequestConUsuario,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ): Promise<PaginatedOrganizationDonationsResponseDto> {
+    return await this.organizacionService.getDonaciones(
+      req.user.perfil.id,
+      page,
+      limit,
+    );
   }
 
   /**

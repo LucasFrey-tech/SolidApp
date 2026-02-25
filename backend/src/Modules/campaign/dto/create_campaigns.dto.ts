@@ -15,16 +15,6 @@ import { Type } from 'class-transformer';
  * Contiene validaciones para los campos del cuerpo de la petición.
  */
 export class CreateCampaignsDto {
-  /** ID de la Organización asociada */
-  @ApiProperty({
-    example: 1,
-    description: 'ID Foranea de la Organización',
-  })
-  @Type(() => Number)
-  @IsNotEmpty()
-  @IsNumber()
-  id_organizacion: number;
-
   /** Título de la Campaña */
   @ApiProperty({
     example: 'Campaña Solidaria Invierno 2025',

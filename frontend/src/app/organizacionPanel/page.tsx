@@ -58,12 +58,13 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response =
-      await baseApi.campaign.getCampaignsPaginatedByOrganizacion(
-        organizacionId,
-        campaignsPage,
-        limit,
-      );
+    const response = await baseApi.organizacion.getCampaignsPaginated(
+      campaignsPage,
+      limit,
+    );
+
+    console.log("Campañas desde backend:", response.items);
+    console.log("Primera campaña:", response.items[0]);
 
     const totalPages = Math.max(1, Math.ceil(response.total / limit));
 
@@ -88,12 +89,10 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response =
-      await baseApi.donation.getAllPaginatedByOrganizacion(
-        organizacionId,
-        donationsPage,
-        limit,
-      );
+    const response = await baseApi.organizacion.getDonacionesPaginated(
+      donationsPage,
+      limit,
+    );
 
     console.log("Donaciones desde backend:", response.items);
     console.log("Primera donación:", response.items[0]);
@@ -104,7 +103,7 @@ export default function OrganizationCampaignsPage() {
         estado: item.estado as DonacionEstado,
       })),
     );
-    
+
     const totalPages = Math.max(1, Math.ceil(response.total / limit));
     setDonationsTotalPages(totalPages);
   };
@@ -141,7 +140,6 @@ export default function OrganizationCampaignsPage() {
       );
 
       await fetchCampaigns();
-
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "No se pudo aceptar la donación", "error");
@@ -226,7 +224,7 @@ export default function OrganizationCampaignsPage() {
           estado: data.estado,
         };
 
-        await baseApi.campaign.update(editingCampaign.id, updateData, files);
+        await baseApi.organizacion.updateCampaign(editingCampaign.id, updateData, files, data.imagenesExistentes);
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
       } else {
@@ -237,10 +235,9 @@ export default function OrganizationCampaignsPage() {
           puntos: data.puntos,
           fecha_Inicio: data.fecha_Inicio,
           fecha_Fin: data.fecha_Fin,
-          id_organizacion: organizacionId,
         };
 
-        await baseApi.campaign.create(createData, files);
+        await baseApi.organizacion.createCampaign(createData, files);
 
         Swal.fire("Creada", "Campaña creada con éxito", "success");
       }

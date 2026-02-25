@@ -15,6 +15,11 @@ import { CampaignsService } from '../campaign/campaign.service';
 import { DonacionService } from '../donation/donacion.service';
 import { CuentaService } from '../cuenta/cuenta.service';
 import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
+import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
+import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
+import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
+import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
+import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
 
 /**
  * ============================================================
@@ -147,6 +152,38 @@ export class PerfilOrganizacionService {
     }
 
     return perfil;
+  }
+
+  async getCampaigns(
+    id: number,
+    page: number,
+    limit: number,
+  ): Promise<ResponseCampaignsDetailPaginatedDto> {
+    return this.campaignService.findCampaignsPaginated(id, page, limit);
+  }
+
+  async getDonaciones(
+    id: number,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedOrganizationDonationsResponseDto> {
+    return this.donacionService.findAllPaginatedByOrganizacion(id, page, limit);
+  }
+
+  async createCampaign(
+    id: number,
+    createDto: CreateCampaignsDto,
+    imagenes: string[],
+  ): Promise<ResponseCampaignsDto> {
+    return await this.campaignService.create(id, createDto, imagenes);
+  }
+
+  async updateCampaign(
+    id: number,
+    updateDto: UpdateCampaignsDto,
+    imagenes?: string[],
+  ): Promise<ResponseCampaignsDto> {
+    return await this.campaignService.update(id, updateDto, imagenes);
   }
 
   /**
@@ -296,21 +333,6 @@ export class PerfilOrganizacionService {
     const updated = await this.organizacionRepository.save(organizacion);
 
     return this.mapToResponseDto(updated);
-  }
-
-  /**
-   * Obtiene las campañas de una organización.
-   */
-  async getCampaigns(id: number) {
-    const organizacion = await this.organizacionRepository.findOne({
-      where: { id },
-    });
-
-    if (!organizacion) {
-      throw new NotFoundException(`Organización con ID ${id} no encontrada`);
-    }
-
-    return this.campaignService.findByOrganizationPaginated(id, 1, 10);
   }
 
   /**

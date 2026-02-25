@@ -109,26 +109,6 @@ export class DonacionesService extends Crud<Donation> {
     return res.json();
   }
 
-  async getAllPaginatedByUser(
-    userId: number,
-    page = 1,
-    limit = 10,
-  ): Promise<PaginatedResponse<donacionUsuario>> {
-    return fetch(
-      `${this.baseUrl}${this.endPoint}/usuario/${userId}?=${page}&limit=${limit}`,
-      {
-        method: 'GET',
-        headers: this.getHeaders(),
-      }
-    ).then(async (res) => {
-      if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error);
-      }
-      return res.json();
-    });
-  };
-
   async updateDonationStatus(
     id: number,
     data: { estado: DonacionEstado; motivo?: string },

@@ -1,5 +1,12 @@
 import { Crud, PaginatedResponse } from "../service";
 import {
+  Campaign,
+  CampaignCreateRequest,
+  CampaignDetalle,
+  CampaignUpdateRequest,
+} from "../types/campañas/campaigns";
+import { DonacionResponsePanel } from "../types/donaciones/donaciones";
+import {
   Organizacion,
   OrganizacionCreateRequest,
   OrganizacionUpdateRequest,
@@ -29,12 +36,12 @@ export class OrganizacionesService extends Crud<Organizacion> {
       headers: this.getHeaders(),
       body: JSON.stringify(data),
     });
-    
+
     if (!res.ok) throw new Error(`Error al actualizar perfil (${res.status})`);
-    
+
     return res.json();
   }
-  
+
   async updateCredenciales(data: UpdateCredencialesPayload): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/credenciales`, {
       method: "PATCH",
@@ -43,20 +50,20 @@ export class OrganizacionesService extends Crud<Organizacion> {
     });
     if (!res.ok) {
       const errorDetails = await res.text();
-      
+
       throw new Error(
         `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
       );
     }
   }
-  
-  async getCampaignsPaginatedByOrganizacion(
-    organizacionId: number,
+
+  async getCampaignsPaginated(
     page = 1,
     limit = 10,
-  ) {
+  ): Promise<PaginatedResponse<CampaignDetalle>> {
+    console.log("headers:", this.getHeaders());
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${organizacionId}/campaigns?page=${page}&limit=${limit}`,
+      `${this.baseUrl}/${this.endPoint}/campanas/?page=${page}&limit=${limit}`,
       {
         method: "GET",
         headers: this.getHeaders(),
@@ -73,15 +80,148 @@ export class OrganizacionesService extends Crud<Organizacion> {
     return res.json();
   }
 
+  async getDonacionesPaginated(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResponse<DonacionResponsePanel>> {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/donaciones/?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      },
+    );
+
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener campañas (${res.status}): ${errorDetails}`,
+      );
+    }
+
+    return res.json();
+  }
+
+  async createCampaign(
+    data: CampaignCreateRequest,
+    files?: File[],
+  ): Promise<Campaign> {
+    const formData = new FormData();
+
+    formData.append("titulo", data.titulo);
+    formData.append("descripcion", data.descripcion);
+    formData.append("fecha_Inicio", data.fecha_Inicio);
+    formData.append("fecha_Fin", data.fecha_Fin);
+    formData.append("objetivo", data.objetivo.toString());
+    formData.append("puntos", data.puntos.toString());
+
+    if (data.estado) {
+      formData.append("estado", data.estado);
+    }
+
+    if (files && files.length > 0) {
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+    }
+
+    const headers = this.getHeaders();
+    delete headers["Content-Type"];
+
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/campana`, {
+      method: "POST",
+      headers: headers,
+      body: formData,
+    });
+
+    if (!res.ok) {
+      console.error("STATUS:", res.status);
+      try {
+        const errorData = await res.json();
+        console.error(
+          "BACKEND ERROR (json):",
+          JSON.stringify(errorData, null, 2),
+        );
+      } catch (e) {
+        const text = await res.text();
+        console.error("BACKEND ERROR (text):", text);
+      }
+      throw new Error("Error al crear campaña");
+    }
+
+    return res.json();
+  }
+
+  async updateCampaign(
+    id: number,
+    data: CampaignUpdateRequest,
+    files?: File[],
+    imagenesExistentes?: string[],
+  ): Promise<Campaign> {
+    const formData = new FormData();
+
+    const stringFields: (keyof CampaignUpdateRequest)[] = [
+      "titulo",
+      "descripcion",
+      "fecha_Inicio",
+      "fecha_Fin",
+      "estado",
+    ];
+
+    const numberFields: (keyof CampaignUpdateRequest)[] = [
+      "objetivo",
+      "puntos",
+    ];
+
+    stringFields.forEach((key) => {
+      const value = data[key];
+      if (value !== undefined) {
+        formData.append(key, value as string);
+      }
+    });
+
+    numberFields.forEach((key) => {
+      const value = data[key];
+      if (value !== undefined) {
+        formData.append(key, String(value));
+      }
+    });
+
+    files?.forEach((file) => formData.append("files", file));
+
+    if (imagenesExistentes && imagenesExistentes.length > 0) {
+      imagenesExistentes.forEach((url) =>
+        formData.append("imagenesExistentes", url)
+      );
+    } else {
+      formData.append("imagenesExistentes", "");
+    }
+
+    const headers = this.getHeaders();
+    delete headers["Content-Type"];
+
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/campana`, {
+      method: "PATCH",
+      headers,
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error("Error al actualizar campaña");
+    }
+
+    return res.json();
+  }
+
   // =====Panel Admin=====
-  
+
   async getAll(): Promise<Organizacion[]> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
       headers: this.getHeaders(),
     });
-    
+
     if (!res.ok) throw new Error("Error al obtener organizaciones");
-    
+
     return res.json();
   }
 
@@ -101,7 +241,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
       );
     return res.json();
   }
-
 
   async getOne(id: number): Promise<Organizacion> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {

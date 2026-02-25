@@ -39,8 +39,6 @@ export interface CampaignCreateRequest {
   puntos: number;
 
   estado?: CampaignEstado; 
-
-  id_organizacion: number;
 }
 
 /* ===============================

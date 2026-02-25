@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { CampaignCreateRequest } from "@/API/types/campañas/campaigns";
-import { CampaignEstado } from "@/API/types/campañas/enum";
 import styles from "@/styles/Paneles/campaignPanel.module.css";
 import { NumericInput } from "@/components/Utils/NumericInputProp";
 
@@ -12,7 +11,7 @@ export type CampaignFormValues = Omit<
   "id_organizacion"
 > & {
   imagenes?: File[];
-  puntos: number;
+  imagenesExistentes?: string[];
 };
 
 type Props = {
@@ -32,7 +31,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue,
     watch,
   } = useForm<CampaignFormValues>({
-    defaultValues: initialValues ?? {
+    defaultValues: {
       titulo: "",
       descripcion: "",
       objetivo: 1,
@@ -40,7 +39,8 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
       fecha_Inicio: "",
       fecha_Fin: "",
       imagenes: [],
-      estado: CampaignEstado.PENDIENTE,
+      imagenesExistentes: [],
+      ...initialValues,
     },
   });
 
@@ -49,10 +49,32 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  /* ===============================
+     ESTADOS
+  ================================ */
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
 
-  // Agregar archivos
+  /* ===============================
+     CARGA INICIAL (EDIT MODE)
+  ================================ */
+
+  useEffect(() => {
+    if (initialValues) {
+      reset(initialValues);
+
+      if (initialValues.imagenesExistentes) {
+        setExistingImages(initialValues.imagenesExistentes);
+      }
+    }
+  }, [initialValues, reset]);
+
+  /* ===============================
+     MANEJO DE NUEVAS IMÁGENES
+  ================================ */
+
   const handleFiles = (files: FileList) => {
     const newFiles = Array.from(files);
     const updatedFiles = [...selectedFiles, ...newFiles];
@@ -61,14 +83,13 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file),
+      URL.createObjectURL(file)
     );
 
     setPreviews(updatedPreviews);
   };
 
-  // Eliminar imagen
-  const removeImage = (index: number) => {
+  const removeNewImage = (index: number) => {
     const updatedFiles = selectedFiles.filter((_, i) => i !== index);
 
     URL.revokeObjectURL(previews[index]);
@@ -77,11 +98,25 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     setValue("imagenes", updatedFiles);
 
     const updatedPreviews = updatedFiles.map((file) =>
-      URL.createObjectURL(file),
+      URL.createObjectURL(file)
     );
 
     setPreviews(updatedPreviews);
   };
+
+  /* ===============================
+     MANEJO DE IMÁGENES EXISTENTES
+  ================================ */
+
+  const removeExistingImage = (index: number) => {
+    const updated = existingImages.filter((_, i) => i !== index);
+    setExistingImages(updated);
+    setValue("imagenesExistentes", updated);
+  };
+
+  /* ===============================
+     LIMPIEZA URLS
+  ================================ */
 
   useEffect(() => {
     return () => {
@@ -89,15 +124,21 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
     };
   }, [previews]);
 
-  useEffect(() => {
-    if (initialValues) {
-      reset(initialValues);
-    }
-  }, [initialValues, reset]);
+  /* ===============================
+     SUBMIT
+  ================================ */
 
   const submit = (data: CampaignFormValues) => {
-    onSubmit(data);
+    onSubmit({
+      ...data,
+      imagenes: selectedFiles,
+      imagenesExistentes: existingImages,
+    });
   };
+
+  /* ===============================
+     RENDER
+  ================================ */
 
   return (
     <form className={styles.form} onSubmit={handleSubmit(submit)}>
@@ -135,7 +176,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             required: "Obligatorio",
             validate: (value) => {
               if (!fechaFin) return true;
-
               return (
                 new Date(fechaFin) > new Date(value) ||
                 "La fecha inicio debe ser anterior a la fecha fin"
@@ -143,7 +183,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             },
           })}
         />
-
         {errors.fecha_Inicio && (
           <span className={styles.error}>{errors.fecha_Inicio.message}</span>
         )}
@@ -158,7 +197,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             required: "Obligatorio",
             validate: (value) => {
               if (!fechaInicio) return true;
-
               return (
                 new Date(value) > new Date(fechaInicio) ||
                 "La fecha fin debe ser posterior a la fecha inicio"
@@ -166,7 +204,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             },
           })}
         />
-
         {errors.fecha_Fin && (
           <span className={styles.error}>{errors.fecha_Fin.message}</span>
         )}
@@ -175,7 +212,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
       {/* OBJETIVO */}
       <div className={styles.field}>
         <label>Objetivo</label>
-
         <NumericInput
           {...register("objetivo", {
             required: "Obligatorio",
@@ -183,7 +219,6 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             min: { value: 1, message: "Debe ser mayor a 0" },
           })}
         />
-
         {errors.objetivo && (
           <span className={styles.error}>{errors.objetivo.message}</span>
         )}
@@ -191,8 +226,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
 
       {/* PUNTOS */}
       <div className={styles.field}>
-        <label>Ingresar puntos por unidad donada:</label>
-
+        <label>Puntos por unidad donada</label>
         <NumericInput
           {...register("puntos", {
             required: "Obligatorio",
@@ -200,28 +234,10 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             min: { value: 1, message: "Debe ser mayor a 0" },
           })}
         />
-
         {errors.puntos && (
           <span className={styles.error}>{errors.puntos.message}</span>
         )}
       </div>
-
-      {/* ESTADO */}
-      {isEditMode && (
-        <div className={styles.field}>
-          <label>Estado</label>
-          <select
-            className={styles.select}
-            {...register("estado", { required: "Obligatorio" })}
-          >
-            {Object.values(CampaignEstado).map((estado) => (
-              <option key={estado} value={estado}>
-                {estado}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
 
       {/* IMÁGENES */}
       <div className={styles.field}>
@@ -237,15 +253,28 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
             }
           }}
         >
-          {previews.length > 0 ? (
+          {existingImages.length > 0 || previews.length > 0 ? (
             <div className={styles.previewContainer}>
-              {previews.map((src, index) => (
-                <div key={index} className={styles.previewWrapper}>
+              {existingImages.map((src, index) => (
+                <div key={`existing-${index}`} className={styles.previewWrapper}>
                   <img src={src} className={styles.previewImage} />
                   <button
                     type="button"
                     className={styles.removeButton}
-                    onClick={() => removeImage(index)}
+                    onClick={() => removeExistingImage(index)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              {previews.map((src, index) => (
+                <div key={`new-${index}`} className={styles.previewWrapper}>
+                  <img src={src} className={styles.previewImage} />
+                  <button
+                    type="button"
+                    className={styles.removeButton}
+                    onClick={() => removeNewImage(index)}
                   >
                     ✕
                   </button>
