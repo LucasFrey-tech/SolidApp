@@ -9,9 +9,7 @@ import {
 } from "react";
 import { jwtDecode } from "jwt-decode";
 
-import { UserType } from "@/config/userType";
-import { UserRole } from "@/config/userRole";
-import { RolCuenta } from "@/API/types/register";
+import { RolCuenta } from "@/API/types/auth";
 
 export interface User {
   email: string;

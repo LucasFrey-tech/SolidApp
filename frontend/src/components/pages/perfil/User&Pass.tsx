@@ -4,7 +4,7 @@ import styles from "@/styles/UserPanel/usuario/user&pass.module.css";
 import { useState } from "react";
 import { baseApi } from "@/API/baseApi";
 import { useUser } from "@/app/context/UserContext";
-import { RolCuenta } from "@/API/types/register";
+import { RolCuenta } from "@/API/types/auth";
 
 export default function UserAndPass() {
   const { user, refreshUser } = useUser();

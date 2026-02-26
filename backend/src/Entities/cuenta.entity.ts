@@ -139,4 +139,10 @@ export class Cuenta {
   })
   @UpdateDateColumn({ type: 'datetime2', nullable: true })
   ultima_conexion: Date;
+
+  @Column({ type: 'varchar', nullable: true })
+  resetPasswordToken: string | null;
+
+  @Column({ type: 'datetime2', nullable: true })
+  resetPasswordExpires: Date | null;
 }

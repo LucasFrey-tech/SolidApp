@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import styles from "@/styles/Tienda/beneficios.module.css";
 
-import { BeneficiosService } from "@/API/class/beneficios";
 import { Beneficio } from "@/API/types/beneficios";
 
 import CanjeModal from "@/components/pages/tienda/CanjeModal";
@@ -30,10 +29,11 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
 
   /* ==================== FETCH ==================== */
   useEffect(() => {
+    if (!idEmpresa) return;
     const fetchBeneficios = async () => {
       try {
         setLoading(true);
-        const data = await baseApi.beneficio.getByEmpresa(idEmpresa!);
+        const data = await baseApi.beneficio.getByEmpresa(idEmpresa);
         setBeneficios(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error cargando beneficios", error);

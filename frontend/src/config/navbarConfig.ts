@@ -1,4 +1,4 @@
-import { RolCuenta } from "@/API/types/register";
+import { RolCuenta } from "@/API/types/auth";
 
 export type NavbarRole = RolCuenta;
 

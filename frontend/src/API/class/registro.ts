@@ -1,8 +1,4 @@
-import {
-  AuthResponse,
-  Register,
-  
-} from "@/API/types/register";
+import { AuthResponse, Register } from "../types/auth";
 import { Crud, PaginatedResponse } from "../service";
 
 export class RegisterService extends Crud<Register> {
@@ -13,7 +9,7 @@ export class RegisterService extends Crud<Register> {
   }
 
   async register(data: Register): Promise<AuthResponse> {
-    console.log('DTO recibido:', JSON.stringify(data, null, 2));
+    console.log("DTO recibido:", JSON.stringify(data, null, 2));
     const url = `${this.baseUrl}/auth/register`;
 
     const res = await fetch(url, {

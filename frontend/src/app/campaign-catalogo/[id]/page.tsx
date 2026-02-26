@@ -9,7 +9,7 @@ import { CampaignDetalle } from "@/API/types/campañas/campaigns";
 import { baseApi } from "@/API/baseApi";
 import DonarModal from "@/components/pages/donaciones/DonarModal";
 import { useUser } from "@/app/context/UserContext";
-import { RolCuenta } from "@/API/types/register";
+import { RolCuenta } from "@/API/types/auth";
 
 export default function CampaignDetallePage() {
   const params = useParams();

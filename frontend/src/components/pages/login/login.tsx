@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "@/styles/login-registro/registro.module.css";
 import { baseApi } from "@/API/baseApi";
 import { jwtDecode } from "jwt-decode";
@@ -16,7 +17,7 @@ import { LoginUsuarioStrategy } from "@/API/class/login/usuario";
 import { LoginEmpresaStrategy } from "@/API/class/login/empresa";
 import { LoginOrganizacionStrategy } from "@/API/class/login/organizacion";
 
-import { RolCuenta } from "@/API/types/register";
+import { RolCuenta } from "@/API/types/auth";
 
 // ==================== TIPOS ====================
 
@@ -88,13 +89,13 @@ export default function Login() {
 
     switch (step) {
       case RolCuenta.USUARIO:
-        return new LoginUsuarioStrategy(baseApi.log);
+        return new LoginUsuarioStrategy(baseApi.auth);
 
       case RolCuenta.EMPRESA:
-        return new LoginEmpresaStrategy(baseApi.log);
+        return new LoginEmpresaStrategy(baseApi.auth);
 
       case RolCuenta.ORGANIZACION:
-        return new LoginOrganizacionStrategy(baseApi.log);
+        return new LoginOrganizacionStrategy(baseApi.auth);
 
       default:
         return null;
@@ -295,13 +296,10 @@ export default function Login() {
 
           <p className={styles.hint}>Haz clic en una opción para continuar</p>
 
-          <div className={styles.switchForm}>
-            <p>
-              ¿No tienes cuenta?{" "}
-              <a href="/registro" className={styles.link}>
-                Regístrate aquí
-              </a>
-            </p>
+          <div className={styles.forgotPassword}>
+            <Link href="/olvide-mi-contrasena" className={styles.link}>
+              ¿Olvidaste tu contraseña?
+            </Link>
           </div>
         </>
       ) : (

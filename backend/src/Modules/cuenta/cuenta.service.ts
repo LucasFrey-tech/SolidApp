@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Cuenta, RolCuenta } from '../../Entities/cuenta.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, MoreThan, Repository } from 'typeorm';
 import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { UpdateUsuarioDto } from '../user/dto/update_usuario.dto';
 import { HashService } from '../../common/bcryptService/hashService';
@@ -97,5 +97,36 @@ export class CuentaService {
 
   async habilitar(id: number): Promise<void> {
     await this.cuentaRepository.update(id, { deshabilitado: false });
+  }
+
+  async findByResetToken(token: string): Promise<Cuenta | null> {
+    return this.cuentaRepository.findOne({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: MoreThan(new Date()),
+      },
+    });
+  }
+
+  async setResetToken(id: number, token: string, expires: Date): Promise<void> {
+    await this.cuentaRepository.update(id, {
+      resetPasswordToken: token,
+      resetPasswordExpires: expires,
+    });
+  }
+
+  async clearResetToken(id: number): Promise<void> {
+    await this.cuentaRepository.update(id, {
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    });
+  }
+
+  async resetPassword(id: number, newHashedPassword: string): Promise<void> {
+    await this.cuentaRepository.update(id, {
+      clave: newHashedPassword,
+      resetPasswordToken: null,
+      resetPasswordExpires: null,
+    });
   }
 }

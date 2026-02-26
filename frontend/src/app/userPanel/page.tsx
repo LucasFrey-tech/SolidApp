@@ -10,7 +10,7 @@ import EmpresaData from "@/components/pages/data/empresaData";
 import OrganizacionData from "@/components/pages/data/organizacionData";
 import HistorialDonacionUsuario from "@/components/pages/perfil/historialDonacionUsuario";
 import UserCoupons from "@/components/pages/perfil/cuponesUsuarios";
-import { RolCuenta } from "@/API/types/register";
+import { RolCuenta } from "@/API/types/auth";
 import { useUser } from "../context/UserContext";
 
 type Section = "data" | "user&pass" | "cupons" | "donations";

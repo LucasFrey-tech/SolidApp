@@ -4,7 +4,7 @@ import styles from "@/styles/UserPanel/usuario/myAccountMenu.module.css";
 import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
-import { RolCuenta } from "@/API/types/register";
+import { RolCuenta } from "@/API/types/auth";
 
 type AccountSection = "data" | "user&pass" | "cupons" | "donations";
 

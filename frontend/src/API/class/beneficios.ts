@@ -154,7 +154,7 @@ export class BeneficiosService extends Crud<Beneficio> {
    */
   async getByEmpresa(idEmpresa: number): Promise<Beneficio[]> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endpoint}/empresa/${idEmpresa}`,
+      `${this.baseUrl}/${this.endpoint}/empresa/${idEmpresa}/cupones`,
       {
         headers: this.getHeaders(),
       },

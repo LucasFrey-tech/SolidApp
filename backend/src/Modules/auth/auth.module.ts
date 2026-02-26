@@ -14,6 +14,7 @@ import { CuentaService } from '../cuenta/cuenta.service';
 import { JwtStrategy } from './estrategias/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { CommonModule } from '../../common/common.module';
+import { EmailService } from '../email/email.service';
 
 /**
  * Módulo de NestJS que agrupa los componentes relacionados a la Autenticación:
@@ -41,7 +42,13 @@ import { CommonModule } from '../../common/common.module';
     CommonMulterModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, CuentaService, JwtStrategy, RolesGuard],
+  providers: [
+    AuthService,
+    CuentaService,
+    JwtStrategy,
+    RolesGuard,
+    EmailService,
+  ],
   exports: [AuthService, RolesGuard],
 })
 export class AuthModule {}

@@ -5,7 +5,7 @@ import styles from "../../styles/login-registro/registro.module.css";
 import { baseApi } from "@/API/baseApi";
 import { NumericInput } from "../Utils/NumericInputProp";
 import Swal from "sweetalert2";
-import { RolCuenta } from "@/API/types/register";
+import { RolCuenta } from "@/API/types/auth";
 
 // ==================== ESQUEMAS ZOD ====================
 const usuarioSchema = z
