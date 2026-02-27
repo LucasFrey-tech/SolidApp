@@ -4,6 +4,7 @@ import styles from "@/styles/UserPanel/usuario/user&pass.module.css";
 import { useState } from "react";
 import { baseApi } from "@/API/baseApi";
 import { useUser } from "@/app/context/UserContext";
+import { RolCuenta } from "@/API/types/auth";
 
 export default function UserAndPass() {
   const { user, refreshUser } = useUser();
@@ -56,7 +57,19 @@ export default function UserAndPass() {
     }
 
     try {
-      await baseApi.auth.updateCredenciales(payload);
+      switch (user?.role) {
+        case RolCuenta.USUARIO:
+          await baseApi.users.updateCredenciales(payload);
+          break;
+        case RolCuenta.EMPRESA:
+          await baseApi.empresa.updateCredenciales(payload);
+          break;
+        case RolCuenta.ORGANIZACION:
+          await baseApi.organizacion.updateCredenciales(payload);
+          break;
+        default:
+          throw new Error("Tipo de usuario inválido");
+      }
 
       setSuccess("Credenciales actualizadas correctamente");
       refreshUser();

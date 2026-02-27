@@ -12,6 +12,7 @@ import {
   OrganizacionCreateRequest,
   OrganizacionUpdateRequest,
 } from "../types/organizaciones";
+import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class OrganizacionesService extends Crud<Organizacion> {
   protected endPoint = "organizaciones";
@@ -278,6 +279,21 @@ export class OrganizacionesService extends Crud<Organizacion> {
     });
     if (!res.ok) throw new Error("Error al actualizar organización");
     return res.json();
+  }
+
+  async updateCredenciales(data: UpdateCredencialesPayload): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/credenciales`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const errorDetails = await res.text();
+
+      throw new Error(
+        `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
+      );
+    }
   }
 
   async delete(id: number): Promise<void> {
