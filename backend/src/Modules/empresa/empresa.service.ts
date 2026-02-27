@@ -98,13 +98,23 @@ export class PerfilEmpresaService {
    *
    * @returns { items: Empresa[], total: number }
    */
-  async findPaginated(page: number, limit: number, search: string) {
+  async findPaginated(
+    page: number,
+    limit: number,
+    search: string,
+    onlyEnabled: boolean,
+  ) {
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.empresaRepository
       .createQueryBuilder('perfil')
-      .leftJoinAndSelect('perfil.cuenta', 'cuenta')
-      .where('cuenta.deshabilitado = :deshabilitado', { deshabilitado: false });
+      .leftJoinAndSelect('perfil.cuenta', 'cuenta');
+
+    if (onlyEnabled) {
+      queryBuilder.where('cuenta.deshabilitado = :deshabilitado', {
+        deshabilitado: false,
+      });
+    }
 
     if (search) {
       queryBuilder.andWhere(

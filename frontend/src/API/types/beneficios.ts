@@ -58,9 +58,6 @@ export interface BeneficioUpdateRequest {
 /* ===============================
    UPDATE ESTADO BENEFICIO
 ================================ */
-export interface BeneficioUpdateEstadoRequest {
-  estado: BeneficiosEstado;
-}
 
 export interface UsuarioBeneficio {
   id: number;

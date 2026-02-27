@@ -53,7 +53,7 @@ export default function Empresas() {
         setLoading(true);
         setError(null);
 
-        const res = await baseApi.empresa.getAllPaginated(page, LIMIT);
+        const res = await baseApi.empresa.getAllPaginated(page, LIMIT, undefined, true);
 
         const items = Array.isArray(res.items)
           ? res.items

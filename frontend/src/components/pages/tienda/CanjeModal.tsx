@@ -8,7 +8,7 @@ import { Beneficio } from '@/API/types/beneficios';
 
 import { baseApi } from '@/API/baseApi';
 import { useUser } from '@/app/context/UserContext';
-import { RolCuenta } from '@/API/types/register';
+import { RolCuenta } from '@/API/types/auth';
 
 
 interface Props {

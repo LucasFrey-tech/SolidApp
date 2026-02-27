@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import Swal from 'sweetalert2';
-import styles from '@/styles/Paneles/adminUsersPanel.module.css';
-import { baseApi } from '@/API/baseApi';
+import { useState, useEffect, useRef } from "react";
+import Swal from "sweetalert2";
+import styles from "@/styles/Paneles/adminUsersPanel.module.css";
+import { baseApi } from "@/API/baseApi";
 
 type Empresa = {
   id: number;
@@ -16,8 +16,8 @@ const PAGE_SIZE = 10;
 export default function EmpresasList() {
   const [page, setPage] = useState(1);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
-  const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [empresasCount, setEmpresasCount] = useState(0);
 
@@ -29,7 +29,12 @@ export default function EmpresasList() {
   const fetchEmpresas = async () => {
     setLoading(true);
     try {
-      const res = await baseApi.empresa.getAllPaginated(page, PAGE_SIZE, search);
+      const res = await baseApi.empresa.getAllPaginated(
+        page,
+        PAGE_SIZE,
+        search,
+        false,
+      );
       const empresasFormated = res.items.map((u: any) => ({
         id: u.id,
         name: u.razon_social,
@@ -38,8 +43,8 @@ export default function EmpresasList() {
       setEmpresas(empresasFormated);
       setEmpresasCount(res.total);
     } catch (error) {
-      console.error('Error del fetch empresas: ', error);
-      Swal.fire('Error', 'No se pudieron cargar las empresas', 'error');
+      console.error("Error del fetch empresas: ", error);
+      Swal.fire("Error", "No se pudieron cargar las empresas", "error");
     } finally {
       setLoading(false);
       // Restaurar foco en input
@@ -62,31 +67,37 @@ export default function EmpresasList() {
 
   const toggleEmpresa = async (empresa: Empresa) => {
     const result = await Swal.fire({
-      title: empresa.enabled ? '¿Deshabilitar empresa?' : '¿Habilitar empresa?',
+      title: empresa.enabled ? "¿Deshabilitar empresa?" : "¿Habilitar empresa?",
       text: empresa.name,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'Cancelar',
+      confirmButtonText: "Sí",
+      cancelButtonText: "Cancelar",
     });
 
     if (!result.isConfirmed) return;
 
     try {
-      await baseApi.empresa.update(empresa.id, { deshabilitado: empresa.enabled });
+      if (empresa.enabled) {
+        await baseApi.empresa.delete(empresa.id);
+      } else {
+        await baseApi.empresa.restore(empresa.id);
+      }
 
       setEmpresas((prev) =>
-        prev.map((e) => (e.id === empresa.id ? { ...e, enabled: !e.enabled } : e))
+        prev.map((e) =>
+          e.id === empresa.id ? { ...e, enabled: !e.enabled } : e,
+        ),
       );
 
       Swal.fire({
-        icon: 'success',
-        title: 'Actualizado',
+        icon: "success",
+        title: "Actualizado",
         timer: 1200,
         showConfirmButton: false,
       });
     } catch (error) {
-      Swal.fire('Error', 'No se pudo actualizar la empresa', 'error');
+      Swal.fire("Error", "No se pudo actualizar la empresa", "error");
     }
   };
 
@@ -138,7 +149,10 @@ export default function EmpresasList() {
         <span>
           Página {page} de {totalPages}
         </span>
-        <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
           Siguiente
         </button>
       </div>

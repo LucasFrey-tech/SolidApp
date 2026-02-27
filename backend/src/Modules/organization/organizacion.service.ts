@@ -96,7 +96,6 @@ export class PerfilOrganizacionService {
     const queryBuilder = this.organizacionRepository
       .createQueryBuilder('perfil')
       .leftJoinAndSelect('perfil.cuenta', 'cuenta')
-      .where('cuenta.deshabilitado = :deshabilitado', { deshabilitado: false });
 
     if (search) {
       queryBuilder.andWhere(

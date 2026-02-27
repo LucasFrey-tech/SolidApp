@@ -273,8 +273,14 @@ export class EmpresaController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('search') search = '',
+    @Query('enabled') enabled: boolean,
   ) {
-    return await this.empresasService.findPaginated(page, limit, search);
+    return await this.empresasService.findPaginated(
+      page,
+      limit,
+      search,
+      enabled,
+    );
   }
 
   // =====Panel Admin=====
@@ -322,7 +328,7 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
-  @Delete(':id')
+  @Delete(':id/borrar')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(RolCuenta.ADMIN)

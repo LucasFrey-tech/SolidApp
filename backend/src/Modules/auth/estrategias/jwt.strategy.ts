@@ -76,6 +76,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             cuenta.id,
           );
           break;
+        case RolCuenta.ADMIN:
+          perfil = cuenta;
+          break;
         default:
           throw new UnauthorizedException('Rol inválido');
       }
@@ -84,7 +87,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('Perfil no encontrado');
       }
 
-      // 4. Actualizar última conexión (opcional, podés hacerlo async sin await)
       this.cuentaService
         .actualizarUltimaConexion(cuenta.id)
         .catch((error: Error) => {

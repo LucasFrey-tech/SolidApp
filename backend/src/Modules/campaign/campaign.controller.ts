@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  Patch,
 } from '@nestjs/common';
 
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
@@ -15,6 +16,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CampaignsService } from './campaign.service';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
+import { CampaignEstado } from './enum';
 
 /**
  * Controlador para gestionar las operaciones de las Campañas.
@@ -104,8 +106,18 @@ export class CampaignsController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('search') search = '',
+    @Query('onlyEnabled') onlyEnabled: boolean,
   ) {
-    return this.campaignService.findPaginated(page, limit, search);
+    return this.campaignService.findPaginated(page, limit, search, onlyEnabled);
+  }
+
+  @Patch(':id/estado')
+  @ApiOperation({ summary: 'Actualizar estado de la organización' })
+  async updateEstado(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('estado') estado: CampaignEstado,
+  ) {
+    await this.campaignService.updateEstado(id, estado);
   }
 
   /**

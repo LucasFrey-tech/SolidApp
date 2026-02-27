@@ -16,6 +16,7 @@ import Swal from "sweetalert2";
 import { LoginUsuarioStrategy } from "@/API/class/login/usuario";
 import { LoginEmpresaStrategy } from "@/API/class/login/empresa";
 import { LoginOrganizacionStrategy } from "@/API/class/login/organizacion";
+import { LoginAdminStrategy } from "@/API/class/login/admin";
 
 import { RolCuenta } from "@/API/types/auth";
 
@@ -39,7 +40,8 @@ interface Errors {
 type loginStrategy =
   | LoginUsuarioStrategy
   | LoginEmpresaStrategy
-  | LoginOrganizacionStrategy;
+  | LoginOrganizacionStrategy
+  | LoginAdminStrategy
 
 const validateEmail = (email: string): string => {
   if (!email) return "El email es obligatorio";
@@ -96,7 +98,8 @@ export default function Login() {
 
       case RolCuenta.ORGANIZACION:
         return new LoginOrganizacionStrategy(baseApi.auth);
-
+      case RolCuenta.ADMIN:
+        return new LoginAdminStrategy(baseApi.auth);
       default:
         return null;
     }
@@ -291,6 +294,20 @@ export default function Login() {
               />
 
               <p className={styles.cardText}>Organización</p>
+            </div>
+
+            <div
+              className={styles.card}
+              onClick={() => handleStepChange(RolCuenta.ADMIN)}
+            >
+              <Image
+                src="/Registro/Admin_Registro.svg"
+                alt="Administrador"
+                width={80}
+                height={80}
+              />
+
+              <p className={styles.cardText}>Administrador</p>
             </div>
           </div>
 

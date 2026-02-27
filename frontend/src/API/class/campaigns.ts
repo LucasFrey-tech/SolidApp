@@ -1,5 +1,7 @@
+import { json } from "zod";
 import { Crud, PaginatedResponse } from "../service";
 import { Campaign, CampaignDetalle } from "../types/campañas/campaigns";
+import { CampaignEstado } from "../types/campañas/enum";
 
 export class campaignService extends Crud<Campaign> {
   protected endPoint = "/campaigns";
@@ -20,12 +22,16 @@ export class campaignService extends Crud<Campaign> {
     page = 1,
     limit = 20,
     search?: string,
+    onlyEnabled: boolean = false,
   ): Promise<PaginatedResponse<Campaign>> {
     let url = `${this.baseUrl}${this.endPoint}/list/paginated/?page=${page}&limit=${limit}`;
 
     if (search) {
       url += `&search=${encodeURIComponent(search)}`;
     }
+
+    url += `&onlyEnabled=${onlyEnabled}`;
+
     const res = await fetch(url, {
       method: 'GET',
       headers: this.getHeaders(),
@@ -61,6 +67,7 @@ export class campaignService extends Crud<Campaign> {
 
   async getOne(id: number): Promise<Campaign> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
+      method: 'GET',
       headers: this.getHeaders(),
     });
 
@@ -73,6 +80,7 @@ export class campaignService extends Crud<Campaign> {
 
   async getOneDetail(id: number): Promise<CampaignDetalle> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/detalle`, {
+      method: 'GET',
       headers: this.getHeaders(),
     });
 
@@ -81,6 +89,19 @@ export class campaignService extends Crud<Campaign> {
     }
 
     return res.json();
+  }
+
+  async updateEstado(id: number, estado: CampaignEstado) {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/estado`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify({estado}),
+    });
+
+    if (!res.ok) {
+      throw new Error("Error al actualizar el estado de la campaña");
+    }
+
   }
 
   async delete(id: number): Promise<void> {

@@ -26,7 +26,8 @@ export default function CampaignsCatalogoPage() {
         const res = await baseApi.campaign.getAllPaginated(
           currentPage,
           ITEMS_PER_PAGE,
-          deferredSearch
+          deferredSearch,
+          true,
         );
         setCampaigns(res.items);
         setTotal(res.total);

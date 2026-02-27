@@ -30,7 +30,7 @@ export interface Empresa {
 export interface EmpresaUpdateRequest {
   cuit_empresa?: string;
   razon_social?: string;
-  nombre_fantasia?: string;
+  nombre_empresa?: string;
   descripcion?: string;
   rubro?: string;
   telefono?: string;
@@ -42,4 +42,5 @@ export interface EmpresaUpdateRequest {
 export interface EmpresaSummary {
   nombre_empresa: string;
   logo: string;
+  deshabilitado: boolean;
 }

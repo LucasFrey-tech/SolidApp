@@ -76,16 +76,39 @@ export class BeneficioService {
    * @param limit
    * @returns
    */
-  async findAllPaginated(page = 1, limit = 10) {
+  async findAllPaginated(
+    page = 1,
+    limit = 10,
+    search: string = '',
+    onlyEnabled: boolean = false,
+  ) {
     const skip = (page - 1) * limit;
 
-    const [beneficios, total] = await this.beneficiosRepository.findAndCount({
-      relations: ['empresa', 'empresa.cuenta'],
-      where: { empresa: { cuenta: { deshabilitado: false } } },
-      skip,
-      take: limit,
-      order: { fecha_registro: 'DESC' },
-    });
+    const queryBuilder = this.beneficiosRepository
+      .createQueryBuilder('beneficio')
+      .leftJoinAndSelect('beneficio.empresa', 'empresa')
+      .leftJoinAndSelect('empresa.cuenta', 'cuenta');
+
+    if (onlyEnabled) {
+      queryBuilder.andWhere('beneficio.estado = :estado', {
+        estado: BeneficioEstado.APROBADO,
+      });
+      queryBuilder.andWhere('cuenta.deshabilitado = :deshabilitado', {
+        deshabilitado: 0,
+      });
+    }
+
+    if (search) {
+      queryBuilder.andWhere('beneficio.titulo ILIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    const [beneficios, total] = await queryBuilder
+      .skip(skip)
+      .take(limit)
+      .orderBy('beneficio.fecha_registro', 'DESC')
+      .getManyAndCount();
 
     return {
       items: beneficios.map(this.mapToResponseDto),
@@ -420,7 +443,7 @@ export class BeneficioService {
   ): Promise<BeneficiosResponseDTO> {
     const beneficio = await this.beneficiosRepository.findOne({
       where: { id },
-      relations: ['empresa'],
+      relations: ['empresa', 'empresa.cuenta'],
     });
 
     if (!beneficio) {
@@ -437,23 +460,6 @@ export class BeneficioService {
   }
 
   /**
-   * Elimina el Beneficio seleccionado (hard delete)
-   *
-   * @param {number} id - ID del beneficio a eliminar
-   */
-  async delete(id: number): Promise<void> {
-    const beneficio = await this.beneficiosRepository.findOne({
-      where: { id },
-    });
-
-    if (!beneficio) {
-      throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
-    }
-
-    await this.beneficiosRepository.remove(beneficio);
-  }
-
-  /**
    * Mapea una entidad Beneficios a su DTO de respuesta.
    *
    * @param {Beneficios} beneficio - Entidad Beneficios con la relación empresa cargada.
@@ -465,7 +471,7 @@ export class BeneficioService {
     const empresaSummary: EmpresaSummaryDTO = {
       id: beneficio.empresa.id,
       razon_social: beneficio.empresa.razon_social,
-      nombre_fantasia: beneficio.empresa.nombre_empresa,
+      nombre_empresa: beneficio.empresa.nombre_empresa,
       rubro: beneficio.empresa.rubro,
       verificada: beneficio.empresa.verificada,
       deshabilitado: beneficio.empresa.cuenta.deshabilitado,

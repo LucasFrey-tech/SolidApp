@@ -100,7 +100,7 @@ export default function UsuariosAdminPanel() {
 
     setUpdatingUserId(user.id);
 
-    // 🔥 Actualización optimista
+    // Actualización
     setUsers((prev) =>
       prev.map((u) =>
         u.id === user.id ? { ...u, enabled: enable } : u
@@ -122,7 +122,7 @@ export default function UsuariosAdminPanel() {
     } catch (err) {
       console.error(err);
 
-      // ❌ revertir si falla
+      // revertir si falla
       setUsers((prev) =>
         prev.map((u) =>
           u.id === user.id ? { ...u, enabled: !enable } : u

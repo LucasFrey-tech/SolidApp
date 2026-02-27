@@ -11,6 +11,8 @@ import CanjeModal from "@/components/pages/tienda/CanjeModal";
 import { isBeneficioVisible } from "../../Utils/beneficiosUtils";
 
 import { baseApi } from "@/API/baseApi";
+import { useUser } from "@/app/context/UserContext";
+import { RolCuenta } from "@/API/types/auth";
 
 /* ==================== PROPS ==================== */
 interface Props {
@@ -27,6 +29,8 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
   const [beneficioSeleccionado, setBeneficioSeleccionado] =
     useState<Beneficio | null>(null);
 
+  const { user } = useUser();
+
   /* ==================== FETCH ==================== */
   useEffect(() => {
     if (!idEmpresa) return;
@@ -34,7 +38,8 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
       try {
         setLoading(true);
         const data = await baseApi.beneficio.getByEmpresa(idEmpresa);
-        setBeneficios(Array.isArray(data) ? data : []);
+        console.log("datos: ", data);
+        setBeneficios(data.items || []);
       } catch (error) {
         console.error("Error cargando beneficios", error);
         setBeneficios([]);
@@ -75,35 +80,39 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
           {/* LISTA */}
           {!loading && beneficiosVisibles.length > 0 && (
             <div className={styles.list}>
-              {beneficiosVisibles.map((beneficio) => (
-                <div key={beneficio.id} className={styles.card}>
-                  <div className={styles.logo}>
-                    {beneficio.empresa.nombre_empresa}
-                  </div>
+              {beneficiosVisibles.map((beneficio) => {
+                return (
+                  <div key={beneficio.id} className={styles.card}>
+                    <div className={styles.logo}>
+                      {beneficio.empresa.nombre_empresa}
+                    </div>
 
-                  <div className={styles.mainInfo}>
-                    <div className={styles.discount}>{beneficio.titulo}</div>
-                    <div className={styles.subtitle}>{beneficio.tipo}</div>
-                  </div>
+                    <div className={styles.mainInfo}>
+                      <div className={styles.discount}>{beneficio.titulo}</div>
+                      <div className={styles.subtitle}>{beneficio.tipo}</div>
+                    </div>
 
-                  <div className={styles.detail}>{beneficio.detalle}</div>
+                    <div className={styles.detail}>{beneficio.detalle}</div>
 
-                  <div className={styles.valor}>
-                    <span>Puntos</span>
-                    <strong>{beneficio.valor}</strong>
-                  </div>
+                    <div className={styles.valor}>
+                      <span>Puntos</span>
+                      <strong>{beneficio.valor}</strong>
+                    </div>
 
-                  <div className={styles.action}>
-                    <button
-                      className={styles.canjearBtn}
-                      disabled={beneficio.cantidad === 0}
-                      onClick={() => setBeneficioSeleccionado(beneficio)}
-                    >
-                      {beneficio.cantidad === 0 ? "Sin stock" : "Canjear"}
-                    </button>
+                    {user?.role === RolCuenta.USUARIO && (
+                      <div className={styles.action}>
+                        <button
+                          className={styles.canjearBtn}
+                          disabled={beneficio.cantidad === 0}
+                          onClick={() => setBeneficioSeleccionado(beneficio)}
+                        >
+                          {beneficio.cantidad === 0 ? "Sin stock" : "Canjear"}
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </aside>

@@ -19,11 +19,12 @@ import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
-import { UpdateEstadoBeneficioDTO } from './dto/update_estado_beneficio.dto';
+
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../auth/decoradores/roles.decorador';
 import { RolCuenta } from '../../Entities/cuenta.entity';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
+import { BeneficioEstado } from './dto/enum/enum';
 
 /**
  * Controlador para gestionar las operaciones de los Beneficios.
@@ -53,8 +54,18 @@ export class BeneficioController {
    * @returns Lista de Beneficios paginados.
    */
   @Get('cupones')
-  async findAllPaginated(@Query('page') page = 1, @Query('limit') limit = 10) {
-    return this.beneficiosService.findAllPaginated(Number(page), Number(limit));
+  async findAllPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+    @Query('onlyEnabled') onlyEnabled: boolean,
+  ) {
+    return this.beneficiosService.findAllPaginated(
+      Number(page),
+      Number(limit),
+      search,
+      onlyEnabled,
+    );
   }
 
   /**
@@ -169,25 +180,14 @@ export class BeneficioController {
    * Actualiza el estado del Beneficio.
    *
    * @param {number} id - ID del Beneficio a actualizar
-   * @param {UpdateEstadoBeneficioDTO} dto - Estado actualizado del Beneficio
+   * @param {BeneficioEstado} estado - Estado actualizado del Beneficio
    * @returns Beneficio actualizado
    */
   @Patch(':id/estado')
   updateEstado(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateEstadoBeneficioDTO,
+    @Body('estado') estado: BeneficioEstado,
   ) {
-    return this.beneficiosService.updateEstado(id, dto.estado);
-  }
-
-  /**
-   * Elimina un Beneficio del sistema (hard delete).
-   *
-   * @param {number} id - ID del Beneficio a eliminar
-   */
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    await this.beneficiosService.delete(id);
+    return this.beneficiosService.updateEstado(id, estado);
   }
 }

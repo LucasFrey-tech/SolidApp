@@ -133,6 +133,10 @@ export class AuthService {
 
     if (!cuenta) throw new UnauthorizedException('Credenciales incorrectas');
 
+    if (cuenta.deshabilitado) {
+      throw new UnauthorizedException('Cuenta deshabilitada');
+    }
+
     console.log('Hash en BD:', cuenta.clave);
 
     const claveValida = await this.hashService.compare(dto.clave, cuenta.clave);

@@ -4,9 +4,12 @@ import { PerfilEmpresa } from '../../../Entities/perfil_empresa.entity';
 import { PerfilOrganizacion } from '../../../Entities/perfil_organizacion.entity';
 
 // Tipo unión para los diferentes perfiles
-export type PerfilAsociado = PerfilUsuario | PerfilEmpresa | PerfilOrganizacion;
+export type PerfilAsociado =
+  | PerfilUsuario
+  | PerfilEmpresa
+  | PerfilOrganizacion
+  | Cuenta;
 
-// Interfaz para el usuario que irá en req.user
 export interface UsuarioAutenticado {
   cuenta: Cuenta;
   perfil: PerfilAsociado;

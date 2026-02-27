@@ -59,33 +59,43 @@ export class CampaignsService {
    * @param {string} search - Término de busqueda
    * @returns Lista de Campañas paginadas
    */
-  async findPaginated(page: number, limit: number, search: string) {
-    const startIndex = (page - 1) * limit;
-
+  async findPaginated(
+    page: number,
+    limit: number,
+    search: string,
+    onlyEnabled: boolean = false,
+  ) {
     const query = this.campaignsRepository
       .createQueryBuilder('campaign')
       .leftJoinAndSelect('campaign.organizacion', 'organizacion')
-      .leftJoinAndSelect(
-        'campaign.imagenes',
-        'imagen',
-        'imagen.esPortada = :isPortada',
-        { isPortada: true },
-      )
-      .where(
-        'campaign.titulo LIKE :search OR campaign.descripcion LIKE :search',
-        {
-          search: `%${search}%`,
-        },
-      )
-      .andWhere('campaign.estado = :estado', { estado: CampaignEstado.ACTIVA })
-      .orderBy('campaign.id', 'ASC')
-      .skip(startIndex)
-      .take(limit);
+      .leftJoinAndSelect('organizacion.cuenta', 'cuenta')
+      .leftJoinAndSelect('campaign.imagenes', 'imagenes');
 
-    const [campaigns, total] = await query.getManyAndCount();
+    query.andWhere('cuenta.deshabilitado = :deshabilitado', {
+      deshabilitado: false,
+    });
+
+    if (onlyEnabled) {
+      query.andWhere('campaign.estado = :estado', {
+        estado: CampaignEstado.ACTIVA,
+      });
+    }
+
+    if (search) {
+      query.andWhere(
+        '(campaign.titulo LIKE :search OR campaign.descripcion LIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    const [campaigns, total] = await query
+      .orderBy('campaign.fecha_Registro', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
 
     return {
-      items: campaigns.map(this.mapToResponseDto),
+      items: campaigns.map((c) => this.mapToDetailDto(c)),
       total,
     };
   }
@@ -333,6 +343,22 @@ export class CampaignsService {
     }
 
     return this.mapToResponseDto(updatedCampaign);
+  }
+
+  async updateEstado(id: number, estado: CampaignEstado) {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException(
+        `Campaña Solidaria con ID ${id} no encontrada`,
+      );
+    }
+
+    campaign.estado = estado;
+
+    await this.campaignsRepository.save(campaign);
   }
 
   /**

@@ -200,8 +200,7 @@ export class PerfilUsuarioService {
 
     const queryBuilder = this.usuarioRepository
       .createQueryBuilder('perfil')
-      .leftJoinAndSelect('perfil.cuenta', 'cuenta')
-      .where('cuenta.deshabilitado = :deshabilitado', { deshabilitado: false });
+      .leftJoinAndSelect('perfil.cuenta', 'cuenta');
 
     if (search) {
       queryBuilder.andWhere(
@@ -212,7 +211,7 @@ export class PerfilUsuarioService {
 
     const [usuarios, total] = await queryBuilder
       .skip(skip)
-      .take(limit) // ✅ corregido de .limit() a .take()
+      .take(limit)
       .orderBy('perfil.id', 'ASC')
       .getManyAndCount();
 

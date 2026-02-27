@@ -10,7 +10,7 @@ export class AuthService {
     const url = `${this.baseUrl}${this.endPoint}/login`;
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: this.getHeaders(),
       body: JSON.stringify(credentials),
     });
 

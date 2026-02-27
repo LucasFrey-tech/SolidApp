@@ -2,7 +2,7 @@ import { Crud, PaginatedResponse } from "../service";
 import {
   Beneficio,
   BeneficioCreateRequest,
-  BeneficioUpdateEstadoRequest,
+  BeneficiosEstado,
   BeneficioUpdateRequest,
 } from "../types/beneficios";
 
@@ -24,15 +24,25 @@ export class BeneficiosService extends Crud<Beneficio> {
   async getAllPaginated(
     page = 1,
     limit = 10,
-    search: string = "",
+    search?: string,
+    onlyEnabled?: boolean,
   ): Promise<PaginatedResponse<Beneficio>> {
+    let url = `${this.baseUrl}/${this.endpoint}/cupones?page=${page}&limit=${limit}`;
+    
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+
+    url += `&onlyEnabled=${onlyEnabled}`;
+  
     const res = await fetch(
-      `${this.baseUrl}/${this.endpoint}/cupones?page=${page}&limit=${limit}&search=${search}`,
+      url,
       {
         method: "GET",
         headers: this.getHeaders(),
       },
     );
+
     if (!res.ok) {
       const errorDetails = await res.text();
       throw new Error(
@@ -72,33 +82,33 @@ export class BeneficiosService extends Crud<Beneficio> {
   }
 
   async canjear(
-  beneficioId: number,
-  data: { userId: number; cantidad: number },
-) {
-  const res = await fetch(
-    `${this.baseUrl}/${this.endpoint}/${beneficioId}/canjear`,
-    {
-      method: "POST",
-      headers: {
-        ...this.getHeaders(),
-        "Content-Type": "application/json",
+    beneficioId: number,
+    data: { userId: number; cantidad: number },
+  ) {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endpoint}/${beneficioId}/canjear`,
+      {
+        method: "POST",
+        headers: {
+          ...this.getHeaders(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    },
-  );
+    );
 
-  const result = await res.json();
+    const result = await res.json();
 
-  if (!res.ok) {
-    const mensaje = Array.isArray(result.message)
-      ? result.message.join(", ")
-      : result.message;
+    if (!res.ok) {
+      const mensaje = Array.isArray(result.message)
+        ? result.message.join(", ")
+        : result.message;
 
-    throw new Error(mensaje || "Error al canjear beneficio");
+      throw new Error(mensaje || "Error al canjear beneficio");
+    }
+
+    return result;
   }
-
-  return result;
-}
   async update(id: number, data: BeneficioUpdateRequest) {
     const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}`, {
       method: "PATCH",
@@ -118,7 +128,7 @@ export class BeneficiosService extends Crud<Beneficio> {
   }
 
   async delete(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}`, {
+    const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}/borrar`, {
       method: "DELETE",
       headers: this.getHeaders(),
     });
@@ -128,21 +138,29 @@ export class BeneficiosService extends Crud<Beneficio> {
     }
   }
 
-  async updateEstado(
-    id: number,
-    body: BeneficioUpdateEstadoRequest,
-  ) {
+  async restore(id: number): Promise<void> {
     const res = await fetch(
-      `${this.baseUrl}/beneficios/${id}/estado`,
+      `${this.baseUrl}/${this.endpoint}/${id}/restaurar`,
       {
-        method: 'PATCH',
+        method: "PATCH",
         headers: this.getHeaders(),
-        body: JSON.stringify(body),
       },
     );
 
     if (!res.ok) {
-      throw new Error('Error al actualizar estado del beneficio');
+      throw new Error("Error al restaurar el beneficio");
+    }
+  }
+
+  async updateEstado(id: number, estado: BeneficiosEstado) {
+    const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}/estado`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify({estado}),
+    });
+
+    if (!res.ok) {
+      throw new Error("Error al actualizar estado del beneficio");
     }
 
     return res.json();
@@ -152,7 +170,7 @@ export class BeneficiosService extends Crud<Beneficio> {
    * Beneficios por empresa
    * GET /beneficios/empresa/:id
    */
-  async getByEmpresa(idEmpresa: number): Promise<Beneficio[]> {
+  async getByEmpresa(idEmpresa: number): Promise<PaginatedResponse<Beneficio>> {
     const res = await fetch(
       `${this.baseUrl}/${this.endpoint}/empresa/${idEmpresa}/cupones`,
       {

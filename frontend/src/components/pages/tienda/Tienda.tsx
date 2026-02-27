@@ -10,6 +10,8 @@ import { Beneficio } from "@/API/types/beneficios";
 import { isBeneficioVisible } from "@/components/Utils/beneficiosUtils";
 
 import CanjeModal from "@/components/pages/tienda/CanjeModal";
+import { useUser } from "@/app/context/UserContext";
+import { RolCuenta } from "@/API/types/auth";
 
 const LIMIT = 10;
 const PLACEHOLDER_IMG = "/img/placeholder.svg";
@@ -20,8 +22,8 @@ export default function Tienda() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [beneficioSeleccionado, setBeneficioSeleccionado] =
-    useState<Beneficio | null>(null);
+  const [beneficioSeleccionado, setBeneficioSeleccionado] = useState<Beneficio | null>(null);
+  const { user } = useUser();
 
   /**
    * =========================
@@ -34,8 +36,13 @@ export default function Tienda() {
         setLoading(true);
         setError(null);
 
-        const res = await baseApi.beneficio.getAllPaginated(page, LIMIT);
-        console.log(res);
+        const res = await baseApi.beneficio.getAllPaginated(
+          page,
+          LIMIT,
+          undefined,
+          true,
+        );
+        console.log(res.items);
 
         const items = Array.isArray(res.items)
           ? res.items
@@ -61,6 +68,8 @@ export default function Tienda() {
    */
   function EmpresaLogo({ src, alt }: { src?: string | null; alt: string }) {
     const [imgSrc, setImgSrc] = useState(src || PLACEHOLDER_IMG);
+
+    console.log("ALTERNATIVE TEXT: ", alt);
 
     return (
       <Image
@@ -99,13 +108,15 @@ export default function Tienda() {
                     Restantes: <span>{beneficio.cantidad}</span>
                   </p>
 
-                  <button
-                    className={styles.button}
-                    disabled={beneficio.cantidad === 0}
-                    onClick={() => setBeneficioSeleccionado(beneficio)}
-                  >
-                    {beneficio.cantidad === 0 ? "Sin stock" : "Reclamar"}
-                  </button>
+                  {user?.role === RolCuenta.USUARIO && (
+                    <button
+                      className={styles.button}
+                      disabled={beneficio.cantidad === 0}
+                      onClick={() => setBeneficioSeleccionado(beneficio)}
+                    >
+                      {beneficio.cantidad === 0 ? "Sin stock" : "Reclamar"}
+                    </button>
+                  )}
                 </div>
               ))}
             </section>

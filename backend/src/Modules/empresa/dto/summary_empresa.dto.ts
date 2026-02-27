@@ -11,7 +11,7 @@ export class EmpresaSummaryDTO {
   razon_social: string;
 
   @ApiProperty({ example: 'SuperUnidos', description: 'Nombre de fantasía' })
-  nombre_fantasia: string;
+  nombre_empresa: string;
 
   @ApiProperty({ example: 'Supermercado', description: 'Rubro' })
   rubro?: string;
