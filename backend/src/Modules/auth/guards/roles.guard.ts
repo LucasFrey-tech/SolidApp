@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decoradores/roles.decorador';
+import { PUBLIC_KEY } from '../decoradores/auth.decorador';
 import { RolCuenta } from '../../../Entities/cuenta.entity';
 import { UsuarioAutenticado } from '../interfaces/authenticated_request.interface';
 import { Request } from 'express';
@@ -19,6 +20,17 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
+    // Verificar si es público
+    const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    // Si es público, permite el acceso sin verificar nada más
+    if (isPublic) {
+      return true;
+    }
+
     const requiredRoles = this.reflector.getAllAndOverride<RolCuenta[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],

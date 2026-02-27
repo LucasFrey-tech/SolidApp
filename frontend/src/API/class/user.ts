@@ -5,7 +5,6 @@ import {
   donacionUsuario,
   Donation,
 } from "../types/donaciones/donaciones";
-import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 import { User, UserPoints } from "../types/user";
 
 export class Users extends Crud<User> {
@@ -37,21 +36,6 @@ export class Users extends Crud<User> {
     }
 
     return res.json();
-  }
-
-  async updateCredenciales(data: UpdateCredencialesPayload): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/credenciales`, {
-      method: "PATCH",
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      throw new Error(
-        `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
-      );
-    }
   }
 
   async getPoints(): Promise<UserPoints> {

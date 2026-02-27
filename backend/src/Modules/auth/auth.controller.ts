@@ -2,6 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { Public } from './decoradores/auth.decorador';
 
 /**
  * Controlador para gestionar las operaciones de de Autenticación.
@@ -12,6 +13,7 @@ import { RegisterDto, LoginDto } from './dto/auth.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('register')
   @ApiOperation({ summary: 'Registro de usuario' })
   @ApiBody({
@@ -24,6 +26,7 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
+  @Public()
   @Post('login')
   @ApiOperation({ summary: 'Inicio de sesión' })
   @ApiBody({
@@ -39,11 +42,13 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  @Public()
   @Post('forgot-password')
   async forgotPassword(@Body('email') email: string) {
     return await this.authService.forgotPassword(email);
   }
 
+  @Public()
   @Post('reset-password')
   async resetPassword(
     @Body('token') token: string,

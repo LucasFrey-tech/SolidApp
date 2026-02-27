@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuarioBeneficio } from '../../../Entities/usuario-beneficio.entity';
 import { UsuarioBeneficioService } from './usuario-beneficio.service';
-import { UsuarioBeneficioController } from './usuario-beneficio.controller';
 
 /**
  * =============================================================================
@@ -37,12 +36,6 @@ import { UsuarioBeneficioController } from './usuario-beneficio.controller';
      */
     TypeOrmModule.forFeature([UsuarioBeneficio]),
   ],
-
-  /**
-   * Controladores que exponen los endpoints HTTP
-   * relacionados a beneficios de usuario.
-   */
-  controllers: [UsuarioBeneficioController],
 
   /**
    * Servicios que contienen la lógica de negocio.

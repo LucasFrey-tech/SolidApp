@@ -12,7 +12,6 @@ import {
   OrganizacionCreateRequest,
   OrganizacionUpdateRequest,
 } from "../types/organizaciones";
-import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class OrganizacionesService extends Crud<Organizacion> {
   protected endPoint = "organizaciones";
@@ -43,21 +42,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
     return res.json();
   }
 
-  async updateCredenciales(data: UpdateCredencialesPayload): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/credenciales`, {
-      method: "PATCH",
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const errorDetails = await res.text();
-
-      throw new Error(
-        `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
-      );
-    }
-  }
-
   async getCampaignsPaginated(
     page = 1,
     limit = 10,
@@ -65,28 +49,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
     console.log("headers:", this.getHeaders());
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/campanas/?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-        headers: this.getHeaders(),
-      },
-    );
-
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      throw new Error(
-        `Error al obtener campañas (${res.status}): ${errorDetails}`,
-      );
-    }
-
-    return res.json();
-  }
-
-  async getDonacionesPaginated(
-    page = 1,
-    limit = 10,
-  ): Promise<PaginatedResponse<DonacionResponsePanel>> {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/donaciones/?page=${page}&limit=${limit}`,
       {
         method: "GET",
         headers: this.getHeaders(),
@@ -209,6 +171,28 @@ export class OrganizacionesService extends Crud<Organizacion> {
 
     if (!res.ok) {
       throw new Error("Error al actualizar campaña");
+    }
+
+    return res.json();
+  }
+
+  async getAllPaginatedByOrganizacion(
+    page = 1,
+    limit = 10
+  ): Promise<PaginatedResponse<DonacionResponsePanel>> {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/mis-donaciones?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      }
+    );
+
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener donaciones (${res.status}): ${errorDetails}`
+      );
     }
 
     return res.json();

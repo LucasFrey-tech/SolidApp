@@ -1,4 +1,3 @@
-// base-account.entity.ts
 import {
   Column,
   CreateDateColumn,

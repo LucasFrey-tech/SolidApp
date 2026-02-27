@@ -11,7 +11,6 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
-  UseGuards,
   Req,
   Post,
 } from '@nestjs/common';
@@ -30,14 +29,12 @@ import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { NullableImageValidationPipe } from '../../common/pipes/mediaFilePipes';
-import { AuthGuard } from '@nestjs/passport';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
-import { Roles } from '../auth/decoradores/roles.decorador';
-import { RolesGuard } from '../auth/guards/roles.guard';
 import { RolCuenta } from '../../Entities/cuenta.entity';
 import { PaginatedBeneficiosResponseDTO } from '../benefit/dto/response_paginated_beneficios';
 import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
+import { Auth, Public } from '../auth/decoradores/auth.decorador';
 
 /**
  * ============================================================
@@ -69,6 +66,42 @@ import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 export class EmpresaController {
   constructor(private readonly empresasService: PerfilEmpresaService) {}
 
+  /**
+   * GET /list
+   *
+   * Devuelve empresas de manera paginada con opción de búsqueda.
+   *
+   * @param page Número de página (default: 1)
+   * @param limit Cantidad de registros por página (default: 10)
+   * @param search Texto opcional para filtrar por razón social o nombre fantasía
+   *
+   * @returns Promise<{ items: EmpresaResponseDTO[], total: number }>
+   * Objeto con:
+   * - items: lista de empresas
+   * - total: cantidad total de registros
+   */
+  @Public()
+  @Get('list')
+  @ApiOperation({ summary: 'Listar empresas paginadas' })
+  @ApiResponse({
+    status: 200,
+    type: EmpresaResponseDTO,
+    isArray: true,
+  })
+  async findPaginated(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+    @Query('enabled') enabled: boolean,
+  ) {
+    return await this.empresasService.findPaginated(
+      page,
+      limit,
+      search,
+      enabled,
+    );
+  }
+
   // =====Panel Organizacion=====
 
   /**
@@ -84,8 +117,8 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
+  @Auth(RolCuenta.EMPRESA)
   @Get('perfil')
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Obtener una empresa por ID' })
   @ApiParam({
     name: 'id',
@@ -121,8 +154,8 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
+  @Auth(RolCuenta.EMPRESA)
   @Patch('perfil')
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Actualizar una empresa' })
   @ApiParam({
     name: 'id',
@@ -174,8 +207,8 @@ export class EmpresaController {
     return this.empresasService.update(req.user.perfil.id, updateDto ?? {});
   }
 
+  @Auth(RolCuenta.EMPRESA)
   @Get('cupones')
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Obtener los cupones paginados de una empresa' })
   @ApiResponse({
     status: 200,
@@ -194,8 +227,8 @@ export class EmpresaController {
     return this.empresasService.getCupones(req.user.perfil.id, page, limit);
   }
 
+  @Auth(RolCuenta.EMPRESA)
   @Post('cupones')
-  @UseGuards(AuthGuard('jwt'))
   async createCupon(
     @Req() req: RequestConUsuario,
     @Body() dto: CreateBeneficiosDTO,
@@ -203,8 +236,8 @@ export class EmpresaController {
     return await this.empresasService.createCupon(req.user.perfil.id, dto);
   }
 
+  @Auth(RolCuenta.EMPRESA)
   @Patch('cupones/:cuponId')
-  @UseGuards(AuthGuard('jwt'))
   async updateCupon(
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Body() dto: UpdateBeneficiosDTO,
@@ -233,8 +266,8 @@ export class EmpresaController {
    * @throws UnauthorizedException
    * Si la contraseña actual es incorrecta.
    */
+  @Auth(RolCuenta.EMPRESA)
   @Patch('credenciales')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña de la empresa',
   })
@@ -248,41 +281,6 @@ export class EmpresaController {
     );
   }
 
-  /**
-   * GET /list
-   *
-   * Devuelve empresas de manera paginada con opción de búsqueda.
-   *
-   * @param page Número de página (default: 1)
-   * @param limit Cantidad de registros por página (default: 10)
-   * @param search Texto opcional para filtrar por razón social o nombre fantasía
-   *
-   * @returns Promise<{ items: EmpresaResponseDTO[], total: number }>
-   * Objeto con:
-   * - items: lista de empresas
-   * - total: cantidad total de registros
-   */
-  @Get('list')
-  @ApiOperation({ summary: 'Listar empresas paginadas' })
-  @ApiResponse({
-    status: 200,
-    type: EmpresaResponseDTO,
-    isArray: true,
-  })
-  async findPaginated(
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-    @Query('search') search = '',
-    @Query('enabled') enabled: boolean,
-  ) {
-    return await this.empresasService.findPaginated(
-      page,
-      limit,
-      search,
-      enabled,
-    );
-  }
-
   // =====Panel Admin=====
 
   /**
@@ -293,9 +291,8 @@ export class EmpresaController {
    * @returns Promise<EmpresaResponseDTO[]>
    * Lista de empresas activas.
    */
+  @Auth(RolCuenta.ADMIN)
   @Get()
-  @Roles(RolCuenta.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Listar todas las empresas activas' })
   @ApiResponse({
     status: 200,
@@ -307,9 +304,8 @@ export class EmpresaController {
     return this.empresasService.findAll();
   }
 
+  @Auth(RolCuenta.ADMIN)
   @Get(':id')
-  @Roles(RolCuenta.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Obtener empresa por ID (admin)' })
   findOne(@Param('id', ParseIntPipe) id: number): Promise<EmpresaResponseDTO> {
     return this.empresasService.findOne(id);
@@ -328,10 +324,9 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
+  @Auth(RolCuenta.ADMIN)
   @Delete(':id/borrar')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(RolCuenta.ADMIN)
   @ApiOperation({ summary: 'Deshabilitar una empresa' })
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.empresasService.delete(id);
@@ -352,10 +347,9 @@ export class EmpresaController {
    * @throws BadRequestException
    * Si la empresa ya está activa.
    */
+  @Auth(RolCuenta.ADMIN)
   @Patch(':id/restaurar')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Roles(RolCuenta.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Restaurar una empresa deshabilitada' })
   async restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return await this.empresasService.restore(id);

@@ -183,7 +183,6 @@ export class AuthService {
     await this.cuentaService.resetPassword(user.id, hashedPassword);
     console.log('Contraseña actualizada en BD');
 
-    // Verificar que se guardó
     const updatedUser = await this.cuentaService.findById(user.id);
     console.log('Hash guardado en BD:', updatedUser?.clave);
 

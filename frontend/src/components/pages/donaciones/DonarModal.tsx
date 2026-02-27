@@ -69,7 +69,6 @@ export default function DonarModal({
       detalle,
       cantidad,
       campaignId,
-      usuarioId,
       puntos,
     };
 

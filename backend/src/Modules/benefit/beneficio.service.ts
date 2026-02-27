@@ -307,6 +307,7 @@ export class BeneficioService {
       }
 
       const usuario = await usuarioRepo.findOne({
+        relations: ['cuenta'],
         where: { id: userId, cuenta: { deshabilitado: false } },
         lock: { mode: 'pessimistic_write' },
       });
@@ -386,7 +387,11 @@ export class BeneficioService {
   ): Promise<BeneficiosResponseDTO> {
     const beneficio = await this.beneficiosRepository.findOne({
       where: { id },
-      relations: ['empresa'],
+      relations: {
+        empresa: {
+          cuenta: true,
+        },
+      },
     });
 
     if (!beneficio) {

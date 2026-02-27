@@ -10,7 +10,6 @@ import {
   HttpCode,
   HttpStatus,
   Req,
-  UseGuards,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -29,10 +28,7 @@ import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
 import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { ResponseOrganizationPaginatedDto } from './dto/response_organizacion_paginated.dto';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
-import { AuthGuard } from '@nestjs/passport';
 import { RolCuenta } from '../../Entities/cuenta.entity';
-import { Roles } from '../auth/decoradores/roles.decorador';
-import { RolesGuard } from '../auth/guards/roles.guard';
 import { ResponseCampaignDetalleDto } from '../campaign/dto/response_campaignDetalle.dto';
 import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
 import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
@@ -44,6 +40,7 @@ import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
 import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
 import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
 import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.dto';
+import { Auth } from '../auth/decoradores/auth.decorador';
 
 /**
  * Controlador encargado de gestionar las operaciones HTTP
@@ -76,8 +73,8 @@ export class OrganizacionesController {
    * @returns Organización encontrada
    * @throws NotFoundException si no existe
    */
+  @Auth(RolCuenta.ORGANIZACION)
   @Get('perfil')
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Obtener organización por ID' })
   @ApiParam({
     name: 'id',
@@ -97,8 +94,8 @@ export class OrganizacionesController {
     return this.organizacionService.findOne(req.user.perfil.id);
   }
 
+  @Auth(RolCuenta.ORGANIZACION)
   @Get('campanas')
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Obtener campañas de la organizacion' })
   @ApiResponse({
     status: 200,
@@ -128,8 +125,8 @@ export class OrganizacionesController {
    * @param {Express.Multer.File} files - Imagenes de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña creada
    */
+  @Auth(RolCuenta.ORGANIZACION)
   @Post('campana')
-  @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear nueva Campaña Solidaria' })
   @ApiBody({
@@ -184,8 +181,8 @@ export class OrganizacionesController {
    * @param {UpdateCampaignsDto} updateCampaignsDto - Datos actualizados de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
    */
+  @Auth(RolCuenta.ORGANIZACION)
   @Patch('campana')
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Actualizar Campaña Solidaria existente' })
   @ApiParam({
     name: 'id',
@@ -237,8 +234,8 @@ export class OrganizacionesController {
     );
   }
 
-  @Get('donaciones')
-  @UseGuards(AuthGuard('jwt'))
+  @Auth(RolCuenta.ORGANIZACION)
+  @Get('mis-donaciones')
   @ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
   @ApiResponse({
     status: 200,
@@ -271,6 +268,7 @@ export class OrganizacionesController {
    * @param {string} motivo - Motivo del rechazo (opcional, requerido si estado=RECHAZADA).
    * @returns {Promise<void>} Resultado de la operación.
    */
+  @Auth(RolCuenta.ORGANIZACION)
   @Patch('donaciones/:id')
   @ApiOperation({
     summary: 'Actualizar el estado de la donación',
@@ -321,8 +319,8 @@ export class OrganizacionesController {
    * @param updateDto Datos a modificar
    * @returns Organización actualizada
    */
+  @Auth(RolCuenta.ORGANIZACION)
   @Patch('perfil')
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Actualizar una organización' })
   @ApiParam({
     name: 'id',
@@ -351,8 +349,8 @@ export class OrganizacionesController {
    * @param dto Datos de actualización de credenciales
    * @returns Usuario actualizado + nuevo token JWT
    */
+  @Auth(RolCuenta.ORGANIZACION)
   @Patch(':id/credenciales')
-  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña de la organización',
   })
@@ -383,9 +381,8 @@ export class OrganizacionesController {
    *
    * @returns Lista de organizaciones en formato ResponseOrganizationDto[]
    */
+  @Auth(RolCuenta.ADMIN)
   @Get()
-  @Roles(RolCuenta.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Listar organizaciones activas' })
   @ApiResponse({
     status: 200,
@@ -406,9 +403,8 @@ export class OrganizacionesController {
    *
    * @returns Objeto con items y total de registros
    */
+  @Auth(RolCuenta.ADMIN)
   @Get('list')
-  @Roles(RolCuenta.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Listar organizaciones paginadas' })
   @ApiResponse({
     status: 200,
@@ -427,9 +423,8 @@ export class OrganizacionesController {
     );
   }
 
+  @Auth(RolCuenta.ADMIN)
   @Get(':id')
-  @Roles(RolCuenta.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Obtener organización por ID (admin)' })
   findOne(
     @Param('id', ParseIntPipe) id: number,
@@ -437,9 +432,8 @@ export class OrganizacionesController {
     return this.organizacionService.findOne(id);
   }
 
+  @Auth(RolCuenta.ADMIN)
   @Patch(':id')
-  @Roles(RolCuenta.ADMIN)
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOperation({ summary: 'Actualizar organización (admin)' })
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -453,10 +447,9 @@ export class OrganizacionesController {
    *
    * @param id ID de la organización
    */
+  @Auth(RolCuenta.ADMIN)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(AuthGuard('jwt'))
-  @Roles(RolCuenta.ADMIN)
   @ApiOperation({ summary: 'Deshabilitar una organización' })
   @ApiParam({
     name: 'id',
@@ -476,10 +469,9 @@ export class OrganizacionesController {
    *
    * @param id ID de la organización
    */
+  @Auth(RolCuenta.ADMIN)
   @Patch(':id/restaurar')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(AuthGuard('jwt'))
-  @Roles(RolCuenta.ADMIN)
   @ApiOperation({ summary: 'Restaurar una organización deshabilitada' })
   @ApiParam({
     name: 'id',

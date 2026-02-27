@@ -3,23 +3,10 @@ import {
   Beneficio,
   BeneficioCreateRequest,
   BeneficiosEstado,
-  BeneficioUpdateRequest,
 } from "../types/beneficios";
 
 export class BeneficiosService extends Crud<Beneficio> {
   protected endpoint = "beneficios";
-
-  async getAll(): Promise<Beneficio[]> {
-    const res = await fetch(`${this.baseUrl}/${this.endpoint}`, {
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Error al obtener beneficios");
-    }
-
-    return res.json();
-  }
 
   async getAllPaginated(
     page = 1,
@@ -28,20 +15,17 @@ export class BeneficiosService extends Crud<Beneficio> {
     onlyEnabled?: boolean,
   ): Promise<PaginatedResponse<Beneficio>> {
     let url = `${this.baseUrl}/${this.endpoint}/cupones?page=${page}&limit=${limit}`;
-    
+
     if (search) {
       url += `&search=${encodeURIComponent(search)}`;
     }
 
     url += `&onlyEnabled=${onlyEnabled}`;
-  
-    const res = await fetch(
-      url,
-      {
-        method: "GET",
-        headers: this.getHeaders(),
-      },
-    );
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
 
     if (!res.ok) {
       const errorDetails = await res.text();
@@ -49,18 +33,6 @@ export class BeneficiosService extends Crud<Beneficio> {
         `Error al obtener usuarios paginados (${res.status}): ${errorDetails}`,
       );
     }
-    return res.json();
-  }
-
-  async getOne(id: number): Promise<Beneficio> {
-    const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}`, {
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Beneficio no encontrado");
-    }
-
     return res.json();
   }
 
@@ -109,23 +81,6 @@ export class BeneficiosService extends Crud<Beneficio> {
 
     return result;
   }
-  async update(id: number, data: BeneficioUpdateRequest) {
-    const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}`, {
-      method: "PATCH",
-      headers: {
-        ...this.getHeaders(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const error = await res.text();
-      throw new Error("Error al canjear el beneficio");
-    }
-
-    return res.json();
-  }
 
   async delete(id: number): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}/borrar`, {
@@ -156,7 +111,7 @@ export class BeneficiosService extends Crud<Beneficio> {
     const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}/estado`, {
       method: "PATCH",
       headers: this.getHeaders(),
-      body: JSON.stringify({estado}),
+      body: JSON.stringify({ estado }),
     });
 
     if (!res.ok) {
@@ -206,5 +161,17 @@ export class BeneficiosService extends Crud<Beneficio> {
     }
 
     return res.json();
+  }
+
+  getAll(): Promise<Beneficio[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  getOne(_id: number): Promise<Beneficio> {
+    throw new Error("Method not implemented.");
+  }
+
+  update(_id: number, data: Partial<Beneficio>): Promise<Beneficio> {
+    throw new Error("Method not implemented.");
   }
 }

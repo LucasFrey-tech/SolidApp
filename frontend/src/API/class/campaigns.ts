@@ -1,4 +1,3 @@
-import { json } from "zod";
 import { Crud, PaginatedResponse } from "../service";
 import { Campaign, CampaignDetalle } from "../types/campañas/campaigns";
 import { CampaignEstado } from "../types/campañas/enum";
@@ -33,7 +32,7 @@ export class campaignService extends Crud<Campaign> {
     url += `&onlyEnabled=${onlyEnabled}`;
 
     const res = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: this.getHeaders(),
     });
 
@@ -65,22 +64,9 @@ export class campaignService extends Crud<Campaign> {
     return res.json();
   }
 
-  async getOne(id: number): Promise<Campaign> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Campaña no encontrada");
-    }
-
-    return res.json();
-  }
-
   async getOneDetail(id: number): Promise<CampaignDetalle> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/detalle`, {
-      method: 'GET',
+      method: "GET",
       headers: this.getHeaders(),
     });
 
@@ -93,25 +79,13 @@ export class campaignService extends Crud<Campaign> {
 
   async updateEstado(id: number, estado: CampaignEstado) {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/estado`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: this.getHeaders(),
-      body: JSON.stringify({estado}),
+      body: JSON.stringify({ estado }),
     });
 
     if (!res.ok) {
       throw new Error("Error al actualizar el estado de la campaña");
-    }
-
-  }
-
-  async delete(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
-      method: "DELETE",
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Error al eliminar la campaña");
     }
   }
 
@@ -119,6 +93,12 @@ export class campaignService extends Crud<Campaign> {
     throw new Error("Method not implemented.");
   }
   update(_id: number, data: Partial<Campaign>): Promise<Campaign> {
+    throw new Error("Method not implemented.");
+  }
+  getOne(_id: number): Promise<Campaign> {
+    throw new Error("Method not implemented.");
+  }
+  delete(_id: number): Promise<void> {
     throw new Error("Method not implemented.");
   }
 }

@@ -10,7 +10,6 @@ import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
 import { CreateOrganizacionDto } from './dto/create_organization.dto';
 import { UpdateOrganizacionDto } from './dto/update_organizacion.dto';
 import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
-import { JwtService } from '@nestjs/jwt';
 import { CampaignsService } from '../campaign/campaign.service';
 import { DonacionService } from '../donation/donacion.service';
 import { CuentaService } from '../cuenta/cuenta.service';
@@ -58,7 +57,6 @@ export class PerfilOrganizacionService {
     private readonly campaignService: CampaignsService,
     private readonly donacionService: DonacionService,
     private readonly cuentaService: CuentaService,
-    private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -95,7 +93,7 @@ export class PerfilOrganizacionService {
 
     const queryBuilder = this.organizacionRepository
       .createQueryBuilder('perfil')
-      .leftJoinAndSelect('perfil.cuenta', 'cuenta')
+      .leftJoinAndSelect('perfil.cuenta', 'cuenta');
 
     if (search) {
       queryBuilder.andWhere(

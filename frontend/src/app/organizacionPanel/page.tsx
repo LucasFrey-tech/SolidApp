@@ -90,7 +90,7 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 8;
 
-    const response = await baseApi.organizacion.getDonacionesPaginated(
+    const response = await baseApi.organizacion.getAllPaginatedByOrganizacion(
       donationsPage,
       limit,
     );

@@ -54,7 +54,8 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               </button>
             </li>
 
-            {(user?.role === RolCuenta.USUARIO || user?.role === RolCuenta.EMPRESA) && (
+            {(user?.role === RolCuenta.USUARIO ||
+              user?.role === RolCuenta.EMPRESA) && (
               <li>
                 <button
                   onClick={() => {
@@ -70,9 +71,13 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               </li>
             )}
 
-            <li>
-              <button onClick={() => onChangeSection("data")}>Mis Datos</button>
-            </li>
+            {user?.role !== RolCuenta.ADMIN && (
+              <li>
+                <button onClick={() => onChangeSection("data")}>
+                  Mis Datos
+                </button>
+              </li>
+            )}
 
             {user?.role === RolCuenta.USUARIO && (
               <li>

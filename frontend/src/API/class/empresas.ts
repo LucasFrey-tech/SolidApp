@@ -1,7 +1,6 @@
 import { Crud, PaginatedResponse } from "../service";
 import { Beneficio, BeneficioCreateRequest, BeneficioUpdateRequest } from "../types/beneficios";
 import { Empresa, EmpresaUpdateRequest } from "../types/empresas";
-import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class EmpresasService extends Crud<Empresa> {
   protected endPoint = "empresas";
@@ -85,22 +84,6 @@ export class EmpresasService extends Crud<Empresa> {
     });
     if (!res.ok) throw new Error(`Error al actualizar perfil (${res.status})`);
     return res.json();
-  }
-
-  async updateCredenciales(data: UpdateCredencialesPayload): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/credenciales`, {
-      method: "PATCH",
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    });
-    
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      
-      throw new Error(
-        `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
-      );
-    }
   }
   
   // =====Panel Admin=====

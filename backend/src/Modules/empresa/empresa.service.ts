@@ -11,7 +11,6 @@ import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { SettingsService } from '../../common/settings/settings.service';
-import { JwtService } from '@nestjs/jwt';
 import { CuentaService } from '../cuenta/cuenta.service';
 import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { PaginatedBeneficiosResponseDTO } from '../benefit/dto/response_paginated_beneficios';
@@ -54,7 +53,6 @@ export class PerfilEmpresaService {
     private readonly empresaRepository: Repository<PerfilEmpresa>,
     private readonly cuentaService: CuentaService,
     private readonly beneficioService: BeneficioService,
-    private readonly jwtService: JwtService,
   ) {}
 
   /**

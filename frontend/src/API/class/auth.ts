@@ -1,5 +1,6 @@
 import { AuthResponse, LoginRequestBody } from "../types/auth";
 import { Register } from "../types/auth";
+import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class AuthService {
   protected endPoint = "/auth";
@@ -49,6 +50,35 @@ export class AuthService {
         message: errorData.message || "Error desconocido",
         error: errorData.error || null,
       };
+    }
+
+    return res.json();
+  }
+
+  async updateCredenciales(
+    data: UpdateCredencialesPayload,
+  ): Promise<{ message: string }> {
+    const url = `${this.baseUrl}${this.endPoint}/credenciales`;
+
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      let errorMessage = "Error al actualizar credenciales";
+
+      if (res.status === 400) {
+        const errorData = await res.json();
+        errorMessage = errorData.message || "Datos inválidos";
+      } else if (res.status === 401) {
+        errorMessage = "Contraseña actual incorrecta";
+      } else if (res.status === 409) {
+        errorMessage = "El email ya está registrado";
+      }
+
+      throw new Error(errorMessage);
     }
 
     return res.json();
