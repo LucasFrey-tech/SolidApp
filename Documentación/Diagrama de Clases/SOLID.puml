@@ -1,116 +1,171 @@
-@startuml SOLID
+@startuml SOLID_DB
 
-package APP {
-    package Usuarios {
-        abstract class USUARIO{
-            #id
-            #nombreUsuario
-            #email
-            #contraseña
-            #fechaRegistro
-            #estadoCuenta
-            # ListarUsuarios()
-        }
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
 
-        class DONADOR {
-            -nombre
-            -apellido
-            -telefono?
-            -direccion?
-            -puntos
+package "USUARIOS" {
 
-            +listarUsuarios()
-            +donar(d:donacion)
-            +canjear(b:beneficio)
-        }
-
-        class EMPRESA {
-            -descripcion: string
-            -rubro: string
-            -telefono: string
-            -direccion: string
-            -sitioWeb?: string
-            -verificada: boolean
-
-        }
-
-        class ORGANIZACION {
-            -descripcion: string
-            -direccion: string
-            -telefono: string
-            -sitioWeb?: string
-
-        }
-
-        class ADMINISTRADOR {
-            -rol: string
-        }
-
+    class Usuario {
+        -Id: int
+        -Correo: string
+        -Clave: string
+        -Deshabilitado: boolean
+        -Nombre: string
+        -Apellido: string
+        -Imagen: text
+        -Direccion: string
+        -Rol: string
+        -Fecha_Registro: datetime
+        -Ultima_Conexion: datetime
+        -Ultimo_Cambio: datetime
     }
 
-    package Campañas {
-
-        abstract class CAMPAÑA {
-            #id
-            #titulo: string
-            #descripcion: string
-            #tipoDonacion: string
-            #estado: string
-            #imagenPortada: string
-            #cantidadActual: number
-            #fechaInicio: date
-        }
-
-        class TEMPORAL {
-            -fechaFinalizacion: date    
-        }
-
-        class PERMANENTE {
-            -cantidadObjetivo: number
-        }
-
+    class Donador {
+        -Id: int
+        -Puntos: int
+        -Id_Usuario: int
     }
 
-    class DONACION {
-        -id
-        -idUsuario
-        -cantidad
-        -tipoDonacion
+    class Empresa {
+        -Id: int
+        -NroDocumento: int
+        -Razon_Social: string
+        -Nombre_Fantasia: string
+        -Descripcion: text
+        -Rubro: string
+        -Telefono: string
+        -Direccion: string
+        -Web: string
+        -Verificada: boolean
+        -Deshabilitado: boolean
+        -Fecha_Registro: date
+        -Ultimo_Cambio: datetime
     }
 
-    class BENEFICIO {
-        -id
-        -titulo: string
-        -descripcion: string
-        -puntosRequeridos: number
-        -fechaExp: date
-        -codigoDescuento: string
-        -activo: boolean
+    class Organizacion {
+        -Id: int
+        -NroDocumento: int
+        -Verificada: boolean
+        -Deshabilitado: boolean
+        -Razon_Social: string
+        -Nombre_Fantasia: string
+        -Descripcion: text
+        -Telefono: string
+        -Direccion: string
+        -Web: string
+        -Fecha_Registro: date
+        -Ultimo_Cambio: datetime
     }
 
-    class NOTIFICADOR {
-        -Usuarios: users[]
-        -estado
-
-        +suscribir(u: user)
-        +desuscribir(u: user)
-        +notificar()
+    class Usuarios_Empresa {
+        -Id: int
+        -Id_Usuario: int
+        -Id_Empresa: int
     }
 
+    class Usuarios_Organizacion {
+        -Id: int
+        -Id_Usuario: int
+        -Id_Organizacion: int
+    }
 }
 
+package "CAMPAÑAS" {
 
+    class Campaña {
+        -Id: int
+        -Estado: string
+        -Titulo: string
+        -Descripcion: text
+        -Fecha_Inicio: date
+        -Fecha_Fin: date
+        -Fecha_Registro: date
+        -Objetivo: int
+        -Ultimo_Cambio: datetime
+    }
 
-DONADOR -U-|> USUARIO
-ORGANIZACION -U-|> USUARIO
-EMPRESA -U-|> USUARIO
-ADMINISTRADOR -U-|> USUARIO
+    class Imagen_Campaña {
+        -Id: int
+        -Imagen: text
+    }
+}
 
-PERMANENTE -UP-|> CAMPAÑA
-TEMPORAL -UP-|> CAMPAÑA
+package "DONACIONES" {
 
-DONADOR --> DONACION: usa
-DONADOR --> BENEFICIO: usa
+    class Donacion {
+        -Id: int
+        -Titulo: string
+        -Detalle: text
+        -Tipo: string
+        -Cantidad: int
+        -Estado: string
+        -Fecha_Registro: datetime
+    }
 
+    class Imagen_Donacion {
+        -Id: int
+        -Imagen: text
+    }
+}
+
+package "BENEFICIOS" {
+
+    class Beneficio {
+        -Id: int
+        -Titulo: string
+        -Tipo: string
+        -Detalle: text
+        -Cantidad: int
+        -Fecha_Registro: datetime
+        -Ultimo_Cambio: datetime
+    }
+
+    class Imagen_Beneficio {
+        -Id: int
+        -Imagen: text
+    }
+}
+
+package "MULTIMEDIA" {
+
+    class Imagen_Empresa {
+        -Id: int
+        -Logo: text
+        -Banner: text
+    }
+
+    class Imagen_Organizacion {
+        -Id: int
+        -Logo: text
+        -Banner: text
+    }
+}
+
+' ========================
+' RELACIONES ORDENADAS
+' ========================
+
+Usuario "1" -right- "1" Donador
+Usuario "1" -down- "0..*" Usuarios_Empresa
+Usuario "1" -down- "0..*" Usuarios_Organizacion
+
+Empresa "1" -down- "0..*" Beneficio
+Empresa "1" -down- "0..*" Imagen_Empresa
+Empresa "1" -left- "0..*" Usuarios_Empresa
+
+Organizacion "1" -down- "0..*" Campaña
+Organizacion "1" -down- "0..*" Imagen_Organizacion
+Organizacion "1" -left- "0..*" Usuarios_Organizacion
+
+Campaña "1" -down- "0..*" Donacion
+Campaña "1" -right- "0..*" Imagen_Campaña
+
+Donador "1" -down- "0..*" Donacion
+
+Donacion "1" -right- "0..*" Imagen_Donacion
+
+Beneficio "1" -right- "0..*" Imagen_Beneficio
 
 @enduml

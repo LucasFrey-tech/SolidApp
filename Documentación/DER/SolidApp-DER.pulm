@@ -1,0 +1,105 @@
+@startuml SOLID_DER
+
+left to right direction
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+entity Usuario {
+  +Id : int <<PK>>
+  Correo : string
+  Clave : string
+  Nombre : string
+  Apellido : string
+  Imagen : text
+  Direccion : string
+  Rol : string
+  Fecha_Registro : datetime
+  Ultima_Conexion : datetime
+  Ultimo_Cambio : datetime
+  Deshabilitado : boolean
+}
+
+entity Donador {
+  +Id : int <<PK>>
+  Puntos : int
+  Id_Usuario : int <<FK>>
+}
+
+entity Empresa {
+  +Id : int <<PK>>
+  NroDocumento : int
+  Razon_Social : string
+  Nombre_Fantasia : string
+  Descripcion : text
+  Rubro : string
+  Telefono : string
+  Direccion : string
+  Web : string
+  Verificada : boolean
+  Deshabilitado : boolean
+  Fecha_Registro : date
+  Ultimo_Cambio : datetime
+}
+
+entity Organizacion {
+  +Id : int <<PK>>
+  NroDocumento : int
+  Razon_Social : string
+  Nombre_Fantasia : string
+  Descripcion : text
+  Telefono : string
+  Direccion : string
+  Web : string
+  Verificada : boolean
+  Deshabilitado : boolean
+  Fecha_Registro : date
+  Ultimo_Cambio : datetime
+}
+
+entity Campaña {
+  +Id : int <<PK>>
+  Titulo : string
+  Descripcion : text
+  Estado : string
+  Fecha_Inicio : date
+  Fecha_Fin : date
+  Objetivo : int
+  Fecha_Registro : date
+  Ultimo_Cambio : datetime
+  Id_Organizacion : int <<FK>>
+}
+
+entity Donacion {
+  +Id : int <<PK>>
+  Titulo : string
+  Detalle : text
+  Tipo : string
+  Cantidad : int
+  Estado : string
+  Fecha_Registro : datetime
+  Id_Campaña : int <<FK>>
+  Id_Donador : int <<FK>>
+}
+
+entity Beneficio {
+  +Id : int <<PK>>
+  Titulo : string
+  Tipo : string
+  Detalle : text
+  Cantidad : int
+  Fecha_Registro : datetime
+  Ultimo_Cambio : datetime
+  Id_Empresa : int <<FK>>
+}
+
+' ======================
+' RELACIONES
+' ======================
+
+Usuario ||--|| Donador
+Organizacion ||--o{ Campaña
+Campaña ||--o{ Donacion
+Donador ||--o{ Donacion
+Empresa ||--o{ Beneficio
+
+@enduml
