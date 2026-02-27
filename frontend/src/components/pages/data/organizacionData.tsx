@@ -52,8 +52,6 @@ export default function OrganizacionData() {
       setLoading(true);
 
       try {
-        console.log("Buscando organización con ID: ", user.sub);
-
         const response = await baseApi.organizacion.getPerfil();
 
         if (!response) {

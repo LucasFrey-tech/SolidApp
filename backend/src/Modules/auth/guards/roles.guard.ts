@@ -20,13 +20,11 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    // Verificar si es público
     const isPublic = this.reflector.getAllAndOverride<boolean>(PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    // Si es público, permite el acceso sin verificar nada más
     if (isPublic) {
       return true;
     }

@@ -350,14 +350,9 @@ export class OrganizacionesController {
    * @returns Usuario actualizado + nuevo token JWT
    */
   @Auth(RolCuenta.ORGANIZACION)
-  @Patch(':id/credenciales')
+  @Patch('credenciales')
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña de la organización',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la organización',
   })
   @ApiBody({ type: UpdateCredencialesDto })
   @ApiResponse({

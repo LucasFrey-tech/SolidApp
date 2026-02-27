@@ -47,6 +47,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<UsuarioAutenticado> {
+    console.log('🔍 JwtStrategy.validate() - PAYLOAD RECIBIDO:', payload);
     this.logger.debug(
       `Validando token para ${payload.email} (${payload.role})`,
     );
