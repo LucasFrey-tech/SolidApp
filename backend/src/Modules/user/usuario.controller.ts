@@ -22,6 +22,7 @@ import { RequestConUsuario } from '../auth/interfaces/authenticated_request.inte
 
 import { RolCuenta } from '../../Entities/cuenta.entity';
 import { Auth } from '../auth/decoradores/auth.decorador';
+import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
 
 /**
  * -----------------------------------------------------------------------------
@@ -67,6 +68,16 @@ export class UsuarioController {
     @Body() dto: UpdateUsuarioDto,
   ): Promise<ResponseUsuarioDto> {
     return await this.userService.updateUsuario(req.user.perfil.id, dto);
+  }
+
+  @Patch('credenciales')
+  @Auth(RolCuenta.USUARIO)
+  @ApiOperation({ summary: 'Actualizar mi email y/o contraseña' })
+  async updateMisCredenciales(
+    @Req() req: RequestConUsuario,
+    @Body() dto: UpdateCredencialesDto,
+  ) {
+    return this.userService.updateCredenciales(req.user.cuenta.id, dto);
   }
 
   @Auth(RolCuenta.USUARIO)
