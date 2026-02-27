@@ -55,7 +55,7 @@ export default function Home() {
             />
             <h3 className={styles.tituloIcono}>Obtené puntos</h3>
             <p className={styles.textoIcono}>
-              Obtené puntos por donar artículos.
+              Obtené puntos por donar.
             </p>
           </div>
         </Link>
