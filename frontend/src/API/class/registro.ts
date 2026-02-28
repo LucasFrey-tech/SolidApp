@@ -4,12 +4,9 @@ import { Crud, PaginatedResponse } from "../service";
 export class RegisterService extends Crud<Register> {
   constructor() {
     super();
-    console.log("RegisterService baseUrl:", this.baseUrl);
-    console.log("NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
   }
 
   async register(data: Register): Promise<AuthResponse> {
-    console.log("DTO recibido:", JSON.stringify(data, null, 2));
     const url = `${this.baseUrl}/auth/register`;
 
     const res = await fetch(url, {

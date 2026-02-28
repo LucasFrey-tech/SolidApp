@@ -20,12 +20,12 @@ export default function Navbar() {
   const [points, setPoints] = useState<number | null>(null);
 
   const handleLogout = () => {
+    router.push("/inicio");
     localStorage.removeItem("token");
     localStorage.removeItem("user_email");
     setUser(null);
     setProfileOpen(false);
     setMenuOpen(false);
-    router.push("/inicio");
   };
 
   const navbarConfig = useMemo(() => {
@@ -69,16 +69,14 @@ export default function Navbar() {
         setPoints(res.puntos);
       } catch (err) {
         console.error("Error al obtener puntos:", err);
-        setPoints(0); // fallback en caso de error
+        setPoints(0);
       }
     };
-    console.log('🎯 useEffect ejecutado');
     fetchPoints();
   }, [user, navbarConfig?.showPoints]);
 
   if (loading) return null;
 
-  console.log("HOLAAAAA",user?.role)
 
   return (
     <nav className={styles.navbar}>

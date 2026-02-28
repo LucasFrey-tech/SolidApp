@@ -42,7 +42,6 @@ export default function Tienda() {
           undefined,
           true,
         );
-        console.log(res.items);
 
         const items = Array.isArray(res.items)
           ? res.items
@@ -68,8 +67,6 @@ export default function Tienda() {
    */
   function EmpresaLogo({ src, alt }: { src?: string | null; alt: string }) {
     const [imgSrc, setImgSrc] = useState(src || PLACEHOLDER_IMG);
-
-    console.log("ALTERNATIVE TEXT: ", alt);
 
     return (
       <Image

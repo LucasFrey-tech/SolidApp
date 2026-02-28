@@ -32,8 +32,6 @@ export default function OrganizacionesList() {
         search,
       );
 
-      console.log("ORGANIZACIONES: ", res);
-
       const formatted: Organizacion[] = res.items.map((u: any) => ({
         id: u.id,
         name: u.nombre_organizacion,

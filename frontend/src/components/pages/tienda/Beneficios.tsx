@@ -38,7 +38,6 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
       try {
         setLoading(true);
         const data = await baseApi.beneficio.getByEmpresa(idEmpresa);
-        console.log("datos: ", data);
         setBeneficios(data.items || []);
       } catch (error) {
         console.error("Error cargando beneficios", error);

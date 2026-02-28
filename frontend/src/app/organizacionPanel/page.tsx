@@ -83,9 +83,6 @@ export default function OrganizationCampaignsPage() {
       limit,
     );
 
-    console.log("Campañas desde backend:", response.items);
-    console.log("Primera campaña:", response.items[0]);
-
     const totalPages = Math.max(1, Math.ceil(response.total / limit));
 
     setCampaigns(response.items);

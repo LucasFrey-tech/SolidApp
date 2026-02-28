@@ -124,9 +124,6 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    console.log('=== INTENTO DE LOGIN ===');
-    console.log('Email:', dto.correo);
-    console.log('Contraseña ingresada:', dto.clave);
 
     const cuenta = await this.cuentaService.findByEmailRol(dto.correo, dto.rol);
     console.log('Cuenta encontrada:', cuenta ? 'Sí' : 'No');
@@ -165,8 +162,6 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string) {
-    console.log('=== RESET PASSWORD ===');
-    console.log('Token recibido:', token);
 
     const user = await this.cuentaService.findByResetToken(token);
     console.log('Usuario encontrado:', user ? user.correo : 'NO');

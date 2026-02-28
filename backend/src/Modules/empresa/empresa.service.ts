@@ -253,7 +253,6 @@ export class PerfilEmpresaService {
     id: number,
     updateDto: UpdateEmpresaDTO,
   ): Promise<EmpresaResponseDTO> {
-    console.log('updateDto recibido:', updateDto);
     const empresa = await this.empresaRepository.findOne({
       where: { id },
       relations: ['cuenta'],
@@ -302,9 +301,6 @@ export class PerfilEmpresaService {
       await this.cuentaService.updateUsuario(empresa.cuenta.id, cuentaUpdate);
       Object.assign(empresa.cuenta, cuentaUpdate);
     }
-
-    console.log('cuentaUpdate:', cuentaUpdate);
-    console.log('empresa.cuenta.id:', empresa.cuenta.id);
 
     const updatedEmpresa = await this.empresaRepository.save(empresa);
 

@@ -30,8 +30,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
   }
 
   async updatePerfil(data: OrganizacionUpdateRequest): Promise<Organizacion> {
-    console.log("Datos que llegan al service del front:", data);
-
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/perfil`, {
       method: "PATCH",
       headers: this.getHeaders(),
@@ -47,7 +45,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
     page = 1,
     limit = 10,
   ): Promise<PaginatedResponse<CampaignDetalle>> {
-    console.log("headers:", this.getHeaders());
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/campanas/?page=${page}&limit=${limit}`,
       {

@@ -253,7 +253,6 @@ export class PerfilOrganizacionService {
     id: number,
     updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    console.log('Datos que llegan al service del back: ', updateDto);
 
     const organizacion = await this.organizacionRepository.findOne({
       where: { id },

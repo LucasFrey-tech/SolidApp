@@ -58,8 +58,6 @@ export default function EmpresaData() {
       setLoading(true);
 
       try {
-        console.log("Buscando empresa con ID: ", user.sub);
-
         const response = await baseApi.empresa.getPerfil();
 
         if (!response) {
@@ -171,14 +169,6 @@ export default function EmpresaData() {
         setSaving(false);
         return;
       }
-
-      console.log("=== DATOS ENVIADOS A LA API ===");
-      console.log("ID:", empresaData.id);
-      console.log("Data a enviar (JSON):", dataToSend);
-      console.log("Archivo seleccionado:", selectedFile);
-      console.log("Tamaño del archivo:", selectedFile?.size);
-      console.log("Tipo de archivo:", selectedFile?.type);
-      console.log("=================================");
 
       if (Object.keys(dataToSend).length === 0 && !selectedFile) {
         setSuccess(true);

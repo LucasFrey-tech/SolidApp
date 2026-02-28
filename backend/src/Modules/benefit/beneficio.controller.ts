@@ -17,6 +17,7 @@ import { RolCuenta } from '../../Entities/cuenta.entity';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 import { BeneficioEstado } from './dto/enum/enum';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
+import { CanjearBeneficioDto } from './dto/canjear_beneficio.dto';
 
 /**
  * Controlador para gestionar las operaciones de los Beneficios.
@@ -87,9 +88,9 @@ export class BeneficioController {
   canjear(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: RequestConUsuario,
-    @Query('cantidad') cantidad = 1,
+    @Body() dto: CanjearBeneficioDto,
   ) {
-    return this.beneficiosService.canjear(id, req.user.perfil.id, cantidad);
+    return this.beneficiosService.canjear(id, req.user.perfil.id, dto.cantidad);
   }
 
   /**

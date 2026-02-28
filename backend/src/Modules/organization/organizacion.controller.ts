@@ -337,7 +337,6 @@ export class OrganizacionesController {
     @Req() req: RequestConUsuario,
     @Body() updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    console.log('Datos que llegan al controller: ', updateDto);
     return this.organizacionService.update(req.user.perfil.id, updateDto);
   }
 

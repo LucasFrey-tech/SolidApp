@@ -256,11 +256,6 @@ export class DonacionService {
     id: number,
     dto: UpdateDonacionEstadoDto,
   ): Promise<ResponseDonationDto> {
-    console.log('ID:', id);
-    console.log('nuevoEstado recibido:', dto.estado);
-    console.log('Tipo de nuevoEstado:', typeof dto.estado);
-    console.log('Motivo:', dto.motivo);
-
     return await this.donacionRepository.manager.transaction(
       async (manager) => {
         const donacion = await manager.findOne(Donaciones, {

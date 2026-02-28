@@ -142,8 +142,6 @@ export default function OrganizacionData() {
         return;
       }
 
-      console.log("Datos que salen del formulario: ", dataToSend);
-
       const updated = await baseApi.organizacion.updatePerfil(
         dataToSend as OrganizacionUpdateRequest,
       );

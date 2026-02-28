@@ -69,12 +69,6 @@ export class Users extends Crud<User> {
   }
 
   async createDonacion(data: CreateDonation): Promise<Donation> {
-    const url = `${this.baseUrl}/${this.endPoint}/donaciones`;
-    console.log("URL COMPLETA:", url);
-    console.log("baseUrl:", this.baseUrl);
-    console.log("endPoint:", this.endPoint);
-    console.log("Headers:", this.getHeaders());
-
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/donaciones`, {
       method: "POST",
       headers: this.getHeaders(),

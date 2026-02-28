@@ -28,7 +28,6 @@ export class AuthService {
   }
 
   async register(data: Register): Promise<AuthResponse> {
-    console.log("DTO recibido:", JSON.stringify(data, null, 2));
     const url = `${this.baseUrl}/auth/register`;
 
     const res = await fetch(url, {
