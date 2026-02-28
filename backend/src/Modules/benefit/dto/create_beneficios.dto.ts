@@ -1,13 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, Min, MaxLength, IsNotEmpty, IsIn, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  Min,
+  MaxLength,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 import { Type } from 'class-transformer';
+import { BeneficioEstado } from './enum/enum';
 
 /**
  * DTO para la creación de Beneficios.
  * Contiene validaciones para los campos del cuerpo de la petición.
  */
 export class CreateBeneficiosDTO {
-
   /** Título del Beneficio */
   @ApiProperty({ example: 'Descuento del 15%' })
   @IsString()
@@ -51,9 +59,12 @@ export class CreateBeneficiosDTO {
   id_empresa: number;
 
   /** Estado del Beneficio */
-  @ApiProperty({ example: 'pendiente', enum: ['pendiente','aprobado','rechazado'], required: false })
-  @IsString()
-  @IsIn(['pendiente','aprobado','rechazado'])
+  @ApiProperty({
+    example: BeneficioEstado.APROBADO,
+    enum: BeneficioEstado,
+    required: false,
+  })
   @IsOptional()
-  estado?: 'pendiente' | 'aprobado' | 'rechazado';
+  @IsEnum(BeneficioEstado)
+  estado?: BeneficioEstado;
 }

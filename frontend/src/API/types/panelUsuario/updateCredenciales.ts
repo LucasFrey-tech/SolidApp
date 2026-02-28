@@ -1,5 +1,5 @@
-export interface UpdateCredentialsPayload {
+export interface UpdateCredencialesPayload {
   correo?: string;
-  passwordActual: string;
+  passwordActual?: string;
   passwordNueva?: string;
 }

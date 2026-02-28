@@ -1,6 +1,7 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateBeneficiosDTO } from './create_beneficios.dto';
-import { IsOptional, Min, IsIn } from 'class-validator';
+import { IsEnum, IsOptional, Min } from 'class-validator';
+import { BeneficioEstado } from './enum/enum';
 
 /**
  * DTO para la actualizacion de datos de los Beneficios.
@@ -34,6 +35,6 @@ export class UpdateBeneficiosDTO extends PartialType(CreateBeneficiosDTO) {
     required: false,
   })
   @IsOptional()
-  @IsIn(['pendiente', 'aprobado', 'rechazado'])
-  estado?: 'pendiente' | 'aprobado' | 'rechazado';
+  @IsEnum(BeneficioEstado)
+  estado?: BeneficioEstado;
 }

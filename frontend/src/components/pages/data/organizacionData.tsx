@@ -1,7 +1,7 @@
 "use client";
 
 import { baseApi } from "@/API/baseApi";
-import styles from '@/styles/UserPanel/data/organizacionData.module.css';
+import styles from "@/styles/UserPanel/data/organizacionData.module.css";
 import { useCallback, useEffect, useState } from "react";
 import {
   Organizacion,
@@ -11,13 +11,26 @@ import { useUser } from "@/app/context/UserContext";
 
 type EditableOrganizacionFields = Pick<
   Organizacion,
-  "descripcion" | "telefono" | "direccion" | "web"
+  | "descripcion"
+  | "prefijo"
+  | "telefono"
+  | "calle"
+  | "numero"
+  | "provincia"
+  | "ciudad"
+  | "codigo_postal"
+  | "web"
 >;
 
 const defaultEditableData: EditableOrganizacionFields = {
   descripcion: "",
+  prefijo: "",
   telefono: "",
-  direccion: "",
+  calle: "",
+  numero: "",
+  provincia: "",
+  ciudad: "",
+  codigo_postal: "",
   web: "",
 };
 
@@ -39,10 +52,7 @@ export default function OrganizacionData() {
       setLoading(true);
 
       try {
-        console.log("Buscando organización con ID: ", user.sub);
-
-        // Necesitarás agregar este método en tu BaseApi
-        const response = await baseApi.organizacion.getOne(user.sub);
+        const response = await baseApi.organizacion.getPerfil();
 
         if (!response) {
           throw new Error("Error al obtener los datos de la organización");
@@ -50,12 +60,26 @@ export default function OrganizacionData() {
 
         setOrganizacionData(response);
 
-        // Extraer solo los campos editables
-        const { descripcion, telefono, direccion, web } = response;
+        const {
+          descripcion,
+          prefijo,
+          telefono,
+          calle,
+          numero,
+          provincia,
+          ciudad,
+          codigo_postal,
+          web,
+        } = response;
         setEditableData({
           descripcion: descripcion || "",
+          prefijo: prefijo || "",
           telefono: telefono || "",
-          direccion: direccion || "",
+          calle: calle || "",
+          numero: numero || "",
+          provincia: provincia || "",
+          ciudad: ciudad || "",
+          codigo_postal: codigo_postal || "",
           web: web || "",
         });
       } catch (error) {
@@ -71,7 +95,6 @@ export default function OrganizacionData() {
 
   const handleInputChange = useCallback(
     (field: keyof EditableOrganizacionFields, value: string) => {
-      console.log(`Cambiando ${field}:`, value);
       setEditableData((prev) => ({
         ...prev,
         [field]: value,
@@ -92,25 +115,26 @@ export default function OrganizacionData() {
     setSuccess(false);
 
     try {
-      // Preparar datos para enviar (solo los que cambiaron)
       const dataToSend: Partial<EditableOrganizacionFields> = {};
       const campos: (keyof EditableOrganizacionFields)[] = [
         "descripcion",
+        "prefijo",
         "telefono",
-        "direccion",
+        "calle",
+        "numero",
+        "provincia",
+        "ciudad",
+        "codigo_postal",
         "web",
       ];
 
       campos.forEach((campo) => {
-        const valorActual = organizacionData[campo as keyof Organizacion];
-        const valorNuevo = editableData[campo];
-
-        if (valorNuevo !== undefined && valorNuevo !== valorActual) {
+        const valorActual = organizacionData[campo as keyof Organizacion] ?? "";
+        const valorNuevo = editableData[campo] ?? "";
+        if (valorNuevo !== valorActual) {
           (dataToSend as Record<string, string>)[campo] = valorNuevo;
         }
       });
-
-      console.log("Datos a enviar (solo cambios):", dataToSend);
 
       if (Object.keys(dataToSend).length === 0) {
         setSuccess(true);
@@ -118,26 +142,13 @@ export default function OrganizacionData() {
         return;
       }
 
-      // Necesitarás agregar este método en tu BaseApi
-      await baseApi.organizacion.update(
-        organizacionData.id,
+      console.log("Datos que salen del formulario: ", dataToSend);
+
+      const updated = await baseApi.organizacion.updatePerfil(
         dataToSend as OrganizacionUpdateRequest,
       );
-
+      setOrganizacionData(updated);
       setSuccess(true);
-
-      // Refrescar datos después de actualizar
-      const updatedOrganizacion = await baseApi.organizacion.getOne(organizacionData.id);
-      setOrganizacionData(updatedOrganizacion);
-
-      // Actualizar editableData con los nuevos valores
-      const { descripcion, telefono, direccion, web } = updatedOrganizacion;
-      setEditableData({
-        descripcion: descripcion || "",
-        telefono: telefono || "",
-        direccion: direccion || "",
-        web: web || "",
-      });
     } catch (error) {
       console.error("Error en update organización:", error);
       setError(
@@ -150,7 +161,8 @@ export default function OrganizacionData() {
 
   if (loading) return <div>Cargando datos de la organización...</div>;
   if (error) return <div>Error: {error}</div>;
-  if (!organizacionData) return <div>No se encontraron datos de la organización</div>;
+  if (!organizacionData)
+    return <div>No se encontraron datos de la organización</div>;
 
   return (
     <main className={styles.Content}>
@@ -165,7 +177,7 @@ export default function OrganizacionData() {
               <input
                 className={styles.Input}
                 type="text"
-                value={organizacionData.nroDocumento || ""}
+                value={organizacionData.cuit_organizacion || ""}
                 readOnly
               />
             </div>
@@ -175,7 +187,7 @@ export default function OrganizacionData() {
               <input
                 className={styles.Input}
                 type="text"
-                value={organizacionData.razonSocial || ""}
+                value={organizacionData.razon_social || ""}
                 readOnly
               />
             </div>
@@ -185,7 +197,7 @@ export default function OrganizacionData() {
               <input
                 className={styles.Input}
                 type="text"
-                value={organizacionData.nombreFantasia || ""}
+                value={organizacionData.nombre_organizacion || ""}
                 readOnly
               />
             </div>
@@ -208,7 +220,21 @@ export default function OrganizacionData() {
         <section className={styles.Section}>
           <h2 className={styles.Subtitle}>Información de Contacto</h2>
 
+          
+
           <div className={styles.Grid}>
+            <div className={styles.Field}>
+              <label className={styles.Label}>Prefijo</label>
+              <input
+                className={styles.Input}
+                type="tel"
+                value={editableData.prefijo}
+                onChange={(e) => handleInputChange("prefijo", e.target.value)}
+                placeholder="11"
+                maxLength={25}
+              />
+            </div>
+
             <div className={styles.Field}>
               <label className={styles.Label}>Teléfono</label>
               <input
@@ -222,13 +248,61 @@ export default function OrganizacionData() {
             </div>
 
             <div className={styles.Field}>
-              <label className={styles.Label}>Dirección</label>
+              <label className={styles.Label}>Calle</label>
               <input
                 className={styles.Input}
                 type="text"
-                value={editableData.direccion}
-                onChange={(e) => handleInputChange("direccion", e.target.value)}
-                placeholder="Calle y número"
+                value={editableData.calle}
+                onChange={(e) => handleInputChange("calle", e.target.value)}
+                placeholder="Nombre de la calle"
+                maxLength={255}
+              />
+            </div>
+
+            <div className={styles.Field}>
+              <label className={styles.Label}>Número</label>
+              <input
+                className={styles.Input}
+                type="text"
+                value={editableData.numero}
+                onChange={(e) => handleInputChange("numero", e.target.value)}
+                placeholder="Número del domicilio"
+                maxLength={255}
+              />
+            </div>
+
+            <div className={styles.Field}>
+              <label className={styles.Label}>Provincia</label>
+              <input
+                className={styles.Input}
+                type="text"
+                value={editableData.provincia}
+                onChange={(e) => handleInputChange("provincia", e.target.value)}
+                placeholder="Buenos Aires"
+                maxLength={255}
+              />
+            </div>
+
+            <div className={styles.Field}>
+              <label className={styles.Label}>Ciudad</label>
+              <input
+                className={styles.Input}
+                type="text"
+                value={editableData.ciudad}
+                onChange={(e) => handleInputChange("ciudad", e.target.value)}
+                placeholder="Vicente López"
+                maxLength={255}
+              />
+            </div>
+
+            <div className={styles.Field}>
+              <label className={styles.Label}>Codigo Postal</label>
+              <input
+                className={styles.Input}
+                type="text"
+                value={editableData.codigo_postal}
+                onChange={(e) => handleInputChange("codigo_postal", e.target.value)}
+                placeholder="B1638"
                 maxLength={255}
               />
             </div>
@@ -262,7 +336,7 @@ export default function OrganizacionData() {
             <div className={styles.Field}>
               <label className={styles.Label}>Fecha de Registro</label>
               <div className={styles.Status}>
-                {new Date(organizacionData.fechaRegistro).toLocaleDateString()}
+                {new Date(organizacionData.fecha_registro).toLocaleDateString()}
               </div>
             </div>
           </div>
@@ -282,4 +356,3 @@ export default function OrganizacionData() {
     </main>
   );
 }
-

@@ -12,7 +12,7 @@ export abstract class Crud<T> {
 
     abstract getAll(): Promise<T[]>;
 
-    abstract getAllPaginated(page?: number, limit?: number): Promise<PaginatedResponse<T>>;
+    abstract getAllPaginated(page?: number, limit?: number, serach?: string, onlyEnabled?: boolean): Promise<PaginatedResponse<T>>;
 
     abstract getOne(_id: number): Promise<T>;
 

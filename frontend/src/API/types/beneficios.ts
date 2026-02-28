@@ -3,10 +3,17 @@ import { EmpresaSummary } from "./empresas";
 /* ===============================
    TIPOS DE ESTADO
 ================================ */
-export type BeneficioEstado =
-  | 'pendiente'
-  | 'aprobado'
-  | 'rechazado';
+export enum BeneficiosEstado {
+  PENDIENTE = 'PENDIENTE',
+  APROBADO = 'APROBADO',
+  RECHAZADO = 'RECHAZADO'
+}
+
+export enum BeneficiosUsuarioEstado {
+  ACTIVO = 'ACTIVO',
+  USADO = 'USADO',
+  VENCIDO = 'VENCIDO',
+}
 
 /* ===============================
    RESPUESTA BENEFICIO
@@ -21,7 +28,7 @@ export interface Beneficio {
   ultimo_cambio: string;
   valor: number;
   empresa: EmpresaSummary;
-  estado: BeneficioEstado;
+  estado: BeneficiosEstado;
 }
 
 /* ===============================
@@ -51,6 +58,18 @@ export interface BeneficioUpdateRequest {
 /* ===============================
    UPDATE ESTADO BENEFICIO
 ================================ */
-export interface BeneficioUpdateEstadoRequest {
-  estado: BeneficioEstado;
+
+export interface UsuarioBeneficio {
+  id: number;
+  cantidad: number;
+  usados: number;
+  estado: BeneficiosUsuarioEstado
+  fecha_reclamo: string;
+  fecha_uso?: string;
+  beneficio: {
+    id: number;
+    titulo: string;
+    detalle: string;
+    valor: number;
+  };
 }

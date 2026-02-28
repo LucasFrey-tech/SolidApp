@@ -1,82 +1,80 @@
-// update_usuario.dto.ts - VERSIÓN CORREGIDA
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEmail, IsInt, Min, Length } from 'class-validator';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateUsuarioDto {
-  @ApiPropertyOptional({ example: 'nuevo@email.com' })
-  @IsOptional()
-  @IsEmail()
-  correo?: string;
-
-  @ApiPropertyOptional({ example: 'NuevaPassword123' })
-  @IsOptional()
-  @IsString()
-  clave?: string;
-
-  @ApiPropertyOptional({ example: 'Juan' })
+  @ApiPropertyOptional({
+    description: 'Nombre de la calle del domicilio (opcional)',
+    example: 'Av. Libertador',
+    required: false,
+  })
   @IsOptional()
   @IsString()
-  nombre?: string;
-
-  @ApiPropertyOptional({ example: 'Pérez' })
-  @IsOptional()
-  @IsString()
-  apellido?: string;
-
-  @ApiPropertyOptional({ example: 'https://misitio.com/nueva-imagen.png' })
-  @IsOptional()
-  @IsString()
-  imagen?: string;
-
-  @ApiPropertyOptional({ example: 'Av. Siempre Viva' })
-  @IsOptional()
-  @IsString()
+  @MaxLength(80)
   calle?: string;
 
-  @ApiPropertyOptional({ example: '123' })
+  @ApiPropertyOptional({
+    description: 'Número de la dirección (opcional)',
+    example: '742',
+    required: false,
+  })
   @IsOptional()
   @IsString()
+  @MaxLength(10)
   numero?: string;
 
-  @ApiPropertyOptional({ example: 'A' })
+  @ApiPropertyOptional({
+    description: 'Código postal (opcional)',
+    example: 'B1638',
+    required: false,
+  })
   @IsOptional()
   @IsString()
-  departamento?: string;
+  @MaxLength(10)
+  codigo_postal?: string;
 
-  @ApiPropertyOptional({ example: '1425' })
+  @ApiPropertyOptional({
+    description: 'Ciudad de residencia (opcional)',
+    example: 'Villa Ballester',
+    required: false,
+  })
   @IsOptional()
   @IsString()
-  codigoPostal?: string;
-
-  @ApiPropertyOptional({ example: 'Buenos Aires' })
-  @IsOptional()
-  @IsString()
-  provincia?: string;
-
-  @ApiPropertyOptional({ example: 'CABA' })
-  @IsOptional()
-  @IsString()
+  @MaxLength(50)
   ciudad?: string;
 
-  @ApiPropertyOptional({ example: '11' })
+  @ApiPropertyOptional({
+    description: 'Provincia de residencia (opcional)',
+    example: 'Buenos Aires',
+    required: false,
+  })
   @IsOptional()
   @IsString()
-  @Length(1, 5)
+  @MaxLength(50)
+  provincia?: string;
+
+  @ApiPropertyOptional({
+    description: 'Prefijo telefónico (opcional)',
+    example: '+54',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(5)
   prefijo?: string;
 
-  @ApiPropertyOptional({ example: '12345678' })
+  @ApiPropertyOptional({
+    description: 'Número de teléfono (opcional)',
+    example: '11-4444-5555',
+    required: false,
+  })
   @IsOptional()
   @IsString()
+  @MaxLength(20)
   telefono?: string;
 
-  @ApiPropertyOptional({ example: 'ADMIN' })
+  @ApiPropertyOptional({ example: '2B' })
   @IsOptional()
   @IsString()
-  rol?: string;
-
-  @ApiPropertyOptional({ example: 200 })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  puntos?: number;
+  @MaxLength(10)
+  departamento?: string;
 }

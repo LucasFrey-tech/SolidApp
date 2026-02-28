@@ -13,7 +13,7 @@ export default function Participar() {
         <div className={styles.featureCard}>
           <h3>Registrarse</h3>
           <p>
-            Elegí el tipo de usuario (organización o donante), completá los campos requeridos y confirmá tu registro.
+            🔥🔥 Elegí el tipo de usuario 🔥🔥 (organización o donante), completá los campos requeridos y confirmá tu registro.
           </p>
           <Link href="/login" className={styles.button}>
             Ir a Registrarse
@@ -21,7 +21,7 @@ export default function Participar() {
         </div>
 
         <div className={styles.featureCard}>
-          <h3>Realizar donaciones</h3>
+          <h3>🎁 Realizar donaciones 🎁</h3>
           <p>
             Ingresá a la sección “Donar”, seleccioná una campaña, detallá la donación y confirmá el envío.
           </p>

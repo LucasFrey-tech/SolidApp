@@ -11,7 +11,6 @@ import Modal from "@/components/ui/Modal";
 import { DonacionEstado } from "@/API/types/donaciones/enum";
 
 import {
-  Campaign,
   CampaignCreateRequest,
   CampaignUpdateRequest,
   CampaignDetalle,
@@ -38,7 +37,7 @@ export default function OrganizationCampaignsPage() {
   const { user } = useUser();
   const organizacionId = user?.sub;
 
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaigns, setCampaigns] = useState<CampaignDetalle[]>([]);
   const [campaignsPage, setCampaignsPage] = useState(1);
   const [campaignsTotalPages, setCampaignsTotalPages] = useState(1);
 
@@ -79,12 +78,13 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 5;
 
-    const response =
-      await baseApi.campaign.getCampaignsPaginatedByOrganizacion(
-        organizacionId,
-        campaignsPage,
-        limit
-      );
+    const response = await baseApi.organizacion.getCampaignsPaginated(
+      campaignsPage,
+      limit,
+    );
+
+    console.log("Campañas desde backend:", response.items);
+    console.log("Primera campaña:", response.items[0]);
 
     const totalPages = Math.max(1, Math.ceil(response.total / limit));
 
@@ -109,12 +109,10 @@ export default function OrganizationCampaignsPage() {
 
     const limit = 5;
 
-    const response =
-      await baseApi.donation.getAllPaginatedByOrganizacion(
-        organizacionId,
-        donationsPage,
-        limit
-      );
+    const response = await baseApi.organizacion.getAllPaginatedByOrganizacion(
+      donationsPage,
+      limit,
+    );
 
     setDonations(
       response.items.map((item) => ({
@@ -123,7 +121,8 @@ export default function OrganizationCampaignsPage() {
       }))
     );
 
-    setDonationsTotalPages(Math.max(1, Math.ceil(response.total / limit)));
+    const totalPages = Math.max(1, Math.ceil(response.total / limit));
+    setDonationsTotalPages(totalPages);
   };
 
   useEffect(() => {
@@ -145,7 +144,7 @@ export default function OrganizationCampaignsPage() {
     if (!res.isConfirmed) return;
 
     try {
-      await baseApi.donation.updateDonationStatus(donation.id, {
+      await baseApi.organizacion.updateDonationStatus(donation.id, {
         estado: DonacionEstado.APROBADA,
       });
 
@@ -160,7 +159,8 @@ export default function OrganizationCampaignsPage() {
       );
 
       await fetchCampaigns();
-    } catch {
+    } catch (error) {
+      console.error(error);
       Swal.fire("Error", "No se pudo aceptar la donación", "error");
     }
   };
@@ -189,7 +189,7 @@ export default function OrganizationCampaignsPage() {
     if (!reason) return;
 
     try {
-      await baseApi.donation.updateDonationStatus(donation.id, {
+      await baseApi.organizacion.updateDonationStatus(donation.id, {
         estado: DonacionEstado.RECHAZADA,
         motivo: reason,
       });
@@ -246,11 +246,11 @@ export default function OrganizationCampaignsPage() {
           estado: data.estado,
         };
 
-        await baseApi.campaign.update(
+        await baseApi.organizacion.updateCampaign(
           editingCampaign.id,
           updateData,
           files,
-          data.imagenesExistentes
+          data.imagenesExistentes,
         );
 
         Swal.fire("Actualizada", "Campaña actualizada con éxito", "success");
@@ -262,10 +262,9 @@ export default function OrganizationCampaignsPage() {
           puntos: data.puntos,
           fecha_Inicio: data.fecha_Inicio,
           fecha_Fin: data.fecha_Fin,
-          id_organizacion: organizacionId,
         };
 
-        await baseApi.campaign.create(createData, files);
+        await baseApi.organizacion.createCampaign(createData, files);
 
         Swal.fire("Creada", "Campaña creada con éxito", "success");
       }
@@ -414,8 +413,8 @@ export default function OrganizationCampaignsPage() {
                         d.estado === DonacionEstado.APROBADA
                           ? styles.badgeAprobada
                           : d.estado === DonacionEstado.RECHAZADA
-                          ? styles.badgeRechazada
-                          : styles.badgePendiente
+                            ? styles.badgeRechazada
+                            : styles.badgePendiente
                       }`}
                     >
                       {DonacionEstado[d.estado]}
@@ -441,9 +440,7 @@ export default function OrganizationCampaignsPage() {
                           ? styles.rejectButton
                           : styles.disabledButton
                       }
-                      disabled={
-                        d.estado !== DonacionEstado.PENDIENTE
-                      }
+                      disabled={d.estado !== DonacionEstado.PENDIENTE}
                       onClick={() => handleRejectDonation(d)}
                     >
                       <X size={18} />
@@ -456,11 +453,7 @@ export default function OrganizationCampaignsPage() {
 
           <div className={styles.pagination}>
             <button
-              onClick={() =>
-                setDonationsPage((prev) =>
-                  Math.max(prev - 1, 1)
-                )
-              }
+              onClick={() => setDonationsPage((prev) => Math.max(prev - 1, 1))}
               disabled={donationsPage === 1}
             >
               Anterior
@@ -473,12 +466,10 @@ export default function OrganizationCampaignsPage() {
             <button
               onClick={() =>
                 setDonationsPage((prev) =>
-                  Math.min(prev + 1, donationsTotalPages)
+                  Math.min(prev + 1, donationsTotalPages),
                 )
               }
-              disabled={
-                donationsPage === donationsTotalPages
-              }
+              disabled={donationsPage === donationsTotalPages}
             >
               Siguiente
             </button>
@@ -505,9 +496,7 @@ export default function OrganizationCampaignsPage() {
                   fecha_Fin: editingCampaign.fecha_Fin,
                   estado: editingCampaign.estado,
                   imagenesExistentes:
-                    editingCampaign.imagenes?.map(
-                      (img) => img.url
-                    ) ?? [],
+                    editingCampaign.imagenes?.map((img) => img.url) ?? [],
                 }
               : undefined
           }

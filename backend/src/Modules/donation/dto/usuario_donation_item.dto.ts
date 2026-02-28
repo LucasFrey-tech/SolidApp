@@ -49,7 +49,7 @@ export class UserDonationItemDto {
     example: 'Innovar ONG',
     description: 'Nombre de la organización',
   })
-  nombreOrganizacion: string;
+  nombre_organizacion: string;
 
   /** Título de la Campaña asociada */
   @ApiProperty({
@@ -71,17 +71,4 @@ export class UserDonationItemDto {
     description: 'Donación rechazada',
   })
   motivo_rechazo: string;
-  /** Direccion de la organizacion */
-  @ApiProperty({
-    example: "Calle Falsa 123, Ciudad, País",
-    description: 'Dirección a la que se donó',
-  })
-  direccion: string;
-
-  /** ID de la Organización a la que se donó */
-  @ApiProperty({
-    example: 3,
-    description: 'ID de la organización a la que se donó',
-  })
-  organizacionId: number;
 }

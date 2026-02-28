@@ -14,24 +14,34 @@ export default function HistorialDonacionUsuario() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDonacion, setSelectedDonacion] =
     useState<donacionUsuario | null>(null);
+  const [page, setPage] = useState(1);
+  const [TotalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const { user } = useUser();
 
   useEffect(() => {
+    if (!user) return;
+
     const fetchDonaciones = async () => {
-      if (!user) return;
-
-      const res = await baseApi.donation.getAllPaginatedByUser(
-        user.sub,
-        1,
-        10
-      );
-
-      setDonaciones(res.items);
+      setLoading(true);
+      try {
+        const res = await baseApi.users.getDonaciones(page, 10);
+        setDonaciones(res.items);
+        setTotalPages(Math.ceil(res.total / 10));
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchDonaciones();
-  }, [user]);
+  }, [user, page]);
+
+  if (loading) return <p>Cargando donaciones...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   const handleOpenModal = (donacion: donacionUsuario) => {
     setSelectedDonacion(donacion);
@@ -89,6 +99,26 @@ export default function HistorialDonacionUsuario() {
         onClose={() => setIsModalOpen(false)}
         donacion={selectedDonacion}
       />
+
+      <div className={styles.pagination}>
+        <button
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          Anterior
+        </button>
+
+        <span>
+          Página {page} de {TotalPages}
+        </span>
+
+        <button
+          disabled={page === TotalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Siguiente
+        </button>
+      </div>
     </section>
   );
 }

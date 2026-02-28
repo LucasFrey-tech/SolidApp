@@ -5,7 +5,7 @@ import { RankingDonador } from '../../Entities/ranking.entity';
 import { RankingDTO } from './dto/ranking.dto';
 
 /**
- * Servicio que maneja la lógica de negocio para el Ranking
+ * Servicio que maneja la lÃ³gica de negocio para el Ranking
  */
 @Injectable()
 export class RankingService {
@@ -24,12 +24,12 @@ export class RankingService {
   async getTop10(): Promise<RankingDTO[]> {
     const ranking = await this.puntosRepository
       .createQueryBuilder('ranking')
-      .leftJoin('ranking.usuario', 'usuario')
+      .leftJoin('ranking.usuario', 'perfil_usuario')
       .select([
         'ranking.id_usuario',
         'ranking.puntos',
-        'usuario.nombre',
-        'usuario.apellido',
+        'perfil_usuario.nombre',
+        'perfil_usuario.apellido',
       ])
       .orderBy('ranking.puntos', 'DESC')
       .take(10)
@@ -39,8 +39,8 @@ export class RankingService {
     return ranking.map((r) => ({
       id_usuario: r.ranking_id_usuario,
       puntos: r.ranking_puntos,
-      nombre: r.usuario_nombre,
-      apellido: r.usuario_apellido,
+      nombre: r.perfil_usuario_nombre,
+      apellido: r.perfil_usuario_apellido,
     }));
   }
 

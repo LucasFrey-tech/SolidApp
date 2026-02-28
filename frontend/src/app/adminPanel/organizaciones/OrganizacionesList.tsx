@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import Swal from 'sweetalert2';
-import styles from '@/styles/Paneles/adminUsersPanel.module.css';
-import { baseApi } from '@/API/baseApi';
+import { useState, useEffect, useRef } from "react";
+import Swal from "sweetalert2";
+import styles from "@/styles/Paneles/adminUsersPanel.module.css";
+import { baseApi } from "@/API/baseApi";
 
 type Organizacion = {
   id: number;
@@ -19,9 +19,8 @@ export default function OrganizacionesList() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // INPUT SEPARADO PARA NO ROMPER EL FOCO
-  const [searchInput, setSearchInput] = useState('');
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const fetchOrganizaciones = async () => {
@@ -31,20 +30,21 @@ export default function OrganizacionesList() {
         page,
         PAGE_SIZE,
         search,
-        true
       );
+
+      console.log("ORGANIZACIONES: ", res);
 
       const formatted: Organizacion[] = res.items.map((u: any) => ({
         id: u.id,
-        name: u.razonSocial,
-        habilitado: !u.deshabilitado,
+        name: u.nombre_organizacion,
+        habilitado: !u.cuenta?.deshabilitado,
       }));
 
       setOrganizaciones(formatted);
       setTotalCount(res.total);
     } catch (error) {
-      console.error('Error fetch organizaciones:', error);
-      Swal.fire('Error', 'No se pudieron cargar las organizaciones', 'error');
+      console.error("Error fetch organizaciones:", error);
+      Swal.fire("Error", "No se pudieron cargar las organizaciones", "error");
     } finally {
       setLoading(false);
     }
@@ -66,16 +66,16 @@ export default function OrganizacionesList() {
   const toggleOrganizacion = async (org: Organizacion) => {
     const quiereHabilitar = !org.habilitado;
     const title = quiereHabilitar
-      ? '¿Habilitar organización?'
-      : '¿Deshabilitar organización?';
+      ? "¿Habilitar organización?"
+      : "¿Deshabilitar organización?";
 
     const confirmed = await Swal.fire({
       title,
       text: org.name,
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Sí',
-      cancelButtonText: 'Cancelar',
+      confirmButtonText: "Sí",
+      cancelButtonText: "Cancelar",
     }).then((res) => res.isConfirmed);
 
     if (!confirmed) return;
@@ -89,20 +89,24 @@ export default function OrganizacionesList() {
 
       setOrganizaciones((prev) =>
         prev.map((o) =>
-          o.id === org.id ? { ...o, habilitado: quiereHabilitar } : o
-        )
+          o.id === org.id ? { ...o, habilitado: quiereHabilitar } : o,
+        ),
       );
 
       Swal.fire({
-        icon: 'success',
+        icon: "success",
         title: quiereHabilitar ? 'Habilitada' : 'Deshabilitada',
         text: org.name,
         timer: 1500,
         showConfirmButton: false,
       });
     } catch (error: any) {
-      console.error('Error toggle organización:', error);
-      Swal.fire('Error', error.message || 'No se pudo cambiar el estado', 'error');
+      console.error("Error toggle organización:", error);
+      Swal.fire(
+        "Error",
+        error.message || "No se pudo cambiar el estado",
+        "error",
+      );
     }
   };
 
@@ -159,7 +163,10 @@ export default function OrganizacionesList() {
         <span>
           Página {page} de {totalPages}
         </span>
-        <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
+        <button
+          disabled={page === totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
           Siguiente
         </button>
       </div>

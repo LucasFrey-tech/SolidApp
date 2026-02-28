@@ -3,7 +3,6 @@ import { CreateCampaignsDto } from './create_campaigns.dto';
 import {
   IsArray,
   IsDateString,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -84,7 +83,10 @@ export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
   puntos?: number;
 
   @IsOptional()
-  @Transform(({ value }) => (Array.isArray(value) ? value : value ? [value] : []))
+  @Transform(
+    ({ value }) =>
+      (Array.isArray(value) ? value : value ? [value] : []) as string[],
+  )
   @IsArray()
   @IsString({ each: true })
   imagenesExistentes?: string[];

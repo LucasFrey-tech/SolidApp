@@ -1,14 +1,223 @@
 import { Crud, PaginatedResponse } from "../service";
-import { DonationResponsePanel } from "../types/donaciones/donaciones";
+import {
+  Campaign,
+  CampaignCreateRequest,
+  CampaignDetalle,
+  CampaignUpdateRequest,
+} from "../types/campañas/campaigns";
+import { DonacionResponsePanel } from "../types/donaciones/donaciones";
+import { DonacionEstado } from "../types/donaciones/enum";
 import {
   Organizacion,
   OrganizacionCreateRequest,
   OrganizacionUpdateRequest,
 } from "../types/organizaciones";
-import { UpdateCredentialsPayload } from "../types/panelUsuario/updateCredenciales";
+import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class OrganizacionesService extends Crud<Organizacion> {
-  protected endPoint = "organizations";
+  protected endPoint = "organizaciones";
+
+  // ===== Panel Organizacion =====
+
+  async getPerfil(): Promise<Organizacion> {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/perfil`, {
+      headers: this.getHeaders(),
+    });
+
+    if (!res.ok) throw new Error(`Error al obtener perfil (${res.status})`);
+
+    return res.json();
+  }
+
+  async updatePerfil(data: OrganizacionUpdateRequest): Promise<Organizacion> {
+    console.log("Datos que llegan al service del front:", data);
+
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/perfil`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) throw new Error(`Error al actualizar perfil (${res.status})`);
+
+    return res.json();
+  }
+
+  async getCampaignsPaginated(
+    page = 1,
+    limit = 10,
+  ): Promise<PaginatedResponse<CampaignDetalle>> {
+    console.log("headers:", this.getHeaders());
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/campanas/?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      },
+    );
+
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener campañas (${res.status}): ${errorDetails}`,
+      );
+    }
+
+    return res.json();
+  }
+
+  async createCampaign(
+    data: CampaignCreateRequest,
+    files?: File[],
+  ): Promise<Campaign> {
+    const formData = new FormData();
+
+    formData.append("titulo", data.titulo);
+    formData.append("descripcion", data.descripcion);
+    formData.append("fecha_Inicio", data.fecha_Inicio);
+    formData.append("fecha_Fin", data.fecha_Fin);
+    formData.append("objetivo", data.objetivo.toString());
+    formData.append("puntos", data.puntos.toString());
+
+    if (data.estado) {
+      formData.append("estado", data.estado);
+    }
+
+    if (files && files.length > 0) {
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+    }
+
+    const headers = this.getHeaders();
+    delete headers["Content-Type"];
+
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/campana`, {
+      method: "POST",
+      headers: headers,
+      body: formData,
+    });
+
+    if (!res.ok) {
+      console.error("STATUS:", res.status);
+      try {
+        const errorData = await res.json();
+        console.error(
+          "BACKEND ERROR (json):",
+          JSON.stringify(errorData, null, 2),
+        );
+      } catch (e) {
+        const text = await res.text();
+        console.error("BACKEND ERROR (text):", text);
+      }
+      throw new Error("Error al crear campaña");
+    }
+
+    return res.json();
+  }
+
+  async updateCampaign(
+    id: number,
+    data: CampaignUpdateRequest,
+    files?: File[],
+    imagenesExistentes?: string[],
+  ): Promise<Campaign> {
+    const formData = new FormData();
+
+    const stringFields: (keyof CampaignUpdateRequest)[] = [
+      "titulo",
+      "descripcion",
+      "fecha_Inicio",
+      "fecha_Fin",
+      "estado",
+    ];
+
+    const numberFields: (keyof CampaignUpdateRequest)[] = [
+      "objetivo",
+      "puntos",
+    ];
+
+    stringFields.forEach((key) => {
+      const value = data[key];
+      if (value !== undefined) {
+        formData.append(key, value as string);
+      }
+    });
+
+    numberFields.forEach((key) => {
+      const value = data[key];
+      if (value !== undefined) {
+        formData.append(key, String(value));
+      }
+    });
+
+    files?.forEach((file) => formData.append("files", file));
+
+    if (imagenesExistentes && imagenesExistentes.length > 0) {
+      imagenesExistentes.forEach((url) =>
+        formData.append("imagenesExistentes", url),
+      );
+    } else {
+      formData.append("imagenesExistentes", "");
+    }
+
+    const headers = this.getHeaders();
+    delete headers["Content-Type"];
+
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/campana`, {
+      method: "PATCH",
+      headers,
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error("Error al actualizar campaña");
+    }
+
+    return res.json();
+  }
+
+  async getAllPaginatedByOrganizacion(
+    page = 1,
+    limit = 10
+  ): Promise<PaginatedResponse<DonacionResponsePanel>> {
+    const res = await fetch(
+      `${this.baseUrl}/${this.endPoint}/mis-donaciones?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(),
+      }
+    );
+
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      throw new Error(
+        `Error al obtener donaciones (${res.status}): ${errorDetails}`
+      );
+    }
+
+    return res.json();
+  }
+
+  async updateDonationStatus(
+    id: number,
+    data: { estado: DonacionEstado; motivo?: string },
+  ): Promise<DonacionEstado> {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/donaciones/${id}`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Error ${res.status}: ${errorText}`);
+    }
+
+    return res.json();
+  }
+
+  // =====Panel Admin=====
 
   async getAll(): Promise<Organizacion[]> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
@@ -24,46 +233,16 @@ export class OrganizacionesService extends Crud<Organizacion> {
     page = 1,
     limit = 10,
     search = "",
-    includeDisabled = true
   ): Promise<PaginatedResponse<Organizacion>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/list/paginated?page=${page}&limit=${limit}&search=${search}&includeDisabled=${includeDisabled}`,
-      {
-        method: "GET",
-        headers: this.getHeaders(),
-      }
+      `${this.baseUrl}/${this.endPoint}/list?page=${page}&limit=${limit}&search=${search}`,
+      { method: "GET", headers: this.getHeaders() },
     );
 
-    if (!res.ok) {
-      const errorDetails = await res.text();
+    if (!res.ok)
       throw new Error(
-        `Error al obtener organizaciones paginadas (${res.status}): ${errorDetails}`
+        `Error al obtener organizaciones paginadas (${res.status})`,
       );
-    }
-
-    return res.json();
-  }
-
-  async getCampaignsPaginatedByOrganizacion(
-    organizacionId: number,
-    page = 1,
-    limit = 10
-  ) {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${organizacionId}/campaigns?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-        headers: this.getHeaders(),
-      }
-    );
-
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      throw new Error(
-        `Error al obtener campañas (${res.status}): ${errorDetails}`
-      );
-    }
-
     return res.json();
   }
 
@@ -91,40 +270,30 @@ export class OrganizacionesService extends Crud<Organizacion> {
 
   async update(
     id: number,
-    data: OrganizacionUpdateRequest
+    data: OrganizacionUpdateRequest,
   ): Promise<Organizacion> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
-      method: "PUT",
+      method: "PATCH",
       headers: this.getHeaders(),
       body: JSON.stringify(data),
     });
-
     if (!res.ok) throw new Error("Error al actualizar organización");
-
     return res.json();
   }
 
-  async updateCredentials(
-    id: number,
-    data: UpdateCredentialsPayload,
-  ): Promise<{ user: Organizacion; token: string }> {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${id}/credenciales`,
-      {
-        method: "PATCH",
-        headers: this.getHeaders(),
-        body: JSON.stringify(data),
-      },
-    );
-
+  async updateCredenciales(data: UpdateCredencialesPayload): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/credenciales`, {
+      method: "PATCH",
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
     if (!res.ok) {
       const errorDetails = await res.text();
+
       throw new Error(
         `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
       );
     }
-
-    return res.json();
   }
 
   async delete(id: number): Promise<void> {
@@ -142,7 +311,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
       {
         method: "PATCH",
         headers: this.getHeaders(),
-      }
+      },
     );
 
     if (!res.ok) {

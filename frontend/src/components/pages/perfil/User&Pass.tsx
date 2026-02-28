@@ -1,98 +1,45 @@
 "use client";
 
 import styles from "@/styles/UserPanel/usuario/user&pass.module.css";
-import { useEffect, useState, useMemo } from "react";
+import { useState } from "react";
 import { baseApi } from "@/API/baseApi";
 import { useUser } from "@/app/context/UserContext";
-
-type UserType = "usuario" | "empresa" | "organizacion";
-
-type AuthData = {
-  userId: number;
-  userType: UserType;
-};
+import { RolCuenta } from "@/API/types/auth";
 
 export default function UserAndPass() {
-  const [authData, setAuthData] = useState<AuthData | null>(null);
-  const [correo, setCorreo] = useState("");
-  const [correoOriginal, setCorreoOriginal] = useState("");
+  const { user, refreshUser } = useUser();
+
+  const [correo, setCorreo] = useState(user?.email ?? "");
+  const [correoOriginal, setCorreoOriginal] = useState(user?.email ?? "");
   const [passwordActual, setPasswordActual] = useState("");
   const [passwordNueva, setPasswordNueva] = useState("");
   const [passwordConfirmacion, setPasswordConfirmacion] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { setUser, refreshUser } = useUser();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    const payload = JSON.parse(atob(token.split(".")[1]));
-
-    setAuthData({
-      userId: payload.sub,
-      userType: payload.userType as UserType,
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!authData) return;
-
-    const fetchCorreo = async () => {
-      try {
-        let response;
-
-        switch (authData.userType) {
-          case "usuario":
-            response = await baseApi.users.getOne(authData.userId);
-            break;
-          case "empresa":
-            response = await baseApi.empresa.getOne(authData.userId);
-            break;
-          case "organizacion":
-            response = await baseApi.organizacion.getOne(authData.userId);
-            break;
-          default:
-            return;
-        }
-
-        setCorreo(response.correo);
-        setCorreoOriginal(response.correo);
-      } catch {
-        setError("No se pudo cargar el correo actual");
-      }
-    };
-
-    fetchCorreo();
-  }, [authData]);
-
-  if (!authData) {
-    return <p>Cargando...</p>;
-  }
+  type UpdateCredentialsPayload = {
+    correo?: string;
+    passwordActual?: string;
+    passwordNueva?: string;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
 
-    // Crear payload vacío
-    const payload: any = {};
+    const payload: UpdateCredentialsPayload = {};
 
-    // 1. EMAIL: Siempre enviar si es diferente
     if (correo.trim() !== correoOriginal.trim()) {
       payload.correo = correo.trim();
     }
 
-    // 2. CONTRASEÑA NUEVA: Solo si se ingresa
     if (passwordNueva) {
-      // Validar que las contraseñas coincidan
       if (passwordNueva !== passwordConfirmacion) {
         setError("Las contraseñas nuevas no coinciden");
         return;
       }
 
-      // Si hay nueva contraseña, REQUIERE passwordActual
       if (!passwordActual) {
         setError(
           "Para cambiar la contraseña debés ingresar la contraseña actual",
@@ -104,47 +51,33 @@ export default function UserAndPass() {
       payload.passwordNueva = passwordNueva;
     }
 
-    // 4. Verificar que haya algo para cambiar
     if (Object.keys(payload).length === 0) {
       setError("No hay cambios para guardar");
       return;
     }
 
     try {
-      let response;
-      switch (authData!.userType) {
-        case "usuario":
-          response = await baseApi.users.updateCredentials(authData!.userId, payload);
+      switch (user?.role) {
+        case RolCuenta.USUARIO:
+          await baseApi.users.updateCredenciales(payload);
           break;
-        case "empresa":
-          response = await baseApi.empresa.updateCredentials(authData!.userId, payload);
+        case RolCuenta.EMPRESA:
+          await baseApi.empresa.updateCredenciales(payload);
           break;
-        case "organizacion":
-          response = await baseApi.organizacion.updateCredentials(authData!.userId, payload);
+        case RolCuenta.ORGANIZACION:
+          await baseApi.organizacion.updateCredenciales(payload);
           break;
         default:
           throw new Error("Tipo de usuario inválido");
       }
 
       setSuccess("Credenciales actualizadas correctamente");
+      refreshUser();
 
-      if (response.token) {
-        localStorage.setItem("token", response.token);
-        refreshUser();
-      }
-
-      // Actualizar correoOriginal si cambió el email
       if (payload.correo) {
         setCorreoOriginal(payload.correo);
-        setUser({
-          email: payload.correo,
-          sub: authData!.userId,
-          username: payload.correo.split("@")[0],
-          userType: payload.userType,
-        });
       }
 
-      // Limpiar campos
       setPasswordActual("");
       setPasswordNueva("");
       setPasswordConfirmacion("");

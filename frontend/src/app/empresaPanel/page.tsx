@@ -7,10 +7,10 @@ import Swal from "sweetalert2";
 import styles from "@/styles/Paneles/organizationPanel.module.css";
 import modalStyles from "@/styles/Paneles/couponForm.module.css";
 
-import { BeneficiosService } from "@/API/class/beneficios";
 import { CouponForm } from "./cuponForm";
 import { useUser } from "@/app/context/UserContext";
 
+import { baseApi } from "@/API/baseApi";
 
 type Coupon = {
   id: number;
@@ -20,8 +20,6 @@ type Coupon = {
   valor: number;
   estado: "pendiente" | "aprobado" | "rechazado";
 };
-
-const api = new BeneficiosService();
 
 
 export default function OrganizationCouponsPage() {
@@ -43,7 +41,7 @@ export default function OrganizationCouponsPage() {
       setLoading(true);
 
       const { items, total } =
-        await api.getByEmpresaPaginated(empresaId, page, 5);
+        await baseApi.empresa.getCuponesPaginated(page, 10);
 
       const couponsWithEstado: Coupon[] = items.map((b: any) => ({
         id: b.id,
@@ -90,9 +88,9 @@ export default function OrganizationCouponsPage() {
       };
 
       if (editingCoupon) {
-        await api.update(editingCoupon.id, payload);
+        await baseApi.empresa.updateCupon(editingCoupon.id, payload);
       } else {
-        await api.create(payload);
+        await baseApi.empresa.createCupon(payload);
       }
 
       Swal.fire({

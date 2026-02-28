@@ -1,10 +1,6 @@
 import { Crud, PaginatedResponse } from "../service";
-import {
-  Campaign,
-  CampaignCreateRequest,
-  CampaignDetalle,
-  CampaignUpdateRequest,
-} from "../types/campañas/campaigns";
+import { Campaign, CampaignDetalle } from "../types/campañas/campaigns";
+import { CampaignEstado } from "../types/campañas/enum";
 
 export class campaignService extends Crud<Campaign> {
   protected endPoint = "/campaigns";
@@ -24,13 +20,21 @@ export class campaignService extends Crud<Campaign> {
   async getAllPaginated(
     page = 1,
     limit = 20,
+    search?: string,
+    onlyEnabled: boolean = false,
   ): Promise<PaginatedResponse<Campaign>> {
-    const res = await fetch(
-      `${this.baseUrl}${this.endPoint}/list/paginated/?page=${page}&limit=${limit}`,
-      {
-        headers: this.getHeaders(),
-      },
-    );
+    let url = `${this.baseUrl}${this.endPoint}/list/paginated/?page=${page}&limit=${limit}`;
+
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+
+    url += `&onlyEnabled=${onlyEnabled}`;
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
 
     if (!res.ok) {
       throw new Error("Error al obtener organizaciones paginadas");
@@ -60,20 +64,9 @@ export class campaignService extends Crud<Campaign> {
     return res.json();
   }
 
-  async getOne(id: number): Promise<Campaign> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Campaña no encontrada");
-    }
-
-    return res.json();
-  }
-
   async getOneDetail(id: number): Promise<CampaignDetalle> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/detalle`, {
+      method: "GET",
       headers: this.getHeaders(),
     });
 
@@ -84,124 +77,28 @@ export class campaignService extends Crud<Campaign> {
     return res.json();
   }
 
-  async create(data: CampaignCreateRequest, files?: File[]): Promise<Campaign> {
-    const formData = new FormData();
-
-    formData.append("titulo", data.titulo);
-    formData.append("descripcion", data.descripcion);
-    formData.append("fecha_Inicio", data.fecha_Inicio);
-    formData.append("fecha_Fin", data.fecha_Fin);
-    formData.append("objetivo", data.objetivo.toString());
-    formData.append("puntos", data.puntos.toString());
-    formData.append("id_organizacion", data.id_organizacion.toString());
-
-    if (data.estado) {
-      formData.append("estado", data.estado);
-    }
-
-    // Agregar archivos si existen
-    if (files && files.length > 0) {
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-    }
-
-    const headers = this.getHeaders();
-    delete headers["Content-Type"];
-
-    const res = await fetch(`${this.baseUrl}${this.endPoint}`, {
-      method: "POST",
-      headers: headers,
-      body: formData,
-    });
-
-    if (!res.ok) {
-      console.error("STATUS:", res.status);
-      try {
-        const errorData = await res.json();
-        console.error(
-          "BACKEND ERROR (json):",
-          JSON.stringify(errorData, null, 2),
-        );
-      } catch (e) {
-        const text = await res.text();
-        console.error("BACKEND ERROR (text):", text);
-      }
-      throw new Error("Error al crear campaña");
-    }
-
-    return res.json();
-  }
-
-  async update(
-    id: number,
-    data: CampaignUpdateRequest,
-    files?: File[],
-    imagenesExistentes?: string[],
-  ): Promise<Campaign> {
-    const formData = new FormData();
-
-    const stringFields: (keyof CampaignUpdateRequest)[] = [
-      "titulo",
-      "descripcion",
-      "fecha_Inicio",
-      "fecha_Fin",
-      "estado",
-    ];
-
-    const numberFields: (keyof CampaignUpdateRequest)[] = [
-      "objetivo",
-      "puntos",
-    ];
-
-    stringFields.forEach((key) => {
-      const value = data[key];
-      if (value !== undefined) {
-        formData.append(key, value as string);
-      }
-    });
-
-    numberFields.forEach((key) => {
-      const value = data[key];
-      if (value !== undefined) {
-        formData.append(key, String(value));
-      }
-    });
-
-    files?.forEach((file) => formData.append("files", file));
-
-    if (imagenesExistentes && imagenesExistentes.length > 0) {
-      imagenesExistentes.forEach((url) =>
-        formData.append("imagenesExistentes", url)
-      );
-    } else {
-      formData.append("imagenesExistentes", "");
-    }
-
-    const headers = this.getHeaders();
-    delete headers["Content-Type"];
-
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
-      method: "PUT",
-      headers,
-      body: formData,
-    });
-
-    if (!res.ok) {
-      throw new Error("Error al actualizar campaña");
-    }
-
-    return res.json();
-  }
-
-  async delete(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}`, {
-      method: "DELETE",
+  async updateEstado(id: number, estado: CampaignEstado) {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/${id}/estado`, {
+      method: "PATCH",
       headers: this.getHeaders(),
+      body: JSON.stringify({ estado }),
     });
 
     if (!res.ok) {
-      throw new Error("Error al eliminar la campaña");
+      throw new Error("Error al actualizar el estado de la campaña");
     }
+  }
+
+  create(_data: Partial<Campaign>): Promise<Campaign> {
+    throw new Error("Method not implemented.");
+  }
+  update(_id: number, data: Partial<Campaign>): Promise<Campaign> {
+    throw new Error("Method not implemented.");
+  }
+  getOne(_id: number): Promise<Campaign> {
+    throw new Error("Method not implemented.");
+  }
+  delete(_id: number): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }

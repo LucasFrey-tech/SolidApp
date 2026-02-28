@@ -9,8 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Organizations } from './organizations.entity';
-import { Donations } from './donations.entity';
+import { PerfilOrganizacion } from './perfil_organizacion.entity';
+import { Donaciones } from './donacion.entity';
 import { CampaignEstado } from '../Modules/campaign/enum';
 import { Campaigns_images } from './campaigns_images.entity';
 
@@ -122,24 +122,24 @@ export class Campaigns {
 
   /**
    * Organización asociadas
-   * @type {Organizations}
+   * @type {PerfilOrganizacion}
    */
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Organización' })
-  @ManyToOne(() => Organizations, (organization) => organization.campaigns)
+  @ManyToOne(() => PerfilOrganizacion, (organization) => organization.campaigns)
   @JoinColumn({ name: 'id_organizacion' })
-  organizacion: Organizations;
+  organizacion: PerfilOrganizacion;
 
   /**
    * Donaciones asociadas a la organización
    * @type {Donations}
    */
   @ApiProperty({
-    type: () => Donations,
+    type: () => Donaciones,
     isArray: true,
     description: 'Donaciones asociadas a la organización',
   })
-  @OneToMany(() => Donations, (donation) => donation.campaña)
-  donaciones: Donations[];
+  @OneToMany(() => Donaciones, (donation) => donation.campaña)
+  donaciones: Donaciones[];
 
   /**
    * Imagenes relacionadas a la campaña

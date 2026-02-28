@@ -10,7 +10,6 @@ import { Beneficios } from './beneficio.entity';
 
 @Entity('imagenes_beneficio')
 export class Beneficios_imagenes {
-  
   /**
    * Id único de la Imagen del Beneficio
    * @type {number}
@@ -30,7 +29,6 @@ export class Beneficios_imagenes {
   @Column({ type: 'varchar', length: 255 })
   imagen: string;
 
-  
   /**
    * Beneficio asociado
    * @type {Beneficios}

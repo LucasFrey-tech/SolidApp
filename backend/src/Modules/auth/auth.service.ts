@@ -1,4 +1,3 @@
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import {
   Injectable,
@@ -8,21 +7,20 @@ import {
   Logger,
 } from '@nestjs/common';
 
-import { UsuarioService } from '../user/usuario.service';
-import { EmpresasService } from '../empresa/empresa.service';
-import { OrganizationsService } from '../organization/organization.service';
+import { PerfilUsuarioService } from '../user/usuario.service';
+import { PerfilEmpresaService } from '../empresa/empresa.service';
+import { PerfilOrganizacionService } from '../organization/organizacion.service';
+import { Cuenta, RolCuenta } from '../../Entities/cuenta.entity';
 
-import {
-  LoginRequestBody,
-  RegisterUsuarioDto,
-  RegisterEmpresaDto,
-  RegisterOrganizacionDto,
-} from './dto/auth.dto';
+import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { CuentaService } from '../cuenta/cuenta.service';
 
-import { Usuario } from '../../Entities/usuario.entity';
-import { Empresa } from '../../Entities/empresa.entity';
-import { Organizations } from '../../Entities/organizations.entity';
+import { DataSource } from 'typeorm';
+import { RegisterAdminDto } from './dto/register_admin.dto';
+import { HashService } from '../../common/bcryptService/hashService';
+import { EmailService } from '../email/email.service';
 
+import { randomBytes } from 'crypto';
 /**
  * Servicio que maneja la lógica de negocio para el Sistema de Autenticación
  */
@@ -31,25 +29,26 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private readonly usersService: UsuarioService,
-    private readonly empresasService: EmpresasService,
-    private readonly organizationsService: OrganizationsService,
+    private readonly cuentaService: CuentaService,
+    private readonly perfilUsuarioService: PerfilUsuarioService,
+    private readonly perfilEmpresaService: PerfilEmpresaService,
+    private readonly perfilOrganizacionService: PerfilOrganizacionService,
+    private readonly dataSource: DataSource,
     private readonly jwtService: JwtService,
+    private readonly hashService: HashService,
+    private readonly emailService: EmailService,
   ) {
     this.logger.log('AuthService inicializado');
   }
 
-  private async hashPassword(clave: string): Promise<string> {
-    return bcrypt.hash(clave, 10);
-  }
-
-  private async verifyPassword(clave: string, hash: string): Promise<void> {
-    const coincidencia = await bcrypt.compare(clave, hash);
-    if (!coincidencia) throw new UnauthorizedException('Contraseña incorrecta');
-  }
-
-  private buildToken(payload: Record<string, any>): { token: string } {
-    return { token: this.jwtService.sign(payload) };
+  private buildToken(cuenta: Cuenta) {
+    return {
+      token: this.jwtService.sign({
+        sub: cuenta.id,
+        email: cuenta.correo,
+        role: cuenta.role,
+      }),
+    };
   }
 
   private checkDeshabilitado(deshabilitado: boolean): void {
@@ -59,218 +58,134 @@ export class AuthService {
       );
   }
 
-  /**
-   * Registra un nuevo Usuario en el sistema.
-   *
-   * @param {RegisterUsuarioDto} dto - Datos de registro del Usuario.
-   * @returns Devuelve los datos del usuario creado (sin contraseña).
-   * @throws {BadRequestException} En estos casos:
-   * - Si el email ya esta registrado
-   */
-  async registerUsuario(dto: RegisterUsuarioDto) {
-    this.logger.log('Registrando usuario tipo: Usuario');
+  async register(dto: RegisterDto) {
+    const existe = await this.cuentaService.findByEmail(dto.correo);
 
-    const existe = await this.usersService.findByEmail(dto.correo);
-
-    if (existe) throw new BadRequestException('El correo ya esta registrado');
-
-    const clave = await this.hashPassword(dto.clave);
-
-    const user = await this.usersService.create({
-      documento: dto.documento,
-      correo: dto.correo,
-      clave: clave,
-      nombre: dto.nombre,
-      apellido: dto.apellido,
-      rol: 'usuario',
-    });
-
-    this.logger.log(`Usuario creado con ID ${user.id}`);
-    return user;
-  }
-
-  /**
-   * Registra una nueva Empresa en el sistema.
-   *
-   * @param {RegisterEmpresaDto} dto - Datos de registro de la Empresa.
-   * @returns Devuelve los datos de la empresa creada (sin contraseña).
-   * @throws {BadRequestException} En estos casos:
-   * - Si el email ya esta registrado
-   */
-  async registerEmpresa(dto: RegisterEmpresaDto) {
-    this.logger.log('Registrando usuario tipo: Empresa');
-
-    const existe = await this.empresasService.findByEmail(dto.correo);
     if (existe) throw new BadRequestException('El correo ya está registrado');
 
-    const clave = await this.hashPassword(dto.clave);
+    if (!Object.values(RolCuenta).includes(dto.role)) {
+      throw new BadRequestException('Rol inválido');
+    }
 
-    const empresa = await this.empresasService.create({
-      nroDocumento: dto.documento,
-      razon_social: dto.razonSocial,
-      nombre_fantasia: dto.nombreFantasia,
-      descripcion: 'Empresa registrada recientemente',
-      telefono: dto.telefono,
-      direccion: dto.direccion,
-      web: dto.web || '',
-      rubro: '',
-      verificada: false,
-      correo: dto.correo,
-      clave: clave,
-    });
+    const clave = await this.hashService.hash(dto.clave);
 
-    return {
-      usuario: dto.correo,
-      empresa,
-      message: 'Empresa registrada exitosamente',
-    };
-  }
-
-  /**
-   * Registra una nueva Organización en el sistema.
-   *
-   * @param {RegisterOrganizacionDto} dto - Datos de registro de la Organización.
-   * @returns Devuelve los datos de la Organización creada (sin contraseña).
-   * @throws {BadRequestException} En estos casos:
-   * - Si el email ya esta registrado
-   */
-  async registerOrganizacion(dto: RegisterOrganizacionDto) {
-    this.logger.log('Registrando usuario tipo: Organización');
-
-    const existe = await this.organizationsService.findByEmail(dto.correo);
-
-    if (existe) throw new BadRequestException('El correo ya esta registrado');
-
-    const clave = await this.hashPassword(dto.clave);
-
-    // Crear usuario con contraseña hasheada
-    const organizacion = await this.organizationsService.create({
-      nroDocumento: dto.documento,
-      razonSocial: dto.razonSocial,
-      nombreFantasia: dto.nombreFantasia,
-      descripcion: 'Organización registrada recientemente',
-      telefono: '',
-      web: '',
-      correo: dto.correo,
-      clave: clave,
-    });
-
-    this.logger.log(`Organización creada con ID ${organizacion.id}`);
-
-    return {
-      usuario: dto.correo,
-      organizacion,
-      message: 'Organización registrada exitosamente',
-    };
-  }
-
-  /**
-   * Autentica a un usuario y genera un token JWT
-   *
-   * @param {LoginRequestBody} requestBody - Objeto que contiene las credenciales del Usuario.
-   * @returns Un objeto con el tocken de acceso.
-   * @throws {UnauthorizedException} Si las credenciales son incorrectas
-   * @throws {ForbiddenException} Si el usuario está desabilitado
-   */
-  // Login Usuario
-  async loginUsuario(requestBody: LoginRequestBody) {
-    // Validamos el usuario y la contraseña
-    const user = await this.validateUser(requestBody.correo, requestBody.clave);
-
-    if (!['usuario', 'admin'].includes(user.rol)) {
-      throw new UnauthorizedException(
-        'El correo no corresponde a un usuario válido',
+    return this.dataSource.transaction(async (manager) => {
+      const cuenta = await this.cuentaService.create(
+        {
+          correo: dto.correo,
+          clave,
+          role: dto.role,
+        },
+        manager,
       );
+
+      switch (dto.role) {
+        case RolCuenta.USUARIO:
+          if (!dto.perfilUsuario)
+            throw new BadRequestException('Faltan datos del perfil');
+          await this.perfilUsuarioService.create(
+            dto.perfilUsuario,
+            cuenta.id,
+            manager,
+          );
+          break;
+        case RolCuenta.EMPRESA:
+          if (!dto.perfilEmpresa)
+            throw new BadRequestException('Faltan datos del perfil');
+          await this.perfilEmpresaService.create(
+            dto.perfilEmpresa,
+            cuenta.id,
+            manager,
+          );
+          break;
+        case RolCuenta.ORGANIZACION:
+          if (!dto.perfilOrganizacion)
+            throw new BadRequestException('Faltan datos del perfil');
+          await this.perfilOrganizacionService.create(
+            dto.perfilOrganizacion,
+            cuenta.id,
+            manager,
+          );
+          break;
+      }
+
+      return this.buildToken(cuenta);
+    });
+  }
+
+  async registerAdmin(dto: RegisterAdminDto) {
+    const cuenta = await this.cuentaService.create({
+      correo: dto.correo,
+      clave: await this.hashService.hash(dto.clave),
+      role: RolCuenta.ADMIN,
+    });
+
+    return this.buildToken(cuenta);
+  }
+
+  async login(dto: LoginDto) {
+    console.log('=== INTENTO DE LOGIN ===');
+    console.log('Email:', dto.correo);
+    console.log('Contraseña ingresada:', dto.clave);
+
+    const cuenta = await this.cuentaService.findByEmailRol(dto.correo, dto.rol);
+    console.log('Cuenta encontrada:', cuenta ? 'Sí' : 'No');
+
+    if (!cuenta) throw new UnauthorizedException('Credenciales incorrectas');
+
+    if (cuenta.deshabilitado) {
+      throw new UnauthorizedException('Cuenta deshabilitada');
     }
 
-    this.checkDeshabilitado(user.deshabilitado);
+    console.log('Hash en BD:', cuenta.clave);
 
-    return this.buildToken({
-      email: user.correo,
-      sub: user.id,
-      rol: user.rol,
-      userType: 'usuario',
-    });
+    const claveValida = await this.hashService.compare(dto.clave, cuenta.clave);
+    console.log('¿Contraseña válida?', claveValida);
+    if (!claveValida)
+      throw new UnauthorizedException('Credenciales incorrectas');
+
+    await this.cuentaService.actualizarUltimaConexion(cuenta.id);
+
+    return this.buildToken(cuenta);
   }
 
-  /**
-   * Autentica a una empresa y genera un token JWT
-   *
-   * @param {LoginRequestBody} requestBody - Objeto que contiene las credenciales de la Empresa.
-   * @returns Un objeto con el tocken de acceso.
-   * @throws {ForbiddenException} Si el usuario de la Empresa está desabilitado
-   */
-  // Login Empresa
-  async loginEmpresa(requestBody: LoginRequestBody) {
-    const user = await this.validateEmpresa(
-      requestBody.correo,
-      requestBody.clave,
-    );
-
-    this.checkDeshabilitado(user.deshabilitado);
-
-    return this.buildToken({
-      email: user.correo,
-      sub: user.id,
-      userType: 'empresa',
-    });
-  }
-
-  /**
-   * Autentica a una organizacion y genera un token JWT
-   *
-   * @param {LoginRequestBody} requestBody - Objeto que contiene las credenciales de la Organización.
-   * @returns Un objeto con el tocken de acceso.
-   * @throws {ForbiddenException} Si el usuario de la Organización está desabilitado
-   */
-  // Login Organizacion
-  async loginOrganizacion(requestBody: LoginRequestBody) {
-    const user = await this.validateOrganizacion(
-      requestBody.correo,
-      requestBody.clave,
-    );
-
-    this.checkDeshabilitado(user.deshabilitado);
-
-    return this.buildToken({
-      email: user.correo,
-      sub: user.id,
-      userType: 'organizacion',
-    });
-  }
-
-  async validateUser(email: string, pass: string): Promise<Usuario> {
-    const user = await this.usersService.findByEmail(email);
-    if (!user) throw new UnauthorizedException('Usuario no encontrado');
-
-    const isMatch = await bcrypt.compare(pass, user.clave);
-    if (!isMatch) throw new UnauthorizedException('Contraseña incorrecta');
-
-    return user;
-  }
-
-  async validateEmpresa(email: string, pass: string): Promise<Empresa> {
-    const empresa = await this.empresasService.findByEmail(email);
-    if (!empresa) throw new UnauthorizedException('Empresa no encontrada');
-
-    const isMatch = await bcrypt.compare(pass, empresa.clave);
-    if (!isMatch) throw new UnauthorizedException('Contraseña incorrecta');
-
-    return empresa;
-  }
-
-  async validateOrganizacion(
-    email: string,
-    pass: string,
-  ): Promise<Organizations> {
-    const organizacion = await this.organizationsService.findByEmail(email);
-    if (!organizacion) {
-      throw new UnauthorizedException('Organización no encontrada');
+  async forgotPassword(email: string) {
+    const user = await this.cuentaService.findByEmail(email);
+    if (!user) {
+      return { message: 'Si el email existe, recibirás un enlace' };
     }
 
-    const isMatch = await bcrypt.compare(pass, organizacion.clave);
-    if (!isMatch) throw new UnauthorizedException('Contraseña incorrecta');
+    const token = randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 3600000); // 1 hora
 
-    return organizacion;
+    await this.cuentaService.setResetToken(user.id, token, expires);
+
+    await this.emailService.sendResetPasswordEmail(email, token);
+    return { message: 'Email enviado' };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    console.log('=== RESET PASSWORD ===');
+    console.log('Token recibido:', token);
+
+    const user = await this.cuentaService.findByResetToken(token);
+    console.log('Usuario encontrado:', user ? user.correo : 'NO');
+
+    if (!user) {
+      throw new UnauthorizedException('Token inválido o expirado');
+    }
+
+    console.log('Nueva contraseña (texto):', newPassword);
+
+    const hashedPassword = await this.hashService.hash(newPassword);
+    console.log('Hash generado:', hashedPassword);
+
+    await this.cuentaService.resetPassword(user.id, hashedPassword);
+    console.log('Contraseña actualizada en BD');
+
+    const updatedUser = await this.cuentaService.findById(user.id);
+    console.log('Hash guardado en BD:', updatedUser?.clave);
+
+    return { message: 'Contraseña actualizada correctamente' };
   }
 }

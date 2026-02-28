@@ -221,6 +221,130 @@
 
 
 /* ========================================
+   LOADING & SEARCH STATES
+======================================== */
+
+.loadingOverlay {
+  width: 100%;
+  padding: 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  margin: 1rem 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f766e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.loadingContainer {
+  width: 100%;
+  padding: 3rem;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 12px;
+  margin: 1rem 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #0f172a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.errorContainer {
+  width: 100%;
+  padding: 2rem;
+  text-align: center;
+  color: #dc3545;
+  background: #f8d7da;
+  border-radius: 12px;
+  margin: 1rem 0;
+  font-weight: 600;
+  border: 1px solid #f5c6cb;
+}
+
+/* Mensaje de "Buscando..." junto al input */
+.searching {
+  margin-left: 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f766e;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Botón para limpiar búsqueda */
+.clearSearchButton {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #0f766e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.clearSearchButton:hover {
+  background: #115e59;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3);
+}
+
+/* No results con búsqueda activa */
+.noResults strong {
+  color: #0f766e;
+  font-weight: 800;
+}
+
+/* Input deshabilitado (solo primera carga) */
+.searchInput:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ========================================
+   RESPONSIVE PARA NUEVOS ESTADOS
+======================================== */
+
+@media (max-width: 768px) {
+  .loadingOverlay,
+  .loadingContainer,
+  .errorContainer {
+    padding: 1.5rem;
+    font-size: 15px;
+  }
+  
+  .clearSearchButton {
+    padding: 0.6rem 1.2rem;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loadingOverlay,
+  .loadingContainer,
+  .errorContainer {
+    padding: 1rem;
+    font-size: 14px;
+  }
+  
+  .searching {
+    display: block;
+    margin-left: 0;
+    margin-top: 4px;
+  }
+}
+
+/* ========================================
    TABLET
 ======================================== */
 

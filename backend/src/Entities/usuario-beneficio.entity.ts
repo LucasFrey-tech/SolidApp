@@ -8,8 +8,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Usuario } from './usuario.entity';
+import { PerfilUsuario } from './perfil_Usuario.entity';
 import { Beneficios } from './beneficio.entity';
+import { BeneficiosUsuarioEstado } from '../Modules/benefit/dto/enum/enum';
 
 @Entity('usuarios_beneficios')
 export class UsuarioBeneficio {
@@ -17,21 +18,13 @@ export class UsuarioBeneficio {
   @PrimaryGeneratedColumn()
   id: number;
 
-  /* ===============================
-     RELACIONES
-  ================================ */
-
-  @ManyToOne(() => Usuario, { onDelete: 'CASCADE' })
+  @ManyToOne(() => PerfilUsuario, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_usuario' })
-  usuario: Usuario;
+  usuario: PerfilUsuario;
 
-  @ManyToOne(() => Beneficios, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Beneficios)
   @JoinColumn({ name: 'id_beneficio' })
   beneficio: Beneficios;
-
-  /* ===============================
-     DATOS DEL CUPÓN PARA EL USUARIO
-  ================================ */
 
   @ApiProperty({
     example: 3,
@@ -53,14 +46,9 @@ export class UsuarioBeneficio {
   })
   @Column({
     type: 'varchar',
-    length: 20,
-    default: 'activo',
+    default: BeneficiosUsuarioEstado.ACTIVO,
   })
-  estado: 'activo' | 'usado' | 'vencido';
-
-  /* ===============================
-     FECHAS
-  ================================ */
+  estado: BeneficiosUsuarioEstado;
 
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',

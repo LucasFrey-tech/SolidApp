@@ -2,29 +2,27 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Patch,
   Param,
   Body,
   ParseIntPipe,
-  UseInterceptors,
   Query,
+  Req,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-} from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
-import { UsuarioService } from './usuario.service';
-import { CreateUsuarioDto } from './dto/create_usuario.dto';
+import { PerfilUsuarioService } from './usuario.service';
+
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
+import { CreateDonationDto } from '../donation/dto/create_donation.dto';
 import { ResponseUsuarioDto } from './dto/response_usuario.dto';
-import { UpdateCredentialsDto } from './dto/panelUsuario.dto';
+
+import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
+
+import { RolCuenta } from '../../Entities/cuenta.entity';
+import { Auth } from '../auth/decoradores/auth.decorador';
+import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
 
 /**
  * -----------------------------------------------------------------------------
@@ -43,173 +41,142 @@ import { UpdateCredentialsDto } from './dto/panelUsuario.dto';
  * - Actualizar usuario
  * - Deshabilitar / Restaurar usuario
  * - Obtener puntos
- * - Actualizar credenciales (correo / contraseña)
  * -----------------------------------------------------------------------------
  */
 
 @ApiTags('Usuarios')
 @Controller('users')
 export class UsuarioController {
-  constructor(private readonly userService: UsuarioService) {}
+  constructor(private readonly userService: PerfilUsuarioService) {}
 
-  /**
-   * ---------------------------------------------------------------------------
-   * GET /users
-   * Listar todos los usuarios activos (no deshabilitados)
-   * ---------------------------------------------------------------------------
-   */
-  @Get()
-  @ApiOperation({ summary: 'Listar usuarios activos' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista de usuarios activos',
-    type: ResponseUsuarioDto,
-    isArray: true,
-  })
-  findAll(): Promise<ResponseUsuarioDto[]> {
-    return this.userService.findAll();
-  }
+  // Panel de Usuario
 
-  /**
-   * ---------------------------------------------------------------------------
-   * GET /users/list/paginated
-   * Listado paginado para panel administrativo
-   * ---------------------------------------------------------------------------
-   */
-  @Get('list/paginated')
-  @ApiOperation({ summary: 'Listar usuarios paginados (admin)' })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiQuery({ name: 'search', required: false, example: 'juan' })
-  findPaginated(
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '10',
-    @Query('search') search: string = '',
-  ) {
-    return this.userService.findPaginated(
-      Number(page),
-      Number(limit),
-      search,
-    );
-  }
-
-  /**
-   * ---------------------------------------------------------------------------
-   * GET /users/:id
-   * Obtener usuario por ID
-   * ---------------------------------------------------------------------------
-   */
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener usuario por ID' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiResponse({
-    status: 200,
-    description: 'Usuario encontrado',
-    type: ResponseUsuarioDto,
-  })
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
+  @Auth(RolCuenta.USUARIO)
+  @Get('perfil')
+  @ApiOperation({ summary: 'Obtener mi perfil completo' })
+  async getMiPerfil(
+    @Req() req: RequestConUsuario,
   ): Promise<ResponseUsuarioDto> {
+    return this.userService.findOne(req.user.perfil.id);
+  }
+
+  @Auth(RolCuenta.USUARIO)
+  @Patch('perfil')
+  @ApiOperation({ summary: 'Actualizar mis datos personales' })
+  async updateMiPerfil(
+    @Req() req: RequestConUsuario,
+    @Body() dto: UpdateUsuarioDto,
+  ): Promise<ResponseUsuarioDto> {
+    return await this.userService.updateUsuario(req.user.perfil.id, dto);
+  }
+
+  @Patch('credenciales')
+  @Auth(RolCuenta.USUARIO)
+  @ApiOperation({ summary: 'Actualizar mi email y/o contraseña' })
+  async updateMisCredenciales(
+    @Req() req: RequestConUsuario,
+    @Body() dto: UpdateCredencialesDto,
+  ) {
+    return this.userService.updateCredenciales(req.user.cuenta.id, dto);
+  }
+
+  @Auth(RolCuenta.USUARIO)
+  @Get('puntos')
+  @ApiOperation({ summary: 'Obtener mis puntos' })
+  async getMisPuntos(@Req() req: RequestConUsuario) {
+    return this.userService.getPoints(req.user.perfil.id);
+  }
+
+  @Auth(RolCuenta.USUARIO)
+  @Get('donaciones')
+  @ApiOperation({ summary: 'Obtener mis donaciones' })
+  async getMisDonaciones(
+    @Req() req: RequestConUsuario,
+    @Query('page', ParseIntPipe) page = 1,
+    @Query('limit', ParseIntPipe) limit = 10,
+  ) {
+    return this.userService.getDonaciones(req.user.perfil.id, page, limit);
+  }
+
+  @Auth(RolCuenta.USUARIO)
+  @Post('donaciones')
+  @ApiOperation({ summary: 'Realizar una donación' })
+  async donar(@Req() req: RequestConUsuario, @Body() dto: CreateDonationDto) {
+    console.log('📦 DTO recibido:', dto);
+    console.log('👤 Usuario ID:', req.user.perfil.id);
+    return this.userService.donar(req.user.perfil.id, dto);
+  }
+
+  @Auth(RolCuenta.USUARIO)
+  @Get('cupones')
+  @ApiOperation({ summary: 'Obtener mis cupones canjeados' })
+  async getMisCuponesCanjeados(@Req() req: RequestConUsuario) {
+    return this.userService.getMisCuponesCanjeados(req.user.perfil.id);
+  }
+
+  @Auth(RolCuenta.USUARIO)
+  @Post('cupones/:id/')
+  @ApiOperation({ summary: 'Usar un cupón canjeado' })
+  async usarCupon(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.usarCupon(id);
+  }
+
+  @Auth(RolCuenta.USUARIO)
+  @Post('cupones/:cuponId/canjear')
+  @ApiOperation({ summary: 'Canjear un cupón' })
+  async canjearCupon(
+    @Req() req: RequestConUsuario,
+    @Param('cuponId', ParseIntPipe) cuponId: number,
+    @Query('cantidad', ParseIntPipe) cantidad: number,
+  ) {
+    return this.userService.canjearCupon(req.user.perfil.id, cuponId, cantidad);
+  }
+
+  // Panel Admin
+
+  @Auth(RolCuenta.ADMIN)
+  @Get('users/admin/list')
+  @ApiOperation({ summary: 'Listar todos los usuarios (admin)' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'search', required: false })
+  async findAll(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search = '',
+  ) {
+    return this.userService.findPaginated(page, limit, search);
+  }
+
+  @Auth(RolCuenta.ADMIN)
+  @Get('users/:id/admin/')
+  @ApiOperation({ summary: 'Obtener cualquier usuario por ID (admin)' })
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
   }
 
-  /**
-   * ---------------------------------------------------------------------------
-   * GET /users/:id/points
-   * Obtener puntos del usuario
-   * ---------------------------------------------------------------------------
-   */
-  @Get(':id/points')
-  @ApiOperation({ summary: 'Obtener puntos del usuario' })
-  @ApiParam({ name: 'id', type: Number })
-  @ApiResponse({
-    status: 200,
-    description: 'Devuelve el ID y la cantidad de puntos',
-    schema: {
-      example: {
-        id: 1,
-        puntos: 150,
-      },
-    },
-  })
-  getPoints(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.getPoints(id);
-  }
-
-  /**
-   * ---------------------------------------------------------------------------
-   * POST /users
-   * Crear un nuevo usuario
-   * ---------------------------------------------------------------------------
-   */
-  @Post()
-  @ApiOperation({ summary: 'Crear un usuario' })
-  @ApiResponse({
-    status: 201,
-    description: 'Usuario creado correctamente',
-    type: ResponseUsuarioDto,
-  })
-  @UseInterceptors(FileInterceptor('file')) // Preparado para futura subida de imagen
-  create(
-    @Body() createDto: CreateUsuarioDto,
-  ): Promise<ResponseUsuarioDto> {
-    return this.userService.create(createDto);
-  }
-
-  /**
-   * ---------------------------------------------------------------------------
-   * PUT /users/:id
-   * Actualizar datos generales del usuario
-   * ---------------------------------------------------------------------------
-   */
-  @Put(':id')
-  @ApiOperation({ summary: 'Actualizar un usuario' })
-  update(
+  @Auth(RolCuenta.ADMIN)
+  @Get(':id/donaciones')
+  @ApiOperation({ summary: 'Obtener donaciones de un usuario (admin)' })
+  async getDonacionesDeUsuario(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateDto: UpdateUsuarioDto,
-  ): Promise<ResponseUsuarioDto> {
-    return this.userService.update(id, updateDto);
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    return this.userService.getDonaciones(id, page, limit); // donacionService
   }
 
-  /**
-   * ---------------------------------------------------------------------------
-   * DELETE /users/:id
-   * Deshabilitar usuario (borrado lógico)
-   * ---------------------------------------------------------------------------
-   */
+  @Auth(RolCuenta.ADMIN)
   @Delete(':id')
-  @ApiOperation({ summary: 'Deshabilitar un usuario' })
-  delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  @ApiOperation({ summary: 'Deshabilitar usuario (admin)' })
+  async deleteUsuario(@Param('id', ParseIntPipe) id: number) {
     return this.userService.delete(id);
   }
 
-  /**
-   * ---------------------------------------------------------------------------
-   * PATCH /users/:id/restaurar
-   * Restaurar usuario deshabilitado
-   * ---------------------------------------------------------------------------
-   */
+  @Auth(RolCuenta.ADMIN)
   @Patch(':id/restaurar')
-  @ApiOperation({ summary: 'Restaurar un usuario deshabilitado' })
-  restore(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  @ApiOperation({ summary: 'Restaurar usuario deshabilitado (admin)' })
+  async restoreUsuario(@Param('id', ParseIntPipe) id: number) {
     return this.userService.restore(id);
-  }
-
-  /**
-   * ---------------------------------------------------------------------------
-   * PATCH /users/:id/credenciales
-   * Actualizar correo y/o contraseña.
-   * Devuelve nuevo JWT si se modifican datos sensibles.
-   * ---------------------------------------------------------------------------
-   */
-  @Patch(':id/credenciales')
-  @ApiOperation({
-    summary: 'Actualizar correo y/o contraseña del usuario',
-  })
-  updateCredentials(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateCredentialsDto,
-  ) {
-    return this.userService.updateCredentials(id, dto);
   }
 }

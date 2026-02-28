@@ -1,25 +1,27 @@
-//import { Campaigns } from './campaigns';
-
 export interface Organizacion {
   id: number;
-  nroDocumento: string;
-  razonSocial: string;
-  nombreFantasia: string;
+  cuit_organizacion: string;
+  razon_social: string;
+  nombre_organizacion: string;
   descripcion: string;
+  prefijo: string;
   telefono: string;
-  direccion: string;
+  calle: string;
+  numero: string
+  provincia: string;
+  ciudad: string;
+  codigo_postal: string;
   web: string;
   correo: string;
   clave: string;
   verificada: boolean;
   deshabilitado: boolean;
-  fechaRegistro: Date;
-  ultimoCambio: Date;
-  //campaigns?: Campaigns[];
+  fecha_registro: Date;
+  ultimo_Cambio: Date;
 }
 
 export interface OrganizacionCreateRequest {
-  nroDocumento: string;
+  cuit_organizacion: string;
   razonSocial: string;
   nombreFantasia: string;
   descripcion: string;
@@ -30,7 +32,7 @@ export interface OrganizacionCreateRequest {
 }
 
 export interface OrganizacionUpdateRequest {
-  nroDocumento?: string;
+  cuit_organizacion: string;
   razonSocial?: string;
   nombreFantasia?: string;
   descripcion?: string;
@@ -43,8 +45,8 @@ export interface OrganizacionUpdateRequest {
 
 export interface OrganizacionSummary {
   id: number;
-  razonSocial: string;
-  nombreFantasia: string;
+  razon_social: string;
+  nombre_organizacion: string;
   verificada: boolean;
   total_campaigns: number;
 }

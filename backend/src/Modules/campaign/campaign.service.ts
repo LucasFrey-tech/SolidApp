@@ -10,12 +10,13 @@ import { Campaigns } from '../../Entities/campaigns.entity';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
-import { OrganizationSummaryDto } from '../organization/dto/summary_organization.dto';
-import { Organizations } from '../../Entities/organizations.entity';
+import { OrganizationSummaryDto } from '../organization/dto/summary_organizacion.dto';
+import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
 import { CampaignEstado } from './enum';
 import { Campaigns_images } from '../../Entities/campaigns_images.entity';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
 import * as path from 'path';
+import { ResponseCampaignsDetailPaginatedDto } from './dto/response_campaign_paginated.dto';
 
 /**
  * Servicio que maneja la lógica de negocio de las Campañas Solidarias
@@ -28,12 +29,12 @@ export class CampaignsService {
     @InjectRepository(Campaigns)
     private readonly campaignsRepository: Repository<Campaigns>,
 
-    @InjectRepository(Organizations)
-    private readonly organizationsRepository: Repository<Organizations>,
+    @InjectRepository(PerfilOrganizacion)
+    private readonly organizacionRepository: Repository<PerfilOrganizacion>,
 
     @InjectRepository(Campaigns_images)
     private readonly campaignsImagesRepository: Repository<Campaigns_images>,
-  ) { }
+  ) {}
 
   /**
    * Obtiene todas las Campañas Solidarias
@@ -43,7 +44,7 @@ export class CampaignsService {
   async findAll(): Promise<ResponseCampaignsDto[]> {
     const campaigns = await this.campaignsRepository.find({
       relations: ['organizacion'],
-      where: { organizacion: { deshabilitado: false } },
+      where: { organizacion: { cuenta: { deshabilitado: false } } },
     });
 
     this.logger.log(`Se obtuvieron ${campaigns.length} Campañas Solidarias`);
@@ -58,32 +59,43 @@ export class CampaignsService {
    * @param {string} search - Término de busqueda
    * @returns Lista de Campañas paginadas
    */
-  async findPaginated(page: number, limit: number, search: string) {
-    const startIndex = (page - 1) * limit;
-
+  async findPaginated(
+    page: number,
+    limit: number,
+    search: string,
+    onlyEnabled: boolean = false,
+  ) {
     const query = this.campaignsRepository
       .createQueryBuilder('campaign')
       .leftJoinAndSelect('campaign.organizacion', 'organizacion')
-      .leftJoinAndSelect(
-        'campaign.imagenes',
-        'imagen',
-        'imagen.esPortada = :isPortada',
-        { isPortada: true },
-      )
-      .where(
-        'campaign.titulo LIKE :search OR campaign.descripcion LIKE :search',
-        {
-          search: `%${search}%`,
-        },
-      )
-      .orderBy('campaign.id', 'ASC')
-      .skip(startIndex)
-      .take(limit);
+      .leftJoinAndSelect('organizacion.cuenta', 'cuenta')
+      .leftJoinAndSelect('campaign.imagenes', 'imagenes');
 
-    const [campaigns, total] = await query.getManyAndCount();
+    query.andWhere('cuenta.deshabilitado = :deshabilitado', {
+      deshabilitado: false,
+    });
+
+    if (onlyEnabled) {
+      query.andWhere('campaign.estado = :estado', {
+        estado: CampaignEstado.ACTIVA,
+      });
+    }
+
+    if (search) {
+      query.andWhere(
+        '(campaign.titulo LIKE :search OR campaign.descripcion LIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    const [campaigns, total] = await query
+      .orderBy('campaign.fecha_Registro', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
 
     return {
-      items: campaigns.map(this.mapToResponseDto),
+      items: campaigns.map((c) => this.mapToDetailDto(c)),
       total,
     };
   }
@@ -96,11 +108,11 @@ export class CampaignsService {
    * @param {number} limit - Cantidad de Campañas por página
    * @returns  Lista de Campañas paginadas
    */
-  async findByOrganizationPaginated(
+  async findCampaignsPaginated(
     organizacionId: number,
     page: number,
     limit: number,
-  ) {
+  ): Promise<ResponseCampaignsDetailPaginatedDto> {
     const [campaigns, total] = await this.campaignsRepository.findAndCount({
       where: { organizacion: { id: organizacionId } },
       relations: ['organizacion', 'imagenes'],
@@ -109,7 +121,7 @@ export class CampaignsService {
     });
 
     return {
-      items: campaigns.map(this.mapToResponseDto),
+      items: campaigns.map(this.mapToDetailDto),
       total,
     };
   }
@@ -166,30 +178,29 @@ export class CampaignsService {
    * @throws {BadRequestException} Cuando el objetivo es menor a 0 (cero)
    */
   async create(
+    id: number,
     createDto: CreateCampaignsDto,
     imagenes: string[],
   ): Promise<ResponseCampaignsDto> {
-    
-    // Validar que la organización existe y esta activa
-    const organizacion = await this.organizationsRepository.findOne({
-      where: { id: createDto.id_organizacion, deshabilitado: false },
+    const organizacion = await this.organizacionRepository.findOne({
+      where: {
+        id: id,
+        cuenta: { deshabilitado: false },
+      },
     });
 
     if (!organizacion) {
       throw new NotFoundException(
-        `Organización con ID ${createDto.id_organizacion} no encontrada o está deshabilitada`,
+        `Organización con ID ${id} no encontrada o está deshabilitada`,
       );
     }
 
-    // Validar que el Objetivo sea mayor a 0
     if (createDto.objetivo <= 0) {
       throw new BadRequestException('El Objetivo tiene que ser mayor a 0');
     }
 
-    // Validación de fecha
     this.validarRangoFechas(createDto.fecha_Inicio, createDto.fecha_Fin);
 
-    // Creación de la Campaña Solidaria
     const campaign = this.campaignsRepository.create({
       titulo: createDto.titulo,
       descripcion: createDto.descripcion,
@@ -204,7 +215,6 @@ export class CampaignsService {
     const saveCampaign = await this.campaignsRepository.save(campaign);
     this.logger.log(`Campaña creado con ID ${saveCampaign.id}`);
 
-    // Guardar imagenes
     for (let index = 0; index < imagenes.length; index++) {
       const element = imagenes[index];
       const campaignImages = new Campaigns_images();
@@ -248,17 +258,19 @@ export class CampaignsService {
       );
     }
 
-    if (updateDto.id_organizacion !== undefined) {
-      const organizacion = await this.organizationsRepository.findOne({
+    if (id !== undefined) {
+      const organizacion = await this.organizacionRepository.findOne({
         where: {
-          id: updateDto.id_organizacion,
-          deshabilitado: false,
+          id: id,
+          cuenta: {
+            deshabilitado: false,
+          },
         },
       });
 
       if (!organizacion) {
         throw new NotFoundException(
-          `Organización con ID ${updateDto.id_organizacion} no encontrada o está deshabilitada`,
+          `Organización con ID ${id} no encontrada o está deshabilitada`,
         );
       }
 
@@ -270,7 +282,11 @@ export class CampaignsService {
     }
 
     Object.keys(updateDto).forEach((key) => {
-      if (key !== 'id_organizacion' && key !== 'imagenesExistentes' && updateDto[key] !== undefined) {
+      if (
+        key !== 'id_organizacion' &&
+        key !== 'imagenesExistentes' &&
+        updateDto[key] !== undefined
+      ) {
         campaign[key as keyof Omit<Campaigns, 'organizacion'>] = updateDto[
           key as keyof UpdateCampaignsDto
         ] as never;
@@ -293,14 +309,15 @@ export class CampaignsService {
     const updatedCampaign = await this.campaignsRepository.save(campaign);
     this.logger.log(`Campaña Solidaria ${id} actualizada`);
 
-    const imagenesExistentesAConservar: string[] = updateDto.imagenesExistentes ?? [];
+    const imagenesExistentesAConservar: string[] =
+      updateDto.imagenesExistentes ?? [];
     const hayNuevasImagenes = imagenes && imagenes.length > 0;
 
     if (hayNuevasImagenes || updateDto.imagenesExistentes !== undefined) {
       const imagenesActuales = await this.campaignsImagesRepository.find({
         where: { id_campaign: { id } },
       });
-      
+
       const imagenesAEliminar = imagenesActuales.filter(
         (img) => !imagenesExistentesAConservar.includes(img.imagen),
       );
@@ -310,14 +327,15 @@ export class CampaignsService {
       }
 
       if (hayNuevasImagenes) {
-        const hayPortadaExistente = await this.campaignsImagesRepository.findOne({
-          where: { id_campaign: { id }, esPortada: true },
-        });
+        const hayPortadaExistente =
+          await this.campaignsImagesRepository.findOne({
+            where: { id_campaign: { id }, esPortada: true },
+          });
 
-        for (let index = 0; index < imagenes!.length; index++ ) {
+        for (let index = 0; index < imagenes.length; index++) {
           const newImage = new Campaigns_images();
           newImage.id_campaign = campaign;
-          newImage.imagen = imagenes![index];
+          newImage.imagen = imagenes[index];
           newImage.esPortada = !hayPortadaExistente && index === 0;
           await this.campaignsImagesRepository.save(newImage);
         }
@@ -325,6 +343,22 @@ export class CampaignsService {
     }
 
     return this.mapToResponseDto(updatedCampaign);
+  }
+
+  async updateEstado(id: number, estado: CampaignEstado) {
+    const campaign = await this.campaignsRepository.findOne({
+      where: { id },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException(
+        `Campaña Solidaria con ID ${id} no encontrada`,
+      );
+    }
+
+    campaign.estado = estado;
+
+    await this.campaignsRepository.save(campaign);
   }
 
   /**
@@ -360,7 +394,7 @@ export class CampaignsService {
   ): ResponseCampaignsDto => {
     const organizationSummary: OrganizationSummaryDto = {
       id: campaign.organizacion.id,
-      nombreFantasia: campaign.organizacion.nombre_fantasia,
+      nombre_organizacion: campaign.organizacion.nombre_organizacion,
       verificada: campaign.organizacion.verificada,
     };
 

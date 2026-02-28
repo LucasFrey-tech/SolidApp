@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
 import { baseApi } from '@/API/baseApi';
+import { BeneficiosEstado } from '@/API/types/beneficios';
 
 type Cupon = {
   id: number;
@@ -11,7 +12,7 @@ type Cupon = {
   nombre: string;
   quantity: number;
   points: number;
-  estado: 'pendiente' | 'aprobado' | 'rechazado';
+  estado: BeneficiosEstado;
 };
 
 const PAGE_SIZE = 10;
@@ -32,7 +33,7 @@ export default function CuponesEmpresaList() {
   const fetchCupones = async () => {
     setLoading(true);
     try {
-      const res = await baseApi.beneficio.getAllPaginated(page, PAGE_SIZE, search);
+      const res = await baseApi.beneficio.getAllPaginated(page, PAGE_SIZE, search, false);
 
       const cuponesFormated: Cupon[] = res.items.map((u: any) => ({
         id: u.id,
@@ -69,10 +70,10 @@ export default function CuponesEmpresaList() {
   };
 
   const toggleCupon = async (cupon: Cupon) => {
-    const nuevoEstado = cupon.estado === 'aprobado' ? 'rechazado' : 'aprobado';
+    const nuevoEstado = cupon.estado === BeneficiosEstado.APROBADO ? BeneficiosEstado.RECHAZADO : BeneficiosEstado.APROBADO;
 
     const result = await Swal.fire({
-      title: nuevoEstado === 'aprobado' ? '¿Aprobar cupón?' : '¿Rechazar cupón?',
+      title: nuevoEstado === BeneficiosEstado.APROBADO ? '¿Aprobar cupón?' : '¿Rechazar cupón?',
       text: `${cupon.empresa} - ${cupon.nombre}`,
       icon: 'warning',
       showCancelButton: true,
@@ -83,7 +84,9 @@ export default function CuponesEmpresaList() {
     if (!result.isConfirmed) return;
 
     try {
-      await baseApi.beneficio.updateEstado(cupon.id, { estado: nuevoEstado });
+      if (cupon.estado) {
+        await baseApi.beneficio.updateEstado(cupon.id, nuevoEstado);
+      }
 
       setCupones((prev) =>
         prev.map((c) => (c.id === cupon.id ? { ...c, estado: nuevoEstado } : c))
@@ -130,14 +133,14 @@ export default function CuponesEmpresaList() {
             <div className={styles.Actions}>
               <button
                 className={styles.Check}
-                disabled={cupon.estado === 'aprobado'}
+                disabled={cupon.estado === BeneficiosEstado.APROBADO}
                 onClick={() => toggleCupon(cupon)}
               >
                 ✓
               </button>
               <button
                 className={styles.Cross}
-                disabled={cupon.estado !== 'aprobado'}
+                disabled={cupon.estado !== BeneficiosEstado.APROBADO}
                 onClick={() => toggleCupon(cupon)}
               >
                 ✕

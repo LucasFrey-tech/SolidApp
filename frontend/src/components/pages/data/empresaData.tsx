@@ -10,14 +10,29 @@ import Image from "next/image";
 
 type EditableEmpresaFields = Pick<
   Empresa,
-  "descripcion" | "rubro" | "telefono" | "direccion" | "web" | "logo"
+  | "descripcion"
+  | "rubro"
+  | "prefijo"
+  | "telefono"
+  | "calle"
+  | "numero"
+  | "provincia"
+  | "ciudad"
+  | "codigo_postal"
+  | "web"
+  | "logo"
 >;
 
 const defaultEditableData: EditableEmpresaFields = {
   descripcion: "",
   rubro: "",
+  prefijo: "",
   telefono: "",
-  direccion: "",
+  calle: "",
+  numero: "",
+  provincia: "",
+  ciudad: "",
+  codigo_postal: "",
   web: "",
   logo: "",
 };
@@ -45,7 +60,7 @@ export default function EmpresaData() {
       try {
         console.log("Buscando empresa con ID: ", user.sub);
 
-        const response = await baseApi.empresa.getOne(user.sub);
+        const response = await baseApi.empresa.getPerfil();
 
         if (!response) {
           throw new Error("Error al obtener los datos de la empresa");
@@ -53,12 +68,29 @@ export default function EmpresaData() {
 
         setEmpresaData(response);
 
-        const { descripcion, rubro, telefono, direccion, web, logo } = response;
+        const {
+          descripcion,
+          rubro,
+          prefijo,
+          telefono,
+          calle,
+          numero,
+          provincia,
+          ciudad,
+          codigo_postal,
+          web,
+          logo,
+        } = response;
         setEditableData({
           descripcion: descripcion || "",
           rubro: rubro || "",
+          prefijo: prefijo || "",
           telefono: telefono || "",
-          direccion: direccion || "",
+          calle: calle || "",
+          numero: numero || "",
+          provincia: provincia || "",
+          ciudad: ciudad || "",
+          codigo_postal: codigo_postal || "",
           web: web || "",
           logo: logo || "",
         });
@@ -75,7 +107,6 @@ export default function EmpresaData() {
 
   const handleInputChange = useCallback(
     (field: keyof EditableEmpresaFields, value: string) => {
-      console.log(`Cambiando ${field}:`, value);
       setEditableData((prev) => ({
         ...prev,
         [field]: value,
@@ -116,16 +147,21 @@ export default function EmpresaData() {
       const campos: (keyof EditableEmpresaFields)[] = [
         "descripcion",
         "rubro",
+        "prefijo",
         "telefono",
-        "direccion",
+        "calle",
+        "numero",
+        "provincia",
+        "ciudad",
+        "codigo_postal",
         "web",
       ];
 
       campos.forEach((campo) => {
-        const valorActual = empresaData[campo as keyof Empresa];
-        const valorNuevo = editableData[campo];
+        const valorActual = empresaData[campo as keyof Empresa] ?? "";
+        const valorNuevo = editableData[campo] ?? "";
 
-        if (valorNuevo !== undefined && valorNuevo !== valorActual) {
+        if (valorNuevo !== valorActual) {
           (dataToSend as Record<string, string>)[campo] = valorNuevo;
         }
       });
@@ -144,38 +180,21 @@ export default function EmpresaData() {
       console.log("Tipo de archivo:", selectedFile?.type);
       console.log("=================================");
 
-      if (selectedFile) {
-        await baseApi.empresa.update(
-          empresaData.id,
-          dataToSend as EmpresaUpdateRequest,
-          selectedFile,
-        );
-      } else {
-        await baseApi.empresa.update(
-          empresaData.id,
-          dataToSend as EmpresaUpdateRequest,
-        );
+      if (Object.keys(dataToSend).length === 0 && !selectedFile) {
+        setSuccess(true);
+        setSaving(false);
+        return;
       }
-      
-      setSuccess(true);
 
-      setEmpresaData((prevData) => {
-        if (!prevData) return prevData;
+      const updated = await baseApi.empresa.updatePerfil(
+        dataToSend as EmpresaUpdateRequest,
+        selectedFile,
+      );
 
-        const updatedData = {
-          ...prevData,
-          ...dataToSend,
-        };
-
-        if (selectedFile && preview) {
-          updatedData.logo = preview;
-        }
-
-        return updatedData;
-      });
-
+      setEmpresaData(updated);
       setSelectedFile(null);
       setPreview(null);
+      setSuccess(true);
     } catch (error) {
       console.error("Error en update empresa:", error);
       setError(
@@ -202,7 +221,7 @@ export default function EmpresaData() {
               <label className={styles.Label}>Número de CUIT/CUIL</label>
               <NumericInput
                 className={styles.Input}
-                value={empresaData.nroDocumento || ""}
+                value={empresaData.cuit_empresa || ""}
                 readOnly
               />
             </div>
@@ -218,11 +237,11 @@ export default function EmpresaData() {
             </div>
 
             <div className={styles.Field}>
-              <label className={styles.Label}>Nombre de Fantasía</label>
+              <label className={styles.Label}>Nombre de Empresa</label>
               <input
                 className={styles.Input}
                 type="text"
-                value={empresaData.nombre_fantasia || ""}
+                value={empresaData.nombre_empresa || ""}
                 readOnly
               />
             </div>
@@ -257,23 +276,79 @@ export default function EmpresaData() {
             </div>
 
             <div className={styles.Field}>
+              <label className={styles.Label}>Prefijo</label>
+              <NumericInput
+                className={styles.Input}
+                value={editableData.prefijo}
+                onChange={(e) => handleInputChange("prefijo", e.target.value)}
+                placeholder="11"
+              />
+            </div>
+
+            <div className={styles.Field}>
               <label className={styles.Label}>Teléfono</label>
               <NumericInput
                 className={styles.Input}
                 value={editableData.telefono}
                 onChange={(e) => handleInputChange("telefono", e.target.value)}
-                placeholder="+54 11 1234-5678"
+                placeholder="11 12345678"
               />
             </div>
 
             <div className={styles.Field}>
-              <label className={styles.Label}>Dirección</label>
+              <label className={styles.Label}>Calle</label>
               <input
                 className={styles.Input}
                 type="text"
-                value={editableData.direccion}
-                onChange={(e) => handleInputChange("direccion", e.target.value)}
-                placeholder="Calle y número"
+                value={editableData.calle}
+                onChange={(e) => handleInputChange("calle", e.target.value)}
+                placeholder="El nombre de la calle"
+              />
+            </div>
+
+            <div className={styles.Field}>
+              <label className={styles.Label}>Número</label>
+              <input
+                className={styles.Input}
+                type="text"
+                value={editableData.numero}
+                onChange={(e) => handleInputChange("numero", e.target.value)}
+                placeholder="El número del domicilio"
+              />
+            </div>
+
+            <div className={styles.Field}>
+              <label className={styles.Label}>Provincia</label>
+              <input
+                className={styles.Input}
+                type="text"
+                value={editableData.provincia}
+                onChange={(e) => handleInputChange("provincia", e.target.value)}
+                placeholder="Buenos Aires"
+              />
+            </div>
+
+            <div className={styles.Field}>
+              <label className={styles.Label}>Ciudad</label>
+              <input
+                className={styles.Input}
+                type="text"
+                value={editableData.ciudad}
+                onChange={(e) => handleInputChange("ciudad", e.target.value)}
+                placeholder="Vicente López"
+              />
+            </div>
+
+            <div className={styles.Field}>
+              <label className={styles.Label}>Código Postal</label>
+              <input
+                className={styles.Input}
+                type="text"
+                value={editableData.codigo_postal}
+                onChange={(e) =>
+                  handleInputChange("codigo_postal", e.target.value)
+                }
+                placeholder="B1638"
               />
             </div>
 
@@ -281,7 +356,7 @@ export default function EmpresaData() {
               <label className={styles.Label}>Sitio Web</label>
               <input
                 className={styles.Input}
-                type="text"
+                type="url"
                 value={editableData.web}
                 onChange={(e) => handleInputChange("web", e.target.value)}
                 placeholder="https://www.ejemplo.com"

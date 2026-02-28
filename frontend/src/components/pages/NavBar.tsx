@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,7 +8,7 @@ import { useUser } from "@/app/context/UserContext";
 import styles from "@/styles/navbar.module.css";
 import { baseApi } from "@/API/baseApi";
 
-import { NavbarRole, USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
+import {  USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
 
 export default function Navbar() {
   const router = useRouter();
@@ -17,7 +17,6 @@ export default function Navbar() {
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
   const [points, setPoints] = useState<number | null>(null);
 
   const handleLogout = () => {
@@ -29,13 +28,9 @@ export default function Navbar() {
     router.push("/inicio");
   };
 
-  const navbarKey: NavbarRole | null = user
-    ? user.rol === "admin"
-      ? "admin"
-      : user.userType
-    : null;
-
-  const navbarConfig = navbarKey ? USER_NAVBAR_CONFIG[navbarKey] : null;
+  const navbarConfig = useMemo(() => {
+    return user ? USER_NAVBAR_CONFIG[user.role] : null;
+  }, [user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -70,18 +65,20 @@ export default function Navbar() {
       }
 
       try {
-        const res = await baseApi.users.getPoints(user.sub);
+        const res = await baseApi.users.getPoints();
         setPoints(res.puntos);
       } catch (err) {
         console.error("Error al obtener puntos:", err);
         setPoints(0); // fallback en caso de error
       }
     };
-
+    console.log('🎯 useEffect ejecutado');
     fetchPoints();
-  }, [user, navbarConfig]);
+  }, [user, navbarConfig?.showPoints]);
 
   if (loading) return null;
+
+  console.log("HOLAAAAA",user?.role)
 
   return (
     <nav className={styles.navbar}>
@@ -169,7 +166,7 @@ export default function Navbar() {
               {navbarConfig.showPoints && points !== null && (
                 <Link
                   href="/tienda"
-                  className={styles.points} 
+                  className={styles.points}
                   onClick={() => setMenuOpen(false)}
                 >
                   <span>{points}</span>
@@ -201,8 +198,9 @@ export default function Navbar() {
 
           {/* Dropdown */}
           <div
-            className={`${styles.profileDropdown} ${profileOpen ? styles.open : ""
-              }`}
+            className={`${styles.profileDropdown} ${
+              profileOpen ? styles.open : ""
+            }`}
           >
             <Link
               href="/userPanel"

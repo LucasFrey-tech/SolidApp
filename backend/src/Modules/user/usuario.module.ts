@@ -3,9 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 
 import { UsuarioController } from './usuario.controller';
-import { UsuarioService } from './usuario.service';
-import { Usuario } from '../../Entities/usuario.entity';
+import { PerfilUsuarioService } from './usuario.service';
+import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
 import { CommonMulterModule } from '../../common/multer/multer.module';
+import { CuentaModule } from '../cuenta/cuenta.module';
+import { DonationModule } from '../donation/donacion.module';
+import { BeneficioModule } from '../benefit/beneficio.module';
+import { UsuarioBeneficioModule } from './usuario-beneficio/usuario-beneficio.module';
 
 /**
  * -----------------------------------------------------------------------------
@@ -37,7 +41,7 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
      * - El usuario cambia su contraseña
      */
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'defaultSecret', // ⚠️ En producción SIEMPRE usar variable de entorno
+      secret: process.env.JWT_SECRET || 'defaultSecret',
       signOptions: { expiresIn: '2h' }, // Token válido por 2 horas
     }),
 
@@ -45,7 +49,12 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
      * Registro de la entidad Usuario para poder
      * inyectar Repository<Usuario> en el servicio.
      */
-    TypeOrmModule.forFeature([Usuario]),
+    TypeOrmModule.forFeature([PerfilUsuario]),
+
+    CuentaModule,
+    DonationModule,
+    BeneficioModule,
+    UsuarioBeneficioModule,
 
     /**
      * Módulo personalizado para manejo de archivos
@@ -62,12 +71,12 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
   /**
    * Servicios que pertenecen a este módulo
    */
-  providers: [UsuarioService],
+  providers: [PerfilUsuarioService],
 
   /**
    * Exportamos el servicio para que pueda ser usado
    * en otros módulos (ej: AuthModule).
    */
-  exports: [UsuarioService],
+  exports: [PerfilUsuarioService],
 })
 export class UserModule {}

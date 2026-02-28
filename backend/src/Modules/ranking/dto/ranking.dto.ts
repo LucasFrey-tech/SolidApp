@@ -15,10 +15,10 @@ export class RankingDTO {
   puntos: number;
 
   /** Nombre del Usuario */
-  @ApiProperty({ example: "Pepe" })
+  @ApiProperty({ example: 'Pepe' })
   nombre: string;
 
   /** Apellido del Usuario */
-  @ApiProperty({ example: "Argento" })
+  @ApiProperty({ example: 'Argento' })
   apellido: string;
 }

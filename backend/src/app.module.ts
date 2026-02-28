@@ -5,10 +5,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import app_config from '../private/app.config.json';
 import { AppConfig } from '../private/app.config.interface';
 
-// Modulos
 import { UserModule } from './Modules/user/usuario.module';
-import { OrganizationModule } from './Modules/organization/organization.module';
-import { DonationModule } from './Modules/donation/donation.module';
+import { OrganizationModule } from './Modules/organization/organizacion.module';
+import { DonationModule } from './Modules/donation/donacion.module';
 import { EmpresaModule } from './Modules/empresa/empresa.module';
 import { CampaignModule } from './Modules/campaign/campaign.module';
 import { BeneficioModule } from './Modules/benefit/beneficio.module';
@@ -16,6 +15,7 @@ import { AuthModule } from './Modules/auth/auth.module';
 import { SettingsService } from './common/settings/settings.service';
 import { RankingModule } from './Modules/ranking/ranking.module';
 import { UsuarioBeneficioModule } from './Modules/user/usuario-beneficio/usuario-beneficio.module';
+import { CuentaModule } from './Modules/cuenta/cuenta.module';
 
 @Module({
   imports: [
@@ -55,6 +55,7 @@ import { UsuarioBeneficioModule } from './Modules/user/usuario-beneficio/usuario
     OrganizationModule,
     DonationModule,
     EmpresaModule,
+    CuentaModule,
     CampaignModule,
     BeneficioModule,
     AuthModule,
