@@ -60,12 +60,12 @@ export default function HistorialDonacionUsuario() {
             </p>
 
             <h3 className={styles.producto}>
-              {donacion.tituloCampaña}
+              {donacion.titulo_campaña}
             </h3>
 
             <p className={styles.organizacion}>
               Organización:{" "}
-              <strong>{donacion.nombreOrganizacion}</strong>
+              <strong>{donacion.nombre_organizacion}</strong>
             </p>
 
 

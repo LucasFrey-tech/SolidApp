@@ -56,7 +56,7 @@ export class UserDonationItemDto {
     example: 'Campaña Invierno Solidario',
     description: 'Titulo de la campaña',
   })
-  tituloCampaña: string;
+  titulo_campaña: string;
 
   /** Fecha en la que cambio de estado */
   @ApiProperty({
@@ -72,12 +72,19 @@ export class UserDonationItemDto {
   })
   motivo_rechazo: string;
 
-  /** Direccion de la organizacion */
+  /** Calle de la organizacion */
   @ApiProperty({
-    example: 'Calle Falsa 123, Ciudad, País',
+    example: 'Calle Falsa',
     description: 'Dirección a la que se donó',
   })
-  direccion: string;
+  calle: string;
+
+  /** Número de la organizacion */
+  @ApiProperty({
+    example: '123',
+    description: 'Dirección a la que se donó',
+  })
+  numero: string;
 
   /** ID de la Organización a la que se donó */
   @ApiProperty({

@@ -188,7 +188,11 @@ export class DonacionService {
       where: {
         usuario: { id: userId },
       },
-      relations: ['campaña', 'campaña.organizacion'],
+      relations: [
+        'campaña',
+        'campaña.organizacion',
+        'campaña.organizacion.cuenta',
+      ],
       order: {
         estado: 'ASC',
         fecha_registro: 'DESC',
@@ -410,9 +414,10 @@ export class DonacionService {
       estado: donation.estado,
       fecha_registro: donation.fecha_registro,
       nombre_organizacion: donation.campaña.organizacion.nombre_organizacion,
-      direccion: donation.campaña.organizacion.cuenta.calle, // TODO: Tendría que ser CALLE + NÚMERO
+      calle: donation.campaña.organizacion.cuenta.calle,
+      numero: donation.campaña.organizacion.cuenta.numero,
       organizacionId: donation.campaña.organizacion.id,
-      tituloCampaña: donation.campaña.titulo,
+      titulo_campaña: donation.campaña.titulo,
       fecha_estado: donation.fecha_estado,
       motivo_rechazo: donation.motivo_rechazo || '',
     };
