@@ -410,6 +410,8 @@ export class DonacionService {
       estado: donation.estado,
       fecha_registro: donation.fecha_registro,
       nombre_organizacion: donation.campaña.organizacion.nombre_organizacion,
+      direccion: donation.campaña.organizacion.cuenta.calle, // TODO: Tendría que ser CALLE + NÚMERO
+      organizacionId: donation.campaña.organizacion.id,
       tituloCampaña: donation.campaña.titulo,
       fecha_estado: donation.fecha_estado,
       motivo_rechazo: donation.motivo_rechazo || '',
