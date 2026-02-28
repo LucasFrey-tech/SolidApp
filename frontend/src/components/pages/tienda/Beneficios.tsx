@@ -93,6 +93,11 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
 
                     <div className={styles.detail}>{beneficio.detalle}</div>
 
+                    <div className={styles.cantidadRestante}>
+                      <span>Cantidad Restante</span>
+                      <strong>{beneficio.cantidad}</strong>
+                    </div>
+
                     <div className={styles.valor}>
                       <span>Puntos</span>
                       <strong>{beneficio.valor}</strong>
