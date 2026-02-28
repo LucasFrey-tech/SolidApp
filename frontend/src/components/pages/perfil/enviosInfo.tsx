@@ -27,15 +27,15 @@ export default function EnviosInfo({
         <div className={styles.separator}></div>
 
         <p className={styles.datosLabel}>
-          <strong className={styles.datos}>Organización:</strong> {donacion.nombreOrganizacion}
+          <strong className={styles.datos}>Organización:</strong> {donacion.nombre_organizacion}
         </p>
 
         <p className={styles.datosLabel}>
-          <strong className={styles.datos}>Dirección:</strong> {donacion.direccion}
+          <strong className={styles.datos}>Dirección:</strong> {donacion.calle + " " + donacion.numero }
         </p>
 
         <p className={styles.datosLabel}>
-          <strong className={styles.datos}>Campaña:</strong> {donacion.tituloCampaña}
+          <strong className={styles.datos}>Campaña:</strong> {donacion.titulo_campaña}
         </p>
 
         <p className={styles.datosLabel}>

@@ -45,10 +45,11 @@ export interface donacionUsuario {
   estado: DonacionEstado;
   cantidad: string
   fecha_registro: string;
-  tituloCampaña: string;
+  titulo_campaña: string;
   organizacionId: number;
-  direccion: string;
-  nombreOrganizacion: string;
+  calle: string;
+  numero: string;
+  nombre_organizacion: string;
   fecha_estado: string;
   motivo_rechazo: string;
 }
