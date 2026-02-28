@@ -4,13 +4,13 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Donar/donarModal.module.css";
 import { baseApi } from "@/API/baseApi";
+import { useUser } from "@/app/context/UserContext";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   campaignId: number;
   campaignTitle: string;
-  usuarioId: number;
   puntosPorArticulo: number;
   objetivoRestante: number;
 }

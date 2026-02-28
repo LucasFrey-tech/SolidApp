@@ -188,7 +188,6 @@ export default function CampaignDetallePage() {
           onClose={() => setIsModalOpen(false)}
           campaignId={campaign.id}
           campaignTitle={campaign.titulo}
-          usuarioId={user.sub}
           puntosPorArticulo={campaign.puntos}
           objetivoRestante={campaign.objetivo}
         />
