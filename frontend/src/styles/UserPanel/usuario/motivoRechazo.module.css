@@ -1,0 +1,62 @@
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+
+.modal {
+  background-color: #ffffff;
+  width: 90%;
+  max-width: 420px;
+  padding: 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.motivoText {
+  font-size: 0.95rem;
+  color: #374151;
+  margin-bottom: 1.5rem;
+}
+
+.closeButton {
+  padding: 0.5rem 1rem;
+  background-color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: #b91c1c;
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

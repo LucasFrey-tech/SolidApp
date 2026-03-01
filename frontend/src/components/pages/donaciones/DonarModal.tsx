@@ -4,6 +4,7 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Donar/donarModal.module.css";
 import { baseApi } from "@/API/baseApi";
+import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 
 interface Props {
@@ -30,6 +31,7 @@ export default function DonarModal({
 
   const puntos = cantidad * puntosPorArticulo;
   const maxCantidad = objetivoRestante;
+  const router = useRouter();
 
   const handleSubmit = async () => {
     if (!detalle.trim()) {
@@ -79,7 +81,8 @@ export default function DonarModal({
         confirmButtonColor: "#22c55e",
         background: "#1f1f1f",
         color: "#fff",
-      });
+      })
+      router.push("/userPanel?section=donations");
 
       setDetalle("");
       setCantidad(1);
