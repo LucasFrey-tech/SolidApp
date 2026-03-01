@@ -120,7 +120,7 @@ type Step = "select" | FormType;
 type Errors = Record<string, string | undefined>;
 type Touched = Record<string, boolean>;
 
-const numericFields = ["documento", "telefono"];
+const numericFields = ["documento", "telefono", "cuit_empresa", "cuit_organizacion", "numero"];
 
 // ==================== CONFIGURACIÓN DE CAMPOS ====================
 type FieldConfig = {
@@ -141,7 +141,7 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
     { field: "apellido", label: "Apellido", type: "text", placeholder: "Tu apellido" },
   ],
   empresa: [
-     { field: "cuit_empresa", label: "Número de CUIT", type: "text", placeholder: "Ej: 30-12345678-9" },
+    { field: "cuit_empresa", label: "Número de CUIT", type: "text", placeholder: "Ej: 30-12345678-9" },
     { field: "razon_social", label: "Razón Social", type: "text", placeholder: "Nombre legal" },
     { field: "nombre_empresa", label: "Nombre de Fantasía", type: "text", placeholder: "Nombre comercial" },
     { field: "correo", label: "Correo electrónico", type: "email", placeholder: "ejemplo@empresa.com" },
@@ -274,9 +274,13 @@ export default function Registro() {
   const handleChange = (field: string, value: string) => {
     if (step === "select") return;
 
-    const sanitized = ["correo", "clave", "confirmarClave"].includes(field)
-    ? value.trim()
-    : value;
+    let sanitized = ["correo", "clave", "confirmarClave"].includes(field)
+      ? value.trim()
+      : value;
+
+    if (field === "calle") {
+      sanitized = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.]/g, "");
+    }
 
     switch (step) {
       case "usuario": setUsuarioData((prev) => ({ ...prev, [field]: sanitized })); break;
@@ -333,7 +337,7 @@ export default function Registro() {
     try {
       switch (step) {
         case "usuario": {
-          const { confirmarClave, correo, clave,...perfilUsuario } = usuarioData;
+          const { confirmarClave, correo, clave, ...perfilUsuario } = usuarioData;
           await baseApi.register.register({
             correo: correo,
             clave: clave,
@@ -353,7 +357,7 @@ export default function Registro() {
           break;
         }
         case "organizacion": {
-          const { confirmarClave, correo, clave,...perfilOrganizacion } = organizacionData;
+          const { confirmarClave, correo, clave, ...perfilOrganizacion } = organizacionData;
           await baseApi.register.register({
             correo: correo,
             clave: clave,
