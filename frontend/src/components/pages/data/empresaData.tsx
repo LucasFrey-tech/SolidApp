@@ -195,6 +195,12 @@ export default function EmpresaData() {
     }
   };
 
+  const onlyLettersAndSpaces = (value: string) =>
+    value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "");
+
+  const onlyLettersNumbers = (value: string) =>
+    value.replace(/[^A-Za-z0-9]/g, "");
+
   if (loading) return <div>Cargando datos de la empresa...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!empresaData) return <div>No se encontraron datos de la empresa</div>;
@@ -291,16 +297,15 @@ export default function EmpresaData() {
                 className={styles.Input}
                 type="text"
                 value={editableData.calle}
-                onChange={(e) => handleInputChange("calle", e.target.value)}
+                onChange={(e) => handleInputChange("calle", onlyLettersAndSpaces(e.target.value))}
                 placeholder="El nombre de la calle"
               />
             </div>
 
             <div className={styles.Field}>
               <label className={styles.Label}>Número</label>
-              <input
+              <NumericInput
                 className={styles.Input}
-                type="text"
                 value={editableData.numero}
                 onChange={(e) => handleInputChange("numero", e.target.value)}
                 placeholder="El número del domicilio"
@@ -313,7 +318,7 @@ export default function EmpresaData() {
                 className={styles.Input}
                 type="text"
                 value={editableData.provincia}
-                onChange={(e) => handleInputChange("provincia", e.target.value)}
+                onChange={(e) => handleInputChange("provincia", onlyLettersAndSpaces(e.target.value))}
                 placeholder="Buenos Aires"
               />
             </div>
@@ -324,7 +329,7 @@ export default function EmpresaData() {
                 className={styles.Input}
                 type="text"
                 value={editableData.ciudad}
-                onChange={(e) => handleInputChange("ciudad", e.target.value)}
+                onChange={(e) => handleInputChange("ciudad", onlyLettersAndSpaces(e.target.value))}
                 placeholder="Vicente López"
               />
             </div>
@@ -336,7 +341,7 @@ export default function EmpresaData() {
                 type="text"
                 value={editableData.codigo_postal}
                 onChange={(e) =>
-                  handleInputChange("codigo_postal", e.target.value)
+                  handleInputChange("codigo_postal", onlyLettersNumbers(e.target.value))
                 }
                 placeholder="B1638"
               />
