@@ -12,7 +12,7 @@ import HistorialDonacionUsuario from "@/components/pages/perfil/historialDonacio
 import UserCoupons from "@/components/pages/perfil/cuponesUsuarios";
 import { RolCuenta } from "@/API/types/auth";
 import { useUser } from "../context/UserContext";
-
+import { useSearchParams } from "next/navigation";
 type Section = "data" | "user&pass" | "cupons" | "donations";
 
 const rolePermissions: Record<RolCuenta, Section[]> = {
@@ -23,7 +23,22 @@ const rolePermissions: Record<RolCuenta, Section[]> = {
 };
 
 export default function Panel() {
-  const [activeSection, setActiveSection] = useState<Section>("data");
+  const searchParams = useSearchParams();
+  const sectionParam = searchParams.get("section");
+
+const validSections: Section[] = [
+  "data",
+  "user&pass",
+  "cupons",
+  "donations",
+];
+
+const initialSection = validSections.includes(sectionParam as Section)
+  ? (sectionParam as Section)
+  : "data";
+
+const [activeSection, setActiveSection] =
+  useState<Section>(initialSection);
   const { user, loading } = useUser();
 
   useEffect(() => {

@@ -11,7 +11,8 @@ import styles from "@/styles/UserPanel/usuario/historialDonaciones.module.css";
 
 export default function HistorialDonacionUsuario() {
   const [donaciones, setDonaciones] = useState<donacionUsuario[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEnvioModalOpen, setIsEnvioModalOpen] = useState(false);
+  const [isMotivoModalOpen, setIsMotivoModalOpen] = useState(false);
   const [selectedDonacion, setSelectedDonacion] =
     useState<donacionUsuario | null>(null);
   const [page, setPage] = useState(1);
@@ -27,9 +28,9 @@ export default function HistorialDonacionUsuario() {
     const fetchDonaciones = async () => {
       setLoading(true);
       try {
-        const res = await baseApi.users.getDonaciones(page, 10);
+        const res = await baseApi.users.getDonaciones(page, 6);
         setDonaciones(res.items);
-        setTotalPages(Math.ceil(res.total / 10));
+        setTotalPages(Math.ceil(res.total / 6));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error desconocido");
       } finally {
@@ -43,9 +44,19 @@ export default function HistorialDonacionUsuario() {
   if (loading) return <p>Cargando donaciones...</p>;
   if (error) return <p>Error: {error}</p>;
 
-  const handleOpenModal = (donacion: donacionUsuario) => {
+  const handleOpenEnvioModal = (donacion: donacionUsuario) => {
     setSelectedDonacion(donacion);
-    setIsModalOpen(true);
+    setIsEnvioModalOpen(true);
+  };
+
+  const handleOpenMotivoModal = (donacion: donacionUsuario) => {
+    setSelectedDonacion(donacion);
+    setIsMotivoModalOpen(true);
+  };
+
+  const handleCloseMotivoModal = () => {
+    setIsMotivoModalOpen(false);
+    setSelectedDonacion(null);
   };
 
   return (
@@ -68,9 +79,8 @@ export default function HistorialDonacionUsuario() {
               <strong>{donacion.nombre_organizacion}</strong>
             </p>
 
-
             <div className={styles.estado}>
-              Estado: 
+              Estado:
               <Badge
                 className={
                   donacion.estado === DonacionEstado.APROBADA
@@ -84,21 +94,52 @@ export default function HistorialDonacionUsuario() {
               </Badge>
             </div>
 
+            {donacion.estado !== DonacionEstado.RECHAZADA && (
             <button
               className={styles.infoButton}
-              onClick={() => handleOpenModal(donacion)}
+              onClick={() => handleOpenEnvioModal(donacion)}
             >
               Información del envío
             </button>
+          )}
+
+            {donacion.motivo_rechazo && (
+              <button
+                className={styles.motivoButton}
+                onClick={() => handleOpenMotivoModal(donacion)}
+              >
+                Ver motivo
+              </button>
+            )}
           </div>
         ))}
       </div>
 
+      {/* Modal de ENVÍO (tu componente original) */}
       <EnviosInfo
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isEnvioModalOpen}
+        onClose={() => setIsEnvioModalOpen(false)}
         donacion={selectedDonacion}
       />
+
+      {/* Modal de MOTIVO */}
+      {isMotivoModalOpen && selectedDonacion && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3 className={styles.modalTitle}>Motivo:</h3>
+            <p className={styles.modalText}>
+              {selectedDonacion.motivo_rechazo}
+            </p>
+
+            <button
+              className={styles.closeButton}
+              onClick={handleCloseMotivoModal}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className={styles.pagination}>
         <button

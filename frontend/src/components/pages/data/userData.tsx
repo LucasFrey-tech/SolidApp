@@ -97,6 +97,9 @@ export default function UserData() {
     }
   };
 
+  const onlyLettersAndSpaces = (value: string) =>
+    value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "");
+
   if (loading) return <div>Cargando datos de usuario...</div>;
   if (error) return <div>Error: {error}</div>;
 
@@ -132,7 +135,7 @@ export default function UserData() {
           <div className={styles.Grid}>
             <div className={styles.Field}>
               <label className={styles.Label}>Calle</label>
-              <input className={styles.Input} type="text" value={editableData?.calle || ''} onChange={(e) => handleInputChange('calle', e.target.value)} placeholder="Ej: Av. Siempre Viva" />
+              <input className={styles.Input} type="text" value={editableData?.calle || ''} onChange={(e) => handleInputChange('calle', onlyLettersAndSpaces(e.target.value))} placeholder="Ej: Av. Siempre Viva" />
             </div>
 
             <div className={styles.Field}>
@@ -147,12 +150,12 @@ export default function UserData() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Provincia</label>
-              <input className={styles.Input} type="text" value={editableData?.provincia || ''} onChange={(e) => handleInputChange('provincia', e.target.value)} placeholder="Buenos Aires"/>
+              <input className={styles.Input} type="text" value={editableData?.provincia || ''} onChange={(e) => handleInputChange('provincia', onlyLettersAndSpaces(e.target.value))} placeholder="Buenos Aires"/>
             </div>
 
             <div className={styles.Field}>
               <label className={styles.Label}>Ciudad</label>
-              <input className={styles.Input} type="text" value={editableData?.ciudad || ''} onChange={(e) => handleInputChange('ciudad', e.target.value)} placeholder="CABA" />
+              <input className={styles.Input} type="text" value={editableData?.ciudad || ''} onChange={(e) => handleInputChange('ciudad', onlyLettersAndSpaces(e.target.value))} placeholder="CABA" />
             </div>
           </div>
         </section>

@@ -33,8 +33,7 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 0.4rem;
+  gap: 0.6rem;
   color: #ffffff;
 }
 
@@ -46,7 +45,6 @@
 .producto {
   font-size: 1.2rem;
   font-weight: 600;
-  margin-top: 0.2rem;
 }
 
 .organizacion {
@@ -63,55 +61,27 @@
 ================================ */
 .badgeSuccess {
   background-color: #16a34a;
-  padding: 0.35rem 0.6rem;
+  padding: 0.3rem 0.5rem;
   margin-left: 5px;
   color: #ffffff;
 }
 
 .badgeWarning {
   background-color: #facc15;
-  padding: 0.35rem 0.6rem;
-  color: #111827;
+  margin-left: 5px;
+  padding: 0.2rem 0.3rem;
+  color: rgb(0, 0, 0);
 }
 
 .badgeDanger {
   background-color: #dc2626;
-  padding: 0.35rem 0.6rem;
+  margin-left: 5px;
+  padding: 0.2rem 0.3rem;
   color: #ffffff;
 }
 
-/* ===== PAGINATION ===== */
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 32px;
-}
-
-.pagination span {
-  color: #000000;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-
-.pagination button {
-  padding: clamp(8px, 2.5vw, 10px) clamp(14px, 4vw, 18px);
-  border-radius: 10px;
-  border: none;
-  background-color: #2563eb;
-  color: rgb(0, 0, 0);
-  cursor: pointer;
-}
-
-.pagination button:disabled {
-  background-color: #c7d2fe;
-  cursor: not-allowed;
-}
-
 /* ===============================
-   BOTÓN INFORMACIÓN ENVÍO
+   BOTÓN INFORMACIÓN ENVÍO (AZUL)
 ================================ */
 .infoButton {
   margin-top: 0.8rem;
@@ -135,21 +105,136 @@
   transform: translateY(0px);
 }
 
-/* =================================================
-   RESPONSIVE 
-================================================= */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* ===============================
+   BOTÓN VER MOTIVO (ROJO ESPECIAL)
+================================ */
+.motivoButton {
+  margin-top: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  background-color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
 
-  .title {
-    font-size: 1.55rem;
+.motivoButton:hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.motivoButton:active {
+  transform: translateY(0px);
+}
+
+/* ===============================
+   MODAL
+================================ */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.modalTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.modalText {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: #374151;
+}
+
+/* BOTÓN CERRAR (ROJO ESPECIAL) */
+.closeButton {
+  padding: 0.5rem 1rem;
+  background-color: #dc2626;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.closeButton:hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.closeButton:active {
+  transform: translateY(0px);
+}
+
+/* ANIMACIÓN */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
+/* ===============================
+   PAGINATION
+================================ */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.pagination span {
+  color: #000000;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.pagination button {
+  padding: clamp(8px, 2.5vw, 10px) clamp(14px, 4vw, 18px);
+  border-radius: 10px;
+  border: none;
+  background-color: #2563eb;
+  color: #000000;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #c7d2fe;
+  cursor: not-allowed;
+}
+
 /* =================================================
-    MOBILE 
+   RESPONSIVE
 ================================================= */
 @media (max-width: 640px) {
   .container {
@@ -168,18 +253,4 @@
   .card {
     padding: 0.9rem;
   }
-
-  .producto {
-    font-size: 1.05rem;
-  }
-
-  .organizacion {
-    font-size: 0.85rem;
-  }
-
-  .fecha {
-    font-size: 0.8rem;
-  }
 }
-
-

@@ -8,6 +8,7 @@ import {
   OrganizacionUpdateRequest,
 } from "@/API/types/organizaciones";
 import { useUser } from "@/app/context/UserContext";
+import { NumericInput } from "@/components/Utils/NumericInputProp";
 
 type EditableOrganizacionFields = Pick<
   Organizacion,
@@ -157,6 +158,12 @@ export default function OrganizacionData() {
     }
   };
 
+  const onlyLettersAndSpaces = (value: string) =>
+    value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "");
+
+  const onlyLettersNumbers = (value: string) =>
+    value.replace(/[^A-Za-z0-9]/g, "");
+
   if (loading) return <div>Cargando datos de la organización...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!organizacionData)
@@ -172,9 +179,8 @@ export default function OrganizacionData() {
           <div className={styles.Grid}>
             <div className={styles.Field}>
               <label className={styles.Label}>CUIL/CUIT</label>
-              <input
+              <NumericInput
                 className={styles.Input}
-                type="text"
                 value={organizacionData.cuit_organizacion || ""}
                 readOnly
               />
@@ -218,30 +224,26 @@ export default function OrganizacionData() {
         <section className={styles.Section}>
           <h2 className={styles.Subtitle}>Información de Contacto</h2>
 
-          
+
 
           <div className={styles.Grid}>
             <div className={styles.Field}>
               <label className={styles.Label}>Prefijo</label>
-              <input
+              <NumericInput
                 className={styles.Input}
-                type="tel"
                 value={editableData.prefijo}
                 onChange={(e) => handleInputChange("prefijo", e.target.value)}
                 placeholder="11"
-                maxLength={25}
               />
             </div>
 
             <div className={styles.Field}>
               <label className={styles.Label}>Teléfono</label>
-              <input
+              <NumericInput
                 className={styles.Input}
-                type="tel"
                 value={editableData.telefono}
                 onChange={(e) => handleInputChange("telefono", e.target.value)}
-                placeholder="+54 11 1234-5678"
-                maxLength={25}
+                placeholder="11 12345678"
               />
             </div>
 
@@ -251,7 +253,7 @@ export default function OrganizacionData() {
                 className={styles.Input}
                 type="text"
                 value={editableData.calle}
-                onChange={(e) => handleInputChange("calle", e.target.value)}
+                onChange={(e) => handleInputChange("calle", onlyLettersAndSpaces(e.target.value))}
                 placeholder="Nombre de la calle"
                 maxLength={255}
               />
@@ -259,9 +261,8 @@ export default function OrganizacionData() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Número</label>
-              <input
+              <NumericInput
                 className={styles.Input}
-                type="text"
                 value={editableData.numero}
                 onChange={(e) => handleInputChange("numero", e.target.value)}
                 placeholder="Número del domicilio"
@@ -275,7 +276,7 @@ export default function OrganizacionData() {
                 className={styles.Input}
                 type="text"
                 value={editableData.provincia}
-                onChange={(e) => handleInputChange("provincia", e.target.value)}
+                onChange={(e) => handleInputChange("provincia", onlyLettersAndSpaces(e.target.value))}
                 placeholder="Buenos Aires"
                 maxLength={255}
               />
@@ -287,7 +288,7 @@ export default function OrganizacionData() {
                 className={styles.Input}
                 type="text"
                 value={editableData.ciudad}
-                onChange={(e) => handleInputChange("ciudad", e.target.value)}
+                onChange={(e) => handleInputChange("ciudad", onlyLettersAndSpaces(e.target.value))}
                 placeholder="Vicente López"
                 maxLength={255}
               />
@@ -299,7 +300,7 @@ export default function OrganizacionData() {
                 className={styles.Input}
                 type="text"
                 value={editableData.codigo_postal}
-                onChange={(e) => handleInputChange("codigo_postal", e.target.value)}
+                onChange={(e) => handleInputChange("codigo_postal", onlyLettersNumbers(e.target.value))}
                 placeholder="B1638"
                 maxLength={255}
               />
