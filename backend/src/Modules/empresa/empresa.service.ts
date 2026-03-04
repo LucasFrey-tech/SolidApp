@@ -56,38 +56,6 @@ export class PerfilEmpresaService {
   ) {}
 
   /**
-   * Obtiene todas las empresas activas (no deshabilitadas).
-   *
-   * Flujo:
-   * 1. Filtra por deshabilitado = false.
-   * 2. Transforma entidades a DTO.
-   * 3. Asigna imagen por defecto.
-   *
-   * @returns {Promise <EmpresaResponseDTO[]>}
-   */
-  async findAll(): Promise<EmpresaResponseDTO[]> {
-    const empresas = await this.empresaRepository.find({
-      relations: ['cuenta'],
-      where: {
-        cuenta: {
-          deshabilitado: false,
-        },
-      },
-    });
-
-    this.logger.log(`Se obtuvieron ${empresas.length} Empresas`);
-
-    const res = empresas.map((res) => this.mapToResponseDto(res));
-
-    res.forEach(
-      (empresa) =>
-        (empresa.logo = SettingsService.getStaticResourceUrl('servo.png')),
-    );
-
-    return res;
-  }
-
-  /**
    * Obtiene empresas paginadas con búsqueda opcional.
    *
    * @param page Número de página.
@@ -379,7 +347,6 @@ export class PerfilEmpresaService {
   private mapToResponseDto(empresa: PerfilEmpresa): EmpresaResponseDTO {
     const dto = new EmpresaResponseDTO();
 
-    // Datos del perfil
     dto.id = empresa.id;
     dto.cuit_empresa = empresa.cuit;
     dto.razon_social = empresa.razon_social;

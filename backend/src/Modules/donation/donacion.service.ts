@@ -10,7 +10,6 @@ import { Donaciones } from '../../Entities/donacion.entity';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
 import { Donation_images } from '../../Entities/donation_images.entity';
-import { DonacionImagenDTO } from './dto/lista_donacion_imagen.dto';
 import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { RankingService } from '../ranking/ranking.service';
@@ -44,96 +43,6 @@ export class DonacionService {
 
     private readonly rankingService: RankingService,
   ) {}
-
-  /**
-   * Obtiene todas las Donaciones disponibles.
-   *
-   * @returns {Promise<ResponseDonationDto[]>} Lista de todas las Donaciones activas
-   */
-  async findAll(): Promise<ResponseDonationDto[]> {
-    const donations = await this.donacionRepository.find({
-      relations: ['campaña', 'usuario'],
-    });
-
-    this.logger.log(`Se obtuvieron ${donations.length} Donaciones`);
-    return donations.map(this.mapToResponseDto);
-  }
-
-  /**
-   * Obtiene la imagen de las Donaciones.
-   *
-   * @returns {Promise<DonacionImagenDTO[]>} Lista de las Imágenes de las Donaciones
-   */
-  async findIMG(): Promise<DonacionImagenDTO[]> {
-    const images = await this.donationImagenRepository.find({
-      relations: ['id_donacion', 'id_donacion.campaña'],
-    });
-
-    this.logger.log(
-      `Se obtuvieron ${images.length} imagenes de las donaciones`,
-    );
-
-    return images.map((img) => ({
-      id_donacion: img.id_donacion.id,
-      nombre: img.id_donacion.campaña.titulo,
-      logo: img.imagen,
-    }));
-  }
-
-  /**
-   * Busca una Donacion específica por ID.
-   *
-   * @param {number} id - ID de la Donación a buscar
-   * @returns {Promise<ResponseDonationDto>} DTO de la Donación encontrada
-   * @throws {NotFoundException} cuando no encuentra ninguna Donación con el ID específico
-   */
-  async findOne(id: number): Promise<ResponseDonationDto> {
-    const donation = await this.donacionRepository.findOne({
-      where: { id },
-      relations: ['campaña', 'usuario'],
-    });
-
-    if (!donation) {
-      throw new NotFoundException(`Donación con ID ${id} no encontrada`);
-    }
-
-    return this.mapToResponseDto(donation);
-  }
-
-  /**
-   * Obtiene todas las Donaciones paginadas.
-   *
-   * @param {number} page - Página solicitada
-   * @param {number} limit - Cantidad de Donaciones por página
-   * @returns Lsita de Donaciones paginadas
-   */
-  async findAllPaginated(
-    page = 1,
-    limit = 6,
-  ): Promise<{
-    data: ResponseDonationDto[];
-    total: number;
-    page: number;
-    limit: number;
-  }> {
-    const [donations, total] = await this.donacionRepository.findAndCount({
-      relations: ['campaña', 'usuario'],
-      order: { fecha_registro: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-
-    this.logger.log(
-      `Se obtuvieron ${donations.length} donaciones (page ${page})`,
-    );
-
-    return {
-      data: donations.map(this.mapToResponseDto),
-      total,
-      page,
-      limit,
-    };
-  }
 
   /**
    * Obtiene

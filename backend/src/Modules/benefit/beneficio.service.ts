@@ -37,40 +37,6 @@ export class BeneficioService {
   ) {}
 
   /**
-   * Obtiene todos los Beneficios disponibles.
-   *
-   * @returns {Promise<BeneficiosResponseDTO[]>} lista de todos los beneficios activos de las empresas.
-   */
-  async findAll(): Promise<BeneficiosResponseDTO[]> {
-    const beneficios = await this.beneficiosRepository.find({
-      relations: ['empresa'],
-      where: { empresa: { cuenta: { deshabilitado: false } } },
-    });
-
-    return beneficios.map(this.mapToResponseDto);
-  }
-
-  /**
-   * Busca un Beneficio específico por ID.
-   *
-   * @param {number} id - ID del beneficio a buscar
-   * @returns {Promise<BeneficiosResponseDTO>} DTO del Beneficio encontrado
-   * @throws {NotFoundException} Si no encuentra ningún beneficio con el ID especificado
-   */
-  async findOne(id: number): Promise<BeneficiosResponseDTO> {
-    const beneficio = await this.beneficiosRepository.findOne({
-      where: { id },
-      relations: ['empresa'],
-    });
-
-    if (!beneficio) {
-      throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
-    }
-
-    return this.mapToResponseDto(beneficio);
-  }
-
-  /**
    *
    * @param page
    * @param limit
@@ -117,57 +83,6 @@ export class BeneficioService {
   }
 
   /**
-   *
-   * @param page
-   * @param limit
-   * @param search
-   * @returns
-   */
-  async findPaginated(page: number, limit: number, search: string) {
-    const startIndex = (page - 1) * limit;
-    const [beneficios, total] = await this.beneficiosRepository.findAndCount({
-      skip: startIndex,
-      relations: ['empresa'],
-      take: limit,
-      order: { id: 'ASC' },
-      where: [
-        { titulo: Like(`%${search}%`) },
-        { detalle: Like(`%${search}%`) },
-      ],
-    });
-
-    return {
-      items: beneficios.map(this.mapToResponseDto),
-      total,
-    };
-  }
-
-  /**
-   * Obtiene todos los beneficios de una empresa específica
-   *
-   * @param {number} idEmpresa - ID de la empresa específica
-   * @returns {Promise<BeneficiosResponseDTO[]>} Lista de Beneficios de una empresa especifica
-   */
-  async findByEmpresa(idEmpresa: number): Promise<BeneficiosResponseDTO[]> {
-    const empresa = await this.empresasRepository.findOne({
-      where: { id: idEmpresa, cuenta: { deshabilitado: false } },
-    });
-
-    if (!empresa) {
-      throw new NotFoundException(
-        `Empresa con ID ${idEmpresa} no encontrada o deshabilitada`,
-      );
-    }
-
-    const beneficios = await this.beneficiosRepository.find({
-      where: { empresa: { id: idEmpresa } },
-      relations: ['empresa'],
-    });
-
-    return beneficios.map(this.mapToResponseDto);
-  }
-
-  /**
    * Obtiene todos los Beneficios disponibles con paginación.
    *
    * @param {number} idEmpresa - ID de la empresa
@@ -183,38 +98,6 @@ export class BeneficioService {
     const [beneficios, total] = await this.beneficiosRepository.findAndCount({
       relations: ['empresa', 'empresa.cuenta'],
       where: { empresa: { id: idEmpresa, cuenta: { deshabilitado: false } } },
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { fecha_registro: 'DESC' },
-    });
-
-    return {
-      items: beneficios.map(this.mapToResponseDto),
-      total: total,
-    };
-  }
-
-  /**
-   * Obtiene todos los Beneficios disponibles con paginación.
-   *
-   * @param {number} idEmpresa - ID de la empresa
-   * @param {number} page Página solicitada
-   * @param {number} limit Cantidad de Beneficios por página
-   * @returns {Promise<PaginatedBeneficiosResponseDTO>} Lista de Beneficios paginados y total de registros
-   */
-  async findByUsuarioPaginated(
-    idUsuario: number,
-    page: number,
-    limit: number,
-  ): Promise<PaginatedBeneficiosResponseDTO> {
-    const [beneficios, total] = await this.beneficiosRepository.findAndCount({
-      relations: ['beneficio', 'beneficio.empresa'],
-      where: {
-        usuariosCanje: {
-          id: idUsuario,
-          usuario: { cuenta: { deshabilitado: false } },
-        },
-      },
       skip: (page - 1) * limit,
       take: limit,
       order: { fecha_registro: 'DESC' },
@@ -398,34 +281,13 @@ export class BeneficioService {
       throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
     }
 
-    // Validaciones
-    if (updateDto.cantidad !== undefined && updateDto.cantidad < 0) {
-      throw new BadRequestException('La cantidad no puede ser negativa');
-    }
+    this.validateBeneficioData(updateDto);
 
-    if (updateDto.valor !== undefined && updateDto.valor < 0) {
-      throw new BadRequestException('El valor no puede ser negativo');
-    }
+    const datosActualizar = Object.fromEntries(
+      Object.entries(updateDto).filter(([_, valor]) => valor !== undefined),
+    );
 
-    if (updateDto.titulo !== undefined) {
-      beneficio.titulo = updateDto.titulo;
-    }
-
-    if (updateDto.tipo !== undefined) {
-      beneficio.tipo = updateDto.tipo;
-    }
-
-    if (updateDto.detalle !== undefined) {
-      beneficio.detalle = updateDto.detalle;
-    }
-
-    if (updateDto.cantidad !== undefined) {
-      beneficio.cantidad = updateDto.cantidad;
-    }
-
-    if (updateDto.valor !== undefined) {
-      beneficio.valor = updateDto.valor;
-    }
+    Object.assign(beneficio, datosActualizar);
 
     const updated = await this.beneficiosRepository.save(beneficio);
     this.logger.log(`Beneficio ${id} actualizado`);
@@ -462,6 +324,16 @@ export class BeneficioService {
     this.logger.log(`Estado del beneficio ${id} actualizado a ${estado}`);
 
     return this.mapToResponseDto(updated);
+  }
+
+  private validateBeneficioData(data: UpdateBeneficiosDTO): void {
+    if (data.cantidad !== undefined && data.cantidad < 0) {
+      throw new BadRequestException('La cantidad no puede ser negativa');
+    }
+
+    if (data.valor !== undefined && data.valor < 0) {
+      throw new BadRequestException('El valor no puede ser negativo');
+    }
   }
 
   /**

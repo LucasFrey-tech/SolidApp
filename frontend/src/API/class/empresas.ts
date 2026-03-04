@@ -109,18 +109,6 @@ export class EmpresasService extends Crud<Empresa> {
 
   // =====Panel Admin=====
 
-  async getAll(): Promise<Empresa[]> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}`, {
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Error al obtener empresas");
-    }
-
-    return res.json();
-  }
-
   async getAllPaginated(
     page = 1,
     limit = 10,
@@ -146,18 +134,6 @@ export class EmpresasService extends Crud<Empresa> {
         `Error al obtener usuarios paginados (${res.status}): ${errorDetails}`,
       );
     }
-    return res.json();
-  }
-
-  async getOne(id: number): Promise<Empresa> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}`, {
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Empresa no encontrada");
-    }
-
     return res.json();
   }
 

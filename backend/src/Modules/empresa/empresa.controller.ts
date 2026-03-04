@@ -284,34 +284,6 @@ export class EmpresaController {
   // =====Panel Admin=====
 
   /**
-   * GET /empresas
-   *
-   * Obtiene todas las empresas activas (no deshabilitadas).
-   *
-   * @returns Promise<EmpresaResponseDTO[]>
-   * Lista de empresas activas.
-   */
-  @Auth(RolCuenta.ADMIN)
-  @Get()
-  @ApiOperation({ summary: 'Listar todas las empresas activas' })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de empresas',
-    type: EmpresaResponseDTO,
-    isArray: true,
-  })
-  async findAll(): Promise<EmpresaResponseDTO[]> {
-    return this.empresasService.findAll();
-  }
-
-  @Auth(RolCuenta.ADMIN)
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener empresa por ID (admin)' })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<EmpresaResponseDTO> {
-    return this.empresasService.findOne(id);
-  }
-
-  /**
    * DELETE /empresas/:id
    *
    * Realiza un Soft Delete de la empresa.

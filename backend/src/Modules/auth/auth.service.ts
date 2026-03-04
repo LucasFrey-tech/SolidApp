@@ -124,15 +124,12 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-
     const cuenta = await this.cuentaService.findByEmailRol(dto.correo, dto.rol);
     console.log('Cuenta encontrada:', cuenta ? 'Sí' : 'No');
 
     if (!cuenta) throw new UnauthorizedException('Credenciales incorrectas');
 
-    if (cuenta.deshabilitado) {
-      throw new UnauthorizedException('Cuenta deshabilitada');
-    }
+    this.checkDeshabilitado(cuenta.deshabilitado);
 
     console.log('Hash en BD:', cuenta.clave);
 
@@ -162,7 +159,6 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string) {
-
     const user = await this.cuentaService.findByResetToken(token);
     console.log('Usuario encontrado:', user ? user.correo : 'NO');
 

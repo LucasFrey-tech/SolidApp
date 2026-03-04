@@ -17,32 +17,6 @@ export class campaignService extends Crud<Campaign> {
     return res.json();
   }
 
-  async getAllPaginated(
-    page = 1,
-    limit = 20,
-    search?: string,
-    onlyEnabled: boolean = false,
-  ): Promise<PaginatedResponse<Campaign>> {
-    let url = `${this.baseUrl}${this.endPoint}/list/paginated/?page=${page}&limit=${limit}`;
-
-    if (search) {
-      url += `&search=${encodeURIComponent(search)}`;
-    }
-
-    url += `&onlyEnabled=${onlyEnabled}`;
-
-    const res = await fetch(url, {
-      method: "GET",
-      headers: this.getHeaders(),
-    });
-
-    if (!res.ok) {
-      throw new Error("Error al obtener organizaciones paginadas");
-    }
-
-    return res.json();
-  }
-
   async getCampaignsPaginatedByOrganizacion(
     organizacionId: number,
     page = 1,

@@ -37,70 +37,6 @@ export class CampaignsService {
   ) {}
 
   /**
-   * Obtiene todas las Campañas Solidarias
-   *
-   * @returns {Promise<ResponseCampaignsDto[]>} Lista de todas las Campañas disponibles
-   */
-  async findAll(): Promise<ResponseCampaignsDto[]> {
-    const campaigns = await this.campaignsRepository.find({
-      relations: ['organizacion'],
-      where: { organizacion: { cuenta: { deshabilitado: false } } },
-    });
-
-    this.logger.log(`Se obtuvieron ${campaigns.length} Campañas Solidarias`);
-    return campaigns.map(this.mapToResponseDto);
-  }
-
-  /**
-   * Obtiene todas las Campañas paginadas activas, incluyendo imagenes.
-   *
-   * @param {number} page - Página solicitada
-   * @param {number} limit - Cantidad de Campañas por página
-   * @param {string} search - Término de busqueda
-   * @returns Lista de Campañas paginadas
-   */
-  async findPaginated(
-    page: number,
-    limit: number,
-    search: string,
-    onlyEnabled: boolean = false,
-  ) {
-    const query = this.campaignsRepository
-      .createQueryBuilder('campaign')
-      .leftJoinAndSelect('campaign.organizacion', 'organizacion')
-      .leftJoinAndSelect('organizacion.cuenta', 'cuenta')
-      .leftJoinAndSelect('campaign.imagenes', 'imagenes');
-
-    query.andWhere('cuenta.deshabilitado = :deshabilitado', {
-      deshabilitado: false,
-    });
-
-    if (onlyEnabled) {
-      query.andWhere('campaign.estado = :estado', {
-        estado: CampaignEstado.ACTIVA,
-      });
-    }
-
-    if (search) {
-      query.andWhere(
-        '(campaign.titulo LIKE :search OR campaign.descripcion LIKE :search)',
-        { search: `%${search}%` },
-      );
-    }
-
-    const [campaigns, total] = await query
-      .orderBy('campaign.fecha_Registro', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
-
-    return {
-      items: campaigns.map((c) => this.mapToDetailDto(c)),
-      total,
-    };
-  }
-
-  /**
    * Obtiene todas las Campañas paginadas de una Organizacion específica.
    *
    * @param {number} organizacionId - ID de la Organización
@@ -124,28 +60,6 @@ export class CampaignsService {
       items: campaigns.map(this.mapToDetailDto),
       total,
     };
-  }
-
-  /**
-   * Obtiene una Campaña específica
-   *
-   * @param {number} id - ID de la Campaña a buscar
-   * @returns {Promise<ResponseCampaignsDto>} DTO de la Campaña encontrada
-   * @throws {NotFoundException} Si no encuentra ninguna campaña con el ID especificado
-   */
-  async findOne(id: number): Promise<ResponseCampaignsDto> {
-    const campaign = await this.campaignsRepository.findOne({
-      where: { id },
-      relations: ['organizacion'],
-    });
-
-    if (!campaign) {
-      throw new NotFoundException(`
-        La Campaña Solidaria con ID ${id} no encontrada`);
-    }
-
-    this.logger.log(`Campaña Solidaria ${id} obtenida`);
-    return this.mapToResponseDto(campaign);
   }
 
   /**
