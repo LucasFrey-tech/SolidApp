@@ -37,6 +37,55 @@ export class CampaignsService {
   ) {}
 
   /**
+   * Obtiene todas las Campañas paginadas activas, incluyendo imagenes.
+   *
+   * @param {number} page - Página solicitada
+   * @param {number} limit - Cantidad de Campañas por página
+   * @param {string} search - Término de busqueda
+   * @returns Lista de Campañas paginadas
+   */
+  async findPaginated(
+    page: number,
+    limit: number,
+    search: string,
+    onlyEnabled: boolean = false,
+  ) {
+    const query = this.campaignsRepository
+      .createQueryBuilder('campaign')
+      .leftJoinAndSelect('campaign.organizacion', 'organizacion')
+      .leftJoinAndSelect('organizacion.cuenta', 'cuenta')
+      .leftJoinAndSelect('campaign.imagenes', 'imagenes');
+
+    query.andWhere('cuenta.deshabilitado = :deshabilitado', {
+      deshabilitado: false,
+    });
+
+    if (onlyEnabled) {
+      query.andWhere('campaign.estado = :estado', {
+        estado: CampaignEstado.ACTIVA,
+      });
+    }
+
+    if (search) {
+      query.andWhere(
+        '(campaign.titulo LIKE :search OR campaign.descripcion LIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    const [campaigns, total] = await query
+      .orderBy('campaign.fecha_Registro', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      items: campaigns.map((c) => this.mapToDetailDto(c)),
+      total,
+    };
+  }
+
+  /**
    * Obtiene todas las Campañas paginadas de una Organizacion específica.
    *
    * @param {number} organizacionId - ID de la Organización
