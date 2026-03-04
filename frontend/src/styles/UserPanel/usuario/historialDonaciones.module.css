@@ -81,7 +81,7 @@
 }
 
 /* ===============================
-   BOTÓN INFORMACIÓN ENVÍO (AZUL)
+   BOTÓN INFORMACIÓN ENVÍO
 ================================ */
 .infoButton {
   margin-top: 0.8rem;
@@ -106,7 +106,7 @@
 }
 
 /* ===============================
-   BOTÓN VER MOTIVO (ROJO ESPECIAL)
+   BOTÓN VER MOTIVO RECHAZO
 ================================ */
 .motivoButton {
   margin-top: 0.4rem;
@@ -169,7 +169,7 @@
   color: #374151;
 }
 
-/* BOTÓN CERRAR (ROJO ESPECIAL) */
+/* BOTÓN CERRAR */
 .closeButton {
   padding: 0.5rem 1rem;
   background-color: #dc2626;

@@ -13,7 +13,7 @@ export default function CampaignsCatalogoPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [initialLoading, setInitialLoading] = useState(true); // Solo para primera carga
+  const [initialLoading, setInitialLoading] = useState(true); 
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   
@@ -56,10 +56,9 @@ export default function CampaignsCatalogoPage() {
 
         {/* HEADER */}
         <header className={styles.header}>
-          <h1 className={styles.title}>Donaciones</h1>
+          <h1 className={styles.title}>Campañas</h1>
           <p className={styles.subtitle}>Elegí una campaña y colaborá con una causa</p>
 
-          {/* SEARCH - Siempre visible y habilitado */}
           <div className={styles.searchContainer}>
             <label className={styles.searchLabel}>Buscar campaña</label>
             <input
@@ -78,8 +77,7 @@ export default function CampaignsCatalogoPage() {
             <p className={styles.error}>{error}</p>
           </div>
         )}
-
-        {/* PRIMERA CARGA - Solo se muestra la primera vez */}
+        
         {initialLoading ? (
           <p className={styles.loading}>Cargando campañas...</p>
         ) : (
