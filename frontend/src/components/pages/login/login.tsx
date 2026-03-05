@@ -208,20 +208,24 @@ export default function Login() {
       });
 
       router.replace("/inicio");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
+
+      const message = error?.message || "Error al iniciar sesión";
+
       await Swal.fire({
         icon: "error",
         title: "Error al iniciar sesión",
-        text: "Verifica tus credenciales",
+        text: message,
       });
+
       setErrors({
-        general: "Error al iniciar sesión. Verifica tus credenciales.",
+        general: message,
       });
     } finally {
       setIsLoading(false);
-    }
-  };
+    };
+  }
   // ==================== STEP ====================
 
   const handleStepChange = (newStep: Step) => {
