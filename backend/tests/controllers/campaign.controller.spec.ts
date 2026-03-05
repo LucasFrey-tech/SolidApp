@@ -1,124 +1,133 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
+
 import { CampaignsController } from '../../src/Modules/campaign/campaign.controller';
 import { CampaignsService } from '../../src/Modules/campaign/campaign.service';
-import { ResponseCampaignDetalleDto } from '../../src/Modules/campaign/dto/response_campaignDetalle.dto';
-import { CampaignImagenDTO } from '../../src/Modules/campaign/dto/lista_campaign_imagen.dto';
+
 import { CampaignEstado } from '../../src/Modules/campaign/enum';
+import { ResponseCampaignDetalleDto } from '../../src/Modules/campaign/dto/response_campaignDetalle.dto';
 
 describe('CampaignsController', () => {
   let controller: CampaignsController;
-  let mockCampaignService: {
-    findOneDetail: jest.Mock<Promise<ResponseCampaignDetalleDto>, [number]>;
-    updateEstado: jest.Mock<Promise<void>, [number, CampaignEstado]>;
-  };
-
-  let campaignImage: CampaignImagenDTO;
-  let responseCampaignDetalleDto: ResponseCampaignDetalleDto;
+  let service: DeepMockProxy<CampaignsService>;
 
   beforeEach(async () => {
-    mockCampaignService = {
-      findOneDetail: jest.fn(),
-      updateEstado: jest.fn(),
-    };
+    service = mockDeep<CampaignsService>();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CampaignsController],
       providers: [
         {
           provide: CampaignsService,
-          useValue: mockCampaignService,
+          useValue: service,
         },
       ],
     }).compile();
 
     controller = module.get<CampaignsController>(CampaignsController);
-
-    // ========== Campaign Image ==========
-    campaignImage = {
-      id: 1,
-      nombre: 'campaign1',
-      url: '/images/campaign1.jpg',
-    };
-
-    // ========== Response DTO ==========
-    responseCampaignDetalleDto = {
-      id: 1,
-      titulo: 'Campaña de Ayuda',
-      descripcion: 'Campaña para ayudar a necesitados',
-      fecha_Inicio: new Date('2025-01-01'),
-      fecha_Fin: new Date('2025-12-31'),
-      objetivo: 10000,
-      puntos: 100,
-      estado: CampaignEstado.PENDIENTE,
-      fecha_Registro: new Date(),
-      imagenPortada: '/images/campaign1.jpg',
-      organizacion: {
-        id: 1,
-        nombre_organizacion: 'Organización Solidaria',
-        verificada: true,
-      },
-      imagenes: [campaignImage],
-    };
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  // ========== TESTS DE FIND ONE DETAIL ==========
-  describe('findOneDetail', () => {
-    it('debe retornar una campaña específica con detalles', async () => {
-      mockCampaignService.findOneDetail.mockResolvedValue(
-        responseCampaignDetalleDto,
-      );
+  describe('findPaginated', () => {
+    it('debe retornar campañas paginadas', async () => {
+      const mockResponse = {
+        items: [],
+        total: 0,
+      };
 
-      const resultado = await controller.findOneDetail(1);
+      service.findPaginated.mockResolvedValue(mockResponse);
 
-      expect(resultado).toEqual(responseCampaignDetalleDto);
-      expect(mockCampaignService.findOneDetail).toHaveBeenCalledWith(1);
+      const result = await controller.findPaginated(1, 10, 'ayuda', true);
+
+      expect(service.findPaginated).toHaveBeenCalledWith(1, 10, 'ayuda', true);
+
+      expect(result).toEqual(mockResponse);
     });
 
-    it('debe propagar excepciones del servicio', async () => {
-      const error = new Error('Campaña no encontrada');
-      mockCampaignService.findOneDetail.mockRejectedValue(error);
+    it('debe usar valores por defecto cuando no se envían queries', async () => {
+      const mockResponse = {
+        items: [],
+        total: 0,
+      };
 
-      await expect(controller.findOneDetail(999)).rejects.toThrow(
+      service.findPaginated.mockResolvedValue(mockResponse);
+
+      const result = await controller.findPaginated(
+        undefined,
+        undefined,
+        undefined,
+        false,
+      );
+
+      expect(service.findPaginated).toHaveBeenCalledWith(1, 10, '', false);
+
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('findOneDetail', () => {
+    it('debe retornar el detalle de una campaña', async () => {
+      const campaign: ResponseCampaignDetalleDto = {
+        id: 1,
+        titulo: 'Campaña de Ayuda',
+        descripcion: 'Ayuda comunitaria',
+        fecha_Inicio: new Date(),
+        fecha_Fin: new Date(),
+        objetivo: 10000,
+        puntos: 100,
+        estado: CampaignEstado.ACTIVA,
+        fecha_Registro: new Date(),
+        imagenPortada: '/img.jpg',
+        organizacion: {
+          id: 1,
+          nombre_organizacion: 'Organización Solidaria',
+          verificada: true,
+        },
+        imagenes: [],
+      };
+
+      service.findOneDetail.mockResolvedValue(campaign);
+
+      const result = await controller.findOneDetail(1);
+
+      expect(service.findOneDetail).toHaveBeenCalledWith(1);
+      expect(result).toEqual(campaign);
+    });
+
+    it('debe propagar errores del servicio', async () => {
+      const error = new Error('Campaña no encontrada');
+
+      service.findOneDetail.mockRejectedValue(error);
+
+      await expect(controller.findOneDetail(1)).rejects.toThrow(
         'Campaña no encontrada',
       );
     });
   });
 
-  // ========== TESTS DE UPDATE ESTADO ==========
   describe('updateEstado', () => {
-    it('debe actualizar el estado de una campaña', async () => {
-      mockCampaignService.updateEstado.mockResolvedValue(undefined);
+    it('debe actualizar el estado de la campaña', async () => {
+      service.updateEstado.mockResolvedValue(undefined);
 
       await controller.updateEstado(1, CampaignEstado.ACTIVA);
 
-      expect(mockCampaignService.updateEstado).toHaveBeenCalledWith(
+      expect(service.updateEstado).toHaveBeenCalledWith(
         1,
         CampaignEstado.ACTIVA,
       );
     });
 
-    it('debe aceptar diferentes estados', async () => {
-      mockCampaignService.updateEstado.mockResolvedValue(undefined);
+    it('debe propagar errores del servicio', async () => {
+      const error = new Error('Error al actualizar estado');
 
-      await controller.updateEstado(1, CampaignEstado.FINALIZADA);
-
-      expect(mockCampaignService.updateEstado).toHaveBeenCalledWith(
-        1,
-        CampaignEstado.FINALIZADA,
-      );
-    });
-
-    it('debe propagar excepciones del servicio', async () => {
-      const error = new Error('Campaña no encontrada');
-      mockCampaignService.updateEstado.mockRejectedValue(error);
+      service.updateEstado.mockRejectedValue(error);
 
       await expect(
-        controller.updateEstado(999, CampaignEstado.ACTIVA),
-      ).rejects.toThrow('Campaña no encontrada');
+        controller.updateEstado(1, CampaignEstado.ACTIVA),
+      ).rejects.toThrow('Error al actualizar estado');
     });
   });
 });
