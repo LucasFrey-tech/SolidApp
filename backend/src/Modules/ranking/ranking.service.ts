@@ -24,7 +24,7 @@ export class RankingService {
   async getTop10(): Promise<RankingDTO[]> {
     const ranking = await this.puntosRepository
       .createQueryBuilder('ranking')
-      .leftJoin('ranking.usuario', 'perfil_usuario')
+      .leftJoinAndSelect('ranking.usuario', 'perfil_usuario')
       .select([
         'ranking.id_usuario',
         'ranking.puntos',
@@ -33,14 +33,14 @@ export class RankingService {
       ])
       .orderBy('ranking.puntos', 'DESC')
       .take(10)
-      .getRawMany();
+      .getMany();
 
     this.logger.log(`Top 10 obtenido`);
     return ranking.map((r) => ({
-      id_usuario: r.ranking_id_usuario,
-      puntos: r.ranking_puntos,
-      nombre: r.perfil_usuario_nombre,
-      apellido: r.perfil_usuario_apellido,
+      id_usuario: r.id_usuario,
+      puntos: r.puntos,
+      nombre: r.usuario.nombre,
+      apellido: r.usuario.apellido,
     }));
   }
 

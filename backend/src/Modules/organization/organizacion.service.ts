@@ -60,25 +60,6 @@ export class PerfilOrganizacionService {
   ) {}
 
   /**
-   * Obtiene todas las organizaciones.
-   *
-   * @returns {Promise<ResponseOrganizacionDto[]>}
-   * Lista completa de organizaciones mapeadas a DTO.
-   */
-  async findAll(): Promise<ResponseOrganizacionDto[]> {
-    const organizaciones = await this.organizacionRepository.find({
-      relations: ['cuenta'],
-      where: {
-        cuenta: {
-          deshabilitado: false,
-        },
-      },
-    });
-
-    return organizaciones.map((org) => this.mapToResponseDto(org));
-  }
-
-  /**
    * Obtiene organizaciones paginadas con búsqueda opcional.
    *
    * @param page - Número de página.
@@ -253,7 +234,6 @@ export class PerfilOrganizacionService {
     id: number,
     updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-
     const organizacion = await this.organizacionRepository.findOne({
       where: { id },
       relations: ['cuenta'],

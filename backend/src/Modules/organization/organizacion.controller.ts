@@ -371,24 +371,6 @@ export class OrganizacionesController {
   // ====== Panel Admin ======
 
   /**
-   * Obtiene el listado completo de organizaciones activas.
-   *
-   * @returns Lista de organizaciones en formato ResponseOrganizationDto[]
-   */
-  @Auth(RolCuenta.ADMIN)
-  @Get()
-  @ApiOperation({ summary: 'Listar organizaciones activas' })
-  @ApiResponse({
-    status: 200,
-    description: 'Listado de organizaciones',
-    type: ResponseOrganizacionDto,
-    isArray: true,
-  })
-  findAll(): Promise<ResponseOrganizacionDto[]> {
-    return this.organizacionService.findAll();
-  }
-
-  /**
    * Lista organizaciones de forma paginada.
    *
    * @param page Número de página (default: 1)
@@ -415,15 +397,6 @@ export class OrganizacionesController {
       Number(limit),
       search,
     );
-  }
-
-  @Auth(RolCuenta.ADMIN)
-  @Get(':id')
-  @ApiOperation({ summary: 'Obtener organización por ID (admin)' })
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.findOne(id);
   }
 
   @Auth(RolCuenta.ADMIN)

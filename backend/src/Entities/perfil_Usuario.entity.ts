@@ -1,4 +1,3 @@
-// user-profile.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,

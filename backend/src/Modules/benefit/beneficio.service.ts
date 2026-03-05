@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Like, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Beneficios } from '../../Entities/beneficio.entity';
 import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';

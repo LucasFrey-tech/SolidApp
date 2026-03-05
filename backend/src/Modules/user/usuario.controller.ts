@@ -102,8 +102,6 @@ export class UsuarioController {
   @Post('donaciones')
   @ApiOperation({ summary: 'Realizar una donación' })
   async donar(@Req() req: RequestConUsuario, @Body() dto: CreateDonationDto) {
-    console.log('📦 DTO recibido:', dto);
-    console.log('👤 Usuario ID:', req.user.perfil.id);
     return this.userService.donar(req.user.perfil.id, dto);
   }
 
@@ -146,13 +144,6 @@ export class UsuarioController {
     @Query('search') search = '',
   ) {
     return this.userService.findPaginated(page, limit, search);
-  }
-
-  @Auth(RolCuenta.ADMIN)
-  @Get('users/:id/admin/')
-  @ApiOperation({ summary: 'Obtener cualquier usuario por ID (admin)' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.findOne(id);
   }
 
   @Auth(RolCuenta.ADMIN)
