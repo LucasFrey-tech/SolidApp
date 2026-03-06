@@ -5,11 +5,11 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { PerfilOrganizacion } from './perfil_organizacion.entity';
+import { Organizacion } from './organizacion.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('imagenes_organizacion')
-export class Organizaciones_images {
+export class ImagenesOrganizacion {
   /**
    * ID único de la Imagen de la Organización
    * @type {number}
@@ -45,7 +45,7 @@ export class Organizaciones_images {
    * @type {PerfilOrganizacion}
    */
   @ApiProperty({ example: 1, description: 'Id Foranea de la Organización' })
-  @ManyToOne(() => PerfilOrganizacion, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Organizacion, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'organizaciones_id' })
-  organizacion: PerfilOrganizacion;
+  organizacion: Organizacion;
 }

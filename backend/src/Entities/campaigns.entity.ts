@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { PerfilOrganizacion } from './perfil_organizacion.entity';
+import { Organizacion } from './organizacion.entity';
 import { Donaciones } from './donacion.entity';
 import { CampaignEstado } from '../Modules/campaign/enum';
 import { Campaigns_images } from './campaigns_images.entity';
@@ -122,12 +122,12 @@ export class Campaigns {
 
   /**
    * Organización asociadas
-   * @type {PerfilOrganizacion}
+   * @type {Organizacion}
    */
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Organización' })
-  @ManyToOne(() => PerfilOrganizacion, (organization) => organization.campaigns)
+  @ManyToOne(() => Organizacion, (organizacion) => organizacion.campaign)
   @JoinColumn({ name: 'id_organizacion' })
-  organizacion: PerfilOrganizacion;
+  organizacion: Organizacion;
 
   /**
    * Donaciones asociadas a la organización
