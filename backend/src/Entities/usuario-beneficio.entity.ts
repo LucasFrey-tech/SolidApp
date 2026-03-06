@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { PerfilUsuario } from './perfil_Usuario.entity';
+import { Usuario } from './usuario.entity';
 import { Beneficios } from './beneficio.entity';
 import { BeneficiosUsuarioEstado } from '../Modules/benefit/dto/enum/enum';
 
@@ -18,9 +18,9 @@ export class UsuarioBeneficio {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => PerfilUsuario, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Usuario, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_usuario' })
-  usuario: PerfilUsuario;
+  usuario: Usuario;
 
   @ManyToOne(() => Beneficios)
   @JoinColumn({ name: 'id_beneficio' })

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DonacionService } from './donacion.service';
 import { Donaciones } from '../../Entities/donacion.entity';
-import { Donation_images } from '../../Entities/donation_images.entity';
+import { Donation_images } from '../../Entities/imagenes_donaciones';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';

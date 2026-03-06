@@ -13,7 +13,7 @@ import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { OrganizationSummaryDto } from '../organization/dto/summary_organizacion.dto';
 import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
 import { CampaignEstado } from './enum';
-import { Campaigns_images } from '../../Entities/campaigns_images.entity';
+import { Campaigns_images } from '../../Entities/imagenes_campania.entity';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
 import * as path from 'path';
 import { ResponseCampaignsDetailPaginatedDto } from './dto/response_campaign_paginated.dto';

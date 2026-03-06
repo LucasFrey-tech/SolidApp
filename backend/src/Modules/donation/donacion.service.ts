@@ -9,7 +9,7 @@ import { EntityManager, Repository } from 'typeorm';
 import { Donaciones } from '../../Entities/donacion.entity';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
-import { Donation_images } from '../../Entities/donation_images.entity';
+import { Donation_images } from '../../Entities/imagenes_donaciones';
 import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { RankingService } from '../ranking/ranking.service';

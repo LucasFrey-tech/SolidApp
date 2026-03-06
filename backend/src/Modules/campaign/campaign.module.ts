@@ -4,7 +4,7 @@ import { CampaignsService } from './campaign.service';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
-import { Campaigns_images } from '../../Entities/campaigns_images.entity';
+import { Campaigns_images } from '../../Entities/imagenes_campania.entity';
 import { CommonMulterModule } from '../../common/multer/multer.module';
 
 /**

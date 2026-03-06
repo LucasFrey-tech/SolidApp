@@ -8,8 +8,8 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Donaciones } from './donacion.entity';
 
-@Entity('imagenes_donacion')
-export class Donation_images {
+@Entity('imagenes_donaciones')
+export class ImagenesDonaciones {
   /**
    * ID único de la Imagen de la Donación
    * @type {number}

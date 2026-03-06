@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
-import { PerfilUsuario } from './perfil_Usuario.entity';
+import { Usuario } from './usuario.entity';
 import { DonacionEstado } from '../Modules/donation/enum';
 
 @Entity('donaciones')
@@ -110,6 +110,6 @@ export class Donaciones {
    * Usuarios asociados
    * @type {Usuario}
    */
-  @ManyToOne(() => PerfilUsuario, (user) => user.donaciones)
-  usuario: PerfilUsuario;
+  @ManyToOne(() => Usuario, (user) => user.donaciones)
+  usuario: Usuario;
 }

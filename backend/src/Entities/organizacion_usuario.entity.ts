@@ -40,7 +40,7 @@ export class OrganizacionUsuario {
   @Column({ type: 'int', nullable: false })
   id_organizacion: number;
 
-  @ApiProperty({
+  /*@ApiProperty({
     example: 'ADMINISTRADOR',
     description: 'Rol del usuario dentro de la organización',
     enum: ['ADMINISTRADOR', 'COLABORADOR', 'EDITOR', 'VISUALIZADOR'],
@@ -57,6 +57,7 @@ export class OrganizacionUsuario {
     | 'COLABORADOR'
     | 'EDITOR'
     | 'VISUALIZADOR';
+  */
 
   @ApiProperty({
     example: '2024-01-15T10:30:00Z',
@@ -99,36 +100,4 @@ export class OrganizacionUsuario {
   )
   @JoinColumn({ name: 'id_organizacion' })
   organizacion: Organizacion;
-
-  // ==================== MÉTODOS HELPER ====================
-
-  /**
-   * Verifica si el usuario tiene permisos de administrador
-   */
-  esAdministrador(): boolean {
-    return this.rol_en_organizacion === 'ADMINISTRADOR';
-  }
-
-  /**
-   * Verifica si el usuario puede editar
-   */
-  puedeEditar(): boolean {
-    return ['ADMINISTRADOR', 'EDITOR', 'COLABORADOR'].includes(
-      this.rol_en_organizacion,
-    );
-  }
-
-  /**
-   * Verifica si el usuario solo puede visualizar
-   */
-  soloLectura(): boolean {
-    return this.rol_en_organizacion === 'VISUALIZADOR';
-  }
-
-  /**
-   * Verifica si la relación está activa
-   */
-  estaActivo(): boolean {
-    return this.activo === true;
-  }
 }

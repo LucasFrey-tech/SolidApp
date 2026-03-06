@@ -40,7 +40,7 @@ export class EmpresaUsuario {
   @Column({ type: 'int', nullable: false })
   id_empresa: number;
 
-  @ApiProperty({
+  /*@ApiProperty({
     example: 'ADMINISTRADOR',
     description: 'Rol del usuario dentro de la empresa',
     enum: ['ADMINISTRADOR', 'COLABORADOR', 'EDITOR', 'VISUALIZADOR'],
@@ -53,6 +53,7 @@ export class EmpresaUsuario {
     default: 'ADMINISTRADOR',
   })
   rol_en_empresa: 'ADMINISTRADOR' | 'COLABORADOR' | 'EDITOR' | 'VISUALIZADOR';
+  */
 
   @ApiProperty({
     example: '2024-01-15T10:30:00Z',

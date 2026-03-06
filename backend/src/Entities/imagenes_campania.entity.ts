@@ -9,7 +9,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
 
 @Entity('imagenes_campaña')
-export class Campaigns_images {
+export class imagenesCampania {
   /**
    * Id única de la Imagen de la Campaña
    * @type {number}
@@ -34,9 +34,9 @@ export class Campaigns_images {
    * @type {Campaigns}
    */
   @ApiProperty({ example: 1, description: 'Id Foranea de la Campaña' })
-  @ManyToOne(() => Campaigns)
+  @ManyToOne(() => Campaigns, (campaign) => campaign.imagenes)
   @JoinColumn({ name: 'campañas_id' })
-  id_campaign: Campaigns;
+  campaign: Campaigns;
 
   /**
    * Indica si la imágen es portada

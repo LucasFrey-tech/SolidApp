@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { PerfilUsuario } from './perfil_Usuario.entity';
+import { Usuario } from './usuario.entity';
 
 @Entity('ranking_donador')
 export class RankingDonador {
@@ -24,7 +24,7 @@ export class RankingDonador {
    * Usuarios asociados
    * @type {PerfilUsuario}
    */
-  @OneToOne(() => PerfilUsuario)
+  @OneToOne(() => Usuario)
   @JoinColumn({ name: 'id_usuario' })
-  usuario: PerfilUsuario;
+  usuario: Usuario;
 }
