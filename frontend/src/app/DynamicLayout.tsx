@@ -12,17 +12,20 @@ export default function DynamicLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/login";
+
+  const hideNavbarRoutes = ["/login", "/registro-entidad"];
+
+  const hideNavbar = hideNavbarRoutes.includes(pathname);
 
   return (
     <UserProvider>
-      {!isLoginPage && <Navbar />}
+      {!hideNavbar && <Navbar />}
 
-      <main className={!isLoginPage ? styles.mainWithNavbar : styles.main}>
+      <main className={!hideNavbar ? styles.mainWithNavbar : styles.main}>
         {children}
       </main>
 
-      <Footer />
+      {!hideNavbar && <Footer />}
     </UserProvider>
   );
 }

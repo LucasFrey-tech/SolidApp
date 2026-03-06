@@ -4,9 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-//import Login from "@/components/Login/login";
 import Login from "@/components/pages/login/login";
-import Registro from "@/components/Registro/registro";
+import RegistroUsuario from "@/components/RegistroUsuario/page";
 
 import styles from "@/styles/login-registro/login.module.css";
 
@@ -63,7 +62,7 @@ export default function LogInPage() {
           {/* CONTENIDO */}
           <div className={styles.contentArea}>
             {activeTab === "login" && <Login />}
-            {activeTab === "register" && <Registro />}
+            {activeTab === "register" && <RegistroUsuario />}
           </div>
         </div>
       </div>
