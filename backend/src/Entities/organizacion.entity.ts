@@ -5,10 +5,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-  ManyToMany,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Usuario } from './usuario.entity';
 import { Campaigns } from './campaigns.entity';
 import { ImagenesOrganizacion } from './imagenes_organizacion.entity';
 import { OrganizacionUsuario } from './organizacion_usuario.entity';
@@ -88,13 +86,6 @@ export class Organizacion {
   ultimo_cambio: Date;
 
   // ==================== RELACIONES ====================
-
-  @ApiPropertyOptional({
-    description: 'Usuarios que gestionan esta organización',
-    type: () => [Usuario],
-  })
-  @ManyToMany(() => Usuario, (usuario) => usuario.organizaciones)
-  usuarios?: Usuario[];
 
   @ApiPropertyOptional({
     description: 'Relaciones organización-usuario con roles (tabla intermedia)',

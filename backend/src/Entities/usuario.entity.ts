@@ -5,20 +5,16 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-  ManyToMany,
-  JoinTable,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
-import { Empresa } from './empresa.entity';
-import { Organizacion } from './organizacion.entity';
 import { Donaciones } from './donacion.entity';
 import { UsuarioBeneficio } from './usuario-beneficio.entity';
 import { RankingDonador } from './ranking.entity';
 import { EmpresaUsuario } from './empresa_usuario.entity';
 import { OrganizacionUsuario } from './organizacion_usuario.entity';
 
-enum Roles {
+export enum Rol {
   USUARIO = 'USUARIO',
   GESTOR = 'GESTOR',
   ADMIN = 'ADMIN',
@@ -66,9 +62,9 @@ export class Usuario {
     type: 'varchar',
     length: 20,
     nullable: false,
-    default: Roles.USUARIO,
+    default: Rol.USUARIO,
   })
-  role: Roles;
+  rol: Rol;
 
   // ==================== DATOS PERSONALES (antes en perfil_usuario) ====================
 
@@ -99,8 +95,8 @@ export class Usuario {
     description: 'Puntos acumulados por donaciones',
     default: 0,
   })
-  @Column({ type: 'int', nullable: false, default: 0 })
-  puntos: number;
+  @Column({ type: 'int', nullable: true, default: 0 })
+  puntos?: number;
 
   @ApiPropertyOptional({
     example: 'IT',
@@ -197,7 +193,7 @@ export class Usuario {
     description: 'Fecha de última conexión',
   })
   @Column({ type: 'datetime2', nullable: true })
-  ultima_conexion?: Date;
+  ultima_conexion: Date;
 
   @ApiPropertyOptional({
     example: 'a1b2c3d4e5f6...',
@@ -218,18 +214,6 @@ export class Usuario {
   // ==================== RELACIONES N:M CON EMPRESAS ====================
 
   @ApiPropertyOptional({
-    description: 'Empresas que gestiona este usuario',
-    type: () => [Empresa],
-  })
-  @ManyToMany(() => Empresa, (empresa) => empresa.usuarios)
-  @JoinTable({
-    name: 'empresa_usuario',
-    joinColumn: { name: 'id_usuario', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'id_empresa', referencedColumnName: 'id' },
-  })
-  empresas?: Empresa[];
-
-  @ApiPropertyOptional({
     description: 'Relaciones empresa-usuario (tabla intermedia con detalles)',
     type: () => [EmpresaUsuario],
   })
@@ -237,18 +221,6 @@ export class Usuario {
   empresaUsuarios?: EmpresaUsuario[];
 
   // ==================== RELACIONES N:M CON ORGANIZACIONES ====================
-
-  @ApiPropertyOptional({
-    description: 'Organizaciones que gestiona este usuario',
-    type: () => [Organizacion],
-  })
-  @ManyToMany(() => Organizacion, (organizacion) => organizacion.usuarios)
-  @JoinTable({
-    name: 'organizacion_usuario',
-    joinColumn: { name: 'id_usuario', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'id_organizacion', referencedColumnName: 'id' },
-  })
-  organizaciones?: Organizacion[];
 
   @ApiPropertyOptional({
     description:
