@@ -7,20 +7,19 @@ import {
   Logger,
 } from '@nestjs/common';
 
-import { PerfilUsuarioService } from '../user/usuario.service';
-import { PerfilEmpresaService } from '../empresa/empresa.service';
-import { PerfilOrganizacionService } from '../organization/organizacion.service';
-import { Cuenta, RolCuenta } from '../../Entities/cuenta.entity';
+import { UsuarioService } from '../user/usuario.service';
+//import { EmpresaService } from '../empresa/empresa.service';
+//import { OrganizacionService } from '../organization/organizacion.service';
+import { Rol } from '../../Entities/usuario.entity';
 
 import { LoginDto, RegisterDto } from './dto/auth.dto';
-import { CuentaService } from '../cuenta/cuenta.service';
 
 import { DataSource } from 'typeorm';
-import { RegisterAdminDto } from './dto/register_admin.dto';
 import { HashService } from '../../common/bcryptService/hashService';
 import { EmailService } from '../email/email.service';
 
 import { randomBytes } from 'crypto';
+import { JwtPayload } from './dto/token_payload';
 /**
  * Servicio que maneja la lógica de negocio para el Sistema de Autenticación
  */
@@ -29,10 +28,9 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    private readonly cuentaService: CuentaService,
-    private readonly perfilUsuarioService: PerfilUsuarioService,
-    private readonly perfilEmpresaService: PerfilEmpresaService,
-    private readonly perfilOrganizacionService: PerfilOrganizacionService,
+    private readonly usuarioService: UsuarioService,
+    //private readonly empresaService: EmpresaService,
+    //private readonly organizacionService: OrganizacionService,
     private readonly dataSource: DataSource,
     private readonly jwtService: JwtService,
     private readonly hashService: HashService,
@@ -41,12 +39,12 @@ export class AuthService {
     this.logger.log('AuthService inicializado');
   }
 
-  private buildToken(cuenta: Cuenta) {
+  private buildToken(payload: JwtPayload) {
     return {
       token: this.jwtService.sign({
-        sub: cuenta.id,
-        email: cuenta.correo,
-        role: cuenta.role,
+        sub: payload.sub,
+        email: payload.email,
+        rol: payload.rol,
       }),
     };
   }
@@ -59,110 +57,87 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const existe = await this.cuentaService.findByEmail(dto.correo);
+    const existe = await this.usuarioService.findByEmail(dto.correo);
 
     if (existe) throw new BadRequestException('El correo ya está registrado');
-
-    if (!Object.values(RolCuenta).includes(dto.role)) {
-      throw new BadRequestException('Rol inválido');
-    }
 
     const clave = await this.hashService.hash(dto.clave);
 
     return this.dataSource.transaction(async (manager) => {
-      const cuenta = await this.cuentaService.create(
+      const usuario = await this.usuarioService.create(
         {
           correo: dto.correo,
-          clave,
-          role: dto.role,
+          clave: clave,
+          nombre: dto.nombre,
+          apellido: dto.apellido,
+          documento: dto.documento,
+          rol: Rol.USUARIO,
         },
         manager,
       );
 
-      switch (dto.role) {
-        case RolCuenta.USUARIO:
-          if (!dto.perfilUsuario)
-            throw new BadRequestException('Faltan datos del perfil');
-          await this.perfilUsuarioService.create(
-            dto.perfilUsuario,
-            cuenta.id,
-            manager,
-          );
-          break;
-        case RolCuenta.EMPRESA:
-          if (!dto.perfilEmpresa)
-            throw new BadRequestException('Faltan datos del perfil');
-          await this.perfilEmpresaService.create(
-            dto.perfilEmpresa,
-            cuenta.id,
-            manager,
-          );
-          break;
-        case RolCuenta.ORGANIZACION:
-          if (!dto.perfilOrganizacion)
-            throw new BadRequestException('Faltan datos del perfil');
-          await this.perfilOrganizacionService.create(
-            dto.perfilOrganizacion,
-            cuenta.id,
-            manager,
-          );
-          break;
-      }
+      const tokenPayload = this.createPayload(
+        usuario.id,
+        usuario.correo,
+        usuario.rol,
+      );
 
-      return this.buildToken(cuenta);
+      return this.buildToken(tokenPayload);
     });
-  }
-
-  async registerAdmin(dto: RegisterAdminDto) {
-    const cuenta = await this.cuentaService.create({
-      correo: dto.correo,
-      clave: await this.hashService.hash(dto.clave),
-      role: RolCuenta.ADMIN,
-    });
-
-    return this.buildToken(cuenta);
   }
 
   async login(dto: LoginDto) {
-    const cuenta = await this.cuentaService.findByEmailRol(dto.correo, dto.rol);
-    console.log('Cuenta encontrada:', cuenta ? 'Sí' : 'No');
+    const usuario = await this.usuarioService.findByEmailRol(
+      dto.correo,
+      dto.rol,
+    );
+    console.log('Usuario encontrada:', usuario ? 'Sí' : 'No');
 
-    if (!cuenta) throw new UnauthorizedException('Credenciales incorrectas');
+    if (!usuario) throw new UnauthorizedException('Credenciales incorrectas');
 
-    this.checkDeshabilitado(cuenta.deshabilitado);
+    this.checkDeshabilitado(usuario.deshabilitado);
 
-    console.log('Hash en BD:', cuenta.clave);
+    console.log('Hash en BD:', usuario.clave);
 
-    const claveValida = await this.hashService.compare(dto.clave, cuenta.clave);
+    const claveValida = await this.hashService.compare(
+      dto.clave,
+      usuario.clave,
+    );
     console.log('¿Contraseña válida?', claveValida);
     if (!claveValida)
       throw new UnauthorizedException('Credenciales incorrectas');
 
-    await this.cuentaService.actualizarUltimaConexion(cuenta.id);
+    await this.usuarioService.actualizarUltimaConexion(usuario.id);
 
-    return this.buildToken(cuenta);
+    const tokenPayload = this.createPayload(
+      usuario.id,
+      usuario.correo,
+      usuario.rol,
+    );
+
+    return this.buildToken(tokenPayload);
   }
 
   async forgotPassword(email: string) {
-    const user = await this.cuentaService.findByEmail(email);
-    if (!user) {
+    const usuario = await this.usuarioService.findByEmail(email);
+    if (!usuario) {
       return { message: 'Si el email existe, recibirás un enlace' };
     }
 
     const token = randomBytes(32).toString('hex');
     const expires = new Date(Date.now() + 3600000); // 1 hora
 
-    await this.cuentaService.setResetToken(user.id, token, expires);
+    await this.usuarioService.setResetToken(usuario.id, token, expires);
 
     await this.emailService.sendResetPasswordEmail(email, token);
     return { message: 'Email enviado' };
   }
 
   async resetPassword(token: string, newPassword: string) {
-    const user = await this.cuentaService.findByResetToken(token);
-    console.log('Usuario encontrado:', user ? user.correo : 'NO');
+    const usuario = await this.usuarioService.findByResetToken(token);
+    console.log('Usuario encontrado:', usuario ? usuario.correo : 'NO');
 
-    if (!user) {
+    if (!usuario) {
       throw new UnauthorizedException('Token inválido o expirado');
     }
 
@@ -171,12 +146,20 @@ export class AuthService {
     const hashedPassword = await this.hashService.hash(newPassword);
     console.log('Hash generado:', hashedPassword);
 
-    await this.cuentaService.resetPassword(user.id, hashedPassword);
+    await this.usuarioService.resetPassword(usuario.id, hashedPassword);
     console.log('Contraseña actualizada en BD');
 
-    const updatedUser = await this.cuentaService.findById(user.id);
-    console.log('Hash guardado en BD:', updatedUser?.clave);
+    const usuarioActualizado = await this.usuarioService.findOne(usuario.id);
+    console.log('Hash guardado en BD:', usuarioActualizado?.clave);
 
     return { message: 'Contraseña actualizada correctamente' };
+  }
+
+  createPayload(id: number, correo: string, rol: Rol): JwtPayload {
+    return {
+      sub: id,
+      email: correo,
+      rol: rol,
+    };
   }
 }

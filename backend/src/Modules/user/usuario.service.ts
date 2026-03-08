@@ -3,57 +3,81 @@ import {
   Logger,
   NotFoundException,
   ConflictException,
+  BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
-import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
+import {
+  EntityManager,
+  FindOptionsWhere,
+  Like,
+  MoreThan,
+  Repository,
+} from 'typeorm';
+import { Rol, Usuario } from '../../Entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create_usuario.dto';
 import { UpdatePuntosDto } from './dto/update_puntos_usuario.dto';
 import { ResponseUsuarioDto } from './dto/response_usuario.dto';
-import { CuentaService } from '../cuenta/cuenta.service';
 import { DonacionService } from '../donation/donacion.service';
 import { BeneficioService } from '../benefit/beneficio.service';
 import { CreateDonationDto } from '../donation/dto/create_donation.dto';
 import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 import { UsuarioBeneficioService } from './usuario-beneficio/usuario-beneficio.service';
+import { HashService } from '../../common/bcryptService/hashService';
 
 @Injectable()
-export class PerfilUsuarioService {
-  private readonly logger = new Logger(PerfilUsuarioService.name);
+export class UsuarioService {
+  private readonly logger = new Logger(UsuarioService.name);
 
   constructor(
-    @InjectRepository(PerfilUsuario)
-    private readonly usuarioRepository: Repository<PerfilUsuario>,
-    private readonly cuentaService: CuentaService,
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
     private readonly donacionService: DonacionService,
     private readonly beneficioService: BeneficioService,
     private readonly usuarioBeneficioService: UsuarioBeneficioService,
+    private readonly hashService: HashService,
   ) {}
+
+  /**
+   * Encuentra un usuario por correo y Rol
+   */
+  async findByEmailRol(correo: string, rol: Rol): Promise<Usuario | null> {
+    return this.usuarioRepository.findOne({
+      where: { correo: correo, rol: rol },
+    });
+  }
+
+  /**
+   * Encuentra un usuario por correo
+   */
+  async findByEmail(email: string): Promise<Usuario | null> {
+    return this.usuarioRepository.findOne({
+      where: { correo: email },
+    });
+  }
 
   /**
    * Crea un nuevo usuario.
    */
   async create(
     createDto: CreateUsuarioDto,
-    cuentaId: number,
     manager?: EntityManager,
   ): Promise<ResponseUsuarioDto> {
     const repo = manager
-      ? manager.getRepository(PerfilUsuario)
+      ? manager.getRepository(Usuario)
       : this.usuarioRepository;
 
     const existente = await repo.findOne({
-      where: { cuenta: { id: cuentaId } },
+      where: { documento: createDto.documento },
     });
 
     if (existente) {
-      throw new ConflictException('Ya existe un perfil para esta cuenta');
+      throw new ConflictException('Ya existe este Usuario');
     }
 
     const usuario = repo.create({
       ...createDto,
-      cuenta: { id: cuentaId },
       puntos: 0,
     });
 
@@ -61,24 +85,6 @@ export class PerfilUsuarioService {
     this.logger.log(`Usuario creado con ID ${saved.id}`);
 
     return this.mapToResponseDto(saved);
-  }
-
-  /**
-   * Busca un perfil por ID de cuenta.
-   */
-  async findByCuentaId(cuentaId: number): Promise<PerfilUsuario> {
-    const perfil = await this.usuarioRepository.findOne({
-      where: { cuenta: { id: cuentaId } },
-      relations: ['cuenta'],
-    });
-
-    if (!perfil) {
-      throw new NotFoundException(
-        `Perfil de usuario para cuenta ${cuentaId} no encontrado`,
-      );
-    }
-
-    return perfil;
   }
 
   // ================ Panel Usuario ===================
@@ -115,34 +121,54 @@ export class PerfilUsuarioService {
   /**
    * Actualiza las credenciales del usuario
    */
-  async updateCredenciales(cuentaId: number, dto: UpdateCredencialesDto) {
-    return this.cuentaService.updateCredenciales(cuentaId, dto);
+  async updateCredenciales(
+    id: number,
+    dto: UpdateCredencialesDto,
+  ): Promise<void> {
+    const usuario = await this.usuarioRepository.findOne({ where: { id } });
+
+    if (!usuario) throw new NotFoundException('Usuario no encontrado');
+
+    if (dto.passwordNueva) {
+      if (!dto.passwordActual) {
+        throw new BadRequestException('Debés ingresar la contraseña actual');
+      }
+
+      const coincide = await this.hashService.compare(
+        dto.passwordActual,
+        usuario.clave,
+      );
+      if (!coincide) {
+        throw new UnauthorizedException('La contraseña actual es incorrecta');
+      }
+
+      usuario.clave = await this.hashService.hash(dto.passwordNueva);
+    }
+
+    if (dto.correo) {
+      usuario.correo = dto.correo;
+    }
+
+    await this.usuarioRepository.save(usuario);
   }
 
   /**
    * Actualiza los datos del usuario
    */
   async updateUsuario(
-    userId: number,
+    id: number,
     dto: UpdateUsuarioDto,
   ): Promise<ResponseUsuarioDto> {
     const usuario = await this.usuarioRepository.findOne({
-      where: { id: userId },
-      relations: ['cuenta'],
+      where: { id },
     });
 
     if (!usuario)
-      throw new NotFoundException(`Usuario con ID ${userId} no encontrado`);
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
 
-    const { departamento, ...cuentaFields } = dto;
+    Object.assign(usuario, dto);
 
-    await this.cuentaService.updateUsuario(usuario.cuenta.id, cuentaFields);
-    Object.assign(usuario.cuenta, cuentaFields);
-
-    if (departamento !== undefined) {
-      usuario.departamento = departamento;
-      await this.usuarioRepository.save(usuario);
-    }
+    await this.usuarioRepository.save(usuario);
 
     return this.mapToResponseDto(usuario);
   }
@@ -168,6 +194,12 @@ export class PerfilUsuarioService {
     this.logger.log(`Usuario ${id} actualizado`);
 
     return this.mapToResponseDto(updated);
+  }
+
+  async actualizarUltimaConexion(id: number): Promise<void> {
+    await this.usuarioRepository.update(id, {
+      ultima_conexion: new Date(),
+    });
   }
 
   /**
@@ -198,22 +230,27 @@ export class PerfilUsuarioService {
   ): Promise<{ items: ResponseUsuarioDto[]; total: number }> {
     const skip = (page - 1) * limit;
 
-    const queryBuilder = this.usuarioRepository
-      .createQueryBuilder('perfil')
-      .leftJoinAndSelect('perfil.cuenta', 'cuenta');
+    let whereConditions:
+      | FindOptionsWhere<Usuario>
+      | FindOptionsWhere<Usuario>[] = {};
 
     if (search) {
-      queryBuilder.andWhere(
-        '(perfil.nombre LIKE :search OR perfil.apellido LIKE :search OR cuenta.correo LIKE :search)',
-        { search: `%${search}%` },
-      );
+      whereConditions = [
+        { nombre: Like(`%${search}%`) },
+        { apellido: Like(`%${search}%`) },
+        { correo: Like(`%${search}%`) },
+        { documento: Like(`%${search}%`) },
+      ];
     }
 
-    const [usuarios, total] = await queryBuilder
-      .skip(skip)
-      .take(limit)
-      .orderBy('perfil.id', 'ASC')
-      .getManyAndCount();
+    const [usuarios, total] = await this.usuarioRepository.findAndCount({
+      where: whereConditions,
+      skip,
+      take: limit,
+      order: {
+        id: 'ASC',
+      },
+    });
 
     return {
       items: usuarios.map((usuario) => this.mapToResponseDto(usuario)),
@@ -227,7 +264,6 @@ export class PerfilUsuarioService {
   async findOne(id: number): Promise<ResponseUsuarioDto> {
     const usuario = await this.usuarioRepository.findOne({
       where: { id },
-      relations: ['cuenta'],
     });
 
     if (!usuario) {
@@ -243,14 +279,13 @@ export class PerfilUsuarioService {
   async delete(id: number): Promise<void> {
     const usuario = await this.usuarioRepository.findOne({
       where: { id },
-      relations: ['cuenta'],
     });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    await this.cuentaService.deshabilitar(usuario.cuenta.id);
+    await this.usuarioRepository.update(id, { deshabilitado: true });
     this.logger.log(`Usuario ${id} deshabilitado`);
   }
 
@@ -260,46 +295,73 @@ export class PerfilUsuarioService {
   async restore(id: number): Promise<void> {
     const usuario = await this.usuarioRepository.findOne({
       where: { id },
-      relations: ['cuenta'],
     });
 
     if (!usuario) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    await this.cuentaService.habilitar(usuario.cuenta.id);
+    await this.usuarioRepository.update(id, { deshabilitado: false });
     this.logger.log(`Usuario ${id} restaurado`);
   }
 
   /**
    * Mapea la entidad PerfilUsuario al DTO de respuesta.
    */
-  private mapToResponseDto(perfil: PerfilUsuario): ResponseUsuarioDto {
+  private mapToResponseDto(usuario: Usuario): ResponseUsuarioDto {
     const dto = new ResponseUsuarioDto();
 
-    dto.id = perfil.id;
-    dto.documento = perfil.documento;
-    dto.nombre = perfil.nombre;
-    dto.apellido = perfil.apellido;
-    dto.puntos = perfil.puntos;
-
-    if (perfil.cuenta) {
-      dto.correo = perfil.cuenta.correo;
-      dto.deshabilitado = perfil.cuenta.deshabilitado;
-      dto.verificada = perfil.cuenta.verificada;
-      dto.fechaRegistro = perfil.cuenta.fecha_registro;
-      dto.ultimo_cambio = perfil.cuenta.ultimo_cambio;
-      dto.ultima_conexion = perfil.cuenta.ultima_conexion;
-      dto.calle = perfil.cuenta.calle;
-      dto.numero = perfil.cuenta.numero;
-      dto.departamento = perfil.departamento;
-      dto.codigo_postal = perfil.cuenta.codigo_postal;
-      dto.ciudad = perfil.cuenta.ciudad;
-      dto.provincia = perfil.cuenta.provincia;
-      dto.prefijo = perfil.cuenta.prefijo;
-      dto.telefono = perfil.cuenta.telefono;
-    }
+    dto.id = usuario.id;
+    dto.documento = usuario.documento;
+    dto.nombre = usuario.nombre;
+    dto.apellido = usuario.apellido;
+    dto.puntos = usuario.puntos;
+    dto.correo = usuario.correo;
+    dto.deshabilitado = usuario.deshabilitado;
+    dto.verificada = usuario.verificada;
+    dto.fecha_registro = usuario.fecha_registro;
+    dto.ultimo_cambio = usuario.ultimo_cambio;
+    dto.ultima_conexion = usuario.ultima_conexion;
+    dto.calle = usuario.calle;
+    dto.numero = usuario.numero;
+    dto.departamento = usuario.departamento;
+    dto.codigo_postal = usuario.codigo_postal;
+    dto.ciudad = usuario.ciudad;
+    dto.provincia = usuario.provincia;
+    dto.prefijo = usuario.prefijo;
+    dto.telefono = usuario.telefono;
 
     return dto;
+  }
+
+  async findByResetToken(token: string): Promise<Usuario | null> {
+    return this.usuarioRepository.findOne({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: MoreThan(new Date()),
+      },
+    });
+  }
+
+  async setResetToken(id: number, token: string, expires: Date): Promise<void> {
+    await this.usuarioRepository.update(id, {
+      resetPasswordToken: token,
+      resetPasswordExpires: expires,
+    });
+  }
+
+  async clearResetToken(id: number): Promise<void> {
+    await this.usuarioRepository.update(id, {
+      resetPasswordToken: undefined,
+      resetPasswordExpires: undefined,
+    });
+  }
+
+  async resetPassword(id: number, newHashedPassword: string): Promise<void> {
+    await this.usuarioRepository.update(id, {
+      clave: newHashedPassword,
+      resetPasswordToken: undefined,
+      resetPasswordExpires: undefined,
+    });
   }
 }

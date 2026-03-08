@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Rol } from '../../../Entities/usuario.entity';
 
 export class ResponseUsuarioDto {
   @ApiProperty({ example: 12, description: 'Identificador único del usuario' })
@@ -7,20 +8,32 @@ export class ResponseUsuarioDto {
   @ApiProperty({ example: '12345678', description: 'Documento del Usuario' })
   documento: string;
 
-  @ApiProperty({ example: 'Juan', description: 'Nombre del usuario' })
-  nombre: string;
-
-  @ApiProperty({ example: 'Pérez', description: 'Apellido del usuario' })
-  apellido: string;
-
-  @ApiProperty({ example: 150, description: 'Puntos del usuario' })
-  puntos: number;
+  @ApiProperty({
+    example: '$2b$10$N9qo8uLOickgx2ZMRZo5i.U5lH0Q5sFvJ8zFh7pZzQmZzYyQ5Qf6e',
+    description: 'HASH',
+  })
+  clave: string;
 
   @ApiProperty({
     example: 'usuario@email.com',
     description: 'Correo electrónico',
   })
   correo: string;
+
+  @ApiProperty({ example: 'Juan', description: 'Nombre del usuario' })
+  nombre: string;
+
+  @ApiProperty({ example: 'Pérez', description: 'Apellido del usuario' })
+  apellido: string;
+
+  @ApiProperty({
+    example: Rol.USUARIO,
+    description: 'Rol del usuario',
+  })
+  rol: Rol;
+
+  @ApiProperty({ example: 150, description: 'Puntos del usuario' })
+  puntos?: number;
 
   @ApiPropertyOptional({ example: '+54', description: 'Prefijo telefónico' })
   prefijo?: string;
@@ -59,7 +72,7 @@ export class ResponseUsuarioDto {
     example: '2025-05-15T10:30:00.000Z',
     description: 'Fecha de registro',
   })
-  fechaRegistro: Date;
+  fecha_registro: Date;
 
   @ApiProperty({
     example: '2025-05-15T10:30:00.000Z',

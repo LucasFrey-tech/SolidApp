@@ -3,21 +3,12 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 
-import { CuentaService } from '../../cuenta/cuenta.service';
-import { PerfilUsuarioService } from '../../user/usuario.service';
-import { PerfilEmpresaService } from '../../empresa/empresa.service';
-import { PerfilOrganizacionService } from '../../organization/organizacion.service';
-import { RolCuenta } from '../../../Entities/cuenta.entity';
-import {
-  PerfilAsociado,
-  UsuarioAutenticado,
-} from '../interfaces/authenticated_request.interface';
-
-interface JwtPayload {
-  sub: number;
-  email: string;
-  role: RolCuenta;
-}
+import { UsuarioService } from '../../user/usuario.service';
+//import { EmpresaService } from '../../empresa/empresa.service';
+//import { OrganizacionService } from '../../organization/organizacion.service';
+//import { Rol } from '../../../Entities/usuario.entity';
+import { UsuarioAutenticado } from '../interfaces/authenticated_request.interface';
+import { JwtPayload } from '../dto/token_payload';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -25,10 +16,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly cuentaService: CuentaService,
-    private readonly perfilUsuarioService: PerfilUsuarioService,
-    private readonly perfilEmpresaService: PerfilEmpresaService,
-    private readonly perfilOrganizacionService: PerfilOrganizacionService,
+    private readonly usuarioService: UsuarioService,
+    //private readonly empresaService: EmpresaService,
+    //private readonly organizacionService: OrganizacionService,
   ) {
     const secret = configService.get<string>('JWT_SECRET');
 
@@ -47,55 +37,28 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<UsuarioAutenticado> {
-    this.logger.debug(
-      `Validando token para ${payload.email} (${payload.role})`,
-    );
+    this.logger.debug(`Validando token para ${payload.email} (${payload.rol})`);
 
     try {
-      const cuenta = await this.cuentaService.findById(payload.sub);
+      const usuario = await this.usuarioService.findOne(payload.sub);
 
-      if (!cuenta) {
-        throw new UnauthorizedException('Cuenta no encontrada');
+      if (!usuario) {
+        throw new UnauthorizedException('Usuario no encontrada');
       }
 
-      if (cuenta.deshabilitado) {
-        throw new UnauthorizedException('Cuenta deshabilitada');
+      if (usuario.deshabilitado) {
+        throw new UnauthorizedException('Usuario deshabilitada');
       }
 
-      let perfil: PerfilAsociado;
-
-      switch (cuenta.role) {
-        case RolCuenta.USUARIO:
-          perfil = await this.perfilUsuarioService.findByCuentaId(cuenta.id);
-          break;
-        case RolCuenta.EMPRESA:
-          perfil = await this.perfilEmpresaService.findByCuentaId(cuenta.id);
-          break;
-        case RolCuenta.ORGANIZACION:
-          perfil = await this.perfilOrganizacionService.findByCuentaId(
-            cuenta.id,
-          );
-          break;
-        case RolCuenta.ADMIN:
-          perfil = cuenta;
-          break;
-        default:
-          throw new UnauthorizedException('Rol inválido');
-      }
-
-      if (!perfil) {
-        throw new UnauthorizedException('Perfil no encontrado');
-      }
-
-      this.cuentaService
-        .actualizarUltimaConexion(cuenta.id)
+      this.usuarioService
+        .actualizarUltimaConexion(usuario.id)
         .catch((error: Error) => {
           this.logger.error(
             `Error actualizando última conexión: ${error.message}`,
           );
         });
 
-      return { cuenta, perfil };
+      return usuario;
     } catch (error) {
       if (error instanceof Error) {
         this.logger.error(`Error validando token: ${error.message}`);

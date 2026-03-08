@@ -1,6 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, MinLength } from 'class-validator';
+import { Rol } from '../../../Entities/usuario.entity';
 
 export class CreateUsuarioDto {
+  @ApiProperty({
+    example: 'correo@email.com',
+  })
+  @IsEmail()
+  correo: string;
+
+  @ApiProperty({
+    example: 'Password123',
+  })
+  @IsString()
+  @MinLength(6)
+  clave: string;
+
   @ApiProperty({
     example: '12345678',
     description: 'Documento del Usuario',
@@ -25,4 +40,10 @@ export class CreateUsuarioDto {
     default: 0,
   })
   puntos?: number;
+
+  @ApiProperty({
+    example: Rol.USUARIO,
+    description: 'Rol del usuario',
+  })
+  rol: Rol;
 }
