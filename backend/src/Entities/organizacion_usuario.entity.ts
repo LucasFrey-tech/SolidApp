@@ -40,25 +40,6 @@ export class OrganizacionUsuario {
   @Column({ type: 'int', nullable: false })
   id_organizacion: number;
 
-  /*@ApiProperty({
-    example: 'ADMINISTRADOR',
-    description: 'Rol del usuario dentro de la organización',
-    enum: ['ADMINISTRADOR', 'COLABORADOR', 'EDITOR', 'VISUALIZADOR'],
-    default: 'ADMINISTRADOR',
-  })
-  @Column({
-    type: 'varchar',
-    length: 50,
-    nullable: false,
-    default: 'ADMINISTRADOR',
-  })
-  rol_en_organizacion:
-    | 'ADMINISTRADOR'
-    | 'COLABORADOR'
-    | 'EDITOR'
-    | 'VISUALIZADOR';
-  */
-
   @ApiProperty({
     example: '2024-01-15T10:30:00Z',
     description: 'Fecha en que el usuario fue asignado a la organización',
