@@ -1,17 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEmail,
-  IsEnum,
-  IsOptional,
-  IsString,
-  MinLength,
-  ValidateNested,
-} from 'class-validator';
-import { RolCuenta } from '../../../Entities/cuenta.entity';
-import { Type } from 'class-transformer';
-import { RegistroOrganizacionDto } from '../../organization/dto/registro_organizacion.dto';
-import { RegistroUsuarioDto } from '../../user/dto/registro_usuario.dto';
-import { RegistroEmpresaDto } from '../../empresa/dto/registro_empresa.dto';
+import { IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
+import { Rol } from '../../../Entities/usuario.entity';
 
 /**
  * Data Transfer Object (DTO) para Register y Login.
@@ -37,10 +26,10 @@ export class LoginDto {
   @ApiProperty({
     example: 'usuario',
     description: 'Rol de la cuenta (usuario, empresa, organizacion)',
-    enum: RolCuenta,
+    enum: Rol,
   })
-  @IsEnum(RolCuenta)
-  rol: RolCuenta;
+  @IsEnum(Rol)
+  rol: Rol;
 }
 
 export class RegisterDto {
@@ -58,26 +47,22 @@ export class RegisterDto {
   clave: string;
 
   @ApiProperty({
-    enum: RolCuenta,
-    example: RolCuenta.USUARIO,
+    example: 'Lucas',
   })
-  @IsEnum(RolCuenta)
-  role: RolCuenta;
+  @IsString()
+  nombre: string;
 
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => RegistroUsuarioDto)
-  perfilUsuario?: RegistroUsuarioDto;
+  @ApiProperty({
+    example: 'Frey',
+  })
+  @IsString()
+  apellido: string;
 
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => RegistroEmpresaDto)
-  perfilEmpresa?: RegistroEmpresaDto;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => RegistroOrganizacionDto)
-  perfilOrganizacion?: RegistroOrganizacionDto;
+  @ApiProperty({
+    example: '11888858',
+  })
+  @IsString()
+  documento: string;
 }
 
 export class AuthResponse {

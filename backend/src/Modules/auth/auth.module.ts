@@ -9,8 +9,8 @@ import { UserModule } from '../user/usuario.module';
 import { EmpresaModule } from '../empresa/empresa.module';
 import { OrganizationModule } from '../organization/organizacion.module';
 import { CommonMulterModule } from '../../common/multer/multer.module';
-import { Cuenta } from '../../Entities/cuenta.entity';
-import { CuentaService } from '../cuenta/cuenta.service';
+import { Usuario } from '../../Entities/usuario.entity';
+import { UsuarioService } from '../user/usuario.service';
 import { JwtStrategy } from './estrategias/jwt.strategy';
 import { RolesGuard } from './guards/roles.guard';
 import { CommonModule } from '../../common/common.module';
@@ -30,7 +30,7 @@ import { EmailService } from '../email/email.service';
     OrganizationModule,
     PassportModule,
     ConfigModule,
-    TypeOrmModule.forFeature([Cuenta]),
+    TypeOrmModule.forFeature([Usuario]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -44,7 +44,7 @@ import { EmailService } from '../email/email.service';
   controllers: [AuthController],
   providers: [
     AuthService,
-    CuentaService,
+    UsuarioService,
     JwtStrategy,
     RolesGuard,
     EmailService,

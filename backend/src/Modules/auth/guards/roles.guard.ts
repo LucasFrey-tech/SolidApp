@@ -7,12 +7,12 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decoradores/roles.decorador';
 import { PUBLIC_KEY } from '../decoradores/auth.decorador';
-import { RolCuenta } from '../../../Entities/cuenta.entity';
+import { Rol } from '../../../Entities/usuario.entity';
 import { UsuarioAutenticado } from '../interfaces/authenticated_request.interface';
 import { Request } from 'express';
 
-interface RequestWithUser extends Request {
-  user: UsuarioAutenticado;
+interface RequestConUsuario extends Request {
+  usuario: UsuarioAutenticado;
 }
 
 @Injectable()
@@ -29,23 +29,23 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const requiredRoles = this.reflector.getAllAndOverride<RolCuenta[]>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredRoles = this.reflector.getAllAndOverride<Rol[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     if (!requiredRoles) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<RequestWithUser>();
-    const user = request.user;
+    const request = context.switchToHttp().getRequest<RequestConUsuario>();
+    const usuario = request.usuario;
 
-    if (!user || !user.cuenta) {
+    if (!usuario) {
       throw new ForbiddenException('Usuario no autenticado');
     }
 
-    const tieneRol = requiredRoles.includes(user.cuenta.role);
+    const tieneRol = requiredRoles.includes(usuario.rol);
 
     if (!tieneRol) {
       throw new ForbiddenException(
