@@ -3,7 +3,6 @@ import { AppModule } from '../../app.module';
 import { Usuario, Rol } from '../../Entities/usuario.entity';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { Contacto } from '../../Entities/contacto.entity';
 
 async function seedAdmin() {
   try {
@@ -14,7 +13,7 @@ async function seedAdmin() {
     const adminClave = process.env.ADMIN_PASSWORD || 'SolidSystem';
 
     const adminExistente = await usuarioRepository.findOne({
-      relations: ['contacto'],
+      relations: ['contacto', 'direccion'],
       where: { contacto: { correo: adminCorreo } },
     });
 
@@ -26,12 +25,14 @@ async function seedAdmin() {
 
     const claveHasheada = await bcrypt.hash(adminClave, 10);
 
-    const correo: Partial<Contacto> = {
-      correo: adminCorreo,
-    };
-
     const admin = usuarioRepository.create({
-      contacto: correo,
+      documento: '',
+      nombre: '',
+      apellido: '',
+      contacto: {
+        correo: adminCorreo,
+      },
+      direccion: {},
       clave: claveHasheada,
       rol: Rol.ADMIN,
     });
