@@ -31,7 +31,11 @@ async function seedAdmin() {
       rol: Rol.ADMIN,
     });
 
-    console.log(`Admin creado: ${JSON.stringify(admin, null, 2)}`);
+    console.log('Admin creado:');
+    console.dir(admin, {
+      depth: null,
+      colors: true,
+    });
     await app.close();
   } catch (error) {
     console.error('Error al crear admin:', error);
