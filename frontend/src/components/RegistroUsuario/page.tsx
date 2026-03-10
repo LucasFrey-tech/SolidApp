@@ -4,6 +4,7 @@ import { useState } from "react";
 import { z } from "zod";
 import styles from "@/styles/login-registro/registro.module.css";
 import Swal from "sweetalert2";
+import { baseApi } from "@/API/baseApi";
 
 const usuarioSchema = z
   .object({
@@ -63,7 +64,8 @@ export default function RegistroUsuario() {
     try {
       usuarioSchema.parse(data);
 
-      setErrors({});
+      const { confirmarClave, ...dto } = data;
+      await baseApi.auth.register(dto);
 
       await Swal.fire({
         icon: "success",
@@ -80,6 +82,7 @@ export default function RegistroUsuario() {
         apellido: "",
       });
 
+      setErrors({});
     } catch (error: any) {
       if (error.errors) {
         const newErrors: Record<string, string> = {};
@@ -100,122 +103,114 @@ export default function RegistroUsuario() {
   };
 
   return (
-    
-      <div className={styles.formWrapper}>
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <h2 className={styles.title}>Registro de Usuario</h2>
+    <div className={styles.formWrapper}>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <h2 className={styles.title}>Registro de Usuario</h2>
 
-          <div className={styles.scrollableFields}>
-            
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Documento</label>
-              <input
-                className={`${styles.input} ${
-                  errors.documento ? styles.inputError : ""
-                }`}
-                placeholder="Documento"
-                value={data.documento}
-                onChange={(e) => handleChange("documento", e.target.value)}
-              />
-              {errors.documento && (
-                <span className={styles.errorText}>{errors.documento}</span>
-              )}
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Correo electrónico</label>
-              <input
-                className={`${styles.input} ${
-                  errors.correo ? styles.inputError : ""
-                }`}
-                placeholder="Correo electrónico"
-                value={data.correo}
-                onChange={(e) => handleChange("correo", e.target.value)}
-              />
-              {errors.correo && (
-                <span className={styles.errorText}>{errors.correo}</span>
-              )}
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Contraseña</label>
-              <input
-                type="password"
-                className={`${styles.input} ${
-                  errors.clave ? styles.inputError : ""
-                }`}
-                placeholder="Contraseña"
-                value={data.clave}
-                onChange={(e) => handleChange("clave", e.target.value)}
-              />
-              {errors.clave && (
-                <span className={styles.errorText}>{errors.clave}</span>
-              )}
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Repetir contraseña</label>
-              <input
-                type="password"
-                className={`${styles.input} ${
-                  errors.confirmarClave ? styles.inputError : ""
-                }`}
-                placeholder="Repetir contraseña"
-                value={data.confirmarClave}
-                onChange={(e) =>
-                  handleChange("confirmarClave", e.target.value)
-                }
-              />
-              {errors.confirmarClave && (
-                <span className={styles.errorText}>
-                  {errors.confirmarClave}
-                </span>
-              )}
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Nombre</label>
-              <input
-                className={`${styles.input} ${
-                  errors.nombre ? styles.inputError : ""
-                }`}
-                placeholder="Nombre"
-                value={data.nombre}
-                onChange={(e) => handleChange("nombre", e.target.value)}
-              />
-              {errors.nombre && (
-                <span className={styles.errorText}>{errors.nombre}</span>
-              )}
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>Apellido</label>
-              <input
-                className={`${styles.input} ${
-                  errors.apellido ? styles.inputError : ""
-                }`}
-                placeholder="Apellido"
-                value={data.apellido}
-                onChange={(e) => handleChange("apellido", e.target.value)}
-              />
-              {errors.apellido && (
-                <span className={styles.errorText}>{errors.apellido}</span>
-              )}
-            </div>
-
+        <div className={styles.scrollableFields}>
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Documento</label>
+            <input
+              className={`${styles.input} ${
+                errors.documento ? styles.inputError : ""
+              }`}
+              placeholder="Documento"
+              value={data.documento}
+              onChange={(e) => handleChange("documento", e.target.value)}
+            />
+            {errors.documento && (
+              <span className={styles.errorText}>{errors.documento}</span>
+            )}
           </div>
 
-          <div className={styles.buttonContainer}>
-            <button type="submit" className={styles.btn}>
-              Registrarme
-            </button>
-
-            <p className={styles.requiredHint}>
-              Los campos con * son obligatorios
-            </p>
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Correo electrónico</label>
+            <input
+              className={`${styles.input} ${
+                errors.correo ? styles.inputError : ""
+              }`}
+              placeholder="Correo electrónico"
+              value={data.correo}
+              onChange={(e) => handleChange("correo", e.target.value)}
+            />
+            {errors.correo && (
+              <span className={styles.errorText}>{errors.correo}</span>
+            )}
           </div>
-        </form>
-      </div>
-    
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Contraseña</label>
+            <input
+              type="password"
+              className={`${styles.input} ${
+                errors.clave ? styles.inputError : ""
+              }`}
+              placeholder="Contraseña"
+              value={data.clave}
+              onChange={(e) => handleChange("clave", e.target.value)}
+            />
+            {errors.clave && (
+              <span className={styles.errorText}>{errors.clave}</span>
+            )}
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Repetir contraseña</label>
+            <input
+              type="password"
+              className={`${styles.input} ${
+                errors.confirmarClave ? styles.inputError : ""
+              }`}
+              placeholder="Repetir contraseña"
+              value={data.confirmarClave}
+              onChange={(e) => handleChange("confirmarClave", e.target.value)}
+            />
+            {errors.confirmarClave && (
+              <span className={styles.errorText}>{errors.confirmarClave}</span>
+            )}
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Nombre</label>
+            <input
+              className={`${styles.input} ${
+                errors.nombre ? styles.inputError : ""
+              }`}
+              placeholder="Nombre"
+              value={data.nombre}
+              onChange={(e) => handleChange("nombre", e.target.value)}
+            />
+            {errors.nombre && (
+              <span className={styles.errorText}>{errors.nombre}</span>
+            )}
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Apellido</label>
+            <input
+              className={`${styles.input} ${
+                errors.apellido ? styles.inputError : ""
+              }`}
+              placeholder="Apellido"
+              value={data.apellido}
+              onChange={(e) => handleChange("apellido", e.target.value)}
+            />
+            {errors.apellido && (
+              <span className={styles.errorText}>{errors.apellido}</span>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.buttonContainer}>
+          <button type="submit" className={styles.btn}>
+            Registrarme
+          </button>
+
+          <p className={styles.requiredHint}>
+            Los campos con * son obligatorios
+          </p>
+        </div>
+      </form>
+    </div>
   );
 }

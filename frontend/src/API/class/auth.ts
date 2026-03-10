@@ -1,11 +1,10 @@
+import { Crud, PaginatedResponse } from "../service";
 import { AuthResponse, LoginRequestBody } from "../types/auth";
-import { Register } from "../types/auth";
+import { RegistroUsuarioDto } from "../types/auth";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
-export class AuthService {
+export class AuthService extends Crud<any> {
   protected endPoint = "/auth";
-
-  private baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   async login(credentials: LoginRequestBody): Promise<AuthResponse> {
     const url = `${this.baseUrl}${this.endPoint}/login`;
@@ -27,8 +26,9 @@ export class AuthService {
     return res.json();
   }
 
-  async register(data: Register): Promise<AuthResponse> {
-    const url = `${this.baseUrl}/auth/register`;
+  async register(data: RegistroUsuarioDto): Promise<AuthResponse> {
+    console.log("DATA: ", data);
+    const url = `${this.baseUrl}${this.endPoint}/register`;
 
     const res = await fetch(url, {
       method: "POST",
@@ -86,7 +86,7 @@ export class AuthService {
   async forgotPassword(email: string): Promise<{ message: string }> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/forgot-password`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: this.getHeaders(),
       body: JSON.stringify({ email }),
     });
     return res.json();
@@ -98,21 +98,33 @@ export class AuthService {
   ): Promise<{ message: string }> {
     const res = await fetch(`${this.baseUrl}${this.endPoint}/reset-password`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: this.getHeaders(),
       body: JSON.stringify({ token, newPassword }),
     });
     return res.json();
   }
 
-  private getHeaders(): Record<string, string> {
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-
-    const token = localStorage.getItem("token");
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-    return headers;
+  getAll(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
+  getAllPaginated(
+    page?: number,
+    limit?: number,
+    serach?: string,
+    onlyEnabled?: boolean,
+  ): Promise<PaginatedResponse<any>> {
+    throw new Error("Method not implemented.");
+  }
+  getOne(_id: number): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  create(_data: Partial<any>): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  update(_id: number, data: Partial<any>): Promise<any> {
+    throw new Error("Method not implemented.");
+  }
+  delete(_id: number): Promise<void> {
+    throw new Error("Method not implemented.");
   }
 }
