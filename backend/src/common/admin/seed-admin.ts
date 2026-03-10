@@ -1,21 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../../app.module';
-import { Usuario, Rol } from '../../Entities/usuario.entity';
+import { Rol } from '../../Entities/usuario.entity';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
+import { UsuarioService } from '../../Modules/user/usuario.service';
 
 async function seedAdmin() {
   try {
-    const app = await NestFactory.create(AppModule);
-    const usuarioRepository = app.get<Repository<Usuario>>('UsuarioRepository');
+    const app = await NestFactory.createApplicationContext(AppModule);
+    const usuarioService = app.get(UsuarioService);
 
     const adminCorreo = process.env.ADMIN_EMAIL || 'admin@solid_app.com';
     const adminClave = process.env.ADMIN_PASSWORD || 'SolidSystem';
 
-    const adminExistente = await usuarioRepository.findOne({
-      relations: ['contacto', 'direccion'],
-      where: { contacto: { correo: adminCorreo } },
-    });
+    const adminExistente = await usuarioService.findByEmail(adminCorreo);
 
     if (adminExistente) {
       console.log('Admin ya existe');
@@ -25,20 +22,16 @@ async function seedAdmin() {
 
     const claveHasheada = await bcrypt.hash(adminClave, 10);
 
-    const admin = usuarioRepository.create({
+    const admin = await usuarioService.create({
+      correo: adminCorreo,
+      clave: claveHasheada,
       documento: '',
       nombre: '',
       apellido: '',
-      contacto: {
-        correo: adminCorreo,
-      },
-      direccion: {},
-      clave: claveHasheada,
       rol: Rol.ADMIN,
     });
 
-    await usuarioRepository.save(admin);
-    console.log(`Admin creado: ${adminCorreo}`);
+    console.log(`Admin creado: ${JSON.stringify(admin, null, 2)}`);
     await app.close();
   } catch (error) {
     console.error('Error al crear admin:', error);

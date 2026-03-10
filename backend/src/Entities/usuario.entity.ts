@@ -107,7 +107,7 @@ export class Usuario {
     description: 'Información de contacto del usuario (correo y teléfono)',
     type: () => Contacto,
   })
-  @OneToOne(() => Contacto, { cascade: true })
+  @OneToOne(() => Contacto, { cascade: ['insert', 'update'] })
   @JoinColumn({ name: 'contacto_id' })
   contacto: Contacto;
 
@@ -115,7 +115,7 @@ export class Usuario {
     description: 'Dirección física del usuario',
     type: () => Direccion,
   })
-  @OneToOne(() => Direccion, {})
+  @OneToOne(() => Direccion, { cascade: ['insert', 'update'] })
   @JoinColumn({ name: 'direccion_id' })
   direccion?: Direccion;
 
