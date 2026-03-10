@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Rol } from '../../../Entities/usuario.entity';
+import { Expose, Type } from 'class-transformer';
+import { ContactoDto, DireccionDto } from '../../contacto_direccion/dto';
 
 export class ResponseUsuarioDto {
   @ApiProperty({ example: 12, description: 'Identificador único del usuario' })
@@ -14,12 +16,6 @@ export class ResponseUsuarioDto {
   })
   clave: string;
 
-  @ApiProperty({
-    example: 'usuario@email.com',
-    description: 'Correo electrónico',
-  })
-  correo: string;
-
   @ApiProperty({ example: 'Juan', description: 'Nombre del usuario' })
   nombre: string;
 
@@ -33,40 +29,32 @@ export class ResponseUsuarioDto {
   rol: Rol;
 
   @ApiProperty({ example: 150, description: 'Puntos del usuario' })
-  puntos?: number;
+  puntos: number;
 
-  @ApiPropertyOptional({ example: '+54', description: 'Prefijo telefónico' })
-  prefijo?: string;
+  @ApiProperty({
+    description: 'Información de contacto del usuario',
+    type: ContactoDto,
+  })
+  @Expose()
+  @Type(() => ContactoDto)
+  contacto: ContactoDto;
 
-  @ApiPropertyOptional({ example: '11-1234-5678', description: 'Teléfono' })
-  telefono?: string;
-
-  @ApiPropertyOptional({ example: 'Av. Siempre Viva', description: 'Calle' })
-  calle?: string;
-
-  @ApiPropertyOptional({ example: '742', description: 'Número' })
-  numero?: string;
-
-  @ApiPropertyOptional({ example: '2B', description: 'Departamento/piso' })
-  departamento?: string;
-
-  @ApiPropertyOptional({ example: '1638', description: 'Código Postal' })
-  codigo_postal?: string;
-
-  @ApiPropertyOptional({ example: 'Buenos Aires', description: 'Provincia' })
-  provincia?: string;
-
-  @ApiPropertyOptional({ example: 'Vicente López', description: 'Ciudad' })
-  ciudad?: string;
+  @ApiPropertyOptional({
+    description: 'Dirección del usuario',
+    type: DireccionDto,
+  })
+  @Expose()
+  @Type(() => DireccionDto)
+  direccion?: DireccionDto;
 
   @ApiProperty({ example: false, description: 'Indica si está deshabilitado' })
-  deshabilitado: boolean;
+  habilitado: boolean;
 
   @ApiProperty({
     example: true,
     description: 'Indica si el usuario esta verificado',
   })
-  verificada: boolean;
+  verificado: boolean;
 
   @ApiProperty({
     example: '2025-05-15T10:30:00.000Z',

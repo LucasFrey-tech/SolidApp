@@ -5,10 +5,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Beneficios } from './beneficio.entity';
 import { EmpresaUsuario } from './empresa_usuario.entity';
+import { Contacto } from './contacto.entity';
+import { Direccion } from './direccion.entity';
 
 /**
  * Entidad Empresa
@@ -67,6 +71,42 @@ export class Empresa {
   nombre_empresa: string;
 
   @ApiProperty({
+    description: 'ID del contacto asociado (obligatorio)',
+  })
+  @Column({ type: 'int', nullable: false })
+  contacto_id: number; //ES NECESARIO ???
+
+  @ApiProperty({
+    description: 'Información de contacto de la empresa',
+    type: () => Contacto,
+  })
+  @ManyToOne(() => Contacto, {
+    eager: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'contacto_id' })
+  contacto: Contacto;
+
+  @ApiPropertyOptional({
+    description: 'ID de la dirección fiscal/comercial (opcional)',
+  })
+  @Column({ type: 'int', nullable: true })
+  direccion_id?: number; // ES NECESARIO ???
+
+  @ApiPropertyOptional({
+    description: 'Dirección fiscal/comercial de la empresa',
+    type: () => Direccion,
+  })
+  @ManyToOne(() => Direccion, {
+    eager: true,
+    cascade: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'direccion_id' })
+  direccion?: Direccion;
+
+  @ApiProperty({
     example: false,
     description: 'Indica si la empresa está verificada por un admin',
     default: false,
@@ -109,6 +149,14 @@ export class Empresa {
   })
   @UpdateDateColumn({ type: 'datetime2', nullable: false })
   ultimo_cambio: Date;
+
+  @ApiProperty({
+    example: false,
+    description: 'Indica si la Empresa está habilitada (bloqueado)',
+    default: false,
+  })
+  @Column({ type: 'bit', nullable: false, default: false })
+  habilitada: boolean;
 
   // ==================== RELACIONES ====================
 

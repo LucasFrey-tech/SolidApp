@@ -44,7 +44,8 @@ export class UsuarioService {
    */
   async findByEmailRol(correo: string, rol: Rol): Promise<Usuario | null> {
     return this.usuarioRepository.findOne({
-      where: { correo: correo, rol: rol },
+      relations: ['contacto'],
+      where: { contacto: { correo: correo }, rol: rol },
     });
   }
 
@@ -53,7 +54,7 @@ export class UsuarioService {
    */
   async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuarioRepository.findOne({
-      where: { correo: email },
+      where: { contacto: { correo: email } },
     });
   }
 
@@ -69,6 +70,7 @@ export class UsuarioService {
       : this.usuarioRepository;
 
     const existente = await repo.findOne({
+      relations: ['contacto'],
       where: { documento: createDto.documento },
     });
 
@@ -76,8 +78,15 @@ export class UsuarioService {
       throw new ConflictException('Ya existe este Usuario');
     }
 
+    const { correo, ...dto } = createDto;
+
+    this.logger.log('CORREO: ', correo);
+
     const usuario = repo.create({
-      ...createDto,
+      ...dto,
+      contacto: {
+        correo: correo,
+      },
       puntos: 0,
     });
 
@@ -146,7 +155,7 @@ export class UsuarioService {
     }
 
     if (dto.correo) {
-      usuario.correo = dto.correo;
+      usuario.contacto.correo = dto.correo;
     }
 
     await this.usuarioRepository.save(usuario);
@@ -238,13 +247,14 @@ export class UsuarioService {
       whereConditions = [
         { nombre: Like(`%${search}%`) },
         { apellido: Like(`%${search}%`) },
-        { correo: Like(`%${search}%`) },
+        { contacto: { correo: Like(`%${search}%`) } },
         { documento: Like(`%${search}%`) },
       ];
     }
 
     const [usuarios, total] = await this.usuarioRepository.findAndCount({
       where: whereConditions,
+      relations: ['contacto'],
       skip,
       take: limit,
       order: {
@@ -285,7 +295,7 @@ export class UsuarioService {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    await this.usuarioRepository.update(id, { deshabilitado: true });
+    await this.usuarioRepository.update(id, { habilitado: false });
     this.logger.log(`Usuario ${id} deshabilitado`);
   }
 
@@ -301,7 +311,7 @@ export class UsuarioService {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    await this.usuarioRepository.update(id, { deshabilitado: false });
+    await this.usuarioRepository.update(id, { habilitado: true });
     this.logger.log(`Usuario ${id} restaurado`);
   }
 
@@ -316,20 +326,15 @@ export class UsuarioService {
     dto.nombre = usuario.nombre;
     dto.apellido = usuario.apellido;
     dto.puntos = usuario.puntos;
-    dto.correo = usuario.correo;
-    dto.deshabilitado = usuario.deshabilitado;
-    dto.verificada = usuario.verificada;
+
+    dto.contacto = usuario.contacto;
+    dto.direccion = usuario.direccion;
+
+    dto.habilitado = usuario.habilitado;
+    dto.verificado = usuario.verificado;
     dto.fecha_registro = usuario.fecha_registro;
     dto.ultimo_cambio = usuario.ultimo_cambio;
     dto.ultima_conexion = usuario.ultima_conexion;
-    dto.calle = usuario.calle;
-    dto.numero = usuario.numero;
-    dto.departamento = usuario.departamento;
-    dto.codigo_postal = usuario.codigo_postal;
-    dto.ciudad = usuario.ciudad;
-    dto.provincia = usuario.provincia;
-    dto.prefijo = usuario.prefijo;
-    dto.telefono = usuario.telefono;
 
     return dto;
   }

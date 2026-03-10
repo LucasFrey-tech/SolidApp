@@ -5,11 +5,15 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
 import { ImagenesOrganizacion } from './imagenes_organizacion.entity';
 import { OrganizacionUsuario } from './organizacion_usuario.entity';
+import { Contacto } from './contacto.entity';
+import { Direccion } from './direccion.entity';
 
 /**
  * Entidad Organizacion
@@ -48,6 +52,42 @@ export class Organizacion {
   nombre_organizacion: string;
 
   @ApiProperty({
+    description: 'ID del contacto asociado (obligatorio)',
+  })
+  @Column({ type: 'int', nullable: false })
+  contacto_id: number; // ES NECESARIO ???
+
+  @ApiProperty({
+    description: 'Información de contacto de la organización',
+    type: () => Contacto,
+  })
+  @ManyToOne(() => Contacto, {
+    eager: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'contacto_id' })
+  contacto: Contacto;
+
+  @ApiPropertyOptional({
+    description: 'ID de la dirección de la sede (opcional)',
+  })
+  @Column({ type: 'int', nullable: true })
+  direccion_id?: number; // ES NECESARIO ???
+
+  @ApiPropertyOptional({
+    description: 'Dirección de la sede de la organización',
+    type: () => Direccion,
+  })
+  @ManyToOne(() => Direccion, {
+    eager: true,
+    cascade: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'direccion_id' })
+  direccion: Direccion;
+
+  @ApiProperty({
     example: 'ONG dedicada a la educación y desarrollo comunitario',
     description: 'Descripción de la organización',
     default: '',
@@ -84,6 +124,14 @@ export class Organizacion {
   })
   @UpdateDateColumn({ type: 'datetime2', nullable: false })
   ultimo_cambio: Date;
+
+  @ApiProperty({
+    example: false,
+    description: 'Indica si la Organización está habilitada',
+    default: false,
+  })
+  @Column({ type: 'bit', nullable: false, default: false })
+  habilitada: boolean;
 
   // ==================== RELACIONES ====================
 

@@ -5,6 +5,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
@@ -13,6 +15,8 @@ import { UsuarioBeneficio } from './usuario-beneficio.entity';
 import { RankingDonador } from './ranking.entity';
 import { EmpresaUsuario } from './empresa_usuario.entity';
 import { OrganizacionUsuario } from './organizacion_usuario.entity';
+import { Contacto } from './contacto.entity';
+import { Direccion } from './direccion.entity';
 
 export enum Rol {
   USUARIO = 'USUARIO',
@@ -35,14 +39,6 @@ export class Usuario {
   id: number;
 
   // ==================== DATOS DE AUTENTICACIÓN (antes en cuenta) ====================
-
-  @ApiProperty({
-    example: 'juan.perez@example.com',
-    description: 'Email del usuario (único, usado para login)',
-    uniqueItems: true,
-  })
-  @Column({ type: 'varchar', length: 255, unique: true, nullable: false })
-  correo: string;
 
   @ApiProperty({
     example: '$2b$10$...',
@@ -96,7 +92,7 @@ export class Usuario {
     default: 0,
   })
   @Column({ type: 'int', nullable: true, default: 0 })
-  puntos?: number;
+  puntos: number;
 
   @ApiPropertyOptional({
     example: 'IT',
@@ -105,66 +101,33 @@ export class Usuario {
   @Column({ type: 'varchar', length: 10, nullable: true })
   departamento?: string;
 
-  // ==================== DATOS DE CONTACTO (antes en cuenta) ====================
+  // ==================== RELACIONES CON CONTACTO ====================
+
+  @ApiProperty({
+    description: 'Información de contacto del usuario (correo y teléfono)',
+    type: () => Contacto,
+  })
+  @OneToOne(() => Contacto, { cascade: true })
+  @JoinColumn({ name: 'contacto_id' })
+  contacto: Contacto;
 
   @ApiPropertyOptional({
-    example: 'Av. Corrientes',
-    description: 'Calle de la dirección',
+    description: 'Dirección física del usuario',
+    type: () => Direccion,
   })
-  @Column({ type: 'varchar', length: 80, nullable: true })
-  calle?: string;
-
-  @ApiPropertyOptional({
-    example: '1234',
-    description: 'Número de la dirección',
-  })
-  @Column({ type: 'varchar', length: 10, nullable: true })
-  numero?: string;
-
-  @ApiPropertyOptional({
-    example: 'C1043',
-    description: 'Código postal',
-  })
-  @Column({ type: 'varchar', length: 10, nullable: true })
-  codigo_postal?: string;
-
-  @ApiPropertyOptional({
-    example: 'Buenos Aires',
-    description: 'Ciudad',
-  })
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  ciudad?: string;
-
-  @ApiPropertyOptional({
-    example: 'CABA',
-    description: 'Provincia',
-  })
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  provincia?: string;
-
-  @ApiPropertyOptional({
-    example: '11',
-    description: 'Prefijo telefónico',
-  })
-  @Column({ type: 'varchar', length: 5, nullable: true })
-  prefijo?: string;
-
-  @ApiPropertyOptional({
-    example: '12345678',
-    description: 'Número de teléfono',
-  })
-  @Column({ type: 'varchar', length: 20, nullable: true })
-  telefono?: string;
+  @OneToOne(() => Direccion, {})
+  @JoinColumn({ name: 'direccion_id' })
+  direccion?: Direccion;
 
   // ==================== CAMPOS DEL SISTEMA ====================
 
   @ApiProperty({
     example: false,
-    description: 'Indica si el usuario está deshabilitado (bloqueado)',
+    description: 'Indica si el usuario está habilitado',
     default: false,
   })
   @Column({ type: 'bit', nullable: false, default: false })
-  deshabilitado: boolean;
+  habilitado: boolean;
 
   @ApiProperty({
     example: true,
@@ -172,7 +135,7 @@ export class Usuario {
     default: false,
   })
   @Column({ type: 'bit', nullable: false, default: false })
-  verificada: boolean;
+  verificado: boolean;
 
   @ApiProperty({
     example: '2024-01-15T10:30:00Z',
