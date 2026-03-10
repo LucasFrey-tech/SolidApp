@@ -126,7 +126,7 @@ export class Usuario {
     description: 'Indica si el usuario está habilitado',
     default: false,
   })
-  @Column({ type: 'bit', nullable: false, default: false })
+  @Column({ type: 'bit', nullable: false, default: true })
   habilitado: boolean;
 
   @ApiProperty({
