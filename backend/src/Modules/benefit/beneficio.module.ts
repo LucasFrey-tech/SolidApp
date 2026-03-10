@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BeneficioController } from './beneficio.controller';
 import { BeneficioService } from './beneficio.service';
 import { Beneficios } from '../../Entities/beneficio.entity';
-import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
+import { Empresa } from '../../Entities/empresa.entity';
 
 /**
  * Módulo de NestJS que agrupa los componentes realcionados a Beneficios:
@@ -12,7 +12,7 @@ import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
  * - Repositorios TypeORM
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([Beneficios, PerfilEmpresa])],
+  imports: [TypeOrmModule.forFeature([Beneficios, Empresa])],
   controllers: [BeneficioController],
   providers: [BeneficioService],
   exports: [BeneficioService],

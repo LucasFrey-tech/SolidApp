@@ -8,8 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { Donaciones } from '../../Entities/donacion.entity';
 import { Campaigns } from '../../Entities/campaigns.entity';
-import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
-import { Donation_images } from '../../Entities/imagenes_donaciones';
+import { Usuario } from '../../Entities/usuario.entity';
+import { ImagenesDonaciones } from '../../Entities/imagenes_donaciones';
 import { CreateDonationDto } from './dto/create_donation.dto';
 import { ResponseDonationDto } from './dto/response_donation.dto';
 import { RankingService } from '../ranking/ranking.service';
@@ -35,11 +35,11 @@ export class DonacionService {
     @InjectRepository(Campaigns)
     private readonly campaignsRepository: Repository<Campaigns>,
 
-    @InjectRepository(PerfilUsuario)
-    private readonly perfilUsuarioRepository: Repository<PerfilUsuario>,
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
 
-    @InjectRepository(Donation_images)
-    private readonly donationImagenRepository: Repository<Donation_images>,
+    @InjectRepository(ImagenesDonaciones)
+    private readonly donationImagenRepository: Repository<ImagenesDonaciones>,
 
     private readonly rankingService: RankingService,
   ) {}
@@ -64,7 +64,7 @@ export class DonacionService {
           organizacion: { id: organizacionId },
         },
       },
-      relations: { campaña: true, usuario: { cuenta: true } },
+      relations: { campaña: true, usuario: true },
       order: {
         estado: 'ASC',
         fecha_registro: 'DESC',
@@ -100,7 +100,7 @@ export class DonacionService {
       relations: [
         'campaña',
         'campaña.organizacion',
-        'campaña.organizacion.cuenta',
+        //'campaña.organizacion.cuenta',
       ],
       order: {
         estado: 'ASC',
@@ -131,8 +131,8 @@ export class DonacionService {
       throw new NotFoundException('Campaña no encontrada');
     }
 
-    const usuario = await this.perfilUsuarioRepository.findOne({
-      where: { id: usuarioId, cuenta: { deshabilitado: false } },
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id: usuarioId, habilitado: true },
     });
 
     if (!usuario) {
@@ -156,7 +156,7 @@ export class DonacionService {
 
     const savedDonation = await this.donacionRepository.save(donation);
 
-    await this.perfilUsuarioRepository.save(usuario);
+    await this.usuarioRepository.save(usuario);
 
     this.logger.log(
       `Donación ${savedDonation.id} creada | Usuario ${usuario.id} +${createDto.cantidad} puntos`,
@@ -306,7 +306,7 @@ export class DonacionService {
       descripcion: donation.detalle,
       estado: donation.estado,
       userId: donation.usuario.id,
-      correo: donation.usuario.cuenta.correo,
+      correo: donation.usuario.contacto.correo,
       campaignId: donation.campaña.id,
       campaignTitulo: donation.campaña.titulo,
       fecha_estado: donation.fecha_estado,
@@ -323,8 +323,8 @@ export class DonacionService {
       estado: donation.estado,
       fecha_registro: donation.fecha_registro,
       nombre_organizacion: donation.campaña.organizacion.nombre_organizacion,
-      calle: donation.campaña.organizacion.cuenta.calle,
-      numero: donation.campaña.organizacion.cuenta.numero,
+      calle: donation.campaña.organizacion.direccion.calle,
+      numero: donation.campaña.organizacion.direccion.numero,
       organizacionId: donation.campaña.organizacion.id,
       titulo_campaña: donation.campaña.titulo,
       fecha_estado: donation.fecha_estado,

@@ -19,8 +19,8 @@ export class EmpresaSummaryDTO {
   @ApiProperty({ example: true, description: 'Empresa verificada' })
   verificada: boolean;
 
-  @ApiProperty({ example: false, description: 'Empresa deshabilitada' })
-  deshabilitado: boolean;
+  @ApiProperty({ example: false, description: 'Empresa habilitada' })
+  habilitada: boolean;
 
   @ApiProperty({ example: 'logo.png', description: 'Logo de la empresa' })
   logo?: string | null;

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { DireccionDto, ContactoDto } from '../../contacto_direccion/dto';
 
 export class ResponseOrganizacionDto {
   @ApiProperty({
@@ -11,13 +12,7 @@ export class ResponseOrganizacionDto {
     example: '30-71234567-8',
     description: 'Número de documento o CUIT de la organización',
   })
-  cuit_organizacion: string;
-
-  @ApiProperty({
-    example: 'organizacion@ejemplo.com',
-    description: 'Correo electrónico de la organización',
-  })
-  correo: string;
+  cuit: string;
 
   @ApiProperty({
     example: 'Fundación Ayudar',
@@ -41,7 +36,7 @@ export class ResponseOrganizacionDto {
     example: false,
     description: 'Indica si la organización se encuentra deshabilitada',
   })
-  deshabilitado: boolean;
+  habilitada: boolean;
 
   @ApiProperty({
     example: 'Organización dedicada a campañas solidarias y ayuda comunitaria',
@@ -50,46 +45,27 @@ export class ResponseOrganizacionDto {
   descripcion: string;
 
   @ApiProperty({
-    description: 'Prefijo telefónico (opcional)',
-    example: '+54',
+    description:
+      'Datos completos de la dirección de la organización, incluyendo calle, número, ciudad y código postal.',
+    type: DireccionDto,
+    example: {
+      calle: 'Av. Siempre Viva',
+      numero: 742,
+      ciudad: 'Springfield',
+      codigoPostal: '1234',
+    },
   })
-  prefijo: string;
+  datos_direccion?: DireccionDto;
 
   @ApiProperty({
-    example: '+54 11 4567-8900',
-    description: 'Número de teléfono de contacto de la organización',
+    description: 'Información de contacto, como teléfono y correo electrónico.',
+    type: ContactoDto,
+    example: {
+      telefono: '+54 11 1234-5678',
+      email: 'cliente@ejemplo.com',
+    },
   })
-  telefono: string;
-
-  @ApiProperty({
-    example: 'Av. Siempre Viva',
-    description: 'Calle de la direccion de la organizacion',
-  })
-  calle: string;
-
-  @ApiProperty({
-    example: '+54 11 4567-8900',
-    description: 'numero de direcion de la organizacion',
-  })
-  numero: string;
-
-  @ApiProperty({
-    example: 'Villa Adelina',
-    description: 'Ciudad de residencia de la organizacion',
-  })
-  ciudad: string;
-
-  @ApiProperty({
-    example: 'Buenos Aires',
-    description: 'Provincia donde reside la organizacion',
-  })
-  provincia: string;
-
-  @ApiProperty({
-    example: 'C1420ABC',
-    description: 'Código postal de la organizacion',
-  })
-  codigo_postal: string;
+  datos_contacto?: ContactoDto;
 
   @ApiProperty({
     example: 'https://www.fundacionayudar.org',
@@ -110,10 +86,4 @@ export class ResponseOrganizacionDto {
     example: '2026-02-21T21:54:00.000Z',
   })
   ultimo_cambio: Date;
-
-  @ApiProperty({
-    description: 'Fecha y hora de la última conexión del usuario',
-    example: '2026-02-22T11:55:00.000Z',
-  })
-  ultima_conexion: Date;
 }

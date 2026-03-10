@@ -7,16 +7,16 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Beneficios } from '../../Entities/beneficio.entity';
-import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
+import { Empresa } from '../../Entities/empresa.entity';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 import { EmpresaSummaryDTO } from '../empresa/dto/summary_empresa.dto';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
-import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
+import { Usuario } from '../../Entities/usuario.entity';
 import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
 import { SettingsService } from '../../common/settings/settings.service';
-import { RolCuenta } from '../../Entities/cuenta.entity';
+import { Rol } from '../../Entities/usuario.entity';
 import { BeneficioEstado, BeneficiosUsuarioEstado } from './dto/enum/enum';
 
 /**
@@ -30,8 +30,8 @@ export class BeneficioService {
     @InjectRepository(Beneficios)
     private readonly beneficiosRepository: Repository<Beneficios>,
 
-    @InjectRepository(PerfilEmpresa)
-    private readonly empresasRepository: Repository<PerfilEmpresa>,
+    @InjectRepository(Empresa)
+    private readonly empresasRepository: Repository<Empresa>,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -96,8 +96,13 @@ export class BeneficioService {
     limit: number,
   ): Promise<PaginatedBeneficiosResponseDTO> {
     const [beneficios, total] = await this.beneficiosRepository.findAndCount({
-      relations: ['empresa', 'empresa.cuenta'],
-      where: { empresa: { id: idEmpresa, cuenta: { deshabilitado: false } } },
+      relations: ['empresa', 'empresa_usuario'],
+      where: {
+        empresa: {
+          id: idEmpresa,
+          empresaUsuarios: { usuario: { habilitado: true } },
+        },
+      },
       skip: (page - 1) * limit,
       take: limit,
       order: { fecha_registro: 'DESC' },
@@ -119,8 +124,11 @@ export class BeneficioService {
    */
   async create(createDto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO> {
     const empresa = await this.empresasRepository.findOne({
-      where: { id: createDto.id_empresa, cuenta: { deshabilitado: false } },
-      relations: ['cuenta'],
+      where: {
+        id: createDto.id_empresa,
+        empresaUsuarios: { usuario: { habilitado: true } },
+      },
+      relations: ['empresa_usuario'],
     });
 
     if (!empresa) {
@@ -173,7 +181,7 @@ export class BeneficioService {
   async canjear(beneficioId: number, userId: number, cantidad: number) {
     return this.dataSource.transaction(async (manager) => {
       const beneficioRepo = manager.getRepository(Beneficios);
-      const usuarioRepo = manager.getRepository(PerfilUsuario);
+      const usuarioRepo = manager.getRepository(Usuario);
       const usuarioBeneficioRepo = manager.getRepository(UsuarioBeneficio);
 
       const beneficio = await beneficioRepo.findOne({
@@ -190,8 +198,11 @@ export class BeneficioService {
       }
 
       const usuario = await usuarioRepo.findOne({
-        relations: ['cuenta'],
-        where: { id: userId, cuenta: { deshabilitado: false } },
+        relations: ['empresa_usuario'],
+        where: {
+          id: userId,
+          empresaUsuarios: { usuario: { habilitado: true } },
+        },
         lock: { mode: 'pessimistic_write' },
       });
 
@@ -199,7 +210,7 @@ export class BeneficioService {
         throw new NotFoundException('Usuario no encontrado');
       }
 
-      if (usuario.cuenta.role != RolCuenta.USUARIO) {
+      if (usuario.rol != Rol.USUARIO) {
         throw new BadRequestException(
           'Solo los usuarios pueden canjear beneficios',
         );
@@ -231,7 +242,7 @@ export class BeneficioService {
         await usuarioBeneficioRepo.save(existente);
       } else {
         const nuevo = usuarioBeneficioRepo.create({
-          usuario: { id: userId } as PerfilUsuario,
+          usuario: { id: userId } as Usuario,
           beneficio: { id: beneficioId } as Beneficios,
           cantidad,
           usados: 0,
@@ -272,7 +283,7 @@ export class BeneficioService {
       where: { id },
       relations: {
         empresa: {
-          cuenta: true,
+          empresaUsuarios: true,
         },
       },
     });
@@ -351,7 +362,7 @@ export class BeneficioService {
       nombre_empresa: beneficio.empresa.nombre_empresa,
       rubro: beneficio.empresa.rubro,
       verificada: beneficio.empresa.verificada,
-      deshabilitado: beneficio.empresa.cuenta.deshabilitado,
+      habilitada: beneficio.empresa.habilitada,
       logo: beneficio.empresa.logo
         ? SettingsService.getEmpresaImageUrl(beneficio.empresa.logo)
         : null,

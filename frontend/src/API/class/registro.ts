@@ -1,12 +1,12 @@
-import { AuthResponse, Register } from "../types/auth";
+import { AuthResponse, RegistroUsuarioDto } from "../types/auth";
 import { Crud, PaginatedResponse } from "../service";
 
-export class RegisterService extends Crud<Register> {
+export class RegisterService extends Crud<RegistroUsuarioDto> {
   constructor() {
     super();
   }
 
-  async register(data: Register): Promise<AuthResponse> {
+  async register(data: RegistroUsuarioDto): Promise<AuthResponse> {
     const url = `${this.baseUrl}/auth/register`;
 
     const res = await fetch(url, {
@@ -33,26 +33,29 @@ export class RegisterService extends Crud<Register> {
     return res.json();
   }
 
-  getAll(): Promise<Register[]> {
+  getAll(): Promise<RegistroUsuarioDto[]> {
     throw new Error("Method not implemented");
   }
 
   getAllPaginated(
     page?: number,
     limit?: number,
-  ): Promise<PaginatedResponse<Register>> {
+  ): Promise<PaginatedResponse<RegistroUsuarioDto>> {
     throw new Error("Method not implemented");
   }
 
-  getOne(_id: number): Promise<Register> {
+  getOne(_id: number): Promise<RegistroUsuarioDto> {
     throw new Error("Method not implemented.");
   }
 
-  create(_data: Partial<Register>): Promise<Register> {
+  create(_data: Partial<RegistroUsuarioDto>): Promise<RegistroUsuarioDto> {
     throw new Error("Method not implemented.");
   }
 
-  update(_id: number, data: Partial<Register>): Promise<Register> {
+  update(
+    _id: number,
+    data: Partial<RegistroUsuarioDto>,
+  ): Promise<RegistroUsuarioDto> {
     throw new Error("Method not implemented.");
   }
 

@@ -15,7 +15,7 @@ import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
 import { CampaignEstado } from './enum';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
-import { RolCuenta } from '../../Entities/cuenta.entity';
+import { Rol } from '../../Entities/usuario.entity';
 
 /**
  * Controlador para gestionar las operaciones de las Campañas.
@@ -66,7 +66,7 @@ export class CampaignsController {
     return this.campaignService.findOneDetail(id);
   }
 
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Patch(':id/estado')
   @ApiOperation({ summary: 'Actualizar estado de la organización' })
   async updateEstado(

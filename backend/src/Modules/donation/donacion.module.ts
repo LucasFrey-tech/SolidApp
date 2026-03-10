@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { DonacionService } from './donacion.service';
 import { Donaciones } from '../../Entities/donacion.entity';
-import { Donation_images } from '../../Entities/imagenes_donaciones';
+import { ImagenesDonaciones } from '../../Entities/imagenes_donaciones';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Campaigns } from '../../Entities/campaigns.entity';
-import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
+import { Usuario } from '../../Entities/usuario.entity';
 import { RankingDonador } from '../../Entities/ranking.entity';
 import { RankingModule } from '../ranking/ranking.module';
 
@@ -19,13 +19,13 @@ import { RankingModule } from '../ranking/ranking.module';
     TypeOrmModule.forFeature([
       Donaciones,
       Campaigns,
-      PerfilUsuario,
+      Usuario,
       RankingDonador,
-      Donation_images,
+      ImagenesDonaciones,
     ]),
     RankingModule,
   ],
   providers: [DonacionService],
   exports: [DonacionService],
 })
-export class DonationModule {}
+export class DonacionModule {}

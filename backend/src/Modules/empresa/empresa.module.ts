@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { EmpresaController } from './empresa.controller';
-import { PerfilEmpresaService } from './empresa.service';
-import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
+import { EmpresaService } from './empresa.service';
+import { Empresa } from '../../Entities/empresa.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
-import { CuentaModule } from '../cuenta/cuenta.module';
+import { UsuarioModule } from '../user/usuario.module';
 import { BeneficioModule } from '../benefit/beneficio.module';
+import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
 
 /**
  * ============================================================
@@ -62,8 +63,8 @@ import { BeneficioModule } from '../benefit/beneficio.module';
      * Permite usar:
      * @InjectRepository(Empresa)
      */
-    TypeOrmModule.forFeature([PerfilEmpresa]),
-    CuentaModule,
+    TypeOrmModule.forFeature([Empresa, EmpresaUsuario]),
+    UsuarioModule,
     BeneficioModule,
   ],
 
@@ -76,12 +77,12 @@ import { BeneficioModule } from '../benefit/beneficio.module';
   /**
    * Servicios que contienen la lógica de negocio.
    */
-  providers: [PerfilEmpresaService],
+  providers: [EmpresaService],
 
   /**
    * Exporta el servicio para que pueda ser
    * utilizado en otros módulos del sistema.
    */
-  exports: [PerfilEmpresaService],
+  exports: [EmpresaService],
 })
 export class EmpresaModule {}

@@ -12,7 +12,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Organizacion } from './organizacion.entity';
 import { Donaciones } from './donacion.entity';
 import { CampaignEstado } from '../Modules/campaign/enum';
-import { imagenesCampania } from './imagenes_campania.entity';
+import { imagenes_campania } from './imagenes_campania.entity';
 
 @Entity('campañas')
 export class Campaigns {
@@ -146,10 +146,10 @@ export class Campaigns {
    * @type {imagenesCampania}
    */
   @ApiPropertyOptional({
-    type: () => imagenesCampania,
+    type: () => imagenes_campania,
     isArray: true,
     description: 'Imagenes asociadas a la campaña',
   })
-  @OneToMany(() => imagenesCampania, (imagen) => imagen.campaign)
-  imagenes?: imagenesCampania[];
+  @OneToMany(() => imagenes_campania, (imagen) => imagen.campaign)
+  imagenes?: imagenes_campania[];
 }

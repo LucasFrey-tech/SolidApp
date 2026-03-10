@@ -3,8 +3,8 @@ import { CampaignsController } from './campaign.controller';
 import { CampaignsService } from './campaign.service';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
-import { Campaigns_images } from '../../Entities/imagenes_campania.entity';
+import { Organizacion } from '../../Entities/organizacion.entity';
+import { imagenes_campania } from '../../Entities/imagenes_campania.entity';
 import { CommonMulterModule } from '../../common/multer/multer.module';
 
 /**
@@ -15,7 +15,7 @@ import { CommonMulterModule } from '../../common/multer/multer.module';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Campaigns, PerfilOrganizacion, Campaigns_images]),
+    TypeOrmModule.forFeature([Campaigns, Organizacion, imagenes_campania]),
     CommonMulterModule,
   ],
   controllers: [CampaignsController],

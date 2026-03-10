@@ -5,7 +5,7 @@ export class CreateOrganizacionDto {
     example: '30-71234567-8',
     description: 'Número de documento o CUIT de la organización',
   })
-  cuit_organizacion: string;
+  cuit: string;
 
   @ApiProperty({
     example: 'Fundación Ayudar',

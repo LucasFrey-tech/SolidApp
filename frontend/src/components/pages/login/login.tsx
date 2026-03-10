@@ -9,7 +9,7 @@ import { useUser } from "@/app/context/UserContext";
 import Swal from "sweetalert2";
 
 import { LoginUsuarioStrategy } from "@/API/class/login/usuario";
-import { RolCuenta } from "@/API/types/auth";
+import { Rol } from "@/API/types/auth";
 
 interface LoginData {
   correo: string;
@@ -25,7 +25,7 @@ interface DecodedToken {
   email: string;
   sub: number;
   username: string;
-  role: RolCuenta;
+  role: Rol;
 }
 
 export default function Login() {
@@ -82,7 +82,7 @@ export default function Login() {
 
       const res = await strategy.login({
         ...loginData,
-        rol: RolCuenta.USUARIO,
+        rol: Rol.USUARIO,
       });
 
       const token = res.token;

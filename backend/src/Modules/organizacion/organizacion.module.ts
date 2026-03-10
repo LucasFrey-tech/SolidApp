@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { OrganizacionesController } from './organizacion.controller';
 import { PerfilOrganizacionService } from './organizacion.service';
-import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
+import { Organizacion } from '../../Entities/organizacion.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { Campaigns } from '../../Entities/campaigns.entity';
 import { CampaignModule } from '../campaign/campaign.module';
-import { DonationModule } from '../donation/donacion.module';
-import { CuentaModule } from '../cuenta/cuenta.module';
+import { DonacionModule } from '../donation/donacion.module';
+import { UsuarioModule } from '../user/usuario.module';
+import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity';
 
 /**
  * OrganizationModule
@@ -51,7 +52,7 @@ import { CuentaModule } from '../cuenta/cuenta.module';
      * - Organizations
      * - Campaigns
      */
-    TypeOrmModule.forFeature([PerfilOrganizacion, Campaigns]),
+    TypeOrmModule.forFeature([Organizacion, Campaigns, OrganizacionUsuario]),
 
     /**
      * Importación del módulo de campañas.
@@ -60,9 +61,9 @@ import { CuentaModule } from '../cuenta/cuenta.module';
      * - Acceder a CampaignsService.
      * - Obtener campañas asociadas a una organización.
      */
+    UsuarioModule,
     CampaignModule,
-    DonationModule,
-    CuentaModule,
+    DonacionModule,
   ],
 
   /**
@@ -82,4 +83,4 @@ import { CuentaModule } from '../cuenta/cuenta.module';
    */
   exports: [PerfilOrganizacionService],
 })
-export class OrganizationModule {}
+export class OrganizacionModule {}

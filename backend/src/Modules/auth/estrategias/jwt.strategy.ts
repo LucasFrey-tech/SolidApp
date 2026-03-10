@@ -46,8 +46,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('Usuario no encontrada');
       }
 
-      if (usuario.deshabilitado) {
-        throw new UnauthorizedException('Usuario deshabilitada');
+      if (!usuario.habilitado) {
+        throw new UnauthorizedException('Usuario deshabilitado');
       }
 
       this.usuarioService

@@ -9,7 +9,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
 
 @Entity('imagenes_campaña')
-export class imagenesCampania {
+export class imagenes_campania {
   /**
    * Id única de la Imagen de la Campaña
    * @type {number}

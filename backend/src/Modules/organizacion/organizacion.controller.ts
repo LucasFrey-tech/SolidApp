@@ -28,7 +28,7 @@ import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
 import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { ResponseOrganizationPaginatedDto } from './dto/response_organizacion_paginated.dto';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
-import { RolCuenta } from '../../Entities/cuenta.entity';
+import { Rol } from '../../Entities/usuario.entity';
 import { ResponseCampaignDetalleDto } from '../campaign/dto/response_campaignDetalle.dto';
 import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
 import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
@@ -73,7 +73,7 @@ export class OrganizacionesController {
    * @returns Organización encontrada
    * @throws NotFoundException si no existe
    */
-  @Auth(RolCuenta.ORGANIZACION)
+  @Auth(Rol.GESTOR)
   @Get('perfil')
   @ApiOperation({ summary: 'Obtener organización por ID' })
   @ApiParam({
@@ -91,10 +91,10 @@ export class OrganizacionesController {
     description: 'Organización no encontrada',
   })
   getMiPerfil(@Req() req: RequestConUsuario): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.findOne(req.user.perfil.id);
+    return this.organizacionService.getOrganizacionByUsuario(req.user.id);
   }
 
-  @Auth(RolCuenta.ORGANIZACION)
+  @Auth(Rol.GESTOR)
   @Get('campanas')
   @ApiOperation({ summary: 'Obtener campañas de la organizacion' })
   @ApiResponse({
@@ -112,7 +112,7 @@ export class OrganizacionesController {
     @Query('limit') limit = 10,
   ): Promise<ResponseCampaignsDetailPaginatedDto> {
     return await this.organizacionService.getCampaigns(
-      req.user.perfil.id,
+      req.user.id,
       page,
       limit,
     );
@@ -125,7 +125,7 @@ export class OrganizacionesController {
    * @param {Express.Multer.File} files - Imagenes de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña creada
    */
-  @Auth(RolCuenta.ORGANIZACION)
+  @Auth(Rol.GESTOR)
   @Post('campana')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear nueva Campaña Solidaria' })
@@ -168,7 +168,7 @@ export class OrganizacionesController {
       SettingsService.getCampaignImageUrl(x.filename),
     );
     return this.organizacionService.createCampaign(
-      req.user.perfil.id,
+      req.user.id,
       createCampaignsDto,
       imagenes,
     );
@@ -181,7 +181,7 @@ export class OrganizacionesController {
    * @param {UpdateCampaignsDto} updateCampaignsDto - Datos actualizados de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
    */
-  @Auth(RolCuenta.ORGANIZACION)
+  @Auth(Rol.GESTOR)
   @Patch('campana')
   @ApiOperation({ summary: 'Actualizar Campaña Solidaria existente' })
   @ApiParam({
@@ -228,13 +228,13 @@ export class OrganizacionesController {
       );
     }
     return this.organizacionService.updateCampaign(
-      req.user.perfil.id,
+      req.user.id,
       updateCampaignsDto,
       imagenes,
     );
   }
 
-  @Auth(RolCuenta.ORGANIZACION)
+  @Auth(Rol.GESTOR)
   @Get('mis-donaciones')
   @ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
   @ApiResponse({
@@ -252,7 +252,7 @@ export class OrganizacionesController {
     @Query('limit') limit = 10,
   ): Promise<PaginatedOrganizationDonationsResponseDto> {
     return await this.organizacionService.getDonaciones(
-      req.user.perfil.id,
+      req.user.id,
       page,
       limit,
     );
@@ -268,7 +268,7 @@ export class OrganizacionesController {
    * @param {string} motivo - Motivo del rechazo (opcional, requerido si estado=RECHAZADA).
    * @returns {Promise<void>} Resultado de la operación.
    */
-  @Auth(RolCuenta.ORGANIZACION)
+  @Auth(Rol.GESTOR)
   @Patch('donaciones/:id')
   @ApiOperation({
     summary: 'Actualizar el estado de la donación',
@@ -319,7 +319,7 @@ export class OrganizacionesController {
    * @param updateDto Datos a modificar
    * @returns Organización actualizada
    */
-  @Auth(RolCuenta.ORGANIZACION)
+  @Auth(Rol.GESTOR)
   @Patch('perfil')
   @ApiOperation({ summary: 'Actualizar una organización' })
   @ApiParam({
@@ -337,7 +337,7 @@ export class OrganizacionesController {
     @Req() req: RequestConUsuario,
     @Body() updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.update(req.user.perfil.id, updateDto);
+    return this.organizacionService.update(req.user.id, updateDto);
   }
 
   /**
@@ -348,7 +348,7 @@ export class OrganizacionesController {
    * @param dto Datos de actualización de credenciales
    * @returns Usuario actualizado + nuevo token JWT
    */
-  @Auth(RolCuenta.ORGANIZACION)
+  @Auth(Rol.GESTOR)
   @Patch('credenciales')
   @ApiOperation({
     summary: 'Actualizar correo y/o contraseña de la organización',
@@ -362,10 +362,7 @@ export class OrganizacionesController {
     @Req() req: RequestConUsuario,
     @Body() dto: UpdateCredencialesDto,
   ) {
-    return await this.organizacionService.updateCredenciales(
-      req.user.cuenta.id,
-      dto,
-    );
+    return await this.organizacionService.updateCredenciales(req.user.id, dto);
   }
 
   // ====== Panel Admin ======
@@ -379,7 +376,7 @@ export class OrganizacionesController {
    *
    * @returns Objeto con items y total de registros
    */
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Get('list')
   @ApiOperation({ summary: 'Listar organizaciones paginadas' })
   @ApiResponse({
@@ -399,7 +396,7 @@ export class OrganizacionesController {
     );
   }
 
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar organización (admin)' })
   update(
@@ -414,7 +411,7 @@ export class OrganizacionesController {
    *
    * @param id ID de la organización
    */
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deshabilitar una organización' })
@@ -436,7 +433,7 @@ export class OrganizacionesController {
    *
    * @param id ID de la organización
    */
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Patch(':id/restaurar')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Restaurar una organización deshabilitada' })

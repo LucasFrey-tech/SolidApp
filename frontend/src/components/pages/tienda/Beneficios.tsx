@@ -12,7 +12,7 @@ import { isBeneficioVisible } from "../../Utils/beneficiosUtils";
 
 import { baseApi } from "@/API/baseApi";
 import { useUser } from "@/app/context/UserContext";
-import { RolCuenta } from "@/API/types/auth";
+import { Rol } from "@/API/types/auth";
 
 /* ==================== PROPS ==================== */
 interface Props {
@@ -103,7 +103,7 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
                       <strong>{beneficio.valor}</strong>
                     </div>
 
-                    {user?.role === RolCuenta.USUARIO && (
+                    {user?.role === Rol.USUARIO && (
                       <div className={styles.action}>
                         <button
                           className={styles.canjearBtn}

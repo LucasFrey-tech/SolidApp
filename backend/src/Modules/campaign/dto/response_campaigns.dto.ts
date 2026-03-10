@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { OrganizationSummaryDto } from '../../organization/dto/summary_organizacion.dto';
+import { OrganizacionSummaryDto } from '../../organizacion/dto/summary_organizacion.dto';
 
 /**
  * DTO para la respuesta de las Campañas.
@@ -18,10 +18,10 @@ export class ResponseCampaignsDto {
 
   /** Datos de la Organización asociada */
   @ApiProperty({
-    type: () => OrganizationSummaryDto,
+    type: () => OrganizacionSummaryDto,
     description: 'Información resumida de la Organización',
   })
-  organizacion: OrganizationSummaryDto;
+  organizacion: OrganizacionSummaryDto;
 
   /** Título de la Campaña */
   @ApiProperty({

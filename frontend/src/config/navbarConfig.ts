@@ -1,6 +1,6 @@
-import { RolCuenta } from "@/API/types/auth";
+import { Rol } from "@/API/types/auth";
 
-export type NavbarRole = RolCuenta;
+export type NavbarRole = Rol;
 
 interface PanelLink {
   href: string;
@@ -13,28 +13,21 @@ export interface UserNavbarConfig {
 }
 
 export const USER_NAVBAR_CONFIG: Record<NavbarRole, UserNavbarConfig> = {
-  [RolCuenta.USUARIO]: {
+  [Rol.USUARIO]: {
     showPoints: true,
   },
-  [RolCuenta.ADMIN]: {
+  [Rol.ADMIN]: {
     showPoints: false,
     panelLink: {
       href: "/adminPanel",
       label: "Panel Admin",
     },
   },
-  [RolCuenta.EMPRESA]: {
+  [Rol.GESTOR]: {
     showPoints: false,
-    panelLink: {
-      href: "/empresaPanel",
-      label: "Panel Empresa",
-    },
-  },
-  [RolCuenta.ORGANIZACION]: {
-    showPoints: false,
-    panelLink: {
-      href: "/organizacionPanel",
-      label: "Panel Organización",
-    },
+    /*panelLink: {
+      href: "/adminPanel",
+      label: "Panel Admin",
+    },*/
   },
 };

@@ -13,7 +13,7 @@ export interface User {
   codigo_postal: string;
   provincia: string;
   ciudad: string;
-  deshabilitado: boolean; 
+  habilitado: boolean; 
 }
 
 export interface UserPoints {

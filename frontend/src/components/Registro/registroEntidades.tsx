@@ -7,13 +7,13 @@ import styles from "../../styles/login-registro/registro.module.css";
 import { baseApi } from "@/API/baseApi";
 import { NumericInput } from "../Utils/NumericInputProp";
 import Swal from "sweetalert2";
-import { RolCuenta } from "@/API/types/auth";
+import { Rol } from "@/API/types/auth";
 
 /* ==================== ESQUEMAS ==================== */
 
 const empresaSchema = z
   .object({
-    cuit_empresa: z.string().min(3, "CUIT inválido"),
+    cuit: z.string().min(3, "CUIT inválido"),
     razon_social: z.string().min(3, "Razón social inválida"),
     nombre_empresa: z.string().min(3, "Nombre de fantasía inválido"),
     correo: z.string().email("Email inválido"),
@@ -31,7 +31,7 @@ const empresaSchema = z
 
 const organizacionSchema = z
   .object({
-    cuit_organizacion: z.string().min(3, "CUIT inválido"),
+    cuit: z.string().min(3, "CUIT inválido"),
     razon_social: z.string().min(3, "Razón social inválida"),
     nombre_organizacion: z.string().min(3, "Nombre inválido"),
     correo: z.string().email("Email inválido"),
@@ -68,7 +68,7 @@ type FieldConfig = {
 
 const fieldConfigs: Record<FormType, FieldConfig[]> = {
   empresa: [
-    { field: "cuit_empresa", label: "CUIT", type: "text", placeholder: "30-12345678-9" },
+    { field: "cuit", label: "CUIT", type: "text", placeholder: "30-12345678-9" },
     { field: "razon_social", label: "Razón social", type: "text", placeholder: "Empresa SA" },
     { field: "nombre_empresa", label: "Nombre de fantasía", type: "text", placeholder: "Nombre comercial" },
     { field: "correo", label: "Correo", type: "email", placeholder: "empresa@email.com" },
@@ -81,7 +81,7 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
   ],
 
   organizacion: [
-    { field: "cuit_organizacion", label: "CUIT", type: "text", placeholder: "12345" },
+    { field: "cuit", label: "CUIT", type: "text", placeholder: "12345" },
     { field: "razon_social", label: "Razón social", type: "text", placeholder: "Fundación..." },
     { field: "nombre_organizacion", label: "Nombre", type: "text", placeholder: "Nombre público" },
     { field: "correo", label: "Correo", type: "email", placeholder: "organizacion@email.com" },
@@ -93,7 +93,7 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
 /* ==================== ESTADO INICIAL ==================== */
 
 const initialEmpresaData: EmpresaData = {
-  cuit_empresa: "",
+  cuit: "",
   razon_social: "",
   nombre_empresa: "",
   correo: "",
@@ -106,7 +106,7 @@ const initialEmpresaData: EmpresaData = {
 };
 
 const initialOrganizacionData: OrganizacionData = {
-  cuit_organizacion: "",
+  cuit: "",
   razon_social: "",
   nombre_organizacion: "",
   correo: "",
@@ -190,7 +190,7 @@ export default function RegistroEntidades() {
         await baseApi.register.register({
           correo,
           clave,
-          role: RolCuenta.EMPRESA,
+          rol: Rol.EMPRESA,
           perfilEmpresa,
         });
       }
@@ -202,7 +202,7 @@ export default function RegistroEntidades() {
         await baseApi.register.register({
           correo,
           clave,
-          role: RolCuenta.ORGANIZACION,
+          rol: Rol.ORGANIZACION,
           perfilOrganizacion,
         });
       }

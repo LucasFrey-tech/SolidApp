@@ -13,7 +13,7 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { BeneficioService } from './beneficio.service';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
 
-import { RolCuenta } from '../../Entities/cuenta.entity';
+import { Rol } from '../../Entities/usuario.entity';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 import { BeneficioEstado } from './dto/enum/enum';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
@@ -81,7 +81,7 @@ export class BeneficioController {
    * @param {CanjearBeneficioDto} dto - Datos del canje (ID del usuario y cantidad a canjear)
    * @returns Resultado del canje con información del estado final
    */
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @Post(':id/canjear')
   @ApiOperation({ summary: 'Canjear beneficio por puntos' })
   @ApiParam({ name: 'id', type: Number })
@@ -90,7 +90,7 @@ export class BeneficioController {
     @Req() req: RequestConUsuario,
     @Body() dto: CanjearBeneficioDto,
   ) {
-    return this.beneficiosService.canjear(id, req.user.perfil.id, dto.cantidad);
+    return this.beneficiosService.canjear(id, req.user.id, dto.cantidad);
   }
 
   /**
@@ -100,7 +100,7 @@ export class BeneficioController {
    * @param {BeneficioEstado} estado - Estado actualizado del Beneficio
    * @returns Beneficio actualizado
    */
-  @Auth(RolCuenta.EMPRESA, RolCuenta.ADMIN)
+  @Auth(Rol.GESTOR, Rol.ADMIN)
   @Patch(':id/estado')
   updateEstado(
     @Param('id', ParseIntPipe) id: number,

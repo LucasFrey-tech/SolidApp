@@ -10,10 +10,10 @@ import { Campaigns } from '../../Entities/campaigns.entity';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
-import { OrganizationSummaryDto } from '../organization/dto/summary_organizacion.dto';
-import { PerfilOrganizacion } from '../../Entities/perfil_organizacion.entity';
+import { OrganizationSummaryDto } from '../organizacion/dto/summary_organizacion.dto';
+import { Organizacion } from '../../Entities/organizacion.entity';
 import { CampaignEstado } from './enum';
-import { Campaigns_images } from '../../Entities/imagenes_campania.entity';
+import { imagenes_campania } from '../../Entities/imagenes_campania.entity';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
 import * as path from 'path';
 import { ResponseCampaignsDetailPaginatedDto } from './dto/response_campaign_paginated.dto';
@@ -29,11 +29,11 @@ export class CampaignsService {
     @InjectRepository(Campaigns)
     private readonly campaignsRepository: Repository<Campaigns>,
 
-    @InjectRepository(PerfilOrganizacion)
-    private readonly organizacionRepository: Repository<PerfilOrganizacion>,
+    @InjectRepository(Organizacion)
+    private readonly organizacionRepository: Repository<Organizacion>,
 
-    @InjectRepository(Campaigns_images)
-    private readonly campaignsImagesRepository: Repository<Campaigns_images>,
+    @InjectRepository(imagenes_campania)
+    private readonly campaignsImagesRepository: Repository<imagenes_campania>,
   ) {}
 
   /**
@@ -148,7 +148,7 @@ export class CampaignsService {
     const organizacion = await this.organizacionRepository.findOne({
       where: {
         id: id,
-        cuenta: { deshabilitado: false },
+        habilitada: true,
       },
     });
 
@@ -180,13 +180,13 @@ export class CampaignsService {
 
     for (let index = 0; index < imagenes.length; index++) {
       const element = imagenes[index];
-      const campaignImages = new Campaigns_images();
+      const imagenesCampania = new imagenes_campania();
       if (index === 0) {
-        campaignImages.esPortada = true;
+        imagenesCampania.esPortada = true;
       }
-      campaignImages.id_campaign = saveCampaign;
-      campaignImages.imagen = element;
-      await this.campaignsImagesRepository.save(campaignImages);
+      imagenesCampania.campaign = saveCampaign;
+      imagenesCampania.imagen = element;
+      await this.campaignsImagesRepository.save(imagenesCampania);
     }
 
     return this.mapToResponseDto(saveCampaign);
@@ -225,9 +225,7 @@ export class CampaignsService {
       const organizacion = await this.organizacionRepository.findOne({
         where: {
           id: id,
-          cuenta: {
-            deshabilitado: false,
-          },
+          habilitada: true,
         },
       });
 
@@ -278,7 +276,7 @@ export class CampaignsService {
 
     if (hayNuevasImagenes || updateDto.imagenesExistentes !== undefined) {
       const imagenesActuales = await this.campaignsImagesRepository.find({
-        where: { id_campaign: { id } },
+        where: { campaign: { id } },
       });
 
       const imagenesAEliminar = imagenesActuales.filter(
@@ -292,12 +290,12 @@ export class CampaignsService {
       if (hayNuevasImagenes) {
         const hayPortadaExistente =
           await this.campaignsImagesRepository.findOne({
-            where: { id_campaign: { id }, esPortada: true },
+            where: { campaign: { id }, esPortada: true },
           });
 
         for (let index = 0; index < imagenes.length; index++) {
-          const newImage = new Campaigns_images();
-          newImage.id_campaign = campaign;
+          const newImage = new imagenes_campania();
+          newImage.campaign = campaign;
           newImage.imagen = imagenes[index];
           newImage.esPortada = !hayPortadaExistente && index === 0;
           await this.campaignsImagesRepository.save(newImage);

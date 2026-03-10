@@ -8,7 +8,7 @@ import {
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 import { User, UserPoints } from "../types/user";
 
-export class Users extends Crud<User> {
+export class Usuario extends Crud<User> {
   private endPoint = "users";
 
   // =====Panel del usuario=====

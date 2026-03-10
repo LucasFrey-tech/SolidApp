@@ -14,23 +14,16 @@ import {
   Req,
   Post,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
-import { PerfilEmpresaService } from './empresa.service';
+import { EmpresaService } from './empresa.service';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
-import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { NullableImageValidationPipe } from '../../common/pipes/mediaFilePipes';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
-import { RolCuenta } from '../../Entities/cuenta.entity';
+import { Rol } from '../../Entities/usuario.entity';
 import { PaginatedBeneficiosResponseDTO } from '../benefit/dto/response_paginated_beneficios';
 import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
@@ -64,7 +57,7 @@ import { Auth, Public } from '../auth/decoradores/auth.decorador';
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: PerfilEmpresaService) {}
+  constructor(private readonly empresasService: EmpresaService) {}
 
   /**
    * GET /list
@@ -117,14 +110,9 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
-  @Auth(RolCuenta.EMPRESA)
+  @Auth(Rol.GESTOR)
   @Get('perfil')
   @ApiOperation({ summary: 'Obtener una empresa por ID' })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la empresa',
-  })
   @ApiResponse({
     status: 200,
     description: 'Empresa encontrada',
@@ -134,10 +122,10 @@ export class EmpresaController {
     status: 404,
     description: 'Empresa no encontrada',
   })
-  async getMiPerfil(
+  async getDatosEmpresa(
     @Req() req: RequestConUsuario,
   ): Promise<EmpresaResponseDTO> {
-    return this.empresasService.findOne(req.user.perfil.id);
+    return this.empresasService.getEmpresaByUsuario(req.user.id);
   }
 
   /**
@@ -154,14 +142,9 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
-  @Auth(RolCuenta.EMPRESA)
+  @Auth(Rol.GESTOR)
   @Patch('perfil')
   @ApiOperation({ summary: 'Actualizar una empresa' })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    description: 'ID de la empresa',
-  })
   @ApiBody({ type: UpdateEmpresaDTO })
   @ApiResponse({
     status: 200,
@@ -204,10 +187,10 @@ export class EmpresaController {
       updateDto.logo = file.filename;
     }
 
-    return this.empresasService.update(req.user.perfil.id, updateDto ?? {});
+    return this.empresasService.update(req.user.id, updateDto ?? {});
   }
 
-  @Auth(RolCuenta.EMPRESA)
+  @Auth(Rol.GESTOR)
   @Get('cupones')
   @ApiOperation({ summary: 'Obtener los cupones paginados de una empresa' })
   @ApiResponse({
@@ -224,61 +207,25 @@ export class EmpresaController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ): Promise<PaginatedBeneficiosResponseDTO> {
-    return this.empresasService.getCupones(req.user.perfil.id, page, limit);
+    return this.empresasService.getCupones(req.user.id, page, limit);
   }
 
-  @Auth(RolCuenta.EMPRESA)
+  @Auth(Rol.GESTOR)
   @Post('cupones')
   async createCupon(
     @Req() req: RequestConUsuario,
     @Body() dto: CreateBeneficiosDTO,
   ) {
-    return await this.empresasService.createCupon(req.user.perfil.id, dto);
+    return await this.empresasService.createCupon(req.user.id, dto);
   }
 
-  @Auth(RolCuenta.EMPRESA)
+  @Auth(Rol.GESTOR)
   @Patch('cupones/:cuponId')
   async updateCupon(
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Body() dto: UpdateBeneficiosDTO,
   ) {
     return await this.empresasService.updateCupon(cuponId, dto);
-  }
-
-  /**
-   * PATCH /empresas/:id/credenciales
-   *
-   * Permite actualizar el correo electrónico y/o contraseña
-   * de la empresa.
-   *
-   * @param id ID de la empresa.
-   * @param dto Datos para actualizar credenciales.
-   *
-   * @returns {Promise user: Empresa; token: string }
-   * Devuelve la empresa actualizada junto con un nuevo JWT.
-   *
-   * @throws NotFoundException
-   * Si la empresa no existe.
-   *
-   * @throws ConflictException
-   * Si el correo ya está en uso.
-   *
-   * @throws UnauthorizedException
-   * Si la contraseña actual es incorrecta.
-   */
-  @Auth(RolCuenta.EMPRESA)
-  @Patch('credenciales')
-  @ApiOperation({
-    summary: 'Actualizar correo y/o contraseña de la empresa',
-  })
-  async updateCredentials(
-    @Req() req: RequestConUsuario,
-    @Body() dto: UpdateCredencialesDto,
-  ) {
-    return await this.empresasService.updateCredenciales(
-      req.user.cuenta.id,
-      dto,
-    );
   }
 
   // =====Panel Admin=====
@@ -296,7 +243,7 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Delete(':id/borrar')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deshabilitar una empresa' })
@@ -319,7 +266,7 @@ export class EmpresaController {
    * @throws BadRequestException
    * Si la empresa ya está activa.
    */
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Patch(':id/restaurar')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Restaurar una empresa deshabilitada' })

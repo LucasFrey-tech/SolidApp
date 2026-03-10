@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
 import Swal from 'sweetalert2';
-import { RolCuenta } from '@/API/types/auth';
+import { Rol } from '@/API/types/auth';
 
 export default function AdminLayout({
   children,
@@ -16,7 +16,7 @@ export default function AdminLayout({
 
   useEffect(() => {
     if (!loading) {
-      if (!user || user.role !== RolCuenta.ADMIN) {
+      if (!user || user.role !== Rol.ADMIN) {
         Swal.fire({
           icon: 'error',
           title: 'Acceso denegado',
@@ -31,7 +31,7 @@ export default function AdminLayout({
 
   if (loading) return null;
 
-  if (!user || user.role !== RolCuenta.ADMIN) {
+  if (!user || user.role !== Rol.ADMIN) {
     return null;
   }
 

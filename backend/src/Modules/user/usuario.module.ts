@@ -3,13 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 
 import { UsuarioController } from './usuario.controller';
-import { PerfilUsuarioService } from './usuario.service';
-import { PerfilUsuario } from '../../Entities/perfil_Usuario.entity';
+import { UsuarioService } from './usuario.service';
+import { Usuario } from '../../Entities/usuario.entity';
 import { CommonMulterModule } from '../../common/multer/multer.module';
-import { CuentaModule } from '../cuenta/cuenta.module';
-import { DonationModule } from '../donation/donacion.module';
+import { DonacionModule } from '../donation/donacion.module';
 import { BeneficioModule } from '../benefit/beneficio.module';
 import { UsuarioBeneficioModule } from './usuario-beneficio/usuario-beneficio.module';
+import { HashService } from '../../common/bcryptService/hashService';
 
 /**
  * -----------------------------------------------------------------------------
@@ -49,10 +49,9 @@ import { UsuarioBeneficioModule } from './usuario-beneficio/usuario-beneficio.mo
      * Registro de la entidad Usuario para poder
      * inyectar Repository<Usuario> en el servicio.
      */
-    TypeOrmModule.forFeature([PerfilUsuario]),
+    TypeOrmModule.forFeature([Usuario]),
 
-    CuentaModule,
-    DonationModule,
+    DonacionModule,
     BeneficioModule,
     UsuarioBeneficioModule,
 
@@ -71,12 +70,12 @@ import { UsuarioBeneficioModule } from './usuario-beneficio/usuario-beneficio.mo
   /**
    * Servicios que pertenecen a este módulo
    */
-  providers: [PerfilUsuarioService],
+  providers: [UsuarioService, HashService],
 
   /**
    * Exportamos el servicio para que pueda ser usado
    * en otros módulos (ej: AuthModule).
    */
-  exports: [PerfilUsuarioService],
+  exports: [UsuarioService],
 })
-export class UserModule {}
+export class UsuarioModule {}

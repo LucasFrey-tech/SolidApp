@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
-import { PerfilUsuarioService } from './usuario.service';
+import { UsuarioService } from './usuario.service';
 
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 import { CreateDonationDto } from '../donation/dto/create_donation.dto';
@@ -20,7 +20,7 @@ import { ResponseUsuarioDto } from './dto/response_usuario.dto';
 
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 
-import { RolCuenta } from '../../Entities/cuenta.entity';
+import { Rol } from '../../Entities/usuario.entity';
 import { Auth } from '../auth/decoradores/auth.decorador';
 import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
 
@@ -47,47 +47,47 @@ import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
 @ApiTags('Usuarios')
 @Controller('users')
 export class UsuarioController {
-  constructor(private readonly userService: PerfilUsuarioService) {}
+  constructor(private readonly userService: UsuarioService) {}
 
   // Panel de Usuario
 
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @Get('perfil')
   @ApiOperation({ summary: 'Obtener mi perfil completo' })
   async getMiPerfil(
     @Req() req: RequestConUsuario,
   ): Promise<ResponseUsuarioDto> {
-    return this.userService.findOne(req.user.perfil.id);
+    return this.userService.findOne(req.user.id);
   }
 
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @Patch('perfil')
   @ApiOperation({ summary: 'Actualizar mis datos personales' })
   async updateMiPerfil(
     @Req() req: RequestConUsuario,
     @Body() dto: UpdateUsuarioDto,
   ): Promise<ResponseUsuarioDto> {
-    return await this.userService.updateUsuario(req.user.perfil.id, dto);
+    return await this.userService.updateUsuario(req.user.id, dto);
   }
 
   @Patch('credenciales')
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @ApiOperation({ summary: 'Actualizar mi email y/o contraseña' })
   async updateMisCredenciales(
     @Req() req: RequestConUsuario,
     @Body() dto: UpdateCredencialesDto,
   ) {
-    return this.userService.updateCredenciales(req.user.cuenta.id, dto);
+    return this.userService.updateCredenciales(req.user.id, dto);
   }
 
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @Get('puntos')
   @ApiOperation({ summary: 'Obtener mis puntos' })
   async getMisPuntos(@Req() req: RequestConUsuario) {
-    return this.userService.getPoints(req.user.perfil.id);
+    return this.userService.getPoints(req.user.id);
   }
 
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @Get('donaciones')
   @ApiOperation({ summary: 'Obtener mis donaciones' })
   async getMisDonaciones(
@@ -95,31 +95,31 @@ export class UsuarioController {
     @Query('page', ParseIntPipe) page = 1,
     @Query('limit', ParseIntPipe) limit = 10,
   ) {
-    return this.userService.getDonaciones(req.user.perfil.id, page, limit);
+    return this.userService.getDonaciones(req.user.id, page, limit);
   }
 
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @Post('donaciones')
   @ApiOperation({ summary: 'Realizar una donación' })
   async donar(@Req() req: RequestConUsuario, @Body() dto: CreateDonationDto) {
-    return this.userService.donar(req.user.perfil.id, dto);
+    return this.userService.donar(req.user.id, dto);
   }
 
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @Get('cupones')
   @ApiOperation({ summary: 'Obtener mis cupones canjeados' })
   async getMisCuponesCanjeados(@Req() req: RequestConUsuario) {
-    return this.userService.getMisCuponesCanjeados(req.user.perfil.id);
+    return this.userService.getMisCuponesCanjeados(req.user.id);
   }
 
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @Post('cupones/:id/')
   @ApiOperation({ summary: 'Usar un cupón canjeado' })
   async usarCupon(@Param('id', ParseIntPipe) id: number) {
     return this.userService.usarCupon(id);
   }
 
-  @Auth(RolCuenta.USUARIO)
+  @Auth(Rol.USUARIO)
   @Post('cupones/:cuponId/canjear')
   @ApiOperation({ summary: 'Canjear un cupón' })
   async canjearCupon(
@@ -127,12 +127,12 @@ export class UsuarioController {
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Query('cantidad', ParseIntPipe) cantidad: number,
   ) {
-    return this.userService.canjearCupon(req.user.perfil.id, cuponId, cantidad);
+    return this.userService.canjearCupon(req.user.id, cuponId, cantidad);
   }
 
   // Panel Admin
 
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Get('users/admin/list')
   @ApiOperation({ summary: 'Listar todos los usuarios (admin)' })
   @ApiQuery({ name: 'page', required: false })
@@ -146,7 +146,7 @@ export class UsuarioController {
     return this.userService.findPaginated(page, limit, search);
   }
 
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Get(':id/donaciones')
   @ApiOperation({ summary: 'Obtener donaciones de un usuario (admin)' })
   async getDonacionesDeUsuario(
@@ -157,14 +157,14 @@ export class UsuarioController {
     return this.userService.getDonaciones(id, page, limit); // donacionService
   }
 
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Delete(':id')
   @ApiOperation({ summary: 'Deshabilitar usuario (admin)' })
   async deleteUsuario(@Param('id', ParseIntPipe) id: number) {
     return this.userService.delete(id);
   }
 
-  @Auth(RolCuenta.ADMIN)
+  @Auth(Rol.ADMIN)
   @Patch(':id/restaurar')
   @ApiOperation({ summary: 'Restaurar usuario deshabilitado (admin)' })
   async restoreUsuario(@Param('id', ParseIntPipe) id: number) {

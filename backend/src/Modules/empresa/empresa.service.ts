@@ -3,20 +3,20 @@ import {
   Logger,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
-import { PerfilEmpresa } from '../../Entities/perfil_empresa.entity';
+import { EntityManager, FindOptionsWhere, Like, Repository } from 'typeorm';
+import { Empresa } from '../../Entities/empresa.entity';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
 import { EmpresaResponseDTO } from './dto/response_empresa.dto';
 import { SettingsService } from '../../common/settings/settings.service';
-import { CuentaService } from '../cuenta/cuenta.service';
-import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { PaginatedBeneficiosResponseDTO } from '../benefit/dto/response_paginated_beneficios';
 import { BeneficioService } from '../benefit/beneficio.service';
 import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
+import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
 
 /**
  * ============================================================
@@ -45,14 +45,15 @@ import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
  * ============================================================
  */
 @Injectable()
-export class PerfilEmpresaService {
-  private readonly logger = new Logger(PerfilEmpresaService.name);
+export class EmpresaService {
+  private readonly logger = new Logger(EmpresaService.name);
 
   constructor(
-    @InjectRepository(PerfilEmpresa)
-    private readonly empresaRepository: Repository<PerfilEmpresa>,
-    private readonly cuentaService: CuentaService,
+    @InjectRepository(Empresa)
+    private readonly empresaRepository: Repository<Empresa>,
     private readonly beneficioService: BeneficioService,
+    @InjectRepository(EmpresaUsuario)
+    private readonly empresaUsuarioRepository: Repository<EmpresaUsuario>,
   ) {}
 
   /**
@@ -69,31 +70,26 @@ export class PerfilEmpresaService {
     limit: number,
     search: string,
     onlyEnabled: boolean,
-  ) {
+  ): Promise<{ items: EmpresaResponseDTO[]; total: number }> {
     const skip = (page - 1) * limit;
 
-    const queryBuilder = this.empresaRepository
-      .createQueryBuilder('perfil')
-      .leftJoinAndSelect('perfil.cuenta', 'cuenta');
+    const baseFilter: FindOptionsWhere<Empresa> = onlyEnabled
+      ? { habilitada: true }
+      : {};
 
-    if (onlyEnabled) {
-      queryBuilder.where('cuenta.deshabilitado = :deshabilitado', {
-        deshabilitado: false,
-      });
-    }
+    const where: FindOptionsWhere<Empresa>[] = search
+      ? [
+          { ...baseFilter, nombre_empresa: Like(`%${search}%`) },
+          { ...baseFilter, razon_social: Like(`%${search}%`) },
+        ]
+      : [baseFilter];
 
-    if (search) {
-      queryBuilder.andWhere(
-        '(perfil.razon_social LIKE :search OR perfil.nombre_empresa LIKE :search OR cuenta.correo LIKE :search)',
-        { search: `%${search}%` },
-      );
-    }
-
-    const [empresas, total] = await queryBuilder
-      .skip(skip)
-      .take(limit)
-      .orderBy('perfil.id', 'ASC')
-      .getManyAndCount();
+    const [empresas, total] = await this.empresaRepository.findAndCount({
+      where,
+      skip,
+      take: limit,
+      order: { id: 'ASC' },
+    });
 
     const items = empresas.map((emp) => this.mapToResponseDto(emp));
 
@@ -108,37 +104,19 @@ export class PerfilEmpresaService {
    *
    * @returns {Promise<EmpresaResponseDTO>}
    */
-  async findOne(id: number): Promise<EmpresaResponseDTO> {
-    const empresa = await this.empresaRepository.findOne({
-      where: { id, cuenta: { deshabilitado: false } },
-      relations: ['cuenta'],
+  async getEmpresaByUsuario(usuarioId: number): Promise<Empresa> {
+    const empresaUsuario = await this.empresaUsuarioRepository.findOne({
+      where: {
+        usuario: { id: usuarioId },
+      },
+      relations: ['empresa'],
     });
 
-    if (!empresa) {
-      throw new NotFoundException(`La Empresa con ID ${id} no encontrada`);
+    if (!empresaUsuario) {
+      throw new ForbiddenException('El usuario no gestiona ninguna empresa');
     }
 
-    this.logger.log(`La Empresa ${id} obtenida`);
-
-    return this.mapToResponseDto(empresa);
-  }
-
-  /**
-   * Busca un perfil por ID de cuenta.
-   */
-  async findByCuentaId(cuentaId: number): Promise<PerfilEmpresa> {
-    const perfil = await this.empresaRepository.findOne({
-      where: { cuenta: { id: cuentaId } },
-      relations: ['cuenta'],
-    });
-
-    if (!perfil) {
-      throw new NotFoundException(
-        `Perfil de empresa para cuenta ${cuentaId} no encontrado`,
-      );
-    }
-
-    return perfil;
+    return empresaUsuario.empresa;
   }
 
   async getCupones(
@@ -170,20 +148,12 @@ export class PerfilEmpresaService {
    */
   async create(
     createDto: CreateEmpresaDTO,
-    cuentaId: number,
+    //id: number,
     manager?: EntityManager,
   ): Promise<EmpresaResponseDTO> {
     const repo = manager
-      ? manager.getRepository(PerfilEmpresa)
+      ? manager.getRepository(Empresa)
       : this.empresaRepository;
-
-    const perfilExistente = await repo.findOne({
-      where: { cuenta: { id: cuentaId } },
-    });
-
-    if (perfilExistente) {
-      throw new ConflictException('Ya existe un perfil para esta cuenta');
-    }
 
     const cuitExistente = await repo.findOne({
       where: { cuit: createDto.cuit_empresa },
@@ -193,14 +163,7 @@ export class PerfilEmpresaService {
       throw new ConflictException('La Empresa ya está registrada');
     }
 
-    const empresa = repo.create({
-      cuit: createDto.cuit_empresa,
-      razon_social: createDto.razon_social,
-      nombre_empresa: createDto.nombre_empresa,
-      web: createDto.web,
-      verificada: false,
-      cuenta: { id: cuentaId },
-    });
+    const empresa = repo.create(createDto);
 
     const savedEmpresa = await repo.save(empresa);
 
@@ -223,7 +186,6 @@ export class PerfilEmpresaService {
   ): Promise<EmpresaResponseDTO> {
     const empresa = await this.empresaRepository.findOne({
       where: { id },
-      relations: ['cuenta'],
     });
 
     if (!empresa) {
@@ -248,28 +210,6 @@ export class PerfilEmpresaService {
       ),
     );
 
-    const camposCuenta: (keyof UpdateEmpresaDTO)[] = [
-      'telefono',
-      'calle',
-      'numero',
-      'prefijo',
-      'provincia',
-      'ciudad',
-      'codigo_postal',
-    ];
-
-    const cuentaUpdate = Object.fromEntries(
-      Object.entries(updateDto).filter(
-        ([k, v]) =>
-          camposCuenta.includes(k as keyof UpdateEmpresaDTO) && v !== undefined,
-      ),
-    );
-
-    if (Object.keys(cuentaUpdate).length > 0) {
-      await this.cuentaService.updateUsuario(empresa.cuenta.id, cuentaUpdate);
-      Object.assign(empresa.cuenta, cuentaUpdate);
-    }
-
     const updatedEmpresa = await this.empresaRepository.save(empresa);
 
     this.logger.log(`Empresa ${id} actualizada`);
@@ -278,19 +218,11 @@ export class PerfilEmpresaService {
   }
 
   /**
-   * Actualiza las credenciales del usuario
-   */
-  async updateCredenciales(cuentaId: number, dto: UpdateCredencialesDto) {
-    return this.cuentaService.updateCredenciales(cuentaId, dto);
-  }
-
-  /**
    * Marca una empresa como verificada.
    */
   async verify(id: number): Promise<EmpresaResponseDTO> {
     const empresa = await this.empresaRepository.findOne({
       where: { id },
-      relations: ['cuenta'],
     });
 
     if (!empresa) {
@@ -309,15 +241,14 @@ export class PerfilEmpresaService {
   async delete(id: number): Promise<void> {
     const usuario = await this.empresaRepository.findOne({
       where: { id },
-      relations: ['cuenta'],
     });
 
     if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      throw new NotFoundException(`Empresa con ID ${id} no encontrado`);
     }
 
-    await this.cuentaService.deshabilitar(usuario.cuenta.id);
-    this.logger.log(`Usuario ${id} deshabilitado`);
+    await this.empresaRepository.update(id, { habilitada: false });
+    this.logger.log(`Empresa ${id} deshabilitado`);
   }
 
   /**
@@ -326,15 +257,14 @@ export class PerfilEmpresaService {
   async restore(id: number): Promise<void> {
     const usuario = await this.empresaRepository.findOne({
       where: { id },
-      relations: ['cuenta'],
     });
 
     if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      throw new NotFoundException(`Empresa con ID ${id} no encontrado`);
     }
 
-    await this.cuentaService.habilitar(usuario.cuenta.id);
-    this.logger.log(`Usuario ${id} restaurado`);
+    await this.empresaRepository.update(id, { habilitada: true });
+    this.logger.log(`Empresa ${id} restaurado`);
   }
 
   /**
@@ -344,11 +274,11 @@ export class PerfilEmpresaService {
    * @param empresa Entidad Empresa.
    * @returns {EmpresaResponseDTO}
    */
-  private mapToResponseDto(empresa: PerfilEmpresa): EmpresaResponseDTO {
+  private mapToResponseDto(empresa: Empresa): EmpresaResponseDTO {
     const dto = new EmpresaResponseDTO();
 
     dto.id = empresa.id;
-    dto.cuit_empresa = empresa.cuit;
+    dto.cuit = empresa.cuit;
     dto.razon_social = empresa.razon_social;
     dto.nombre_empresa = empresa.nombre_empresa;
     dto.descripcion = empresa.descripcion;
@@ -358,23 +288,6 @@ export class PerfilEmpresaService {
       ? SettingsService.getEmpresaImageUrl(empresa.logo)
       : '';
     dto.verificada = empresa.verificada;
-
-    if (empresa.cuenta) {
-      dto.correo = empresa.cuenta.correo;
-      dto.deshabilitado = empresa.cuenta.deshabilitado;
-      dto.verificada = empresa.cuenta.verificada;
-      dto.fecha_registro = empresa.cuenta.fecha_registro;
-      dto.ultimo_cambio = empresa.cuenta.ultimo_cambio;
-      dto.ultima_conexion = empresa.cuenta.ultima_conexion;
-      dto.calle = empresa.cuenta.calle;
-      dto.numero = empresa.cuenta.numero;
-      dto.codigo_postal = empresa.cuenta.codigo_postal;
-      dto.ciudad = empresa.cuenta.ciudad;
-      dto.provincia = empresa.cuenta.provincia;
-      dto.prefijo = empresa.cuenta.prefijo;
-      dto.telefono = empresa.cuenta.telefono;
-    }
-
     return dto;
   }
 }

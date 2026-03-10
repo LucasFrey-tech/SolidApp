@@ -11,7 +11,7 @@ import { isBeneficioVisible } from "@/components/Utils/beneficiosUtils";
 
 import CanjeModal from "@/components/pages/tienda/CanjeModal";
 import { useUser } from "@/app/context/UserContext";
-import { RolCuenta } from "@/API/types/auth";
+import { Rol } from "@/API/types/auth";
 
 const LIMIT = 10;
 const PLACEHOLDER_IMG = "/img/placeholder.svg";
@@ -105,7 +105,7 @@ export default function Tienda() {
                     Restantes: <span>{beneficio.cantidad}</span>
                   </p>
 
-                  {user?.role === RolCuenta.USUARIO && (
+                  {user?.role === Rol.USUARIO && (
                     <button
                       className={styles.button}
                       disabled={beneficio.cantidad === 0}

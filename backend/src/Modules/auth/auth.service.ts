@@ -49,8 +49,8 @@ export class AuthService {
     };
   }
 
-  private checkDeshabilitado(deshabilitado: boolean): void {
-    if (deshabilitado)
+  private checkDeshabilitado(habilitado: boolean): void {
+    if (!habilitado)
       throw new ForbiddenException(
         'Usuario bloqueado. Contacte al administrador.',
       );
@@ -78,9 +78,11 @@ export class AuthService {
 
       const tokenPayload = this.createPayload(
         usuario.id,
-        usuario.correo,
+        usuario.contacto.correo,
         usuario.rol,
       );
+
+      this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
 
       return this.buildToken(tokenPayload);
     });
@@ -95,7 +97,7 @@ export class AuthService {
 
     if (!usuario) throw new UnauthorizedException('Credenciales incorrectas');
 
-    this.checkDeshabilitado(usuario.deshabilitado);
+    this.checkDeshabilitado(usuario.habilitado);
 
     console.log('Hash en BD:', usuario.clave);
 
@@ -111,7 +113,7 @@ export class AuthService {
 
     const tokenPayload = this.createPayload(
       usuario.id,
-      usuario.correo,
+      usuario.contacto.correo,
       usuario.rol,
     );
 
@@ -135,7 +137,10 @@ export class AuthService {
 
   async resetPassword(token: string, newPassword: string) {
     const usuario = await this.usuarioService.findByResetToken(token);
-    console.log('Usuario encontrado:', usuario ? usuario.correo : 'NO');
+    console.log(
+      'Usuario encontrado:',
+      usuario ? usuario.contacto.correo : 'NO',
+    );
 
     if (!usuario) {
       throw new UnauthorizedException('Token inválido o expirado');
