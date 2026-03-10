@@ -77,14 +77,14 @@ export class UserDonationItemDto {
     example: 'Calle Falsa',
     description: 'Dirección a la que se donó',
   })
-  calle: string;
+  calle?: string;
 
   /** Número de la organizacion */
   @ApiProperty({
     example: '123',
     description: 'Dirección a la que se donó',
   })
-  numero: string;
+  numero?: string;
 
   /** ID de la Organización a la que se donó */
   @ApiProperty({
