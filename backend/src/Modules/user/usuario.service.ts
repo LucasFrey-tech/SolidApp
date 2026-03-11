@@ -7,13 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  EntityManager,
-  FindOptionsWhere,
-  Like,
-  MoreThan,
-  Repository,
-} from 'typeorm';
+import { FindOptionsWhere, Like, MoreThan, Repository } from 'typeorm';
 import { Rol, Usuario } from '../../Entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create_usuario.dto';
 import { UpdatePuntosDto } from './dto/update_puntos_usuario.dto';
@@ -25,6 +19,8 @@ import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 import { UsuarioBeneficioService } from './usuario-beneficio/usuario-beneficio.service';
 import { HashService } from '../../common/bcryptService/hashService';
+import { Contacto } from '../../Entities/contacto.entity';
+import { Direccion } from '../../Entities/direccion.entity';
 
 @Injectable()
 export class UsuarioService {
@@ -54,6 +50,7 @@ export class UsuarioService {
    */
   async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuarioRepository.findOne({
+      relations: ['contacto', 'direccion'],
       where: { contacto: { correo: email } },
     });
   }
@@ -61,16 +58,11 @@ export class UsuarioService {
   /**
    * Crea un nuevo usuario.
    */
-  async create(
-    createDto: CreateUsuarioDto,
-    manager?: EntityManager,
-  ): Promise<ResponseUsuarioDto> {
-    const repo = manager
-      ? manager.getRepository(Usuario)
-      : this.usuarioRepository;
+  async create(createDto: CreateUsuarioDto): Promise<ResponseUsuarioDto> {
+    const repo = this.usuarioRepository;
 
     const existente = await repo.findOne({
-      relations: ['contacto'],
+      relations: ['contacto', 'direccion'],
       where: { documento: createDto.documento },
     });
 
@@ -80,13 +72,14 @@ export class UsuarioService {
 
     const { correo, ...dto } = createDto;
 
-    this.logger.log('CORREO: ', correo);
+    this.logger.log(`CORREO: ${correo}`);
 
     const usuario = repo.create({
       ...dto,
       contacto: {
         correo: correo,
       },
+      direccion: {},
       puntos: 0,
     });
 
@@ -134,7 +127,10 @@ export class UsuarioService {
     id: number,
     dto: UpdateCredencialesDto,
   ): Promise<void> {
-    const usuario = await this.usuarioRepository.findOne({ where: { id } });
+    const usuario = await this.usuarioRepository.findOne({
+      relations: ['contacto'],
+      where: { id },
+    });
 
     if (!usuario) throw new NotFoundException('Usuario no encontrado');
 
@@ -169,13 +165,20 @@ export class UsuarioService {
     dto: UpdateUsuarioDto,
   ): Promise<ResponseUsuarioDto> {
     const usuario = await this.usuarioRepository.findOne({
+      relations: ['contacto', 'direccion'],
       where: { id },
     });
 
     if (!usuario)
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
 
-    Object.assign(usuario, dto);
+    usuario.contacto = dto.contacto
+      ? Object.assign(usuario.contacto ?? new Contacto(), dto.contacto)
+      : usuario.contacto;
+
+    usuario.direccion = dto.direccion
+      ? Object.assign(usuario.direccion ?? new Direccion(), dto.direccion)
+      : usuario.direccion;
 
     await this.usuarioRepository.save(usuario);
 
