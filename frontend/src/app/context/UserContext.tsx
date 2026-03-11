@@ -9,13 +9,16 @@ import {
 } from "react";
 import { jwtDecode } from "jwt-decode";
 
-import { RolCuenta } from "@/API/types/auth";
+import { Rol } from "@/API/types/auth";
+import { GestionTipo } from "@/API/types/gestion/enum";
 
 export interface User {
   email: string;
   sub: number;
   username: string;
-  role: RolCuenta;
+  rol: Rol;
+  gestion?: GestionTipo | null;
+  gestionId?: number | null;
 }
 
 interface UserContextType {
@@ -46,7 +49,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         email: decoded.email,
         sub: decoded.sub,
         username: decoded.username || decoded.email.split("@")[0],
-        role: decoded.role,
+        rol: decoded.rol,
+        gestion: decoded.gestion,
+        gestionId: decoded.gestionId,
       };
       setUser(safeUser);
     } catch {

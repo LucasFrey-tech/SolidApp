@@ -3,12 +3,12 @@
  */
 export interface Empresa {
   id: number;
-  cuit_empresa: string;
+  cuit: string;
   razon_social: string;
   nombre_empresa: string;
   correo: string;
   descripcion?: string;
-  rubro?: string;
+  actividad?: string;
   prefijo?: string;
   telefono: string;
   calle: string;
@@ -28,11 +28,8 @@ export interface Empresa {
  * Actualizar empresa (UpdateEmpresaDTO)
  */
 export interface EmpresaUpdateRequest {
-  cuit_empresa?: string;
-  razon_social?: string;
-  nombre_empresa?: string;
   descripcion?: string;
-  rubro?: string;
+  actividad?: string;
   telefono?: string;
   direccion?: string;
   web?: string;

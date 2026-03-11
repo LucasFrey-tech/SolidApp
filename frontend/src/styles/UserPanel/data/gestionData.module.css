@@ -60,7 +60,7 @@
 }
 
 /* ===== INPUTS ===== */
-.Input{
+.Input {
   color: black;
 }
 
@@ -81,13 +81,13 @@
 }
 
 /* ===== QUITAR FLECHAS INPUT NUMBER ===== */
-
 .Input[type='number']::-webkit-inner-spin-button,
 .Input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-/* ===== BOTÓN ===== */
+
+/* ===== BOTÓN SUBMIT ===== */
 .SubmitButton {
   margin-top: 20px;
   padding: 14px 26px;
@@ -109,6 +109,82 @@
   transform: scale(0.97);
 }
 
+.SubmitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== BOTÓN UPLOAD (SOLO EMPRESA) ===== */
+.UploadButton {
+  padding: 10px 18px;
+  background-color: #37acfa;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.UploadButton:hover {
+  background-color: #195fa5;
+}
+
+/* ===== TEXTAREA ===== */
+.Textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.Textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* ===== ESTADO (VERIFICADA/FECHA) ===== */
+.Status {
+  padding: 0.5rem 1rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: #374151;
+  border: 1px solid #e2e8f0;
+}
+
+.StatusGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* ===== CAMPOS DE SOLO LECTURA ===== */
+.Input[readonly] {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.ReadOnlyField {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+/* ===== MENSAJES ===== */
 .SuccessMessage {
   background-color: #d4edda;
   color: #155724;
@@ -127,14 +203,7 @@
   border: 1px solid #f5c6cb;
 }
 
-.SubmitButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* ===== CLASES NUEVAS PARA EMPRESA ===== */
-
-/* Loading y error states */
+/* ===== LOADING Y ERROR STATES ===== */
 .loading {
   padding: 2rem;
   text-align: center;
@@ -160,64 +229,13 @@
   font-weight: 500;
 }
 
-/* Textarea específica para descripción */
-.Textarea {
-  min-height: 100px;
-  resize: vertical;
-  font-family: inherit;
-  line-height: 1.5;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
-  font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  width: 100%;
-  box-sizing: border-box;
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .Grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.Textarea:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-/* Estado de la empresa */
-.Status {
-  padding: 0.5rem 1rem;
-  background-color: #f8fafc;
-  border-radius: 8px;
-  min-height: 2.5rem;
-  display: flex;
-  align-items: center;
-  font-weight: 500;
-  color: #374151;
-  border: 1px solid #e2e8f0;
-}
-
-/* Para campos de solo lectura con estilo diferente */
-.ReadOnlyField {
-  background-color: #f8fafc;
-  border-color: #e2e8f0;
-  color: #64748b;
-  cursor: not-allowed;
-}
-
-/* Campos readOnly diferentes */
-.Input[readonly] {
-  background-color: #f8fafc;
-  border-color: #e2e8f0;
-  color: #64748b;
-  cursor: not-allowed;
-}
-
-/* Grid de 2 columnas para estado */
-.StatusGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-/* ===== RESPONSIVE ADICIONAL ===== */
 @media (max-width: 768px) {
   .StatusGrid {
     grid-template-columns: 1fr;
@@ -225,13 +243,6 @@
   
   .Textarea {
     min-height: 80px;
-  }
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 900px) {
-  .Grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 

@@ -9,6 +9,7 @@ import styles from "@/styles/navbar.module.css";
 import { baseApi } from "@/API/baseApi";
 
 import {  USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
+import { Rol } from "@/API/types/auth";
 
 export default function Navbar() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function Navbar() {
   };
 
   const navbarConfig = useMemo(() => {
-    return user ? USER_NAVBAR_CONFIG[user.role] : null;
+    return user ? USER_NAVBAR_CONFIG[user.rol] : null;
   }, [user]);
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function Navbar() {
   //traer los puntos
   useEffect(() => {
     const fetchPoints = async () => {
-      if (!user) {
+      if (!user || user.rol!== Rol.USUARIO) {
         setPoints(null);
         return;
       }
@@ -65,7 +66,7 @@ export default function Navbar() {
       }
 
       try {
-        const res = await baseApi.users.getPoints();
+        const res = await baseApi.usuario.getPoints();
         setPoints(res.puntos);
       } catch (err) {
         console.error("Error al obtener puntos:", err);

@@ -1,6 +1,6 @@
 export interface Organizacion {
   id: number;
-  cuit_organizacion: string;
+  cuit: string;
   razon_social: string;
   nombre_organizacion: string;
   descripcion: string;
@@ -21,9 +21,9 @@ export interface Organizacion {
 }
 
 export interface OrganizacionCreateRequest {
-  cuit_organizacion: string;
-  razonSocial: string;
-  nombreFantasia: string;
+  cuit: string;
+  razon_social: string;
+  nombre_organizacion: string;
   descripcion: string;
   telefono: string;
   web: string;
@@ -32,10 +32,8 @@ export interface OrganizacionCreateRequest {
 }
 
 export interface OrganizacionUpdateRequest {
-  cuit_organizacion: string;
-  razonSocial?: string;
-  nombreFantasia?: string;
   descripcion?: string;
+  actividad?: string;
   telefono?: string;
   direccion?: string;
   web?: string;

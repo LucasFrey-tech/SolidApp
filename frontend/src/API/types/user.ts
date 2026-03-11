@@ -1,19 +1,32 @@
+import { Rol } from "./auth";
+import { GestionTipo } from "./gestion/enum";
+
 export interface User {
   id: number;
   documento: string;
-  rol: string;
-  correo: string;
+  rol: Rol;
   nombre: string;
   apellido: string;
-  calle: string;
-  numero: string
-  prefijo: string;
-  telefono: string;
-  departamento?: string;
-  codigo_postal: string;
-  provincia: string;
-  ciudad: string;
-  habilitado: boolean; 
+  habilitado: boolean;
+
+  direccion?: {
+    calle?: string;
+    numero?: string;
+    adicional?: string;
+    codigo_postal?: string;
+    provincia?: string;
+    ciudad?: string;
+  };
+
+  contacto?: {
+    prefijo?: string;
+    telefono?: string;
+    correo?: string;
+  };
+
+  gestion?: GestionTipo;
+  empresaId?: number;
+  organizacionId?: number;
 }
 
 export interface UserPoints {

@@ -4,7 +4,8 @@ import styles from "@/styles/UserPanel/usuario/myAccountMenu.module.css";
 import Image from "next/image";
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
-import { RolCuenta } from "@/API/types/auth";
+import { Rol } from "@/API/types/auth";
+import { GestionTipo } from "@/API/types/gestion/enum";
 
 type AccountSection = "data" | "user&pass" | "cupons" | "donations";
 
@@ -21,6 +22,35 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
     setUser(null);
     router.push("/inicio");
     router.refresh();
+  };
+
+  const puedeVerCupones = () => {
+    if (!user) return false;
+    if (user.rol === Rol.USUARIO) return true;
+    if (user.rol === Rol.GESTOR && user.gestion === GestionTipo.EMPRESA)
+      return true;
+    return false;
+  };
+
+  const puedeVerDonaciones = () => {
+    if (!user) return false;
+    return user.rol === Rol.GESTOR && user.gestion === GestionTipo.ORGANIZACION;
+  };
+
+  const puedeVerData = () => {
+    if (!user) return false;
+    return user.rol !== Rol.ADMIN; // ADMIN no ve "Mis Datos"
+  };
+
+  const handleCuponesClick = () => {
+    if (user?.rol === Rol.USUARIO) {
+      onChangeSection("cupons");
+    } else if (
+      user?.rol === Rol.GESTOR &&
+      user?.gestion === GestionTipo.EMPRESA
+    ) {
+      router.push("/empresaPanel");
+    }
   };
 
   return (
@@ -54,24 +84,8 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               </button>
             </li>
 
-            {(user?.role === RolCuenta.USUARIO ||
-              user?.role === RolCuenta.EMPRESA) && (
-              <li>
-                <button
-                  onClick={() => {
-                    if (user?.role === RolCuenta.USUARIO) {
-                      onChangeSection("cupons");
-                    } else if (user?.role === RolCuenta.EMPRESA) {
-                      router.push("/empresaPanel");
-                    }
-                  }}
-                >
-                  Mis Cupones
-                </button>
-              </li>
-            )}
-
-            {user?.role !== RolCuenta.ADMIN && (
+            {/* Mis Datos - Visible para todos EXCEPTO ADMIN */}
+            {puedeVerData() && (
               <li>
                 <button onClick={() => onChangeSection("data")}>
                   Mis Datos
@@ -79,7 +93,15 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               </li>
             )}
 
-            {user?.role === RolCuenta.USUARIO && (
+            {/* Mis Cupones - USUARIO o GESTOR con gestión EMPRESA */}
+            {puedeVerCupones() && (
+              <li>
+                <button onClick={handleCuponesClick}>Mis Cupones</button>
+              </li>
+            )}
+
+            {/* Historial de Donaciones - Solo GESTOR con gestión ORGANIZACION */}
+            {puedeVerDonaciones() && (
               <li>
                 <button onClick={() => onChangeSection("donations")}>
                   Historial de Donaciones
