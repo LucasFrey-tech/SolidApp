@@ -8,8 +8,6 @@ import {
 } from '@nestjs/common';
 
 import { UsuarioService } from '../user/usuario.service';
-//import { EmpresaService } from '../empresa/empresa.service';
-//import { OrganizacionService } from '../organization/organizacion.service';
 import { Rol } from '../../Entities/usuario.entity';
 
 import { LoginDto, RegisterDto } from './dto/auth.dto';
@@ -20,6 +18,9 @@ import { EmailService } from '../email/email.service';
 
 import { randomBytes } from 'crypto';
 import { JwtPayload } from './dto/token_payload';
+import { GestionTipo } from './dto/gestion.enum';
+
+import { GestionDetector } from './estrategias/gestion/gestion_detector';
 /**
  * Servicio que maneja la lógica de negocio para el Sistema de Autenticación
  */
@@ -29,12 +30,11 @@ export class AuthService {
 
   constructor(
     private readonly usuarioService: UsuarioService,
-    //private readonly empresaService: EmpresaService,
-    //private readonly organizacionService: OrganizacionService,
     private readonly dataSource: DataSource,
     private readonly jwtService: JwtService,
     private readonly hashService: HashService,
     private readonly emailService: EmailService,
+    private readonly gestionDetector: GestionDetector,
   ) {
     this.logger.log('AuthService inicializado');
   }
@@ -45,6 +45,8 @@ export class AuthService {
         sub: payload.sub,
         email: payload.email,
         rol: payload.rol,
+        gestion: payload.gestion,
+        gestionId: payload.gestionId,
       }),
     };
   }
@@ -63,29 +65,24 @@ export class AuthService {
 
     const clave = await this.hashService.hash(dto.clave);
 
-    return this.dataSource.transaction(async (manager) => {
-      const usuario = await this.usuarioService.create(
-        {
-          correo: dto.correo,
-          clave: clave,
-          nombre: dto.nombre,
-          apellido: dto.apellido,
-          documento: dto.documento,
-          rol: Rol.USUARIO,
-        },
-        manager,
-      );
-
-      const tokenPayload = this.createPayload(
-        usuario.id,
-        usuario.contacto.correo,
-        usuario.rol,
-      );
-
-      this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
-
-      return this.buildToken(tokenPayload);
+    const usuario = await this.usuarioService.create({
+      correo: dto.correo,
+      clave: clave,
+      nombre: dto.nombre,
+      apellido: dto.apellido,
+      documento: dto.documento,
+      rol: Rol.USUARIO,
     });
+
+    const tokenPayload = this.createPayload(
+      usuario.id,
+      usuario.contacto.correo,
+      usuario.rol,
+    );
+
+    this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
+
+    return this.buildToken(tokenPayload);
   }
 
   async login(dto: LoginDto) {
@@ -105,16 +102,30 @@ export class AuthService {
       dto.clave,
       usuario.clave,
     );
+
     console.log('¿Contraseña válida?', claveValida);
+
     if (!claveValida)
       throw new UnauthorizedException('Credenciales incorrectas');
 
     await this.usuarioService.actualizarUltimaConexion(usuario.id);
 
+    let gestion: GestionTipo | null = null;
+    let gestionId: number | null = null;
+
+    if (usuario.rol === Rol.GESTOR) {
+      const gestionInfo = await this.gestionDetector.detectar(usuario.id);
+
+      gestion = gestionInfo?.tipo ?? null;
+      gestionId = gestionInfo?.entidadId ?? null;
+    }
+
     const tokenPayload = this.createPayload(
       usuario.id,
       usuario.contacto.correo,
       usuario.rol,
+      gestion,
+      gestionId,
     );
 
     return this.buildToken(tokenPayload);
@@ -160,11 +171,19 @@ export class AuthService {
     return { message: 'Contraseña actualizada correctamente' };
   }
 
-  createPayload(id: number, correo: string, rol: Rol): JwtPayload {
+  createPayload(
+    id: number,
+    correo: string,
+    rol: Rol,
+    gestion?: GestionTipo | null,
+    gestionId?: number | null,
+  ): JwtPayload {
     return {
       sub: id,
       email: correo,
       rol: rol,
+      gestion,
+      gestionId,
     };
   }
 }
