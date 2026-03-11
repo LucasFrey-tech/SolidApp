@@ -52,12 +52,6 @@ export class Organizacion {
   nombre_organizacion: string;
 
   @ApiProperty({
-    description: 'ID del contacto asociado (obligatorio)',
-  })
-  @Column({ type: 'int', nullable: false })
-  contacto_id: number; // ES NECESARIO ???
-
-  @ApiProperty({
     description: 'Información de contacto de la organización',
     type: () => Contacto,
   })
@@ -68,12 +62,6 @@ export class Organizacion {
   })
   @JoinColumn({ name: 'contacto_id' })
   contacto: Contacto;
-
-  @ApiPropertyOptional({
-    description: 'ID de la dirección de la sede (opcional)',
-  })
-  @Column({ type: 'int', nullable: true })
-  direccion_id?: number; // ES NECESARIO ???
 
   @ApiPropertyOptional({
     description: 'Dirección de la sede de la organización',

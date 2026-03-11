@@ -10,7 +10,7 @@ import { Campaigns } from '../../Entities/campaigns.entity';
 import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
-import { OrganizationSummaryDto } from '../organizacion/dto/summary_organizacion.dto';
+import { OrganizacionSummaryDto } from '../organizacion/dto/summary_organizacion.dto';
 import { Organizacion } from '../../Entities/organizacion.entity';
 import { CampaignEstado } from './enum';
 import { imagenes_campania } from '../../Entities/imagenes_campania.entity';
@@ -353,7 +353,7 @@ export class CampaignsService {
   private readonly mapToResponseDto = (
     campaign: Campaigns,
   ): ResponseCampaignsDto => {
-    const organizationSummary: OrganizationSummaryDto = {
+    const organizationSummary: OrganizacionSummaryDto = {
       id: campaign.organizacion.id,
       nombre_organizacion: campaign.organizacion.nombre_organizacion,
       verificada: campaign.organizacion.verificada,

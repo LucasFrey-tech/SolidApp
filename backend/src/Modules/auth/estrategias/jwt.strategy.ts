@@ -4,9 +4,6 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 
 import { UsuarioService } from '../../user/usuario.service';
-//import { EmpresaService } from '../../empresa/empresa.service';
-//import { OrganizacionService } from '../../organization/organizacion.service';
-//import { Rol } from '../../../Entities/usuario.entity';
 import { UsuarioAutenticado } from '../interfaces/authenticated_request.interface';
 import { JwtPayload } from '../dto/token_payload';
 
@@ -17,8 +14,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
     private readonly usuarioService: UsuarioService,
-    //private readonly empresaService: EmpresaService,
-    //private readonly organizacionService: OrganizacionService,
   ) {
     const secret = configService.get<string>('JWT_SECRET');
 
