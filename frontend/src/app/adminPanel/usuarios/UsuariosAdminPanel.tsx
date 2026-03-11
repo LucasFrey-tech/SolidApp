@@ -10,7 +10,7 @@ type User = {
   name: string;
   email: string;
   enabled: boolean;
-  role: string;
+  rol: string;
 };
 
 const PAGE_SIZE = 10;
@@ -33,7 +33,7 @@ export default function UsuariosAdminPanel() {
     async function fetchUsers() {
       setLoading(true);
       try {
-        const res = await baseApi.users.getAllPaginated(
+        const res = await baseApi.usuario.getAllPaginated(
           page,
           PAGE_SIZE,
           search
@@ -44,7 +44,7 @@ export default function UsuariosAdminPanel() {
           name: `${u.nombre || ''} ${u.apellido || ''}`.trim() || 'Sin nombre',
           email: u.correo,
           enabled: !u.deshabilitado,
-          role: u.rol || 'user',
+          rol: u.rol || 'user',
         }));
 
         setUsers(formatted);
@@ -108,9 +108,9 @@ export default function UsuariosAdminPanel() {
 
     try {
       if (enable) {
-        await baseApi.users.restore(user.id);
+        await baseApi.usuario.restore(user.id);
       } else {
-        await baseApi.users.delete(user.id);
+        await baseApi.usuario.delete(user.id);
       }
 
       Swal.fire(
@@ -164,7 +164,7 @@ export default function UsuariosAdminPanel() {
             </div>
 
             <div className={styles.Actions}>
-              {user.role.toLowerCase() === 'admin' ? (
+              {user.rol.toLowerCase() === 'admin' ? (
                 <span className={styles.AdminLabel}>ADMIN</span>
               ) : (
                 <>

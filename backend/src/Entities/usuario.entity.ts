@@ -52,7 +52,7 @@ export class Usuario {
   @ApiProperty({
     example: 'USUARIO',
     description: 'Rol del usuario en el sistema',
-    enum: ['USUARIO', 'GESTOR', 'ADMIN'],
+    enum: Rol,
   })
   @Column({
     type: 'varchar',

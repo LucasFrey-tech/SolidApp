@@ -105,7 +105,7 @@ export default function Tienda() {
                     Restantes: <span>{beneficio.cantidad}</span>
                   </p>
 
-                  {user?.role === Rol.USUARIO && (
+                  {user?.rol === Rol.USUARIO && (
                     <button
                       className={styles.button}
                       disabled={beneficio.cantidad === 0}

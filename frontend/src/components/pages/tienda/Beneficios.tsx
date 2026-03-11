@@ -103,7 +103,7 @@ export default function BeneficiosPanel({ idEmpresa, onClose }: Props) {
                       <strong>{beneficio.valor}</strong>
                     </div>
 
-                    {user?.role === Rol.USUARIO && (
+                    {user?.rol === Rol.USUARIO && (
                       <div className={styles.action}>
                         <button
                           className={styles.canjearBtn}

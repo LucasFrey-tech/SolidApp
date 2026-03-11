@@ -4,7 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import { useUser } from "@/app/context/UserContext";
-import { RolCuenta } from "@/API/types/auth";
+import { Rol } from "@/API/types/auth";
+import { GestionTipo } from "@/API/types/gestion/enum";
 
 export default function EmpresaLayout({
   children,
@@ -16,7 +17,7 @@ export default function EmpresaLayout({
 
   useEffect(() => {
     if (!loading) {
-      if (!user || user.role!== RolCuenta.EMPRESA) {
+      if (!user || user.rol!== Rol.GESTOR && user.gestion !== GestionTipo.ORGANIZACION) {
         Swal.fire({
           icon: "error",
           title: "Acceso denegado",
@@ -30,7 +31,7 @@ export default function EmpresaLayout({
   }, [user, loading, router]);
 
   if (loading) return null;
-  if (!user || user.role!== RolCuenta.EMPRESA) return null;
+  if (!user || user.rol!== Rol.GESTOR && user.gestion !== GestionTipo.ORGANIZACION) return null;
 
   return <>{children}</>;
 }

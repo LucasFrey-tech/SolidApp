@@ -6,7 +6,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, FindOptionsWhere, Like, Repository } from 'typeorm';
+import { DataSource, FindOptionsWhere, Like, Repository } from 'typeorm';
 import { Empresa } from '../../Entities/empresa.entity';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from './dto/update_empresa.dto';
@@ -51,9 +51,10 @@ export class EmpresaService {
   constructor(
     @InjectRepository(Empresa)
     private readonly empresaRepository: Repository<Empresa>,
-    private readonly beneficioService: BeneficioService,
     @InjectRepository(EmpresaUsuario)
     private readonly empresaUsuarioRepository: Repository<EmpresaUsuario>,
+    private readonly beneficioService: BeneficioService,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -120,15 +121,23 @@ export class EmpresaService {
   }
 
   async getCupones(
-    id: number,
+    usuarioid: number,
     page: number,
     limit: number,
   ): Promise<PaginatedBeneficiosResponseDTO> {
-    return await this.beneficioService.findByEmpresaPaginated(id, page, limit);
+    const empresa = await this.getEmpresaByUsuario(usuarioid);
+
+    return await this.beneficioService.findByEmpresaPaginated(
+      empresa.id,
+      page,
+      limit,
+    );
   }
 
-  async createCupon(id_empresa: number, dto: CreateBeneficiosDTO) {
-    return this.beneficioService.create({ ...dto, id_empresa });
+  async createCupon(usuarioId: number, dto: CreateBeneficiosDTO) {
+    const empresa = await this.getEmpresaByUsuario(usuarioId);
+
+    return this.beneficioService.create({ ...dto, id_empresa: empresa.id });
   }
 
   async updateCupon(cuponId: number, dto: UpdateBeneficiosDTO) {
@@ -148,26 +157,38 @@ export class EmpresaService {
    */
   async create(
     createDto: CreateEmpresaDTO,
-    //id: number,
-    manager?: EntityManager,
+    usuarioId: number,
   ): Promise<EmpresaResponseDTO> {
-    const repo = manager
-      ? manager.getRepository(Empresa)
-      : this.empresaRepository;
+    return await this.dataSource.transaction(async (manager) => {
+      const repo = manager
+        ? manager.getRepository(Empresa)
+        : this.empresaRepository;
 
-    const cuitExistente = await repo.findOne({
-      where: { cuit: createDto.cuit_empresa },
+      const empresaUsuarioRepo = manager
+        ? manager.getRepository(EmpresaUsuario)
+        : this.empresaUsuarioRepository;
+
+      const cuitExistente = await repo.findOne({
+        where: { cuit: createDto.cuit_empresa },
+      });
+
+      if (cuitExistente) {
+        throw new ConflictException('La Empresa ya está registrada');
+      }
+
+      const empresa = repo.create(createDto);
+
+      const savedEmpresa = await repo.save(empresa);
+
+      const empresaUsuario = empresaUsuarioRepo.create({
+        empresa: { id: savedEmpresa.id },
+        usuario: { id: usuarioId },
+      });
+
+      await empresaUsuarioRepo.save(empresaUsuario);
+
+      return this.mapToResponseDto(savedEmpresa);
     });
-
-    if (cuitExistente) {
-      throw new ConflictException('La Empresa ya está registrada');
-    }
-
-    const empresa = repo.create(createDto);
-
-    const savedEmpresa = await repo.save(empresa);
-
-    return this.mapToResponseDto(savedEmpresa);
   }
 
   /**
@@ -236,14 +257,14 @@ export class EmpresaService {
   }
 
   /**
-   * Deshabilita un usuario (soft delete sobre la Cuenta).
+   * Deshabilita un empresa (soft delete sobre la Empresa).
    */
   async delete(id: number): Promise<void> {
-    const usuario = await this.empresaRepository.findOne({
+    const empresa = await this.empresaRepository.findOne({
       where: { id },
     });
 
-    if (!usuario) {
+    if (!empresa) {
       throw new NotFoundException(`Empresa con ID ${id} no encontrado`);
     }
 
@@ -252,14 +273,14 @@ export class EmpresaService {
   }
 
   /**
-   * Restaura un usuario deshabilitado.
+   * Restaura un empresa deshabilitado.
    */
   async restore(id: number): Promise<void> {
-    const usuario = await this.empresaRepository.findOne({
+    const empresa = await this.empresaRepository.findOne({
       where: { id },
     });
 
-    if (!usuario) {
+    if (!empresa) {
       throw new NotFoundException(`Empresa con ID ${id} no encontrado`);
     }
 

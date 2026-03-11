@@ -10,6 +10,7 @@ import Swal from "sweetalert2";
 
 import { LoginUsuarioStrategy } from "@/API/class/login/usuario";
 import { Rol } from "@/API/types/auth";
+import { GestionTipo } from "@/API/types/gestion/enum";
 
 interface LoginData {
   correo: string;
@@ -25,7 +26,9 @@ interface DecodedToken {
   email: string;
   sub: number;
   username: string;
-  role: Rol;
+  rol: Rol;
+  gestion: GestionTipo | null;
+  gestionId: number | null;
 }
 
 export default function Login() {
@@ -95,7 +98,9 @@ export default function Login() {
         email: decoded.email,
         sub: decoded.sub,
         username: decoded.username,
-        role: decoded.role,
+        rol: decoded.rol,
+        gestion: decoded.gestion,
+        gestionId: decoded.gestionId,
       });
 
       refreshUser();

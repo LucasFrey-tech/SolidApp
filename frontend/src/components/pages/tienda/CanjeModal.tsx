@@ -39,7 +39,7 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
       return;
     }
 
-    if (user.role !== Rol.USUARIO) {
+    if (user.rol !== Rol.USUARIO) {
       Swal.fire(
         'Acción no permitida',
         'Solo los usuarios pueden canjear beneficios',

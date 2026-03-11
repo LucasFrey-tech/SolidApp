@@ -143,7 +143,7 @@ export default function CampaignDetallePage() {
             </div>
           )}
 
-          {user?.role === Rol.USUARIO ? (
+          {user?.rol === Rol.USUARIO ? (
             <button
               className={styles.donateButton}
               onClick={() => setIsModalOpen(true)}

@@ -16,7 +16,7 @@ export default function AdminLayout({
 
   useEffect(() => {
     if (!loading) {
-      if (!user || user.role !== Rol.ADMIN) {
+      if (!user || user.rol !== Rol.ADMIN) {
         Swal.fire({
           icon: 'error',
           title: 'Acceso denegado',
@@ -31,7 +31,7 @@ export default function AdminLayout({
 
   if (loading) return null;
 
-  if (!user || user.role !== Rol.ADMIN) {
+  if (!user || user.rol !== Rol.ADMIN) {
     return null;
   }
 
