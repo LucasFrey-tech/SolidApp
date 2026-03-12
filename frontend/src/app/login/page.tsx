@@ -62,7 +62,9 @@ export default function LogInPage() {
           {/* CONTENIDO */}
           <div className={styles.contentArea}>
             {activeTab === "login" && <Login />}
-            {activeTab === "register" && <RegistroUsuario />}
+            {activeTab === "register" && (
+              <RegistroUsuario onRegisterSuccess={() => setActiveTab("login")} />
+            )}
           </div>
         </div>
       </div>

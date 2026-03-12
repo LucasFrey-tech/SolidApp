@@ -41,8 +41,9 @@ const usuarioSchema = z
   });
 
 type UsuarioData = z.infer<typeof usuarioSchema>;
+type RegistroUsuarioProps = { onRegisterSuccess: () => void; };
 
-export default function RegistroUsuario() {
+export default function RegistroUsuario({ onRegisterSuccess }: RegistroUsuarioProps) {
   const [data, setData] = useState<UsuarioData>({
     documento: "",
     correo: "",
@@ -72,7 +73,8 @@ export default function RegistroUsuario() {
         title: "Registro exitoso",
         text: "Tu cuenta fue creada correctamente",
       });
-
+      onRegisterSuccess();
+      
       setData({
         documento: "",
         correo: "",
@@ -111,9 +113,8 @@ export default function RegistroUsuario() {
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Documento</label>
             <input
-              className={`${styles.input} ${
-                errors.documento ? styles.inputError : ""
-              }`}
+              className={`${styles.input} ${errors.documento ? styles.inputError : ""
+                }`}
               placeholder="Documento"
               value={data.documento}
               onChange={(e) => handleChange("documento", e.target.value)}
@@ -126,9 +127,8 @@ export default function RegistroUsuario() {
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Correo electrónico</label>
             <input
-              className={`${styles.input} ${
-                errors.correo ? styles.inputError : ""
-              }`}
+              className={`${styles.input} ${errors.correo ? styles.inputError : ""
+                }`}
               placeholder="Correo electrónico"
               value={data.correo}
               onChange={(e) => handleChange("correo", e.target.value)}
@@ -142,9 +142,8 @@ export default function RegistroUsuario() {
             <label className={styles.label}>Contraseña</label>
             <input
               type="password"
-              className={`${styles.input} ${
-                errors.clave ? styles.inputError : ""
-              }`}
+              className={`${styles.input} ${errors.clave ? styles.inputError : ""
+                }`}
               placeholder="Contraseña"
               value={data.clave}
               onChange={(e) => handleChange("clave", e.target.value)}
@@ -158,9 +157,8 @@ export default function RegistroUsuario() {
             <label className={styles.label}>Repetir contraseña</label>
             <input
               type="password"
-              className={`${styles.input} ${
-                errors.confirmarClave ? styles.inputError : ""
-              }`}
+              className={`${styles.input} ${errors.confirmarClave ? styles.inputError : ""
+                }`}
               placeholder="Repetir contraseña"
               value={data.confirmarClave}
               onChange={(e) => handleChange("confirmarClave", e.target.value)}
@@ -173,9 +171,8 @@ export default function RegistroUsuario() {
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Nombre</label>
             <input
-              className={`${styles.input} ${
-                errors.nombre ? styles.inputError : ""
-              }`}
+              className={`${styles.input} ${errors.nombre ? styles.inputError : ""
+                }`}
               placeholder="Nombre"
               value={data.nombre}
               onChange={(e) => handleChange("nombre", e.target.value)}
@@ -188,9 +185,8 @@ export default function RegistroUsuario() {
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Apellido</label>
             <input
-              className={`${styles.input} ${
-                errors.apellido ? styles.inputError : ""
-              }`}
+              className={`${styles.input} ${errors.apellido ? styles.inputError : ""
+                }`}
               placeholder="Apellido"
               value={data.apellido}
               onChange={(e) => handleChange("apellido", e.target.value)}
