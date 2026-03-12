@@ -16,7 +16,6 @@ import { UsuarioService } from './usuario.service';
 
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 import { CreateDonationDto } from '../donation/dto/create_donation.dto';
-import { ResponseUsuarioDto } from './dto/response_usuario.dto';
 
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 
@@ -54,9 +53,7 @@ export class UsuarioController {
   @Auth(Rol.USUARIO)
   @Get('perfil')
   @ApiOperation({ summary: 'Obtener mi perfil completo' })
-  async getMiPerfil(
-    @Req() req: RequestConUsuario,
-  ): Promise<ResponseUsuarioDto> {
+  async getMiPerfil(@Req() req: RequestConUsuario) {
     return this.userService.findOne(req.user.id);
   }
 
@@ -66,7 +63,7 @@ export class UsuarioController {
   async updateMiPerfil(
     @Req() req: RequestConUsuario,
     @Body() dto: UpdateUsuarioDto,
-  ): Promise<ResponseUsuarioDto> {
+  ) {
     return await this.userService.updateUsuario(req.user.id, dto);
   }
 
@@ -84,6 +81,9 @@ export class UsuarioController {
   @Get('puntos')
   @ApiOperation({ summary: 'Obtener mis puntos' })
   async getMisPuntos(@Req() req: RequestConUsuario) {
+    console.log('🔐 Usuario autenticado en getPoints:', req.user);
+    console.log('🔐 ID del usuario:', req.user.id);
+    console.log('🔐 Rol del usuario:', req.user.rol);
     return this.userService.getPoints(req.user.id);
   }
 

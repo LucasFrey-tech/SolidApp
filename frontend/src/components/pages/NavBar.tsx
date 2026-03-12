@@ -8,7 +8,7 @@ import { useUser } from "@/app/context/UserContext";
 import styles from "@/styles/navbar.module.css";
 import { baseApi } from "@/API/baseApi";
 
-import {  USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
+import { USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
 import { Rol } from "@/API/types/auth";
 
 export default function Navbar() {
@@ -23,7 +23,6 @@ export default function Navbar() {
   const handleLogout = () => {
     router.push("/inicio");
     localStorage.removeItem("token");
-    localStorage.removeItem("user_email");
     setUser(null);
     setProfileOpen(false);
     setMenuOpen(false);
@@ -55,12 +54,11 @@ export default function Navbar() {
   //traer los puntos
   useEffect(() => {
     const fetchPoints = async () => {
-      if (!user || user.rol!== Rol.USUARIO) {
-        setPoints(null);
+      if (!user) {
         return;
       }
 
-      if (!navbarConfig?.showPoints) {
+      if (user.rol !== Rol.USUARIO || !navbarConfig?.showPoints) {
         setPoints(null);
         return;
       }
@@ -77,7 +75,6 @@ export default function Navbar() {
   }, [user, navbarConfig?.showPoints]);
 
   if (loading) return null;
-
 
   return (
     <nav className={styles.navbar}>

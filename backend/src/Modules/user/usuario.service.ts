@@ -21,6 +21,8 @@ import { UsuarioBeneficioService } from './usuario-beneficio/usuario-beneficio.s
 import { HashService } from '../../common/bcryptService/hashService';
 import { Contacto } from '../../Entities/contacto.entity';
 import { Direccion } from '../../Entities/direccion.entity';
+import { JwtService } from '@nestjs/jwt';
+import { GestionTipo } from '../auth/dto/gestion.enum';
 
 @Injectable()
 export class UsuarioService {
@@ -33,6 +35,7 @@ export class UsuarioService {
     private readonly beneficioService: BeneficioService,
     private readonly usuarioBeneficioService: UsuarioBeneficioService,
     private readonly hashService: HashService,
+    private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -126,9 +129,9 @@ export class UsuarioService {
   async updateCredenciales(
     id: number,
     dto: UpdateCredencialesDto,
-  ): Promise<void> {
+  ): Promise<{ token: string }> {
     const usuario = await this.usuarioRepository.findOne({
-      relations: ['contacto'],
+      relations: ['contacto', 'empresaUsuario', 'organizacionUsuario'],
       where: { id },
     });
 
@@ -154,7 +157,38 @@ export class UsuarioService {
       usuario.contacto.correo = dto.correo;
     }
 
-    await this.usuarioRepository.save(usuario);
+    const updated = await this.usuarioRepository.save(usuario);
+
+    let gestion: GestionTipo | null = null;
+    let gestionId: number | null = null;
+
+    if (updated.empresaUsuario) {
+      gestion = GestionTipo.EMPRESA;
+      gestionId = updated.empresaUsuario.id;
+    } else if (updated.organizacionUsuario) {
+      gestion = GestionTipo.ORGANIZACION;
+      gestionId = updated.organizacionUsuario.id;
+    }
+
+    console.log('🎫 PAYLOAD PARA NUEVO TOKEN:', {
+      sub: updated.id,
+      email: updated.contacto.correo,
+      rol: updated.rol,
+      tieneEmpresa: updated.empresaUsuario,
+      tieneOrganizacion: updated.organizacionUsuario,
+    });
+
+    const payload = {
+      sub: updated.id,
+      email: updated.contacto.correo,
+      rol: updated.rol,
+      gestion,
+      gestionId,
+    };
+
+    const newToken = this.jwtService.sign(payload);
+
+    return { token: newToken };
   }
 
   /**
@@ -276,6 +310,7 @@ export class UsuarioService {
    */
   async findOne(id: number): Promise<ResponseUsuarioDto> {
     const usuario = await this.usuarioRepository.findOne({
+      relations: ['contacto', 'direccion'],
       where: { id },
     });
 
@@ -328,6 +363,7 @@ export class UsuarioService {
     dto.documento = usuario.documento;
     dto.nombre = usuario.nombre;
     dto.apellido = usuario.apellido;
+    dto.rol = usuario.rol;
     dto.puntos = usuario.puntos;
 
     dto.contacto = usuario.contacto;

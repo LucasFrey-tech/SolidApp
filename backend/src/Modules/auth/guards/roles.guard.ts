@@ -12,7 +12,7 @@ import { UsuarioAutenticado } from '../interfaces/authenticated_request.interfac
 import { Request } from 'express';
 
 interface RequestConUsuario extends Request {
-  usuario: UsuarioAutenticado;
+  user: UsuarioAutenticado;
 }
 
 @Injectable()
@@ -39,7 +39,8 @@ export class RolesGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<RequestConUsuario>();
-    const usuario = request.usuario;
+
+    const usuario = request.user;
 
     if (!usuario) {
       throw new ForbiddenException('Usuario no autenticado');

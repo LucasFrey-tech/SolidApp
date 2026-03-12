@@ -62,7 +62,7 @@ export class OrganizacionUsuario {
     description: 'Usuario que gestiona',
     type: () => Usuario,
   })
-  @ManyToOne(() => Usuario, (usuario) => usuario.organizacionUsuarios, {
+  @ManyToOne(() => Usuario, (usuario) => usuario.organizacionUsuario, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'id_usuario' })

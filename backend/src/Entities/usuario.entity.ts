@@ -181,7 +181,7 @@ export class Usuario {
     type: () => [EmpresaUsuario],
   })
   @OneToMany(() => EmpresaUsuario, (empresaUsuario) => empresaUsuario.usuario)
-  empresaUsuarios?: EmpresaUsuario[];
+  empresaUsuario?: EmpresaUsuario;
 
   // ==================== RELACIONES N:M CON ORGANIZACIONES ====================
 
@@ -191,7 +191,7 @@ export class Usuario {
     type: () => [OrganizacionUsuario],
   })
   @OneToMany(() => OrganizacionUsuario, (orgUsuario) => orgUsuario.usuario)
-  organizacionUsuarios?: OrganizacionUsuario[];
+  organizacionUsuario?: OrganizacionUsuario;
 
   // ==================== RELACIONES DE DONADOR ====================
 

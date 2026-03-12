@@ -201,7 +201,7 @@ export class BeneficioService {
         relations: ['empresa_usuario'],
         where: {
           id: userId,
-          empresaUsuarios: { usuario: { habilitado: true } },
+          empresaUsuario: { usuario: { habilitado: true } },
         },
         lock: { mode: 'pessimistic_write' },
       });

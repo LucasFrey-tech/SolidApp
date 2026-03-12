@@ -39,7 +39,9 @@ export class Usuario extends Crud<User> {
     return res.json();
   }
 
-  async updateCredenciales(data: UpdateCredencialesPayload): Promise<void> {
+  async updateCredenciales(
+    data: UpdateCredencialesPayload,
+  ): Promise<{ token: string }> {
     const res = await fetch(`${this.baseUrl}/${this.endPoint}/credenciales`, {
       method: "PATCH",
       headers: this.getHeaders(),
@@ -47,11 +49,12 @@ export class Usuario extends Crud<User> {
     });
 
     if (!res.ok) {
-      const errorDetails = await res.text();
-      throw new Error(
-        `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
-      );
+      const errorData = await res.json();
+      console.error("Error completo:", { status: res.status, ...errorData });
+      throw new Error(errorData.message);
     }
+
+    return res.json();
   }
 
   async getPoints(): Promise<UserPoints> {

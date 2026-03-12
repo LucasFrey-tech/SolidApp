@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  MinLength,
   ValidateNested,
 } from 'class-validator';
 
@@ -14,6 +15,7 @@ export class UpdateContactoDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'El prefijo no puede estar vacío' })
   @MaxLength(5)
   prefijo?: string;
 
@@ -23,6 +25,7 @@ export class UpdateContactoDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'El teléfono no puede estar vacío' })
   @MaxLength(20)
   telefono?: string;
 }
@@ -34,6 +37,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @MaxLength(80)
   calle?: string;
 
@@ -43,6 +47,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @MaxLength(10)
   numero?: string;
 
@@ -52,6 +57,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @MaxLength(100)
   adicional?: string;
 
@@ -61,6 +67,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @MaxLength(10)
   codigo_postal?: string;
 
@@ -70,6 +77,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @MaxLength(50)
   ciudad?: string;
 
@@ -79,6 +87,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @MaxLength(50)
   provincia?: string;
 }

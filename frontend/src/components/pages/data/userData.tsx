@@ -188,6 +188,7 @@ export default function UserData() {
                   )
                 }
                 placeholder="Ej: Av. Siempre Viva"
+                required
               />
             </div>
 
@@ -198,6 +199,7 @@ export default function UserData() {
                 value={editableData.numero}
                 onChange={(e) => handleInputChange("numero", e.target.value)}
                 placeholder="123"
+                required
               />
             </div>
 
@@ -209,6 +211,7 @@ export default function UserData() {
                 value={editableData.adicional || ""}
                 onChange={(e) => handleInputChange("adicional", e.target.value)}
                 placeholder="Dto, Piso, etc"
+                required
               />
             </div>
 
@@ -221,6 +224,7 @@ export default function UserData() {
                   handleInputChange("codigo_postal", e.target.value)
                 }
                 placeholder="1234"
+                required
               />
             </div>
 
@@ -237,6 +241,7 @@ export default function UserData() {
                   )
                 }
                 placeholder="Buenos Aires"
+                required
               />
             </div>
 
@@ -253,6 +258,7 @@ export default function UserData() {
                   )
                 }
                 placeholder="CABA"
+                required
               />
             </div>
           </div>
@@ -271,6 +277,7 @@ export default function UserData() {
                 maxLength={5}
                 onChange={(e) => handleInputChange("prefijo", e.target.value)}
                 placeholder="11"
+                required
               />
             </div>
 
@@ -281,16 +288,7 @@ export default function UserData() {
                 value={editableData.telefono}
                 onChange={(e) => handleInputChange("telefono", e.target.value)}
                 placeholder="12345678"
-              />
-            </div>
-
-            <div className={styles.Field}>
-              <label className={styles.Label}>Correo</label>
-              <input
-                className={styles.Input}
-                type="email"
-                value={userData?.contacto?.correo || ""}
-                readOnly
+                required
               />
             </div>
           </div>

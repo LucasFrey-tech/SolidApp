@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   Length,
+  MinLength,
 } from 'class-validator';
 
 export class ContactoDto {
@@ -28,6 +29,7 @@ export class ContactoDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'El prefijo no puede estar vacío' })
   @Length(1, 5)
   prefijo?: string;
 
@@ -37,16 +39,9 @@ export class ContactoDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'El teléfono no puede estar vacío' })
   @Length(1, 20)
   telefono?: string;
-
-  @ApiPropertyOptional({
-    example: 'Principal',
-    description: 'Tipo de contacto',
-  })
-  @IsOptional()
-  @IsString()
-  tipo?: string;
 }
 
 export class DireccionDto {
@@ -62,6 +57,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @Length(1, 80)
   calle?: string;
 
@@ -71,6 +67,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @Length(1, 10)
   numero?: string;
 
@@ -80,6 +77,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @Length(1, 100)
   adicional?: string;
 
@@ -89,6 +87,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @Length(1, 10)
   codigo_postal?: string;
 
@@ -98,6 +97,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @Length(1, 50)
   ciudad?: string;
 
@@ -107,6 +107,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
+  @MinLength(1, { message: 'La calle no puede estar vacía' })
   @Length(1, 50)
   provincia?: string;
 }

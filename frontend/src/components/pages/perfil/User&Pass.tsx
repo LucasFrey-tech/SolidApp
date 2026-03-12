@@ -4,9 +4,11 @@ import styles from "@/styles/UserPanel/usuario/user&pass.module.css";
 import { useState } from "react";
 import { baseApi } from "@/API/baseApi";
 import { useUser } from "@/app/context/UserContext";
+import { useRouter } from "next/navigation";
 
 export default function UserAndPass() {
   const { user, refreshUser } = useUser();
+  const router = useRouter();
 
   const [correo, setCorreo] = useState(user?.email ?? "");
   const [correoOriginal, setCorreoOriginal] = useState(user?.email ?? "");
@@ -56,10 +58,13 @@ export default function UserAndPass() {
     }
 
     try {
-      await baseApi.usuario.updateCredenciales(payload);
+      const response = await baseApi.usuario.updateCredenciales(payload);
+
+      localStorage.setItem('token', response.token);
+
+      refreshUser();
 
       setSuccess("Credenciales actualizadas correctamente");
-      refreshUser();
 
       if (payload.correo) {
         setCorreoOriginal(payload.correo);
@@ -89,6 +94,7 @@ export default function UserAndPass() {
             placeholder="tu@email.com"
             value={correo}
             onChange={(e) => setCorreo(e.target.value)}
+            required
           />
         </section>
 
@@ -126,11 +132,11 @@ export default function UserAndPass() {
 
         {success && (
           <div className={styles.SuccessMessage}>
-            ¡Cambios guardados exitosamente!
+            {success}
           </div>
         )}
 
-        {error && <div className={styles.ErrorMessage}>Error: {error}</div>}
+        {error && <div className={styles.ErrorMessage}> {error}</div>}
 
         <button type="submit" className={styles.SubmitButton}>
           Guardar cambios
