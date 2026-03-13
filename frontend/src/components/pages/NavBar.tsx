@@ -8,7 +8,7 @@ import { useUser } from "@/app/context/UserContext";
 import styles from "@/styles/navbar.module.css";
 import { baseApi } from "@/API/baseApi";
 
-import { USER_NAVBAR_CONFIG } from "@/config/navbarConfig";
+import { USER_NAVBAR_CONFIG, getGestorNavbarConfig } from "@/config/navbarConfig";
 import { Rol } from "@/API/types/auth";
 
 export default function Navbar() {
@@ -29,7 +29,9 @@ export default function Navbar() {
   };
 
   const navbarConfig = useMemo(() => {
-    return user ? USER_NAVBAR_CONFIG[user.rol] : null;
+    if (!user) return null;
+    if (user.rol === Rol.GESTOR) return getGestorNavbarConfig(user.gestion);
+    return USER_NAVBAR_CONFIG[user.rol];
   }, [user]);
 
   useEffect(() => {
@@ -194,9 +196,8 @@ export default function Navbar() {
 
           {/* Dropdown */}
           <div
-            className={`${styles.profileDropdown} ${
-              profileOpen ? styles.open : ""
-            }`}
+            className={`${styles.profileDropdown} ${profileOpen ? styles.open : ""
+              }`}
           >
             <Link
               href="/userPanel"

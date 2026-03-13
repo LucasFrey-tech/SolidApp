@@ -1,4 +1,5 @@
 import { Rol } from "@/API/types/auth";
+import { GestionTipo } from "@/API/types/gestion/enum";
 
 export type NavbarRole = Rol;
 
@@ -12,7 +13,7 @@ export interface UserNavbarConfig {
   panelLink?: PanelLink;
 }
 
-export const USER_NAVBAR_CONFIG: Record<NavbarRole, UserNavbarConfig> = {
+export const USER_NAVBAR_CONFIG: Record<Exclude<NavbarRole, Rol.GESTOR>, UserNavbarConfig> = {
   [Rol.USUARIO]: {
     showPoints: true,
   },
@@ -23,11 +24,30 @@ export const USER_NAVBAR_CONFIG: Record<NavbarRole, UserNavbarConfig> = {
       label: "Panel Admin",
     },
   },
-  [Rol.GESTOR]: {
+};
+
+export const getGestorNavbarConfig = (gestion: GestionTipo | null | undefined): UserNavbarConfig => {
+  if (gestion === GestionTipo.EMPRESA) {
+    return {
+      showPoints: false,
+      panelLink: {
+        href: "/empresaPanel",
+        label: "Panel Empresa",
+      },
+    };
+  }
+
+  if (gestion === GestionTipo.ORGANIZACION) {
+    return {
+      showPoints: false,
+      panelLink: {
+        href: "/organizacionPanel",
+        label: "Panel Organización",
+      },
+    };
+  }
+
+  return {
     showPoints: false,
-    /*panelLink: {
-      href: "/adminPanel",
-      label: "Panel Admin",
-    },*/
-  },
+  };
 };
