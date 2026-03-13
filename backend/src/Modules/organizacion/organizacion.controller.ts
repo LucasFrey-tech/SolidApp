@@ -40,7 +40,8 @@ import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
 import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
 import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
 import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.dto';
-import { Auth } from '../auth/decoradores/auth.decorador';
+import { Auth, Public } from '../auth/decoradores/auth.decorador';
+import { CreateOrganizacionDto } from './dto/create_organizacion.dto';
 
 /**
  * Controlador encargado de gestionar las operaciones HTTP
@@ -62,7 +63,7 @@ import { Auth } from '../auth/decoradores/auth.decorador';
 export class OrganizacionesController {
   constructor(
     private readonly organizacionService: PerfilOrganizacionService,
-  ) {}
+  ) { }
 
   // ================= PanelOrganizacion ===================
 
@@ -116,6 +117,19 @@ export class OrganizacionesController {
       page,
       limit,
     );
+  }
+
+  @Public()
+  @Post('registro')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Registrar nueva organización con su gestor' })
+  @ApiBody({ type: CreateOrganizacionDto })
+  @ApiResponse({ status: 201, description: 'Organización y gestor creados', type: ResponseOrganizacionDto })
+  @ApiResponse({ status: 409, description: 'CUIT o correo ya registrado' })
+  async registrarOrganizacion(
+    @Body() dto: CreateOrganizacionDto,
+  ): Promise<ResponseOrganizacionDto> {
+    return this.organizacionService.registrarOrganizacion(dto);
   }
 
   /**

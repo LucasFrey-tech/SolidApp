@@ -9,6 +9,8 @@ import { CampaignModule } from '../campaign/campaign.module';
 import { DonacionModule } from '../donation/donacion.module';
 import { UsuarioModule } from '../user/usuario.module';
 import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity';
+import { Usuario } from '../../Entities/usuario.entity';
+import { HashService } from '../../common/bcryptService/hashService';
 
 /**
  * OrganizationModule
@@ -52,7 +54,7 @@ import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity'
      * - Organizations
      * - Campaigns
      */
-    TypeOrmModule.forFeature([Organizacion, Campaigns, OrganizacionUsuario]),
+    TypeOrmModule.forFeature([Organizacion, Campaigns, OrganizacionUsuario, Usuario]),
 
     /**
      * Importación del módulo de campañas.
@@ -75,12 +77,12 @@ import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity'
   /**
    * Providers disponibles dentro del módulo.
    */
-  providers: [PerfilOrganizacionService],
+  providers: [PerfilOrganizacionService, HashService],
 
   /**
    * Exporta el servicio para que pueda ser
    * utilizado en otros módulos si es necesario.
    */
-  exports: [PerfilOrganizacionService],
+  exports: [PerfilOrganizacionService, TypeOrmModule],
 })
 export class OrganizacionModule {}

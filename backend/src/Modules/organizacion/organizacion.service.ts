@@ -6,7 +6,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { Organizacion } from '../../Entities/organizacion.entity';
 import { CreateOrganizacionDto } from './dto/create_organizacion.dto';
 import { UpdateOrganizacionDto } from './dto/update_organizacion.dto';
@@ -22,6 +22,8 @@ import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
 import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
 import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.dto';
 import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity';
+import { Rol, Usuario } from '../../Entities/usuario.entity';
+import { HashService } from '../../common/bcryptService/hashService';
 
 /**
  * ============================================================
@@ -56,12 +58,16 @@ export class PerfilOrganizacionService {
   constructor(
     @InjectRepository(Organizacion)
     private readonly organizacionRepository: Repository<Organizacion>,
+    @InjectRepository(OrganizacionUsuario)
+    private readonly organizacionUsuarioRepository: Repository<OrganizacionUsuario>,
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
     private readonly campaignService: CampaignsService,
     private readonly donacionService: DonacionService,
     private readonly usuarioService: UsuarioService,
-    @InjectRepository(OrganizacionUsuario)
-    private readonly organizacionUsuarioRepository: Repository<OrganizacionUsuario>,
-  ) {}
+    private readonly hashService: HashService,
+    private readonly dataSource: DataSource,
+  ) { }
 
   /**
    * Obtiene organizaciones paginadas con búsqueda opcional.
@@ -176,45 +182,95 @@ export class PerfilOrganizacionService {
     return await this.campaignService.update(id, updateDto, imagenes);
   }
 
-  /**
-   * Crea una nueva organización.
-   *
-   * @param createDto Datos necesarios para la creación.
-   *
-   * @returns {Promise<ResponseOrganizacionDto>}
-   *
-   * @throws ConflictException
-   * Si la organización ya está registrada.
-   */
-  async create(
-    createDto: CreateOrganizacionDto,
-    //usuarioId: number,
-    manager?: EntityManager,
+
+  async registrarOrganizacion(
+    dto: CreateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    const repo = manager
-      ? manager.getRepository(Organizacion)
-      : this.organizacionRepository;
+    return await this.dataSource.transaction(async (manager) => {
+      const usuarioRepo = manager.getRepository(Usuario);
+      const organizacionRepo = manager.getRepository(Organizacion);
+      const orgUsuarioRepo = manager.getRepository(OrganizacionUsuario);
 
-    const existente = await repo.findOne({
-      where: { cuit: createDto.cuit },
+      // 1. Verificar CUIT único
+      const cuitExistente = await organizacionRepo.findOne({
+        where: { cuit: dto.cuit_organizacion },
+      });
+      if (cuitExistente) {
+        throw new ConflictException('Ya existe una organización con ese CUIT');
+      }
+
+      // 2. Verificar documento único
+      const docExistente = await usuarioRepo.findOne({
+        where: { documento: dto.documento },
+      });
+      if (docExistente) {
+        throw new ConflictException('Ya existe un usuario con ese documento');
+      }
+
+      // 3. Verificar correo único del gestor
+      const correoExistente = await usuarioRepo.findOne({
+        relations: ['contacto'],
+        where: { contacto: { correo: dto.correo } },
+      });
+      if (correoExistente) {
+        throw new ConflictException('Ya existe un usuario con ese correo');
+      }
+
+      // 4. Crear el gestor (Usuario con Rol.GESTOR)
+      const claveHash = await this.hashService.hash(dto.clave);
+
+      const gestor = usuarioRepo.create({
+        nombre: dto.nombre,
+        apellido: dto.apellido,
+        documento: dto.documento,
+        clave: claveHash,
+        rol: Rol.GESTOR,
+        contacto: {
+          correo: dto.correo,
+          telefono: dto.telefono,
+        },
+        direccion: {},
+        puntos: 0,
+        habilitado: true,
+        verificado: false,
+      });
+
+      const savedGestor = await usuarioRepo.save(gestor);
+      this.logger.log(`Gestor creado con ID ${savedGestor.id}`);
+
+      // 5. Crear la organización
+      const organizacion = organizacionRepo.create({
+        cuit: dto.cuit_organizacion,
+        razon_social: dto.razon_social,
+        nombre_organizacion: dto.nombre_organizacion,
+        web: dto.web ?? '',
+        contacto: {
+          correo: dto.correo_organizacion,  // correo comercial, distinto al del gestor
+          telefono: dto.telefono,
+        },
+        direccion: {
+          calle: dto.calle,
+          numero: dto.numero,
+        },
+        habilitada: false,   // requiere verificación del admin
+        verificada: false,
+      });
+
+      const savedOrganizacion = await organizacionRepo.save(organizacion);
+      this.logger.log(`Organización creada con ID ${savedOrganizacion.id}`);
+
+      // 6. Vincular gestor ↔ organización
+      const vinculo = orgUsuarioRepo.create({
+        usuario: { id: savedGestor.id },
+        organizacion: { id: savedOrganizacion.id },
+        activo: true,
+      });
+
+      await orgUsuarioRepo.save(vinculo);
+      this.logger.log(`Vínculo gestor-organización creado`);
+
+      return this.mapToResponseDto(savedOrganizacion);
     });
-
-    if (existente) {
-      throw new ConflictException('La organización ya se encuentra registrada');
-    }
-
-    const organizacion = repo.create({
-      cuit: createDto.cuit,
-      razon_social: createDto.razon_social,
-      nombre_organizacion: createDto.nombre_organizacion,
-      web: createDto.web,
-      verificada: false,
-    });
-
-    const saved = await repo.save(organizacion);
-    this.logger.log(`Organización creada con ID ${saved.id}`);
-
-    return this.mapToResponseDto(saved);
   }
 
   /**
