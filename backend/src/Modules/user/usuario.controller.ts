@@ -50,14 +50,14 @@ export class UsuarioController {
 
   // Panel de Usuario
 
-  @Auth(Rol.USUARIO)
+  @Auth(Rol.USUARIO, Rol.ADMIN)
   @Get('perfil')
   @ApiOperation({ summary: 'Obtener mi perfil completo' })
   async getMiPerfil(@Req() req: RequestConUsuario) {
     return this.userService.findOne(req.user.id);
   }
 
-  @Auth(Rol.USUARIO)
+  @Auth(Rol.USUARIO, Rol.ADMIN)
   @Patch('perfil')
   @ApiOperation({ summary: 'Actualizar mis datos personales' })
   async updateMiPerfil(
