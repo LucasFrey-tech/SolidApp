@@ -19,6 +19,8 @@ import { DonacionModule } from '../donation/donacion.module';
 import { BeneficioModule } from '../benefit/beneficio.module';
 import { UsuarioBeneficioModule } from '../user/usuario-beneficio/usuario-beneficio.module';
 import { GestionDetector } from './estrategias/gestion/gestion_detector';
+import { EmpresaGestionStrategy } from './estrategias/gestion/gestion_empresa.strategy';
+import { OrganizacionGestionStrategy } from './estrategias/gestion/gestion_organizacion.strategy';
 
 /**
  * Módulo de NestJS que agrupa los componentes relacionados a la Autenticación:
@@ -56,6 +58,8 @@ import { GestionDetector } from './estrategias/gestion/gestion_detector';
     RolesGuard,
     EmailService,
     GestionDetector,
+    EmpresaGestionStrategy,
+    OrganizacionGestionStrategy,
   ],
   exports: [AuthService, RolesGuard],
 })
