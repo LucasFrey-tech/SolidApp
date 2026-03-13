@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/app/context/UserContext";
 import Swal from "sweetalert2";
 
-import { LoginUsuarioStrategy } from "@/API/class/login/usuario";
 import { Rol } from "@/API/types/auth";
 import { GestionTipo } from "@/API/types/gestion/enum";
 
