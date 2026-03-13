@@ -27,7 +27,6 @@ export class AuthService extends Crud<any> {
   }
 
   async register(data: RegistroUsuarioDto): Promise<AuthResponse> {
-    console.log("DATA: ", data);
     const url = `${this.baseUrl}${this.endPoint}/register`;
 
     const res = await fetch(url, {

@@ -81,9 +81,6 @@ export class UsuarioController {
   @Get('puntos')
   @ApiOperation({ summary: 'Obtener mis puntos' })
   async getMisPuntos(@Req() req: RequestConUsuario) {
-    console.log('🔐 Usuario autenticado en getPoints:', req.user);
-    console.log('🔐 ID del usuario:', req.user.id);
-    console.log('🔐 Rol del usuario:', req.user.rol);
     return this.userService.getPoints(req.user.id);
   }
 
