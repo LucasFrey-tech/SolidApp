@@ -39,16 +39,6 @@ export class UsuarioService {
   ) {}
 
   /**
-   * Encuentra un usuario por correo y Rol
-   */
-  async findByEmailRol(correo: string, rol: Rol): Promise<Usuario | null> {
-    return this.usuarioRepository.findOne({
-      relations: ['contacto'],
-      where: { contacto: { correo: correo }, rol: rol },
-    });
-  }
-
-  /**
    * Encuentra un usuario por correo
    */
   async findByEmail(email: string): Promise<Usuario | null> {

@@ -21,7 +21,7 @@ export default function UserCoupons() {
     const fetchCoupons = async () => {
       setLoadingCupones(true);
       try {
-        const data = await baseApi.users.getMisCuponesCanjeados();
+        const data = await baseApi.usuario.getMisCuponesCanjeados();
         setCupones(data);
       } catch (err) {
         console.error(err);
@@ -50,7 +50,7 @@ export default function UserCoupons() {
 
     if (result.isConfirmed) {
       try {
-        await baseApi.users.usarCupon(cupon.id);
+        await baseApi.usuario.usarCupon(cupon.id);
 
         setCupones((prev) =>
           prev.map((c) =>

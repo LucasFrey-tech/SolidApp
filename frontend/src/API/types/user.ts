@@ -3,6 +3,8 @@ import { GestionTipo } from "./gestion/enum";
 
 export interface User {
   id: number;
+  email: string;
+  username: string;
   documento: string;
   rol: Rol;
   nombre: string;

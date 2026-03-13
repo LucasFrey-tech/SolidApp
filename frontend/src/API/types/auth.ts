@@ -7,7 +7,6 @@ export enum Rol {
 export interface LoginRequestBody {
   correo: string;
   clave: string;
-  rol: Rol;
 }
 
 export interface RegisterRequestBody {

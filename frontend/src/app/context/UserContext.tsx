@@ -11,10 +11,11 @@ import { jwtDecode } from "jwt-decode";
 
 import { Rol } from "@/API/types/auth";
 import { GestionTipo } from "@/API/types/gestion/enum";
+import { baseApi } from "@/API/baseApi";
 
 export interface User {
-  email: string;
   sub: number;
+  email: string | undefined;
   username: string;
   rol: Rol;
   gestion?: GestionTipo | null;
@@ -34,33 +35,36 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refreshUser = () => {
-    const token = localStorage.getItem("token");
+const refreshUser = async () => {
+  const token = localStorage.getItem("token");
 
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
+  if (!token) {
+    setUser(null);
+    setLoading(false);
+    return;
+  }
 
-    try {
-      const decoded = jwtDecode<User>(token);
-      const safeUser: User = {
-        email: decoded.email,
-        sub: decoded.sub,
-        username: decoded.username || decoded.email.split("@")[0],
-        rol: decoded.rol,
-        gestion: decoded.gestion,
-        gestionId: decoded.gestionId,
-      };
-      setUser(safeUser);
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const decoded = jwtDecode<User>(token);
 
+    const perfil = await baseApi.usuario.getPerfil();
+
+    setUser({
+      sub: decoded.sub,
+      username: `${perfil.nombre} ${perfil.apellido}`,
+      rol: decoded.rol,
+      gestion: decoded.gestion,
+      gestionId: decoded.gestionId,
+      email: perfil.contacto?.correo,
+    });
+
+  } catch (error) {
+    console.error("Error cargando usuario:", error);
+    setUser(null);
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     refreshUser();
   }, []);

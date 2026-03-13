@@ -81,11 +81,10 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const strategy = new LoginUsuarioStrategy(baseApi.auth);
+      
 
-      const res = await strategy.login({
+      const res = await baseApi.auth.login({
         ...loginData,
-        rol: Rol.USUARIO,
       });
 
       const token = res.token;

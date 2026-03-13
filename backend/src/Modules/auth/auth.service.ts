@@ -43,7 +43,6 @@ export class AuthService {
     return {
       token: this.jwtService.sign({
         sub: payload.sub,
-        email: payload.email,
         rol: payload.rol,
         gestion: payload.gestion,
         gestionId: payload.gestionId,
@@ -76,7 +75,6 @@ export class AuthService {
 
     const tokenPayload = this.createPayload(
       usuario.id,
-      usuario.contacto.correo,
       usuario.rol,
     );
 
@@ -86,9 +84,9 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const usuario = await this.usuarioService.findByEmailRol(
+    const usuario = await this.usuarioService.findByEmail(
       dto.correo,
-      dto.rol,
+    
     );
     console.log('Usuario encontrada:', usuario ? 'Sí' : 'No');
 
@@ -122,7 +120,6 @@ export class AuthService {
 
     const tokenPayload = this.createPayload(
       usuario.id,
-      usuario.contacto.correo,
       usuario.rol,
       gestion,
       gestionId,
@@ -173,14 +170,12 @@ export class AuthService {
 
   createPayload(
     id: number,
-    correo: string,
     rol: Rol,
     gestion?: GestionTipo | null,
     gestionId?: number | null,
   ): JwtPayload {
     return {
       sub: id,
-      email: correo,
       rol: rol,
       gestion,
       gestionId,

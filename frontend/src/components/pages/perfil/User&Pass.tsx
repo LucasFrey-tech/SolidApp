@@ -1,10 +1,11 @@
 "use client";
 
 import styles from "@/styles/UserPanel/usuario/user&pass.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { baseApi } from "@/API/baseApi";
 import { useUser } from "@/app/context/UserContext";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 export default function UserAndPass() {
   const { user, refreshUser } = useUser();
@@ -18,11 +19,20 @@ export default function UserAndPass() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+
+
   type UpdateCredentialsPayload = {
     correo?: string;
     passwordActual?: string;
     passwordNueva?: string;
   };
+
+  useEffect(() => {
+    if (user?.email) {
+      setCorreo(user.email);
+      setCorreoOriginal(user.email);
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,23 +66,39 @@ export default function UserAndPass() {
       setError("No hay cambios para guardar");
       return;
     }
+    const confirmacion = await Swal.fire({
+    title: "¿Seguro que querés realizar estos cambios?",
+    text: "Se actualizarán tus credenciales.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Sí, guardar cambios",
+    cancelButtonText: "Cancelar",
+  });
 
+if (!confirmacion.isConfirmed) {
+  return;
+}
     try {
       const response = await baseApi.usuario.updateCredenciales(payload);
 
-      localStorage.setItem('token', response.token);
-
-      refreshUser();
-
-      setSuccess("Credenciales actualizadas correctamente");
-
-      if (payload.correo) {
-        setCorreoOriginal(payload.correo);
+      if (response.token) {
+        localStorage.setItem("token", response.token);
       }
 
-      setPasswordActual("");
-      setPasswordNueva("");
-      setPasswordConfirmacion("");
+      await Swal.fire({
+        icon: "success",
+        title: "Credenciales actualizadas",
+        text: "Debes iniciar sesión nuevamente con tus nuevas credenciales.",
+        confirmButtonText: "Ir al login",
+        confirmButtonColor: "#3085d6",
+      });
+
+      localStorage.removeItem("token");
+
+      router.push("/login");
+
     } catch (err: any) {
       setError(err.message || "Error al actualizar credenciales");
     }
