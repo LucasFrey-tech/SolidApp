@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 
 export default function UserAndPass() {
-  const { user, refreshUser } = useUser();
+  const { user, setUser } = useUser();
   const router = useRouter();
 
   const [correo, setCorreo] = useState(user?.email ?? "");
@@ -82,7 +82,7 @@ if (!confirmacion.isConfirmed) {
 }
     try {
       const response = await baseApi.usuario.updateCredenciales(payload);
-
+      
       if (response.token) {
         localStorage.setItem("token", response.token);
       }
@@ -98,6 +98,7 @@ if (!confirmacion.isConfirmed) {
       localStorage.removeItem("token");
 
       router.push("/login");
+      setUser(null);
 
     } catch (err: any) {
       setError(err.message || "Error al actualizar credenciales");
