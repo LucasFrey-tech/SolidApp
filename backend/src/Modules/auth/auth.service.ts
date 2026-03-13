@@ -43,7 +43,7 @@ export class AuthService {
     return {
       token: this.jwtService.sign({
         sub: payload.sub,
-        email: payload.email,
+        // email: payload.email,
         rol: payload.rol,
         gestion: payload.gestion,
         gestionId: payload.gestionId,
@@ -90,20 +90,15 @@ export class AuthService {
       dto.correo,
       dto.rol,
     );
-    console.log('Usuario encontrada:', usuario ? 'Sí' : 'No');
 
     if (!usuario) throw new UnauthorizedException('Credenciales incorrectas');
 
     this.checkDeshabilitado(usuario.habilitado);
 
-    console.log('Hash en BD:', usuario.clave);
-
     const claveValida = await this.hashService.compare(
       dto.clave,
       usuario.clave,
     );
-
-    console.log('¿Contraseña válida?', claveValida);
 
     if (!claveValida)
       throw new UnauthorizedException('Credenciales incorrectas');
@@ -148,25 +143,14 @@ export class AuthService {
 
   async resetPassword(token: string, newPassword: string) {
     const usuario = await this.usuarioService.findByResetToken(token);
-    console.log(
-      'Usuario encontrado:',
-      usuario ? usuario.contacto.correo : 'NO',
-    );
 
     if (!usuario) {
       throw new UnauthorizedException('Token inválido o expirado');
     }
 
-    console.log('Nueva contraseña (texto):', newPassword);
-
     const hashedPassword = await this.hashService.hash(newPassword);
-    console.log('Hash generado:', hashedPassword);
 
     await this.usuarioService.resetPassword(usuario.id, hashedPassword);
-    console.log('Contraseña actualizada en BD');
-
-    const usuarioActualizado = await this.usuarioService.findOne(usuario.id);
-    console.log('Hash guardado en BD:', usuarioActualizado?.clave);
 
     return { message: 'Contraseña actualizada correctamente' };
   }

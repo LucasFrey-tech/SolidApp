@@ -170,14 +170,6 @@ export class UsuarioService {
       gestionId = updated.organizacionUsuario.id;
     }
 
-    console.log('🎫 PAYLOAD PARA NUEVO TOKEN:', {
-      sub: updated.id,
-      email: updated.contacto.correo,
-      rol: updated.rol,
-      tieneEmpresa: updated.empresaUsuario,
-      tieneOrganizacion: updated.organizacionUsuario,
-    });
-
     const payload = {
       sub: updated.id,
       email: updated.contacto.correo,
