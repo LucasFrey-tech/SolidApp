@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { GestionInfo } from '../../interfaces/gestion_info';
 import { EmpresaGestionStrategy } from './gestion_empresa.strategy';
 import { OrganizacionGestionStrategy } from './gestion_organizacion.strategy';
 
+@Injectable()
 export class GestionDetector {
   constructor(
     private readonly empresaStrategy: EmpresaGestionStrategy,
