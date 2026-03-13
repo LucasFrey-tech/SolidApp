@@ -4,11 +4,43 @@ import {
   BeneficioCreateRequest,
   BeneficioUpdateRequest,
 } from "../types/beneficios";
-import { Empresa, EmpresaUpdateRequest } from "../types/empresas";
+import {
+  Empresa,
+  EmpresaUpdateRequest,
+  EmpresaRegistroRequest,  // nuevo
+} from "../types/empresas";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class EmpresasService extends Crud<Empresa> {
+  getAll(): Promise<Empresa[]> {
+    throw new Error("Method not implemented.");
+  }
+  getOne(_id: number): Promise<Empresa> {
+    throw new Error("Method not implemented.");
+  }
   protected endPoint = "empresas";
+
+  // =====Registro Público=====
+
+  /**
+   * Registra una nueva empresa junto con su usuario gestor.
+   * No requiere autenticación.
+   * POST /empresas/registro
+   */
+  async registrarEmpresa(data: EmpresaRegistroRequest): Promise<Empresa> {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/registro`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: "Error desconocido" }));
+      throw new Error(err.message ?? `Error al registrar empresa (${res.status})`);
+    }
+
+    return res.json();
+  }
 
   // =====Panel Empresa=====
 
@@ -21,7 +53,7 @@ export class EmpresasService extends Crud<Empresa> {
   }
 
   /**
-   *  Beneficios paginados por empresa
+   * Beneficios paginados por empresa
    */
   async getCuponesPaginated(
     page: number,
@@ -100,7 +132,6 @@ export class EmpresasService extends Crud<Empresa> {
 
     if (!res.ok) {
       const errorDetails = await res.text();
-
       throw new Error(
         `Error al actualizar credenciales (${res.status}): ${errorDetails}`,
       );
@@ -148,9 +179,6 @@ export class EmpresasService extends Crud<Empresa> {
     }
   }
 
-  /**
-   * Restaurar empresa deshabilitada
-   */
   async restore(id: number): Promise<void> {
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/${id}/restaurar`,
@@ -165,11 +193,12 @@ export class EmpresasService extends Crud<Empresa> {
     }
   }
 
+  // Stubs requeridos por Crud<Empresa>
   create(_data: Partial<Empresa>): Promise<Empresa> {
     throw new Error("Method not implemented.");
   }
 
-  update(_id: number, data: Partial<Empresa>): Promise<Empresa> {
+  update(_id: number, _data: Partial<Empresa>): Promise<Empresa> {
     throw new Error("Method not implemented.");
   }
 }

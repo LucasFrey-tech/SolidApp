@@ -17,6 +17,8 @@ import { BeneficioService } from '../benefit/beneficio.service';
 import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
+import { Rol, Usuario } from '../../Entities/usuario.entity';
+import { HashService } from '../../common/bcryptService/hashService';
 
 /**
  * ============================================================
@@ -53,9 +55,12 @@ export class EmpresaService {
     private readonly empresaRepository: Repository<Empresa>,
     @InjectRepository(EmpresaUsuario)
     private readonly empresaUsuarioRepository: Repository<EmpresaUsuario>,
+    @InjectRepository(Usuario)
+    private readonly usuarioRepository: Repository<Usuario>,
     private readonly beneficioService: BeneficioService,
     private readonly dataSource: DataSource,
-  ) {}
+    private readonly hashService: HashService,
+  ) { }
 
   /**
    * Obtiene empresas paginadas con búsqueda opcional.
@@ -80,9 +85,9 @@ export class EmpresaService {
 
     const where: FindOptionsWhere<Empresa>[] = search
       ? [
-          { ...baseFilter, nombre_empresa: Like(`%${search}%`) },
-          { ...baseFilter, razon_social: Like(`%${search}%`) },
-        ]
+        { ...baseFilter, nombre_empresa: Like(`%${search}%`) },
+        { ...baseFilter, razon_social: Like(`%${search}%`) },
+      ]
       : [baseFilter];
 
     const [empresas, total] = await this.empresaRepository.findAndCount({
@@ -144,48 +149,90 @@ export class EmpresaService {
     return this.beneficioService.update(cuponId, dto);
   }
 
-  /**
-   * Crea una nueva empresa.
-   *
-   * Validaciones:
-   * - Verifica que no exista otra empresa con el mismo cuit.
-   *
-   * @param createDto Datos de creación.
-   * @throws ConflictException si ya existe.
-   *
-   * @returns {Promise<EmpresaResponseDTO>}
-   */
-  async create(
-    createDto: CreateEmpresaDTO,
-    usuarioId: number,
-  ): Promise<EmpresaResponseDTO> {
+  async registrarEmpresa(dto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {
     return await this.dataSource.transaction(async (manager) => {
-      const repo = manager
-        ? manager.getRepository(Empresa)
-        : this.empresaRepository;
+      const usuarioRepo = manager.getRepository(Usuario);
+      const empresaRepo = manager.getRepository(Empresa);
+      const empresaUsuarioRepo = manager.getRepository(EmpresaUsuario);
 
-      const empresaUsuarioRepo = manager
-        ? manager.getRepository(EmpresaUsuario)
-        : this.empresaUsuarioRepository;
-
-      const cuitExistente = await repo.findOne({
-        where: { cuit: createDto.cuit_empresa },
+      // 1. Verificar CUIT único
+      const cuitExistente = await empresaRepo.findOne({
+        where: { cuit: dto.cuit_empresa },
       });
-
       if (cuitExistente) {
-        throw new ConflictException('La Empresa ya está registrada');
+        throw new ConflictException('Ya existe una empresa con ese CUIT');
       }
 
-      const empresa = repo.create(createDto);
+      // 2. Verificar documento único
+      const docExistente = await usuarioRepo.findOne({
+        where: { documento: dto.documento },
+      });
+      if (docExistente) {
+        throw new ConflictException('Ya existe un usuario con ese documento');
+      }
 
-      const savedEmpresa = await repo.save(empresa);
+      // 3. Verificar correo único
+      const correoExistente = await usuarioRepo.findOne({
+        relations: ['contacto'],
+        where: { contacto: { correo: dto.correo } },
+      });
+      if (correoExistente) {
+        throw new ConflictException('Ya existe un usuario con ese correo');
+      }
 
-      const empresaUsuario = empresaUsuarioRepo.create({
-        empresa: { id: savedEmpresa.id },
-        usuario: { id: usuarioId },
+      // 4. Crear el gestor (Usuario con Rol.GESTOR)
+      //    Mismo patrón que usuarioService.create()
+      const claveHash = await this.hashService.hash(dto.clave);
+
+      const gestor = usuarioRepo.create({
+        nombre: dto.nombre,
+        apellido: dto.apellido,
+        documento: dto.documento,
+        clave: claveHash,
+        rol: Rol.GESTOR,
+        contacto: {
+          correo: dto.correo,
+          telefono: dto.telefono,
+        },
+        direccion: {},
+        puntos: 0,
+        habilitado: true,
+        verificado: false,
       });
 
-      await empresaUsuarioRepo.save(empresaUsuario);
+      const savedGestor = await usuarioRepo.save(gestor);
+      this.logger.log(`Gestor creado con ID ${savedGestor.id}`);
+
+      // 5. Crear la empresa
+      const empresa = empresaRepo.create({
+        cuit: dto.cuit_empresa,
+        razon_social: dto.razon_social,
+        nombre_empresa: dto.nombre_empresa,
+        web: dto.web,
+        contacto: {
+          correo: dto.correo_empresa,
+          telefono: dto.telefono,
+        },
+        direccion: {
+          calle: dto.calle,
+          numero: dto.numero,
+        },
+        habilitada: false, // requiere verificación del admin
+        verificada: false,
+      });
+
+      const savedEmpresa = await empresaRepo.save(empresa);
+      this.logger.log(`Empresa creada con ID ${savedEmpresa.id}`);
+
+      // 6. Vincular gestor ↔ empresa
+      const vinculo = empresaUsuarioRepo.create({
+        usuario: { id: savedGestor.id },
+        empresa: { id: savedEmpresa.id },
+        activo: true,
+      });
+
+      await empresaUsuarioRepo.save(vinculo);
+      this.logger.log(`Vínculo gestor-empresa creado`);
 
       return this.mapToResponseDto(savedEmpresa);
     });

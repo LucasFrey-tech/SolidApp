@@ -1,66 +1,73 @@
+import { IsOptional, IsString, IsEmail, MinLength, IsNotEmpty, MaxLength, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsNotEmpty,
-  MaxLength,
-  IsOptional,
-  Matches,
-} from 'class-validator';
 
 export class CreateEmpresaDTO {
-  @ApiProperty({
-    example: '20-04856975-3',
-    description: 'CUIL de la Empresa (formato: XX-XXXXXXXX-X)',
-  })
+  @ApiProperty({ example: 'Juan' })
   @IsString()
-  @IsNotEmpty({ message: 'El CUIL es Obligatorio' })
-  @MaxLength(13, { message: 'El CUIL no puede superar los 13 caracteres' })
-  @Matches(/^\d{2}-\d{8}-\d{1}$/, {
-    message: 'El CUIL debe tener el formato XX-XXXXXXXX-X',
-  })
+  @IsNotEmpty()
+  nombre: string;
+
+  @ApiProperty({ example: 'Pérez' })
+  @IsString()
+  @IsNotEmpty()
+  apellido: string;
+
+  @ApiProperty({ example: '12345678' })
+  @IsString()
+  @IsNotEmpty()
+  documento: string;
+
+  @ApiProperty({ example: 'gestor@empresa.com' })
+  @IsEmail()
+  correo: string;
+
+  @ApiProperty({ example: 'Password123' })
+  @IsString()
+  @MinLength(6)
+  clave: string;
+
+  @ApiProperty({ example: '1123456789' })
+  @IsString()
+  @IsNotEmpty()
+  telefono: string;
+
+  // ===== Datos de la Empresa =====
+
+  @ApiProperty({ example: 'contacto@empresa.com' })
+  @IsEmail()
+  correo_empresa: string;
+
+  @ApiProperty({ example: '30123456789' })
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^\d{11}$/, { message: 'El CUIT debe tener exactamente 11 dígitos numéricos' })
   cuit_empresa: string;
 
-  @ApiProperty({
-    example: 'Supermercados Unidos S.A.',
-    description: 'Razón social registrada de la empresa',
-  })
+  @ApiProperty({ example: 'Empresa S.A.' })
   @IsString()
-  @IsNotEmpty({ message: 'La Razon Social es Obligatoria' })
-  @MaxLength(255, {
-    message: 'La razon social no puede superar los 255 caracteres',
-  })
+  @IsNotEmpty()
+  @MaxLength(255)
   razon_social: string;
 
-  @ApiProperty({
-    example: 'SuperUnidos',
-    description: 'Nombre comercial o de fantasía',
-    required: false,
-  })
+  @ApiProperty({ example: 'Mi Empresa' })
   @IsString()
-  @IsOptional()
-  @MaxLength(50, {
-    message: 'El nombre ficticio no puede superar los 50 caracteres',
-  })
-  nombre_empresa?: string;
+  @IsNotEmpty()
+  @MaxLength(50)
+  nombre_empresa: string;
 
-  @ApiProperty({
-    example: 'Supermercado',
-    description: 'Rubro principal de la empresa',
-  })
+  @ApiProperty({ example: 'Av. Siempre Viva' })
   @IsString()
-  @IsOptional()
-  @MaxLength(15, { message: 'El Rubro no puede superar los 15 caracteres' })
-  rubro?: string;
+  @IsNotEmpty()
+  calle: string;
 
-  @ApiProperty({
-    example: 'www.supermercadosunidos.com.ar',
-    description: 'Sitio web oficial',
-    required: false,
-  })
+  @ApiProperty({ example: '742' })
   @IsString()
+  @IsNotEmpty()
+  numero: string;
+
+  @ApiProperty({ example: 'https://miempresa.com', required: false })
   @IsOptional()
-  @MaxLength(150, {
-    message: 'La dirección no puede superar los 150 caracteres',
-  })
+  @IsString()
+  @MaxLength(150)
   web?: string;
 }

@@ -7,6 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { UsuarioModule } from '../user/usuario.module';
 import { BeneficioModule } from '../benefit/beneficio.module';
 import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
+import { HashService } from '../../common/bcryptService/hashService';
+import { Usuario } from '../../Entities/usuario.entity';
 
 /**
  * ============================================================
@@ -63,7 +65,7 @@ import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
      * Permite usar:
      * @InjectRepository(Empresa)
      */
-    TypeOrmModule.forFeature([Empresa, EmpresaUsuario]),
+    TypeOrmModule.forFeature([Empresa, EmpresaUsuario, Usuario]),
     UsuarioModule,
     BeneficioModule,
   ],
@@ -77,12 +79,12 @@ import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
   /**
    * Servicios que contienen la lógica de negocio.
    */
-  providers: [EmpresaService],
+  providers: [EmpresaService, HashService],
 
   /**
    * Exporta el servicio para que pueda ser
    * utilizado en otros módulos del sistema.
    */
-  exports: [EmpresaService],
+  exports: [EmpresaService, TypeOrmModule],
 })
 export class EmpresaModule {}

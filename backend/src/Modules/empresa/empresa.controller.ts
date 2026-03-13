@@ -28,6 +28,7 @@ import { PaginatedBeneficiosResponseDTO } from '../benefit/dto/response_paginate
 import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
+import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 
 /**
  * ============================================================
@@ -57,7 +58,7 @@ import { Auth, Public } from '../auth/decoradores/auth.decorador';
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: EmpresaService) {}
+  constructor(private readonly empresasService: EmpresaService) { }
 
   /**
    * GET /list
@@ -126,6 +127,19 @@ export class EmpresaController {
     @Req() req: RequestConUsuario,
   ): Promise<EmpresaResponseDTO> {
     return this.empresasService.getEmpresaByUsuario(req.user.id);
+  }
+
+  @Public()
+  @Post('registro')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Registrar nueva empresa con su gestor' })
+  @ApiBody({ type: CreateEmpresaDTO })
+  @ApiResponse({ status: 201, description: 'Empresa y gestor creados', type: EmpresaResponseDTO })
+  @ApiResponse({ status: 409, description: 'CUIT o correo ya registrado' })
+  async registrarEmpresa(
+    @Body() dto: CreateEmpresaDTO,
+  ): Promise<EmpresaResponseDTO> {
+    return this.empresasService.registrarEmpresa(dto);
   }
 
   /**
