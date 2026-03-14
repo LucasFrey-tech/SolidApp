@@ -6,20 +6,27 @@ import styles from "@/styles/UserPanel/data/userData.module.css";
 import { useCallback, useEffect, useState } from "react";
 import { User } from "@/API/types/user";
 import { useUser } from "@/app/context/UserContext";
+import { Rol } from "@/API/types/auth";
 
 type EditableUserFields = {
-  calle: string;
-  numero: string;
+  documento: string;
+  nombre: string;
+  apellido: string;
+  calle?: string;
+  numero?: string;
   adicional?: string;
-  codigo_postal: string;
-  provincia: string;
-  ciudad: string;
+  codigo_postal?: string;
+  provincia?: string;
+  ciudad?: string;
 
-  prefijo: string;
-  telefono: string;
+  prefijo?: string;
+  telefono?: string;
 };
 
 const defaultEditableData: EditableUserFields = {
+  documento: "",
+  nombre: "",
+  apellido: "",
   calle: "",
   numero: "",
   adicional: "",
@@ -41,6 +48,8 @@ export default function UserData() {
 
   const { user } = useUser();
 
+  const isAdmin = user?.rol === Rol.ADMIN;
+
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user) return;
@@ -56,6 +65,9 @@ export default function UserData() {
         setUserData(response);
 
         setEditableData({
+          documento: response.documento || "",
+          nombre: response.nombre || "",
+          apellido: response.apellido || "",
           calle: response.direccion?.calle || "",
           numero: response.direccion?.numero || "",
           adicional: response.direccion?.adicional || "",
@@ -74,6 +86,9 @@ export default function UserData() {
 
     fetchUserData();
   }, [user]);
+
+  const emptyToUndefined = (v?: string) =>
+    v && v.trim() !== "" ? v : undefined;
 
   const handleInputChange = useCallback(
     (field: keyof EditableUserFields, value: string) => {
@@ -98,17 +113,22 @@ export default function UserData() {
 
     try {
       const dataToSend = {
+        documento: emptyToUndefined(editableData.documento),
+        nombre: emptyToUndefined(editableData.nombre),
+        apellido: emptyToUndefined(editableData.apellido),
+
         direccion: {
-          calle: editableData.calle,
-          numero: editableData.numero,
-          adicional: editableData.adicional,
-          codigo_postal: editableData.codigo_postal,
-          provincia: editableData.provincia,
-          ciudad: editableData.ciudad,
+          calle: emptyToUndefined(editableData.calle),
+          numero: emptyToUndefined(editableData.numero),
+          adicional: emptyToUndefined(editableData.adicional),
+          codigo_postal: emptyToUndefined(editableData.codigo_postal),
+          provincia: emptyToUndefined(editableData.provincia),
+          ciudad: emptyToUndefined(editableData.ciudad),
         },
+
         contacto: {
-          prefijo: editableData.prefijo,
-          telefono: editableData.telefono,
+          prefijo: emptyToUndefined(editableData.prefijo),
+          telefono: emptyToUndefined(editableData.telefono),
         },
       };
 
@@ -129,7 +149,6 @@ export default function UserData() {
     value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, "");
 
   if (loading) return <div>Cargando datos de usuario...</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <main className={styles.Content}>
@@ -143,8 +162,13 @@ export default function UserData() {
               <label className={styles.Label}>Número de DNI</label>
               <NumericInput
                 className={styles.Input}
-                value={userData?.documento}
-                readOnly
+                value={editableData?.documento}
+                readOnly={!isAdmin}
+                onChange={
+                  isAdmin
+                    ? (e) => handleInputChange("documento", e.target.value)
+                    : undefined
+                }
               />
             </div>
 
@@ -153,8 +177,17 @@ export default function UserData() {
               <input
                 className={styles.Input}
                 type="text"
-                value={userData?.nombre}
-                readOnly
+                value={editableData?.nombre}
+                readOnly={!isAdmin}
+                onChange={
+                  isAdmin
+                    ? (e) =>
+                        handleInputChange(
+                          "nombre",
+                          onlyLettersAndSpaces(e.target.value),
+                        )
+                    : undefined
+                }
               />
             </div>
 
@@ -163,8 +196,17 @@ export default function UserData() {
               <input
                 className={styles.Input}
                 type="text"
-                value={userData?.apellido}
-                readOnly
+                value={editableData?.apellido}
+                readOnly={!isAdmin}
+                onChange={
+                  isAdmin
+                    ? (e) =>
+                        handleInputChange(
+                          "apellido",
+                          onlyLettersAndSpaces(e.target.value),
+                        )
+                    : undefined
+                }
               />
             </div>
           </div>
@@ -211,7 +253,6 @@ export default function UserData() {
                 value={editableData.adicional || ""}
                 onChange={(e) => handleInputChange("adicional", e.target.value)}
                 placeholder="Dto, Piso, etc"
-                required
               />
             </div>
 

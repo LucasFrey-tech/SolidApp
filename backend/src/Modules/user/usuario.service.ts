@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Like, MoreThan, Repository } from 'typeorm';
-import { Rol, Usuario } from '../../Entities/usuario.entity';
+import { Usuario } from '../../Entities/usuario.entity';
 import { CreateUsuarioDto } from './dto/create_usuario.dto';
 import { UpdatePuntosDto } from './dto/update_puntos_usuario.dto';
 import { ResponseUsuarioDto } from './dto/response_usuario.dto';
@@ -188,13 +188,10 @@ export class UsuarioService {
     if (!usuario)
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
 
-    usuario.contacto = dto.contacto
-      ? Object.assign(usuario.contacto ?? new Contacto(), dto.contacto)
-      : usuario.contacto;
+    this.usuarioRepository.merge(usuario, dto);
 
-    usuario.direccion = dto.direccion
-      ? Object.assign(usuario.direccion ?? new Direccion(), dto.direccion)
-      : usuario.direccion;
+    Object.assign(usuario.contacto ?? {}, dto.contacto);
+    Object.assign(usuario.direccion ?? {}, dto.direccion);
 
     await this.usuarioRepository.save(usuario);
 

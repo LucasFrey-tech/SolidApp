@@ -67,7 +67,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'El número no puede estar vacío' })
   @Length(1, 10)
   numero?: string;
 
@@ -77,7 +77,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'La información adicional no puede estar vacía' })
   @Length(1, 100)
   adicional?: string;
 
@@ -87,7 +87,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'El Codigo Postal no puede estar vacío' })
   @Length(1, 10)
   codigo_postal?: string;
 
@@ -97,7 +97,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'La ciudad no puede estar vacía' })
   @Length(1, 50)
   ciudad?: string;
 
@@ -107,7 +107,7 @@ export class DireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'La provincia no puede estar vacía' })
   @Length(1, 50)
   provincia?: string;
 }

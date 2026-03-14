@@ -47,7 +47,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'El número no puede estar vacía' })
   @MaxLength(10)
   numero?: string;
 
@@ -57,7 +57,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'La información adicional no puede estar vacía' })
   @MaxLength(100)
   adicional?: string;
 
@@ -67,7 +67,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'El codigo postal no puede estar vacía' })
   @MaxLength(10)
   codigo_postal?: string;
 
@@ -77,7 +77,7 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'La ciudad no puede estar vacía' })
   @MaxLength(50)
   ciudad?: string;
 
@@ -87,12 +87,30 @@ export class UpdateDireccionDto {
   })
   @IsOptional()
   @IsString()
-  @MinLength(1, { message: 'La calle no puede estar vacía' })
+  @MinLength(1, { message: 'La provincia no puede estar vacía' })
   @MaxLength(50)
   provincia?: string;
 }
 
 export class UpdateUsuarioDto {
+  @ApiPropertyOptional({ type: String })
+  @IsOptional()
+  @IsString()
+  @Type(() => String)
+  documento?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @IsOptional()
+  @IsString()
+  @Type(() => String)
+  nombre?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @IsOptional()
+  @IsString()
+  @Type(() => String)
+  apellido?: string;
+
   @ApiPropertyOptional({ type: UpdateContactoDto })
   @IsOptional()
   @ValidateNested()
