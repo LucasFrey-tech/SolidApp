@@ -19,8 +19,6 @@ import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
 import { UpdateUsuarioDto } from './dto/update_usuario.dto';
 import { UsuarioBeneficioService } from './usuario-beneficio/usuario-beneficio.service';
 import { HashService } from '../../common/bcryptService/hashService';
-import { Contacto } from '../../Entities/contacto.entity';
-import { Direccion } from '../../Entities/direccion.entity';
 import { JwtService } from '@nestjs/jwt';
 import { GestionTipo } from '../auth/dto/gestion.enum';
 
@@ -43,7 +41,7 @@ export class UsuarioService {
    */
   async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuarioRepository.findOne({
-      relations: ['contacto', 'direccion'],
+      relations: ['contacto', 'direccion', 'empresaUsuario', 'organizacionUsuario'],
       where: { contacto: { correo: email } },
     });
   }
@@ -289,7 +287,7 @@ export class UsuarioService {
    */
   async findOne(id: number): Promise<ResponseUsuarioDto> {
     const usuario = await this.usuarioRepository.findOne({
-      relations: ['contacto', 'direccion'],
+      relations: ['contacto', 'direccion', 'empresaUsuario', 'organizacionUsuario'],
       where: { id },
     });
 
@@ -353,7 +351,8 @@ export class UsuarioService {
     dto.fecha_registro = usuario.fecha_registro;
     dto.ultimo_cambio = usuario.ultimo_cambio;
     dto.ultima_conexion = usuario.ultima_conexion;
-
+    dto.empresa_usuario = usuario.empresaUsuario;
+    dto.organizacion_usuario = usuario.organizacionUsuario;
     return dto;
   }
 

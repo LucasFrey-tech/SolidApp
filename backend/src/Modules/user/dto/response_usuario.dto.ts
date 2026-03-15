@@ -2,6 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Rol } from '../../../Entities/usuario.entity';
 import { Expose, Type } from 'class-transformer';
 import { ContactoDto, DireccionDto } from '../../contacto_direccion/dto';
+import { EmpresaUsuario } from '../../../Entities/empresa_usuario.entity';
+import { OrganizacionUsuario } from '../../../Entities/organizacion_usuario.entity';
 
 export class ResponseUsuarioDto {
   @ApiProperty({ example: 12, description: 'Identificador único del usuario' })
@@ -73,4 +75,16 @@ export class ResponseUsuarioDto {
     description: 'Fecha de ultimo cambio',
   })
   ultima_conexion: Date;
+
+  @ApiPropertyOptional({
+    description: 'ID de la empresa a la que pertenece el usuario (si aplica)',
+    example: 5,
+  })
+  empresa_usuario?: EmpresaUsuario;
+
+  @ApiPropertyOptional({
+    description: 'ID de la organización a la que pertenece el usuario (si aplica)',
+    example: 3,
+  })
+  organizacion_usuario?: OrganizacionUsuario;  
 }
