@@ -10,6 +10,7 @@ import { useUser } from "../context/UserContext";
 import Modal from "@/components/ui/Modal";
 import { DonacionEstado } from "@/API/types/donaciones/enum";
 import OrganizationInfo from "@/components/pages/panelOrganizacion/OrganizacionInfo";
+import InvitacionesPanel from "@/components/pages/panelOrganizacion/InvitacionesPanel";
 
 import {
   CampaignCreateRequest,
@@ -30,7 +31,7 @@ type Donation = {
   cantidad: number;
 };
 
-type ViewMode = "campaigns" | "donations" | "info";
+type ViewMode = "campaigns" | "donations" | "info" | "invitaciones";
 
 export default function OrganizationCampaignsPage() {
   const [view, setView] = useState<ViewMode>("campaigns");
@@ -47,7 +48,6 @@ export default function OrganizationCampaignsPage() {
   const [donationsTotalPages, setDonationsTotalPages] = useState(1);
 
   const [open, setOpen] = useState(false);
-
   const [editingCampaign, setEditingCampaign] =
     useState<CampaignDetalle | null>(null);
 
@@ -224,7 +224,7 @@ export default function OrganizationCampaignsPage() {
   };
 
   /* ===============================
-     CREAR / EDITAR
+     CREAR / EDITAR CAMPAÑAS
   ================================ */
 
   const handleSubmitCampaign = async (data: CampaignFormValues) => {
@@ -299,35 +299,36 @@ export default function OrganizationCampaignsPage() {
 
       <div className={styles.tabs}>
         <button
-          className={`${styles.tabButton} ${view === "campaigns" ? styles.active : ""
-            }`}
+          className={`${styles.tabButton} ${view === "campaigns" ? styles.active : ""}`}
           onClick={() => setView("campaigns")}
         >
           Campañas
         </button>
 
         <button
-          className={`${styles.tabButton} ${view === "donations" ? styles.active : ""
-            }`}
+          className={`${styles.tabButton} ${view === "donations" ? styles.active : ""}`}
           onClick={() => setView("donations")}
         >
           Donaciones
         </button>
 
         <button
-          className={`${styles.tabButton} ${view === "info" ? styles.active : ""
-            }`}
+          className={`${styles.tabButton} ${view === "info" ? styles.active : ""}`}
           onClick={() => setView("info")}
         >
           Información
         </button>
 
-
+        <button
+          className={`${styles.tabButton} ${view === "invitaciones" ? styles.active : ""}`}
+          onClick={() => setView("invitaciones")}
+        >
+          Invitaciones
+        </button>
       </div>
 
       <div className={styles.divider} />
 
-      {/* CAMPAÑAS */}
       {view === "campaigns" && (
         <>
           <ul className={styles.list}>
@@ -388,7 +389,6 @@ export default function OrganizationCampaignsPage() {
         </>
       )}
 
-      {/* DONACIONES */}
       {view === "donations" && (
         <>
           <table className={styles.table}>
@@ -419,9 +419,9 @@ export default function OrganizationCampaignsPage() {
                         d.estado === DonacionEstado.APROBADA
                           ? styles.badgeAprobada
                           : d.estado === DonacionEstado.RECHAZADA
-                            ? styles.badgeRechazada
-                            : styles.badgePendiente
-                        }`}
+                          ? styles.badgeRechazada
+                          : styles.badgePendiente
+                      }`}
                     >
                       {DonacionEstado[d.estado]}
                     </span>
@@ -482,7 +482,10 @@ export default function OrganizationCampaignsPage() {
           </div>
         </>
       )}
-  {view === "info" && <OrganizationInfo />}
+
+      {view === "info" && <OrganizationInfo />}
+
+      {view === "invitaciones" && <InvitacionesPanel />}
 
       <Modal
         open={open}
@@ -495,16 +498,16 @@ export default function OrganizationCampaignsPage() {
           initialValues={
             editingCampaign
               ? {
-                titulo: editingCampaign.titulo,
-                descripcion: editingCampaign.descripcion,
-                objetivo: editingCampaign.objetivo,
-                puntos: editingCampaign.puntos,
-                fecha_Inicio: editingCampaign.fecha_Inicio,
-                fecha_Fin: editingCampaign.fecha_Fin,
-                estado: editingCampaign.estado,
-                imagenesExistentes:
-                  editingCampaign.imagenes?.map((img) => img.url) ?? [],
-              }
+                  titulo: editingCampaign.titulo,
+                  descripcion: editingCampaign.descripcion,
+                  objetivo: editingCampaign.objetivo,
+                  puntos: editingCampaign.puntos,
+                  fecha_Inicio: editingCampaign.fecha_Inicio,
+                  fecha_Fin: editingCampaign.fecha_Fin,
+                  estado: editingCampaign.estado,
+                  imagenesExistentes:
+                    editingCampaign.imagenes?.map((img) => img.url) ?? [],
+                }
               : undefined
           }
           onSubmit={handleSubmitCampaign}
