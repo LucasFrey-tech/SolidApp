@@ -1,9 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class ContactoOrganizacionDto {
-  
+export class UpdateContactoOrganizacionDto {
   @ApiPropertyOptional({
     example: '11',
     description: 'Prefijo telefónico (código de área)',
@@ -24,7 +28,6 @@ export class ContactoOrganizacionDto {
 }
 
 export class UpdateDireccionOrganizacionDto {
-
   @ApiPropertyOptional({ example: 'Av. Siempre Viva' })
   @IsOptional()
   @IsString()
@@ -57,7 +60,6 @@ export class UpdateDireccionOrganizacionDto {
 }
 
 export class UpdateOrganizacionDto {
-
   @IsOptional()
   @IsString()
   nombre_organizacion?: string;
@@ -80,8 +82,8 @@ export class UpdateOrganizacionDto {
 
   @IsOptional()
   @ValidateNested()
-  @Type(() => ContactoOrganizacionDto)
-  contacto?: ContactoOrganizacionDto;
+  @Type(() => UpdateContactoOrganizacionDto)
+  contacto?: UpdateContactoOrganizacionDto;
 
   @IsOptional()
   @ValidateNested()
