@@ -58,7 +58,7 @@ import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
-  constructor(private readonly empresasService: EmpresaService) { }
+  constructor(private readonly empresasService: EmpresaService) {}
 
   /**
    * GET /list
@@ -134,7 +134,11 @@ export class EmpresaController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Registrar nueva empresa con su gestor' })
   @ApiBody({ type: CreateEmpresaDTO })
-  @ApiResponse({ status: 201, description: 'Empresa y gestor creados', type: EmpresaResponseDTO })
+  @ApiResponse({
+    status: 201,
+    description: 'Empresa y gestor creados',
+    type: EmpresaResponseDTO,
+  })
   @ApiResponse({ status: 409, description: 'CUIT o correo ya registrado' })
   async registrarEmpresa(
     @Body() dto: CreateEmpresaDTO,

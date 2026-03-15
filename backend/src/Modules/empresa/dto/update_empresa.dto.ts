@@ -1,31 +1,28 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 
-export class UpdateEmpresaDTO {
-  @ApiPropertyOptional({ example: 'Nueva descripción de la empresa' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  descripcion?: string;
-
-  @ApiPropertyOptional({ example: 'Supermercado' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(50)
-  rubro?: string;
-
-  @ApiPropertyOptional({ example: '+54' })
+export class UpdateContactoEmpresaDto {
+  @ApiPropertyOptional({
+    example: '11',
+    description: 'Prefijo telefónico (código de área)',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(5)
   prefijo?: string;
 
-  @ApiPropertyOptional({ example: '1123456789' })
+  @ApiPropertyOptional({
+    example: '12345678',
+    description: 'Número de teléfono',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(20)
   telefono?: string;
+}
 
+export class UpdateDireccionEmpresaDto {
   @ApiPropertyOptional({ example: 'Av. Siempre Viva' })
   @IsOptional()
   @IsString()
@@ -41,20 +38,34 @@ export class UpdateEmpresaDTO {
   @ApiPropertyOptional({ example: 'Buenos Aires' })
   @IsOptional()
   @IsString()
-  @MaxLength(50)
+  @MaxLength(100)
   provincia?: string;
 
-  @ApiPropertyOptional({ example: 'Vicente López' })
+  @ApiPropertyOptional({ example: 'San Isidro' })
   @IsOptional()
   @IsString()
-  @MaxLength(50)
+  @MaxLength(100)
   ciudad?: string;
 
-  @ApiPropertyOptional({ example: 'B1638' })
+  @ApiPropertyOptional({ example: '1638' })
   @IsOptional()
   @IsString()
   @MaxLength(10)
   codigo_postal?: string;
+}
+
+export class UpdateEmpresaDTO {
+  @ApiPropertyOptional({ example: 'Nueva descripción de la empresa' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  descripcion?: string;
+
+  @ApiPropertyOptional({ example: 'Supermercado' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  rubro?: string;
 
   @ApiPropertyOptional({ example: 'https://nueva-web.com' })
   @IsOptional()
@@ -67,4 +78,16 @@ export class UpdateEmpresaDTO {
   @IsString()
   @MaxLength(255)
   logo?: string;
+
+  @ApiPropertyOptional({ type: UpdateContactoEmpresaDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateContactoEmpresaDto)
+  contacto?: UpdateContactoEmpresaDto;
+
+  @ApiPropertyOptional({ type: UpdateDireccionEmpresaDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => UpdateDireccionEmpresaDto)
+  direccion?: UpdateDireccionEmpresaDto;
 }

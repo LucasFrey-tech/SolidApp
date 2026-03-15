@@ -11,6 +11,7 @@ import { CouponForm } from "./cuponForm";
 import { useUser } from "@/app/context/UserContext";
 
 import { baseApi } from "@/API/baseApi";
+import EmpresaInfo from "@/components/panelEmpresa/EmpresaInfo";
 
 type Coupon = {
   id: number;
@@ -21,8 +22,11 @@ type Coupon = {
   estado: "pendiente" | "aprobado" | "rechazado";
 };
 
+type ViewMode = "coupons" | "info";
 
 export default function OrganizationCouponsPage() {
+  const [view, setView] = useState<ViewMode>("coupons");
+
   const { user } = useUser();
   const empresaId = user?.sub;
 
@@ -40,8 +44,10 @@ export default function OrganizationCouponsPage() {
     try {
       setLoading(true);
 
-      const { items, total } =
-        await baseApi.empresa.getCuponesPaginated(page, 10);
+      const { items, total } = await baseApi.empresa.getCuponesPaginated(
+        page,
+        10,
+      );
 
       const couponsWithEstado: Coupon[] = items.map((b: any) => ({
         id: b.id,
@@ -60,7 +66,6 @@ export default function OrganizationCouponsPage() {
       if (page > calculatedTotalPages) {
         setPage(calculatedTotalPages);
       }
-
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "No se pudieron cargar los cupones", "error");
@@ -72,7 +77,6 @@ export default function OrganizationCouponsPage() {
   useEffect(() => {
     loadCoupons();
   }, [empresaId, page]);
-
 
   const handleSaveCoupon = async (data: Partial<Coupon>) => {
     if (!empresaId) return;
@@ -104,132 +108,138 @@ export default function OrganizationCouponsPage() {
       setOpen(false);
 
       await loadCoupons();
-
     } catch (error) {
       console.error(error);
       Swal.fire(
         "Error",
         "No se pudo guardar el cupón. Verificá los datos.",
-        "error"
+        "error",
       );
     }
   };
 
   return (
     <div className={styles.container}>
-
       <div className={styles.header}>
         <h2>Panel de Empresa</h2>
 
+        {view === "coupons" && (
+          <button
+            className={styles.button}
+            onClick={() => {
+              setEditingCoupon(null);
+              setOpen(true);
+            }}
+          >
+            Agregar cupón
+          </button>
+        )}
+      </div>
+
+      <div className={styles.tabs}>
         <button
-          className={styles.button}
-          onClick={() => {
-            setEditingCoupon(null);
-            setOpen(true);
-          }}
+          className={`${styles.tabButton} ${
+            view === "coupons" ? styles.active : ""
+          }`}
+          onClick={() => setView("coupons")}
         >
-          Agregar cupón
+          Cupones
+        </button>
+
+        <button
+          className={`${styles.tabButton} ${
+            view === "info" ? styles.active : ""
+          }`}
+          onClick={() => setView("info")}
+        >
+          Información
         </button>
       </div>
 
       <div className={styles.divider} />
 
-      {!loading && coupons.length === 0 && (
-        <p>No hay cupones en el momento</p>
-      )}
+      {/*CUPONES*/}
+      {view === "coupons" && (
+        <>
+          {!loading && coupons.length === 0 && (
+            <p>No hay cupones en el momento</p>
+          )}
+          <ul className={styles.list}>
+            {coupons.map((c) => (
+              <li key={c.id} className={styles.card}>
+                <div>
+                  <strong>{c.titulo}</strong> — {c.detalle} <br />
+                  <strong>Cantidad:</strong> {c.cantidad} —{" "}
+                  <strong>
+                    {c.valor === 0 ? "Gratis" : `Puntos: ${c.valor}`}
+                  </strong>{" "}
+                  —{" "}
+                  <span
+                    style={{
+                      color:
+                        c.estado === "pendiente"
+                          ? "blue"
+                          : c.estado === "rechazado"
+                            ? "red"
+                            : "green",
+                    }}
+                  >
+                    {c.estado}
+                  </span>
+                </div>
 
-      <ul className={styles.list}>
-        {coupons.map((c) => (
-          <li key={c.id} className={styles.card}>
+                <Edit2
+                  className={styles.editIcon}
+                  onClick={() => {
+                    setEditingCoupon(c);
+                    setOpen(true);
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
 
-            <div>
-              <strong>{c.titulo}</strong> — {c.detalle} <br />
+          <div className={styles.pagination}>
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+            >
+              Anterior
+            </button>
 
-              <strong>Cantidad:</strong> {c.cantidad} —{" "}
+            <span>
+              Página {page} de {totalPages}
+            </span>
 
-              <strong>
-                {c.valor === 0
-                  ? "Gratis"
-                  : `Puntos: ${c.valor}`}
-              </strong>{" "}
-              —{" "}
-
-              <span
-                style={{
-                  color:
-                    c.estado === "pendiente"
-                      ? "blue"
-                      : c.estado === "rechazado"
-                      ? "red"
-                      : "green",
-                }}
-              >
-                {c.estado}
-              </span>
-
-            </div>
-
-            <Edit2
-              className={styles.editIcon}
-              onClick={() => {
-                setEditingCoupon(c);
-                setOpen(true);
-              }}
-            />
-
-          </li>
-        ))}
-      </ul>
-
-      <div className={styles.pagination}>
-
-        <button
-          onClick={() =>
-            setPage((p) => Math.max(1, p - 1))
-          }
-          disabled={page <= 1}
-        >
-          Anterior
-        </button>
-
-        <span>
-          Página {page} de {totalPages}
-        </span>
-
-        <button
-          onClick={() =>
-            setPage((p) =>
-              Math.min(totalPages, p + 1)
-            )
-          }
-          disabled={page >= totalPages}
-        >
-          Siguiente
-        </button>
-
-      </div>
-
-      {open && (
-        <div
-          className={modalStyles.overlay}
-          onClick={() => setOpen(false)}
-        >
-          <div
-            className={modalStyles.modal}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <CouponForm
-              coupon={editingCoupon || undefined}
-              onClose={() => {
-                setOpen(false);
-                setEditingCoupon(null);
-              }}
-              onSuccess={handleSaveCoupon}
-            />
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+            >
+              Siguiente
+            </button>
           </div>
-        </div>
+
+          {open && (
+            <div className={modalStyles.overlay} onClick={() => setOpen(false)}>
+              <div
+                className={modalStyles.modal}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CouponForm
+                  coupon={editingCoupon || undefined}
+                  onClose={() => {
+                    setOpen(false);
+                    setEditingCoupon(null);
+                  }}
+                  onSuccess={handleSaveCoupon}
+                />
+              </div>
+            </div>
+          )}
+        </>
       )}
 
+      {view === "info" && <EmpresaInfo />}
     </div>
   );
 }

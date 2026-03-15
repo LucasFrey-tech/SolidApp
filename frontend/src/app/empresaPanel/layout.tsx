@@ -16,22 +16,28 @@ export default function EmpresaLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user || user.rol!== Rol.GESTOR && user.gestion !== GestionTipo.ORGANIZACION) {
-        Swal.fire({
-          icon: "error",
-          title: "Acceso denegado",
-          text: "Solo las empresas pueden acceder a este panel.",
-          confirmButtonText: "Ir al inicio",
-        }).then(() => {
-          router.replace("/inicio");
-        });
-      }
+    if (loading) return;
+
+    if (!user) return;
+
+    if (user.rol !== Rol.GESTOR && user.gestion !== GestionTipo.EMPRESA) {
+      Swal.fire({
+        icon: "error",
+        title: "Acceso denegado",
+        text: "Solo las empresas pueden acceder a este panel.",
+        confirmButtonText: "Ir al inicio",
+      }).then(() => {
+        router.replace("/inicio");
+      });
     }
   }, [user, loading, router]);
 
   if (loading) return null;
-  if (!user || user.rol!== Rol.GESTOR && user.gestion !== GestionTipo.ORGANIZACION) return null;
+  if (
+    !user ||
+    (user.rol !== Rol.GESTOR && user.gestion !== GestionTipo.EMPRESA)
+  )
+    return null;
 
   return <>{children}</>;
 }

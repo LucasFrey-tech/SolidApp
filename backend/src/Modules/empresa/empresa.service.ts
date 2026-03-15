@@ -60,7 +60,7 @@ export class EmpresaService {
     private readonly beneficioService: BeneficioService,
     private readonly dataSource: DataSource,
     private readonly hashService: HashService,
-  ) { }
+  ) {}
 
   /**
    * Obtiene empresas paginadas con búsqueda opcional.
@@ -85,9 +85,9 @@ export class EmpresaService {
 
     const where: FindOptionsWhere<Empresa>[] = search
       ? [
-        { ...baseFilter, nombre_empresa: Like(`%${search}%`) },
-        { ...baseFilter, razon_social: Like(`%${search}%`) },
-      ]
+          { ...baseFilter, nombre_empresa: Like(`%${search}%`) },
+          { ...baseFilter, razon_social: Like(`%${search}%`) },
+        ]
       : [baseFilter];
 
     const [empresas, total] = await this.empresaRepository.findAndCount({
@@ -110,7 +110,7 @@ export class EmpresaService {
    *
    * @returns {Promise<EmpresaResponseDTO>}
    */
-  async getEmpresaByUsuario(usuarioId: number): Promise<Empresa> {
+  async getEmpresaByUsuario(usuarioId: number): Promise<EmpresaResponseDTO> {
     const empresaUsuario = await this.empresaUsuarioRepository.findOne({
       where: {
         usuario: { id: usuarioId },
@@ -122,7 +122,7 @@ export class EmpresaService {
       throw new ForbiddenException('El usuario no gestiona ninguna empresa');
     }
 
-    return empresaUsuario.empresa;
+    return this.mapToResponseDto(empresaUsuario.empresa);
   }
 
   async getCupones(
@@ -241,40 +241,49 @@ export class EmpresaService {
    * @returns {Promise<EmpresaResponseDTO>}-> Actualiza a la empresa
    */
   async update(
-    id: number,
+    usuarioId: number,
     updateDto: UpdateEmpresaDTO,
   ): Promise<EmpresaResponseDTO> {
-    const empresa = await this.empresaRepository.findOne({
-      where: { id },
+    const empresaUsuario = await this.empresaUsuarioRepository.findOne({
+      where: { usuario: { id: usuarioId } },
+      relations: ['empresa', 'empresa.contacto', 'empresa.direccion'],
     });
 
-    if (!empresa) {
-      throw new NotFoundException(`Empresa con ID ${id} no encontrada`);
+    if (!empresaUsuario) {
+      throw new NotFoundException('El usuario no gestiona ninguna empresa');
     }
 
-    const camposEmpresa: (keyof UpdateEmpresaDTO)[] = [
-      'descripcion',
-      'rubro',
-      'web',
-      'logo',
-    ];
+    const empresaId = empresaUsuario.empresa.id;
 
-    Object.assign(
-      empresa,
-      Object.fromEntries(
-        Object.entries(updateDto).filter(
-          ([k, v]) =>
-            camposEmpresa.includes(k as keyof UpdateEmpresaDTO) &&
-            v !== undefined,
-        ),
-      ),
-    );
+    const empresaPreload = await this.empresaRepository.preload({
+      id: empresaId,
+      descripcion: updateDto.descripcion,
+      rubro: updateDto.rubro,
+      web: updateDto.web,
+      logo: updateDto.logo,
+      contacto: updateDto.contacto
+        ? {
+            ...empresaUsuario.empresa.contacto,
+            ...updateDto.contacto,
+          }
+        : undefined,
+      direccion: updateDto.direccion
+        ? {
+            ...empresaUsuario.empresa.direccion,
+            ...updateDto.direccion,
+          }
+        : undefined,
+    });
 
-    const updatedEmpresa = await this.empresaRepository.save(empresa);
+    if (!empresaPreload) {
+      throw new NotFoundException(`Empresa con ID ${empresaId} no encontrada`);
+    }
 
-    this.logger.log(`Empresa ${id} actualizada`);
+    const updated = await this.empresaRepository.save(empresaPreload);
 
-    return this.mapToResponseDto(updatedEmpresa);
+    this.logger.log(`Empresa ${empresaId} actualizada`);
+
+    return this.mapToResponseDto(updated);
   }
 
   /**
@@ -344,10 +353,35 @@ export class EmpresaService {
     dto.descripcion = empresa.descripcion;
     dto.rubro = empresa.rubro ?? '';
     dto.web = empresa.web;
+    dto.verificada = empresa.verificada;
+    dto.habilitada = empresa.habilitada;
+    dto.fecha_registro = empresa.fecha_registro;
+    dto.ultimo_cambio = empresa.ultimo_cambio;
+
     dto.logo = empresa.logo
       ? SettingsService.getEmpresaImageUrl(empresa.logo)
       : '';
-    dto.verificada = empresa.verificada;
+
+    if (empresa.contacto) {
+      dto.contacto = {
+        id: empresa.contacto.id,
+        prefijo: empresa.contacto.prefijo,
+        telefono: empresa.contacto.telefono,
+        correo: empresa.contacto.correo,
+      };
+    }
+
+    if (empresa.direccion) {
+      dto.direccion = {
+        id: empresa.direccion.id,
+        calle: empresa.direccion.calle,
+        numero: empresa.direccion.numero,
+        provincia: empresa.direccion.provincia,
+        ciudad: empresa.direccion.ciudad,
+        codigo_postal: empresa.direccion.codigo_postal,
+      };
+    }
+
     return dto;
   }
 }
