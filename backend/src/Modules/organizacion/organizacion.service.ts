@@ -25,7 +25,6 @@ import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity'
 import { Rol, Usuario } from '../../Entities/usuario.entity';
 import { HashService } from '../../common/bcryptService/hashService';
 
-
 /**
  * ============================================================
  * OrganizationsService
@@ -68,7 +67,7 @@ export class PerfilOrganizacionService {
     private readonly usuarioService: UsuarioService,
     private readonly hashService: HashService,
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   /**
    * Obtiene organizaciones paginadas con búsqueda opcional.
@@ -118,29 +117,27 @@ export class PerfilOrganizacionService {
    */
 
   async getOrganizacionByUsuario(usuarioId: number): Promise<Organizacion> {
+    const organizacionUsuario =
+      await this.organizacionUsuarioRepository.findOne({
+        where: {
+          id_usuario: usuarioId,
+          activo: true,
+        },
+        relations: [
+          'organizacion',
+          'organizacion.contacto',
+          'organizacion.direccion',
+        ],
+      });
 
-  const organizacionUsuario =
-    await this.organizacionUsuarioRepository.findOne({
-      where: {
-        id_usuario: usuarioId,
-        activo: true
-      },
-      relations: [
-        'organizacion',
-        'organizacion.contacto',
-        'organizacion.direccion',
-      ],
-    });
+    if (!organizacionUsuario) {
+      throw new ForbiddenException(
+        'El usuario no gestiona ninguna organizacion',
+      );
+    }
 
-  if (!organizacionUsuario) {
-    throw new ForbiddenException(
-      'El usuario no gestiona ninguna organizacion',
-    );
+    return organizacionUsuario.organizacion;
   }
-
-  return organizacionUsuario.organizacion;
-}
-
 
   async findById(id: number): Promise<Organizacion> {
     const perfil = await this.organizacionRepository.findOne({
@@ -190,7 +187,6 @@ export class PerfilOrganizacionService {
     return await this.campaignService.update(id, updateDto, imagenes);
   }
 
-
   async registrarOrganizacion(
     dto: CreateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
@@ -199,7 +195,6 @@ export class PerfilOrganizacionService {
       const organizacionRepo = manager.getRepository(Organizacion);
       const orgUsuarioRepo = manager.getRepository(OrganizacionUsuario);
 
-      // 1. Verificar CUIT único
       const cuitExistente = await organizacionRepo.findOne({
         where: { cuit: dto.cuit_organizacion },
       });
@@ -207,7 +202,6 @@ export class PerfilOrganizacionService {
         throw new ConflictException('Ya existe una organización con ese CUIT');
       }
 
-      // 2. Verificar documento único
       const docExistente = await usuarioRepo.findOne({
         where: { documento: dto.documento },
       });
@@ -215,7 +209,6 @@ export class PerfilOrganizacionService {
         throw new ConflictException('Ya existe un usuario con ese documento');
       }
 
-      // 3. Verificar correo único del gestor
       const correoExistente = await usuarioRepo.findOne({
         relations: ['contacto'],
         where: { contacto: { correo: dto.correo } },
@@ -224,7 +217,6 @@ export class PerfilOrganizacionService {
         throw new ConflictException('Ya existe un usuario con ese correo');
       }
 
-      // 4. Crear el gestor (Usuario con Rol.GESTOR)
       const claveHash = await this.hashService.hash(dto.clave);
 
       const gestor = usuarioRepo.create({
@@ -246,28 +238,25 @@ export class PerfilOrganizacionService {
       const savedGestor = await usuarioRepo.save(gestor);
       this.logger.log(`Gestor creado con ID ${savedGestor.id}`);
 
-      // 5. Crear la organización
       const organizacion = organizacionRepo.create({
         cuit: dto.cuit_organizacion,
         razon_social: dto.razon_social,
         nombre_organizacion: dto.nombre_organizacion,
         web: dto.web ?? '',
         contacto: {
-          correo: dto.correo_organizacion,  // correo comercial, distinto al del gestor
-          telefono: dto.telefono,
+          correo: dto.correo_organizacion,
         },
         direccion: {
           calle: dto.calle,
           numero: dto.numero,
         },
-        habilitada: false,   // requiere verificación del admin
+        habilitada: false,
         verificada: false,
       });
 
       const savedOrganizacion = await organizacionRepo.save(organizacion);
       this.logger.log(`Organización creada con ID ${savedOrganizacion.id}`);
 
-      // 6. Vincular gestor ↔ organización
       const vinculo = orgUsuarioRepo.create({
         usuario: { id: savedGestor.id },
         organizacion: { id: savedOrganizacion.id },
@@ -293,51 +282,56 @@ export class PerfilOrganizacionService {
    * Si la organización no existe.
    */
   async update(
-  updateDto: UpdateOrganizacionDto,
-  usuarioId: number, // ID del usuario que gestiona la organización
-): Promise<ResponseOrganizacionDto> {
-  // 1. Obtener la organización asociada al usuario, incluyendo contacto y dirección
-  const organizacionActual = await this.organizacionUsuarioRepository.findOne({
-    where: { usuario: { id: usuarioId } },
-    relations: ['organizacion', 'organizacion.contacto', 'organizacion.direccion'],
-  });
+    updateDto: UpdateOrganizacionDto,
+    usuarioId: number,
+  ): Promise<ResponseOrganizacionDto> {
+    const organizacionActual = await this.organizacionUsuarioRepository.findOne(
+      {
+        where: { usuario: { id: usuarioId } },
+        relations: [
+          'organizacion',
+          'organizacion.contacto',
+          'organizacion.direccion',
+        ],
+      },
+    );
 
-  if (!organizacionActual) {
-    throw new NotFoundException('El usuario no gestiona ninguna organización');
+    if (!organizacionActual) {
+      throw new NotFoundException(
+        'El usuario no gestiona ninguna organización',
+      );
+    }
+
+    const organizacionId = organizacionActual.organizacion.id;
+
+    const organizacionPreload = await this.organizacionRepository.preload({
+      id: organizacionId,
+      ...updateDto,
+      contacto: updateDto.contacto
+        ? {
+            ...organizacionActual.organizacion.contacto,
+            ...updateDto.contacto,
+          }
+        : undefined,
+      direccion: updateDto.direccion
+        ? {
+            ...organizacionActual.organizacion.direccion,
+            ...updateDto.direccion,
+          }
+        : undefined,
+    });
+
+    if (!organizacionPreload) {
+      throw new NotFoundException(
+        `Organización con ID ${organizacionId} no encontrada`,
+      );
+    }
+
+    const updated = await this.organizacionRepository.save(organizacionPreload);
+    this.logger.log(`Organización ${organizacionId} actualizada`);
+
+    return this.mapToResponseDto(updated);
   }
-
-  const organizacionId = organizacionActual.organizacion.id;
-
-  // 2. Preload: crea una entidad lista para actualizar
-  const organizacionPreload = await this.organizacionRepository.preload({
-    id: organizacionId,
-    ...updateDto,
-    contacto: updateDto.contacto
-      ? {
-          ...organizacionActual.organizacion.contacto,
-          ...updateDto.contacto,
-        }
-      : undefined,
-    direccion: updateDto.direccion
-      ? {
-          ...organizacionActual.organizacion.direccion,
-          ...updateDto.direccion,
-        }
-      : undefined,
-  });
-
-  if (!organizacionPreload) {
-    throw new NotFoundException(`Organización con ID ${organizacionId} no encontrada`);
-  }
-
-  // 3. Guardar cambios
-  const updated = await this.organizacionRepository.save(organizacionPreload);
-  this.logger.log(`Organización ${organizacionId} actualizada`);
-
-  // 4. Devolver DTO
-  return this.mapToResponseDto(updated);
-}
-
 
   /**
    * Actualiza las credenciales del usuario
@@ -404,40 +398,39 @@ export class PerfilOrganizacionService {
    * @returns {ResponseOrganizacionDto}
    */
   private mapToResponseDto(
-  organizacion: Organizacion,
-): ResponseOrganizacionDto {
-  const dto = new ResponseOrganizacionDto();
+    organizacion: Organizacion,
+  ): ResponseOrganizacionDto {
+    const dto = new ResponseOrganizacionDto();
 
-  dto.id = organizacion.id;
-  dto.cuit = organizacion.cuit;
-  dto.razon_social = organizacion.razon_social;
-  dto.nombre_organizacion = organizacion.nombre_organizacion;
-  dto.descripcion = organizacion.descripcion;
-  dto.web = organizacion.web;
-  dto.verificada = organizacion.verificada;
-  dto.habilitada = organizacion.habilitada;
+    dto.id = organizacion.id;
+    dto.cuit = organizacion.cuit;
+    dto.razon_social = organizacion.razon_social;
+    dto.nombre_organizacion = organizacion.nombre_organizacion;
+    dto.descripcion = organizacion.descripcion;
+    dto.web = organizacion.web;
+    dto.verificada = organizacion.verificada;
+    dto.habilitada = organizacion.habilitada;
 
-  dto.contacto = organizacion.contacto
-    ? {
-        id: organizacion.contacto.id,
-        correo: organizacion.contacto.correo,
-        telefono: organizacion.contacto.telefono,
-        prefijo: organizacion.contacto.prefijo,
-      }
-    : undefined;
+    dto.contacto = organizacion.contacto
+      ? {
+          id: organizacion.contacto.id,
+          correo: organizacion.contacto.correo,
+          telefono: organizacion.contacto.telefono,
+          prefijo: organizacion.contacto.prefijo,
+        }
+      : undefined;
 
-  dto.direccion = organizacion.direccion
-    ? {
-        id: organizacion.direccion.id,
-        calle: organizacion.direccion.calle,
-        numero: organizacion.direccion.numero,
-        provincia: organizacion.direccion.provincia,
-        ciudad: organizacion.direccion.ciudad,
-        codigo_postal: organizacion.direccion.codigo_postal,
-      }
-    : undefined;
+    dto.direccion = organizacion.direccion
+      ? {
+          id: organizacion.direccion.id,
+          calle: organizacion.direccion.calle,
+          numero: organizacion.direccion.numero,
+          provincia: organizacion.direccion.provincia,
+          ciudad: organizacion.direccion.ciudad,
+          codigo_postal: organizacion.direccion.codigo_postal,
+        }
+      : undefined;
 
-  return dto;
-}
-
+    return dto;
+  }
 }

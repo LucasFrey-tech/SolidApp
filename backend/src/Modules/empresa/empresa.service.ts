@@ -155,7 +155,6 @@ export class EmpresaService {
       const empresaRepo = manager.getRepository(Empresa);
       const empresaUsuarioRepo = manager.getRepository(EmpresaUsuario);
 
-      // 1. Verificar CUIT único
       const cuitExistente = await empresaRepo.findOne({
         where: { cuit: dto.cuit_empresa },
       });
@@ -163,7 +162,6 @@ export class EmpresaService {
         throw new ConflictException('Ya existe una empresa con ese CUIT');
       }
 
-      // 2. Verificar documento único
       const docExistente = await usuarioRepo.findOne({
         where: { documento: dto.documento },
       });
@@ -171,7 +169,6 @@ export class EmpresaService {
         throw new ConflictException('Ya existe un usuario con ese documento');
       }
 
-      // 3. Verificar correo único
       const correoExistente = await usuarioRepo.findOne({
         relations: ['contacto'],
         where: { contacto: { correo: dto.correo } },
@@ -180,8 +177,6 @@ export class EmpresaService {
         throw new ConflictException('Ya existe un usuario con ese correo');
       }
 
-      // 4. Crear el gestor (Usuario con Rol.GESTOR)
-      //    Mismo patrón que usuarioService.create()
       const claveHash = await this.hashService.hash(dto.clave);
 
       const gestor = usuarioRepo.create({
@@ -203,7 +198,6 @@ export class EmpresaService {
       const savedGestor = await usuarioRepo.save(gestor);
       this.logger.log(`Gestor creado con ID ${savedGestor.id}`);
 
-      // 5. Crear la empresa
       const empresa = empresaRepo.create({
         cuit: dto.cuit_empresa,
         razon_social: dto.razon_social,
@@ -211,20 +205,18 @@ export class EmpresaService {
         web: dto.web,
         contacto: {
           correo: dto.correo_empresa,
-          telefono: dto.telefono,
         },
         direccion: {
           calle: dto.calle,
           numero: dto.numero,
         },
-        habilitada: false, // requiere verificación del admin
+        habilitada: false,
         verificada: false,
       });
 
       const savedEmpresa = await empresaRepo.save(empresa);
       this.logger.log(`Empresa creada con ID ${savedEmpresa.id}`);
 
-      // 6. Vincular gestor ↔ empresa
       const vinculo = empresaUsuarioRepo.create({
         usuario: { id: savedGestor.id },
         empresa: { id: savedEmpresa.id },
