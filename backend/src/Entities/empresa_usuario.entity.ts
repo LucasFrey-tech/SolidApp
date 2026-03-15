@@ -56,6 +56,17 @@ export class EmpresaUsuario {
   @Column({ type: 'bit', nullable: false, default: true })
   activo: boolean;
 
+
+  @ApiProperty({
+  example: "MIEMBRO",
+  description: "Rol del usuario dentro de la empresa"
+  })
+  @Column({
+  type: 'varchar',
+  length: 20,
+  default: 'MIEMBRO'
+  })
+  rol: string;
   // ==================== RELACIONES ====================
 
   @ApiProperty({

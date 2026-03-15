@@ -20,6 +20,7 @@ import { Direccion } from './direccion.entity';
 
 export enum Rol {
   USUARIO = 'USUARIO',
+  MIEMBRO = 'MIEMBRO',
   GESTOR = 'GESTOR',
   ADMIN = 'ADMIN',
 }
