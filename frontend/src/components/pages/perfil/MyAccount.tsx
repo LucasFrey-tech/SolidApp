@@ -39,7 +39,7 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
 
   const puedeVerData = () => {
     if (!user) return false;
-    return user.rol !== Rol.ADMIN; // ADMIN no ve "Mis Datos"
+    return user.rol !== Rol.ADMIN;
   };
 
   const handleCuponesClick = () => {
