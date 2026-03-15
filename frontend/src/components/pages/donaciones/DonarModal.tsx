@@ -5,7 +5,6 @@ import Swal from "sweetalert2";
 import styles from "@/styles/Donar/donarModal.module.css";
 import { baseApi } from "@/API/baseApi";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/app/context/UserContext";
 
 interface Props {
   isOpen: boolean;
@@ -26,12 +25,12 @@ export default function DonarModal({
 }: Props) {
   const [detalle, setDetalle] = useState("");
   const [cantidad, setCantidad] = useState(1);
+  const router = useRouter();
 
   if (!isOpen) return null;
 
   const puntos = cantidad * puntosPorArticulo;
   const maxCantidad = objetivoRestante;
-  const router = useRouter();
 
   const handleSubmit = async () => {
     if (!detalle.trim()) {
@@ -72,7 +71,7 @@ export default function DonarModal({
     };
 
     try {
-      await baseApi.users.createDonacion(body);
+      await baseApi.usuario.createDonacion(body);
 
       await Swal.fire({
         icon: "success",
