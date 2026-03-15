@@ -1,3 +1,6 @@
+import { Contacto } from "./contacto/contacto";
+import { Direccion } from "./direccion/direccion";
+
 /**
  * Respuesta completa de Organización (ResponseOrganizacionDto)
  */
@@ -13,37 +16,20 @@ export interface Organizacion {
   contacto: Contacto;
   direccion: Direccion;  
 
-  // ── campos reservados para uso futuro ──────────────────
   fecha_registro?: Date;
   ultimo_cambio?: Date;
 }
-
-  interface Contacto {
-    telefono: string;
-    prefijo: string;
-  }
-
-  interface Direccion {
-    calle: string;
-    numero: string;
-    provincia: string;
-    ciudad: string;
-    codigo_postal: string;
-  }
-
 
 /**
  * Payload para registrar una nueva organización junto con su gestor
  */
 export interface OrganizacionRegistroRequest {
-  // Datos del gestor
   nombre: string;
   apellido: string;
   documento: string;
   correo: string;
   clave: string;
   telefono: string;
-  // Datos de la organización
   correo_organizacion: string;
   cuit_organizacion: string;
   razon_social: string;
@@ -83,8 +69,6 @@ export interface OrganizacionImagen {
   es_principal: boolean;
 }
 
-// Mantenido para uso futuro (era OrganizacionCreateRequest)
-/** @future reemplazado por OrganizacionRegistroRequest */
 export interface OrganizacionCreateRequest {
   cuit: string;
   razon_social: string;
