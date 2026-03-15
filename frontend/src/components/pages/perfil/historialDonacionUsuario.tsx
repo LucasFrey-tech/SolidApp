@@ -28,7 +28,7 @@ export default function HistorialDonacionUsuario() {
     const fetchDonaciones = async () => {
       setLoading(true);
       try {
-        const res = await baseApi.users.getDonaciones(page, 6);
+        const res = await baseApi.usuario.getDonaciones(page, 6);
         setDonaciones(res.items);
         setTotalPages(Math.ceil(res.total / 6));
       } catch (err) {

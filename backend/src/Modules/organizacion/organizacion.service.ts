@@ -60,8 +60,6 @@ export class PerfilOrganizacionService {
     private readonly organizacionRepository: Repository<Organizacion>,
     @InjectRepository(OrganizacionUsuario)
     private readonly organizacionUsuarioRepository: Repository<OrganizacionUsuario>,
-    @InjectRepository(Usuario)
-    private readonly usuarioRepository: Repository<Usuario>,
     private readonly campaignService: CampaignsService,
     private readonly donacionService: DonacionService,
     private readonly usuarioService: UsuarioService,
@@ -82,13 +80,12 @@ export class PerfilOrganizacionService {
   async findPaginated(page: number, limit: number, search: string) {
     const skip = (page - 1) * limit;
 
-    const queryBuilder = this.organizacionRepository
-      .createQueryBuilder('perfil')
-      .leftJoinAndSelect('perfil.cuenta', 'cuenta');
+    const queryBuilder =
+      this.organizacionRepository.createQueryBuilder('organizacion');
 
     if (search) {
       queryBuilder.andWhere(
-        '(perfil.razon_social LIKE :search OR perfil.nombre_organizacion LIKE :search OR cuenta.correo LIKE :search)',
+        '(organizacion.razon_social LIKE :search OR organizacion.nombre_organizacion LIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -96,7 +93,7 @@ export class PerfilOrganizacionService {
     const [organizaciones, total] = await queryBuilder
       .skip(skip)
       .take(limit)
-      .orderBy('perfil.id', 'ASC')
+      .orderBy('organizacion.id', 'ASC')
       .getManyAndCount();
 
     return {
@@ -250,7 +247,7 @@ export class PerfilOrganizacionService {
           calle: dto.calle,
           numero: dto.numero,
         },
-        habilitada: false,
+        habilitada: true,
         verificada: false,
       });
 

@@ -34,12 +34,14 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
 
   const puedeVerDonaciones = () => {
     if (!user) return false;
-    return user.rol === Rol.GESTOR && user.gestion === GestionTipo.ORGANIZACION;
+    return (user.rol === Rol.GESTOR && user.gestion === GestionTipo.ORGANIZACION) || user.rol === Rol.USUARIO;
   };
 
   const puedeVerData = () => {
-    if (!user) return false;
-    return user.rol !== Rol.ADMIN; // ADMIN no ve "Mis Datos"
+    if (!user) {
+      return false;
+    } 
+    return true;
   };
 
   const handleCuponesClick = () => {
@@ -84,7 +86,7 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               </button>
             </li>
 
-            {/* Mis Datos - Visible para todos EXCEPTO ADMIN */}
+            {/* Mis Datos */}
             {puedeVerData() && (
               <li>
                 <button onClick={() => onChangeSection("data")}>
@@ -93,14 +95,14 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
               </li>
             )}
 
-            {/* Mis Cupones - USUARIO o GESTOR con gestión EMPRESA */}
+            {/* Mis Cupones */}
             {puedeVerCupones() && (
               <li>
                 <button onClick={handleCuponesClick}>Mis Cupones</button>
               </li>
             )}
 
-            {/* Historial de Donaciones - Solo GESTOR con gestión ORGANIZACION */}
+            {/* Historial de Donaciones */}
             {puedeVerDonaciones() && (
               <li>
                 <button onClick={() => onChangeSection("donations")}>

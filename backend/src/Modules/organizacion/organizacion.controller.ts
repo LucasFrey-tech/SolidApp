@@ -63,7 +63,7 @@ import { CreateOrganizacionDto } from './dto/create_organizacion.dto';
 export class OrganizacionesController {
   constructor(
     private readonly organizacionService: PerfilOrganizacionService,
-  ) { }
+  ) {}
 
   // ================= PanelOrganizacion ===================
 
@@ -112,8 +112,11 @@ export class OrganizacionesController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ): Promise<ResponseCampaignsDetailPaginatedDto> {
+    const organizacion =
+      await this.organizacionService.getOrganizacionByUsuario(req.user.id);
+
     return await this.organizacionService.getCampaigns(
-      req.user.id,
+      organizacion.id,
       page,
       limit,
     );
@@ -124,7 +127,11 @@ export class OrganizacionesController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Registrar nueva organización con su gestor' })
   @ApiBody({ type: CreateOrganizacionDto })
-  @ApiResponse({ status: 201, description: 'Organización y gestor creados', type: ResponseOrganizacionDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Organización y gestor creados',
+    type: ResponseOrganizacionDto,
+  })
   @ApiResponse({ status: 409, description: 'CUIT o correo ya registrado' })
   async registrarOrganizacion(
     @Body() dto: CreateOrganizacionDto,
@@ -181,8 +188,12 @@ export class OrganizacionesController {
     const imagenes = files.map((x) =>
       SettingsService.getCampaignImageUrl(x.filename),
     );
+
+    const organizacion =
+      await this.organizacionService.getOrganizacionByUsuario(req.user.id);
+
     return this.organizacionService.createCampaign(
-      req.user.id,
+      organizacion.id,
       createCampaignsDto,
       imagenes,
     );
@@ -241,8 +252,10 @@ export class OrganizacionesController {
         SettingsService.getCampaignImageUrl(x.filename),
       );
     }
+    const organizacion =
+      await this.organizacionService.getOrganizacionByUsuario(req.user.id);
     return this.organizacionService.updateCampaign(
-      req.user.id,
+      organizacion.id,
       updateCampaignsDto,
       imagenes,
     );
@@ -265,8 +278,11 @@ export class OrganizacionesController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ): Promise<PaginatedOrganizationDonationsResponseDto> {
+    const organizacion =
+      await this.organizacionService.getOrganizacionByUsuario(req.user.id);
+
     return await this.organizacionService.getDonaciones(
-      req.user.id,
+      organizacion.id,
       page,
       limit,
     );
@@ -351,7 +367,7 @@ export class OrganizacionesController {
     @Req() req: RequestConUsuario,
     @Body() updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.update(updateDto,req.user.id);
+    return this.organizacionService.update(updateDto, req.user.id);
   }
 
   /**
@@ -417,7 +433,7 @@ export class OrganizacionesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.update(dto,id);
+    return this.organizacionService.update(dto, id);
   }
 
   /**

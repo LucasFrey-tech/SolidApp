@@ -116,7 +116,7 @@ export default function OrganizationCampaignsPage() {
       response.items.map((item) => ({
         ...item,
         estado: item.estado as DonacionEstado,
-      }))
+      })),
     );
 
     const totalPages = Math.max(1, Math.ceil(response.total / limit));
@@ -150,10 +150,8 @@ export default function OrganizationCampaignsPage() {
 
       setDonations((prev) =>
         prev.map((d) =>
-          d.id === donation.id
-            ? { ...d, estado: DonacionEstado.APROBADA }
-            : d
-        )
+          d.id === donation.id ? { ...d, estado: DonacionEstado.APROBADA } : d,
+        ),
       );
 
       await fetchCampaigns();
@@ -196,10 +194,8 @@ export default function OrganizationCampaignsPage() {
 
       setDonations((prev) =>
         prev.map((d) =>
-          d.id === donation.id
-            ? { ...d, estado: DonacionEstado.RECHAZADA }
-            : d
-        )
+          d.id === donation.id ? { ...d, estado: DonacionEstado.RECHAZADA } : d,
+        ),
       );
     } catch {
       Swal.fire("Error", "No se pudo rechazar la donación", "error");
@@ -210,13 +206,9 @@ export default function OrganizationCampaignsPage() {
     if (donacion.estado === DonacionEstado.PENDIENTE) return true;
     if (donacion.estado === DonacionEstado.APROBADA) return false;
 
-    if (
-      donacion.estado === DonacionEstado.RECHAZADA &&
-      donacion.fecha_estado
-    ) {
+    if (donacion.estado === DonacionEstado.RECHAZADA && donacion.fecha_estado) {
       const fecha = new Date(donacion.fecha_estado);
-      const horas =
-        (Date.now() - fecha.getTime()) / (1000 * 60 * 60);
+      const horas = (Date.now() - fecha.getTime()) / (1000 * 60 * 60);
       return horas <= 48;
     }
 
@@ -344,15 +336,15 @@ export default function OrganizationCampaignsPage() {
                       fontWeight: "bold",
                     }}
                   >
-                    {" "}{c.estado}
+                    {" "}
+                    {c.estado}
                   </span>
                 </div>
 
                 <Edit2
                   className={styles.editIcon}
                   onClick={async () => {
-                    const detalle =
-                      await baseApi.campaign.getOneDetail(c.id);
+                    const detalle = await baseApi.campaign.getOneDetail(c.id);
                     setEditingCampaign(detalle);
                     setOpen(true);
                   }}
@@ -363,9 +355,7 @@ export default function OrganizationCampaignsPage() {
 
           <div className={styles.pagination}>
             <button
-              onClick={() =>
-                setCampaignsPage((prev) => Math.max(prev - 1, 1))
-              }
+              onClick={() => setCampaignsPage((prev) => Math.max(prev - 1, 1))}
               disabled={campaignsPage === 1}
             >
               Anterior
@@ -378,7 +368,7 @@ export default function OrganizationCampaignsPage() {
             <button
               onClick={() =>
                 setCampaignsPage((prev) =>
-                  Math.min(prev + 1, campaignsTotalPages)
+                  Math.min(prev + 1, campaignsTotalPages),
                 )
               }
               disabled={campaignsPage === campaignsTotalPages}

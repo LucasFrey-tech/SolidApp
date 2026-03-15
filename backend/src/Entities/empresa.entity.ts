@@ -153,9 +153,9 @@ export class Empresa {
   @ApiProperty({
     example: false,
     description: 'Indica si la Empresa está habilitada (bloqueado)',
-    default: false,
+    default: true,
   })
-  @Column({ type: 'bit', nullable: false, default: false })
+  @Column({ type: 'bit', nullable: false, default: true })
   habilitada: boolean;
 
   // ==================== RELACIONES ====================

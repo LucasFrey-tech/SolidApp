@@ -7,17 +7,11 @@ import {
 import {
   Empresa,
   EmpresaUpdateRequest,
-  EmpresaRegistroRequest,  // nuevo
+  EmpresaRegistroRequest, // nuevo
 } from "../types/empresas";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
 export class EmpresasService extends Crud<Empresa> {
-  getAll(): Promise<Empresa[]> {
-    throw new Error("Method not implemented.");
-  }
-  getOne(_id: number): Promise<Empresa> {
-    throw new Error("Method not implemented.");
-  }
   protected endPoint = "empresas";
 
   // =====Registro Público=====
@@ -35,8 +29,12 @@ export class EmpresasService extends Crud<Empresa> {
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: "Error desconocido" }));
-      throw new Error(err.message ?? `Error al registrar empresa (${res.status})`);
+      const err = await res
+        .json()
+        .catch(() => ({ message: "Error desconocido" }));
+      throw new Error(
+        err.message ?? `Error al registrar empresa (${res.status})`,
+      );
     }
 
     return res.json();
@@ -193,7 +191,12 @@ export class EmpresasService extends Crud<Empresa> {
     }
   }
 
-  // Stubs requeridos por Crud<Empresa>
+  getAll(): Promise<Empresa[]> {
+    throw new Error("Method not implemented.");
+  }
+  getOne(_id: number): Promise<Empresa> {
+    throw new Error("Method not implemented.");
+  }
   create(_data: Partial<Empresa>): Promise<Empresa> {
     throw new Error("Method not implemented.");
   }

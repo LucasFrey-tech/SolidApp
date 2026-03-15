@@ -34,7 +34,7 @@ export class CampaignsService {
 
     @InjectRepository(imagenes_campania)
     private readonly campaignsImagesRepository: Repository<imagenes_campania>,
-  ) {}
+  ) { }
 
   /**
    * Obtiene todas las Campañas paginadas activas, incluyendo imagenes.
@@ -53,12 +53,12 @@ export class CampaignsService {
     const query = this.campaignsRepository
       .createQueryBuilder('campaign')
       .leftJoinAndSelect('campaign.organizacion', 'organizacion')
-      .leftJoinAndSelect('organizacion.cuenta', 'cuenta')
-      .leftJoinAndSelect('campaign.imagenes', 'imagenes');
+      .leftJoinAndSelect('campaign.imagenes', 'imagenes')
+      .leftJoin('organizacion.organizacionUsuarios', 'orgUsers')
+      .leftJoin('orgUsers.usuario', 'usuario');
 
-    query.andWhere('cuenta.deshabilitado = :deshabilitado', {
-      deshabilitado: false,
-    });
+    query.andWhere('usuario.habilitado = :habilitado', { habilitado: 1 });
+    query.andWhere('organizacion.habilitada = :habilitada', { habilitada: 1 });
 
     if (onlyEnabled) {
       query.andWhere('campaign.estado = :estado', {
@@ -211,7 +211,7 @@ export class CampaignsService {
     imagenes?: string[],
   ): Promise<ResponseCampaignsDto> {
     const campaign = await this.campaignsRepository.findOne({
-      where: { id },
+      where: { id: id },
       relations: ['organizacion'],
     });
 

@@ -64,7 +64,10 @@ export class DonacionService {
           organizacion: { id: organizacionId },
         },
       },
-      relations: { campaña: true, usuario: true },
+      relations: {
+        campaña: { organizacion: true },
+        usuario: { contacto: true },
+      },
       order: {
         estado: 'ASC',
         fecha_registro: 'DESC',
