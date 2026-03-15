@@ -65,7 +65,7 @@ export class PerfilOrganizacionService {
     private readonly usuarioService: UsuarioService,
     private readonly hashService: HashService,
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   /**
    * Obtiene organizaciones paginadas con búsqueda opcional.
@@ -80,8 +80,8 @@ export class PerfilOrganizacionService {
   async findPaginated(page: number, limit: number, search: string) {
     const skip = (page - 1) * limit;
 
-    const queryBuilder = this.organizacionRepository
-      .createQueryBuilder('organizacion');
+    const queryBuilder =
+      this.organizacionRepository.createQueryBuilder('organizacion');
 
     if (search) {
       queryBuilder.andWhere(
@@ -306,15 +306,15 @@ export class PerfilOrganizacionService {
       ...updateDto,
       contacto: updateDto.contacto
         ? {
-          ...organizacionActual.organizacion.contacto,
-          ...updateDto.contacto,
-        }
+            ...organizacionActual.organizacion.contacto,
+            ...updateDto.contacto,
+          }
         : undefined,
       direccion: updateDto.direccion
         ? {
-          ...organizacionActual.organizacion.direccion,
-          ...updateDto.direccion,
-        }
+            ...organizacionActual.organizacion.direccion,
+            ...updateDto.direccion,
+          }
         : undefined,
     });
 
@@ -410,22 +410,22 @@ export class PerfilOrganizacionService {
 
     dto.contacto = organizacion.contacto
       ? {
-        id: organizacion.contacto.id,
-        correo: organizacion.contacto.correo,
-        telefono: organizacion.contacto.telefono,
-        prefijo: organizacion.contacto.prefijo,
-      }
+          id: organizacion.contacto.id,
+          correo: organizacion.contacto.correo,
+          telefono: organizacion.contacto.telefono,
+          prefijo: organizacion.contacto.prefijo,
+        }
       : undefined;
 
     dto.direccion = organizacion.direccion
       ? {
-        id: organizacion.direccion.id,
-        calle: organizacion.direccion.calle,
-        numero: organizacion.direccion.numero,
-        provincia: organizacion.direccion.provincia,
-        ciudad: organizacion.direccion.ciudad,
-        codigo_postal: organizacion.direccion.codigo_postal,
-      }
+          id: organizacion.direccion.id,
+          calle: organizacion.direccion.calle,
+          numero: organizacion.direccion.numero,
+          provincia: organizacion.direccion.provincia,
+          ciudad: organizacion.direccion.ciudad,
+          codigo_postal: organizacion.direccion.codigo_postal,
+        }
       : undefined;
 
     return dto;
