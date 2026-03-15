@@ -55,7 +55,7 @@ export class ResponseOrganizacionDto {
       codigoPostal: '1234',
     },
   })
-  datos_direccion?: DireccionDto;
+  direccion?: DireccionDto;
 
   @ApiProperty({
     description: 'Información de contacto, como teléfono y correo electrónico.',
@@ -65,7 +65,7 @@ export class ResponseOrganizacionDto {
       email: 'cliente@ejemplo.com',
     },
   })
-  datos_contacto?: ContactoDto;
+  contacto?: ContactoDto;
 
   @ApiProperty({
     example: 'https://www.fundacionayudar.org',

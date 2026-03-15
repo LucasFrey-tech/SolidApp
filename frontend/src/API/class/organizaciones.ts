@@ -10,7 +10,7 @@ import { DonacionEstado } from "../types/donaciones/enum";
 import {
   Organizacion,
   OrganizacionCreateRequest,
-  OrganizacionRegistroRequest,  // nuevo
+  OrganizacionRegistroRequest,  
   OrganizacionUpdateRequest,
 } from "../types/organizaciones";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";

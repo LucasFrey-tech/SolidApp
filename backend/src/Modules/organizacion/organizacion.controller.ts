@@ -351,7 +351,7 @@ export class OrganizacionesController {
     @Req() req: RequestConUsuario,
     @Body() updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.update(req.user.id, updateDto);
+    return this.organizacionService.update(updateDto,req.user.id);
   }
 
   /**
@@ -417,7 +417,7 @@ export class OrganizacionesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.update(id, dto);
+    return this.organizacionService.update(dto,id);
   }
 
   /**

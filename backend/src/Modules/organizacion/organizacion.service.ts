@@ -6,7 +6,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Organizacion } from '../../Entities/organizacion.entity';
 import { CreateOrganizacionDto } from './dto/create_organizacion.dto';
 import { UpdateOrganizacionDto } from './dto/update_organizacion.dto';
@@ -24,6 +24,7 @@ import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.
 import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity';
 import { Rol, Usuario } from '../../Entities/usuario.entity';
 import { HashService } from '../../common/bcryptService/hashService';
+
 
 /**
  * ============================================================
@@ -117,22 +118,29 @@ export class PerfilOrganizacionService {
    */
 
   async getOrganizacionByUsuario(usuarioId: number): Promise<Organizacion> {
-    const organizacionUsuario =
-      await this.organizacionUsuarioRepository.findOne({
-        where: {
-          usuario: { id: usuarioId },
-        },
-        relations: ['organizacion'],
-      });
 
-    if (!organizacionUsuario) {
-      throw new ForbiddenException(
-        'El usuario no gestiona ninguna organizacion',
-      );
-    }
+  const organizacionUsuario =
+    await this.organizacionUsuarioRepository.findOne({
+      where: {
+        id_usuario: usuarioId,
+        activo: true
+      },
+      relations: [
+        'organizacion',
+        'organizacion.contacto',
+        'organizacion.direccion',
+      ],
+    });
 
-    return organizacionUsuario.organizacion;
+  if (!organizacionUsuario) {
+    throw new ForbiddenException(
+      'El usuario no gestiona ninguna organizacion',
+    );
   }
+
+  return organizacionUsuario.organizacion;
+}
+
 
   async findById(id: number): Promise<Organizacion> {
     const perfil = await this.organizacionRepository.findOne({
@@ -285,37 +293,51 @@ export class PerfilOrganizacionService {
    * Si la organización no existe.
    */
   async update(
-    id: number,
-    updateDto: UpdateOrganizacionDto,
-  ): Promise<ResponseOrganizacionDto> {
-    const organizacion = await this.organizacionRepository.findOne({
-      where: { id },
-    });
+  updateDto: UpdateOrganizacionDto,
+  usuarioId: number, // ID del usuario que gestiona la organización
+): Promise<ResponseOrganizacionDto> {
+  // 1. Obtener la organización asociada al usuario, incluyendo contacto y dirección
+  const organizacionActual = await this.organizacionUsuarioRepository.findOne({
+    where: { usuario: { id: usuarioId } },
+    relations: ['organizacion', 'organizacion.contacto', 'organizacion.direccion'],
+  });
 
-    if (!organizacion) {
-      throw new NotFoundException(`Organización con ID ${id} no encontrada`);
-    }
-
-    const camposOrganizacion: (keyof UpdateOrganizacionDto)[] = [
-      'descripcion',
-      'web',
-    ];
-    Object.assign(
-      organizacion,
-      Object.fromEntries(
-        Object.entries(updateDto).filter(
-          ([k, v]) =>
-            camposOrganizacion.includes(k as keyof UpdateOrganizacionDto) &&
-            v !== undefined,
-        ),
-      ),
-    );
-
-    const updated = await this.organizacionRepository.save(organizacion);
-    this.logger.log(`Organización ${id} actualizada`);
-
-    return this.mapToResponseDto(updated);
+  if (!organizacionActual) {
+    throw new NotFoundException('El usuario no gestiona ninguna organización');
   }
+
+  const organizacionId = organizacionActual.organizacion.id;
+
+  // 2. Preload: crea una entidad lista para actualizar
+  const organizacionPreload = await this.organizacionRepository.preload({
+    id: organizacionId,
+    ...updateDto,
+    contacto: updateDto.contacto
+      ? {
+          ...organizacionActual.organizacion.contacto,
+          ...updateDto.contacto,
+        }
+      : undefined,
+    direccion: updateDto.direccion
+      ? {
+          ...organizacionActual.organizacion.direccion,
+          ...updateDto.direccion,
+        }
+      : undefined,
+  });
+
+  if (!organizacionPreload) {
+    throw new NotFoundException(`Organización con ID ${organizacionId} no encontrada`);
+  }
+
+  // 3. Guardar cambios
+  const updated = await this.organizacionRepository.save(organizacionPreload);
+  this.logger.log(`Organización ${organizacionId} actualizada`);
+
+  // 4. Devolver DTO
+  return this.mapToResponseDto(updated);
+}
+
 
   /**
    * Actualiza las credenciales del usuario
@@ -382,18 +404,40 @@ export class PerfilOrganizacionService {
    * @returns {ResponseOrganizacionDto}
    */
   private mapToResponseDto(
-    organizacion: Organizacion,
-  ): ResponseOrganizacionDto {
-    const dto = new ResponseOrganizacionDto();
+  organizacion: Organizacion,
+): ResponseOrganizacionDto {
+  const dto = new ResponseOrganizacionDto();
 
-    dto.id = organizacion.id;
-    dto.cuit = organizacion.cuit;
-    dto.razon_social = organizacion.razon_social;
-    dto.nombre_organizacion = organizacion.nombre_organizacion;
-    dto.descripcion = organizacion.descripcion;
-    dto.web = organizacion.web;
-    dto.verificada = organizacion.verificada;
+  dto.id = organizacion.id;
+  dto.cuit = organizacion.cuit;
+  dto.razon_social = organizacion.razon_social;
+  dto.nombre_organizacion = organizacion.nombre_organizacion;
+  dto.descripcion = organizacion.descripcion;
+  dto.web = organizacion.web;
+  dto.verificada = organizacion.verificada;
+  dto.habilitada = organizacion.habilitada;
 
-    return dto;
-  }
+  dto.contacto = organizacion.contacto
+    ? {
+        id: organizacion.contacto.id,
+        correo: organizacion.contacto.correo,
+        telefono: organizacion.contacto.telefono,
+        prefijo: organizacion.contacto.prefijo,
+      }
+    : undefined;
+
+  dto.direccion = organizacion.direccion
+    ? {
+        id: organizacion.direccion.id,
+        calle: organizacion.direccion.calle,
+        numero: organizacion.direccion.numero,
+        provincia: organizacion.direccion.provincia,
+        ciudad: organizacion.direccion.ciudad,
+        codigo_postal: organizacion.direccion.codigo_postal,
+      }
+    : undefined;
+
+  return dto;
+}
+
 }

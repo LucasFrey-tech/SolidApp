@@ -9,30 +9,28 @@ export interface Organizacion {
   descripcion: string;
   web: string;
   verificada: boolean;
-  habilitada: boolean;       // reemplaza "deshabilitado"
+  habilitada: boolean;     
+  contacto: Contacto;
+  direccion: Direccion;  
 
   // ── campos reservados para uso futuro ──────────────────
-  /** @future puede venir del contacto asociado */
-  correo?: string;
-  /** @future puede venir del contacto asociado */
-  telefono?: string;
-  /** @future puede venir de la dirección asociada */
-  calle?: string;
-  /** @future puede venir de la dirección asociada */
-  numero?: string;
-  /** @future puede venir de la dirección asociada */
-  provincia?: string;
-  /** @future puede venir de la dirección asociada */
-  ciudad?: string;
-  /** @future puede venir de la dirección asociada */
-  codigo_postal?: string;
-  /** @future campo no usado actualmente en el backend */
-  prefijo?: string;
-  /** @future campo no usado actualmente en el backend */
   fecha_registro?: Date;
-  /** @future campo no usado actualmente en el backend */
   ultimo_cambio?: Date;
 }
+
+  interface Contacto {
+    telefono: string;
+    prefijo: string;
+  }
+
+  interface Direccion {
+    calle: string;
+    numero: string;
+    provincia: string;
+    ciudad: string;
+    codigo_postal: string;
+  }
+
 
 /**
  * Payload para registrar una nueva organización junto con su gestor
@@ -59,18 +57,15 @@ export interface OrganizacionRegistroRequest {
  * Actualizar organización (UpdateOrganizacionDto)
  */
 export interface OrganizacionUpdateRequest {
+  cuit?: string;
+  razon_social?: string;
+  nombre_organizacion?: string;
   descripcion?: string;
   web?: string;
-
-  // ── campos reservados para uso futuro ──────────────────
-  /** @future cuando el backend soporte actualizar desde este DTO */
-  telefono?: string;
-  /** @future cuando el backend soporte deshabilitar desde este DTO */
-  deshabilitado?: boolean;
-  /** @future campo no usado actualmente en el backend */
-  actividad?: string;
-  /** @future campo no usado actualmente en el backend */
-  direccion?: string;
+  verificada?: boolean;
+  habilitada?: boolean;     
+  contacto?: Contacto;
+  direccion?: Direccion;  
 }
 
 export interface OrganizacionSummary {

@@ -11,6 +11,7 @@ import { UsuarioModule } from '../user/usuario.module';
 import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity';
 import { Usuario } from '../../Entities/usuario.entity';
 import { HashService } from '../../common/bcryptService/hashService';
+import { ContactoOrganizacionDto, UpdateDireccionOrganizacionDto } from './dto/update_organizacion.dto';
 
 /**
  * OrganizationModule
@@ -54,7 +55,7 @@ import { HashService } from '../../common/bcryptService/hashService';
      * - Organizations
      * - Campaigns
      */
-    TypeOrmModule.forFeature([Organizacion, Campaigns, OrganizacionUsuario, Usuario]),
+    TypeOrmModule.forFeature([Organizacion, Campaigns, OrganizacionUsuario, Usuario, UpdateDireccionOrganizacionDto, ContactoOrganizacionDto]),
 
     /**
      * Importación del módulo de campañas.
