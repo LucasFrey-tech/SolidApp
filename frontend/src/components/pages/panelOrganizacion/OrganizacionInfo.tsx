@@ -10,6 +10,12 @@ import {
 import styles from "@/styles/Paneles/organizacionInfo.module.css";
 import { useUser } from "@/app/context/UserContext";
 
+function cleanObject(obj: any) {
+    return Object.fromEntries(
+        Object.entries(obj).filter(([_, v]) => v !== "" && v !== null && v !== undefined)
+    );
+}
+
 export default function OrganizationInfo() {
     const { user } = useUser();
     const isGestor = user?.rol?.toUpperCase() === "GESTOR";
@@ -76,7 +82,28 @@ export default function OrganizationInfo() {
         if (!isGestor) return;
 
         try {
-            await baseApi.organizacion.updatePerfil(form);
+            const payload: OrganizacionUpdateRequest = cleanObject({
+                nombre_organizacion: form.nombre_organizacion,
+                razon_social: form.razon_social,
+                cuit: form.cuit,
+                web: form.web,
+                descripcion: form.descripcion,
+
+                contacto: cleanObject({
+                    prefijo: form.prefijo,
+                    telefono: form.telefono,
+                }),
+
+                direccion: cleanObject({
+                    calle: form.calle,
+                    numero: form.numero,
+                    provincia: form.provincia,
+                    ciudad: form.ciudad,
+                    codigo_postal: form.codigo_postal,
+                }),
+            });
+
+            await baseApi.organizacion.updatePerfil(payload);
 
             Swal.fire("Guardado", "Datos actualizados correctamente", "success");
 
