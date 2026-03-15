@@ -112,8 +112,10 @@ export class OrganizacionesController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ): Promise<ResponseCampaignsDetailPaginatedDto> {
+    const organizacion = await this.organizacionService.getOrganizacionByUsuario(req.user.id);
+
     return await this.organizacionService.getCampaigns(
-      req.user.id,
+      organizacion.id,
       page,
       limit,
     );
@@ -244,8 +246,9 @@ export class OrganizacionesController {
         SettingsService.getCampaignImageUrl(x.filename),
       );
     }
+    const organizacion = await this.organizacionService.getOrganizacionByUsuario(req.user.id);
     return this.organizacionService.updateCampaign(
-      req.user.id,
+      organizacion.id,
       updateCampaignsDto,
       imagenes,
     );
@@ -268,8 +271,10 @@ export class OrganizacionesController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ): Promise<PaginatedOrganizationDonationsResponseDto> {
+    const organizacion = await this.organizacionService.getOrganizacionByUsuario(req.user.id);
+
     return await this.organizacionService.getDonaciones(
-      req.user.id,
+      organizacion.id,
       page,
       limit,
     );
