@@ -9,6 +9,7 @@ import { baseApi } from "@/API/baseApi";
 import { useUser } from "../context/UserContext";
 import Modal from "@/components/ui/Modal";
 import { DonacionEstado } from "@/API/types/donaciones/enum";
+import OrganizationInfo from "@/components/pages/panelOrganizacion/OrganizacionInfo";
 
 import {
   CampaignCreateRequest,
@@ -29,7 +30,7 @@ type Donation = {
   cantidad: number;
 };
 
-type ViewMode = "campaigns" | "donations";
+type ViewMode = "campaigns" | "donations" | "info";
 
 export default function OrganizationCampaignsPage() {
   const [view, setView] = useState<ViewMode>("campaigns");
@@ -298,22 +299,30 @@ export default function OrganizationCampaignsPage() {
 
       <div className={styles.tabs}>
         <button
-          className={`${styles.tabButton} ${
-            view === "campaigns" ? styles.active : ""
-          }`}
+          className={`${styles.tabButton} ${view === "campaigns" ? styles.active : ""
+            }`}
           onClick={() => setView("campaigns")}
         >
           Campañas
         </button>
 
         <button
-          className={`${styles.tabButton} ${
-            view === "donations" ? styles.active : ""
-          }`}
+          className={`${styles.tabButton} ${view === "donations" ? styles.active : ""
+            }`}
           onClick={() => setView("donations")}
         >
           Donaciones
         </button>
+
+        <button
+          className={`${styles.tabButton} ${view === "info" ? styles.active : ""
+            }`}
+          onClick={() => setView("info")}
+        >
+          Información
+        </button>
+
+
       </div>
 
       <div className={styles.divider} />
@@ -412,7 +421,7 @@ export default function OrganizationCampaignsPage() {
                           : d.estado === DonacionEstado.RECHAZADA
                             ? styles.badgeRechazada
                             : styles.badgePendiente
-                      }`}
+                        }`}
                     >
                       {DonacionEstado[d.estado]}
                     </span>
@@ -473,6 +482,7 @@ export default function OrganizationCampaignsPage() {
           </div>
         </>
       )}
+  {view === "info" && <OrganizationInfo />}
 
       <Modal
         open={open}
@@ -485,16 +495,16 @@ export default function OrganizationCampaignsPage() {
           initialValues={
             editingCampaign
               ? {
-                  titulo: editingCampaign.titulo,
-                  descripcion: editingCampaign.descripcion,
-                  objetivo: editingCampaign.objetivo,
-                  puntos: editingCampaign.puntos,
-                  fecha_Inicio: editingCampaign.fecha_Inicio,
-                  fecha_Fin: editingCampaign.fecha_Fin,
-                  estado: editingCampaign.estado,
-                  imagenesExistentes:
-                    editingCampaign.imagenes?.map((img) => img.url) ?? [],
-                }
+                titulo: editingCampaign.titulo,
+                descripcion: editingCampaign.descripcion,
+                objetivo: editingCampaign.objetivo,
+                puntos: editingCampaign.puntos,
+                fecha_Inicio: editingCampaign.fecha_Inicio,
+                fecha_Fin: editingCampaign.fecha_Fin,
+                estado: editingCampaign.estado,
+                imagenesExistentes:
+                  editingCampaign.imagenes?.map((img) => img.url) ?? [],
+              }
               : undefined
           }
           onSubmit={handleSubmitCampaign}
