@@ -210,7 +210,7 @@ export class EmpresaService {
           calle: dto.calle,
           numero: dto.numero,
         },
-        habilitada: false,
+        habilitada: true,
         verificada: false,
       });
 

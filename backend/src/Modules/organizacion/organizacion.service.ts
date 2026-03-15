@@ -60,14 +60,12 @@ export class PerfilOrganizacionService {
     private readonly organizacionRepository: Repository<Organizacion>,
     @InjectRepository(OrganizacionUsuario)
     private readonly organizacionUsuarioRepository: Repository<OrganizacionUsuario>,
-    @InjectRepository(Usuario)
-    private readonly usuarioRepository: Repository<Usuario>,
     private readonly campaignService: CampaignsService,
     private readonly donacionService: DonacionService,
     private readonly usuarioService: UsuarioService,
     private readonly hashService: HashService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   /**
    * Obtiene organizaciones paginadas con búsqueda opcional.
@@ -83,12 +81,11 @@ export class PerfilOrganizacionService {
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.organizacionRepository
-      .createQueryBuilder('perfil')
-      .leftJoinAndSelect('perfil.cuenta', 'cuenta');
+      .createQueryBuilder('organizacion');
 
     if (search) {
       queryBuilder.andWhere(
-        '(perfil.razon_social LIKE :search OR perfil.nombre_organizacion LIKE :search OR cuenta.correo LIKE :search)',
+        '(organizacion.razon_social LIKE :search OR organizacion.nombre_organizacion LIKE :search)',
         { search: `%${search}%` },
       );
     }
@@ -96,7 +93,7 @@ export class PerfilOrganizacionService {
     const [organizaciones, total] = await queryBuilder
       .skip(skip)
       .take(limit)
-      .orderBy('perfil.id', 'ASC')
+      .orderBy('organizacion.id', 'ASC')
       .getManyAndCount();
 
     return {
@@ -250,7 +247,7 @@ export class PerfilOrganizacionService {
           calle: dto.calle,
           numero: dto.numero,
         },
-        habilitada: false,
+        habilitada: true,
         verificada: false,
       });
 
@@ -309,15 +306,15 @@ export class PerfilOrganizacionService {
       ...updateDto,
       contacto: updateDto.contacto
         ? {
-            ...organizacionActual.organizacion.contacto,
-            ...updateDto.contacto,
-          }
+          ...organizacionActual.organizacion.contacto,
+          ...updateDto.contacto,
+        }
         : undefined,
       direccion: updateDto.direccion
         ? {
-            ...organizacionActual.organizacion.direccion,
-            ...updateDto.direccion,
-          }
+          ...organizacionActual.organizacion.direccion,
+          ...updateDto.direccion,
+        }
         : undefined,
     });
 
@@ -413,22 +410,22 @@ export class PerfilOrganizacionService {
 
     dto.contacto = organizacion.contacto
       ? {
-          id: organizacion.contacto.id,
-          correo: organizacion.contacto.correo,
-          telefono: organizacion.contacto.telefono,
-          prefijo: organizacion.contacto.prefijo,
-        }
+        id: organizacion.contacto.id,
+        correo: organizacion.contacto.correo,
+        telefono: organizacion.contacto.telefono,
+        prefijo: organizacion.contacto.prefijo,
+      }
       : undefined;
 
     dto.direccion = organizacion.direccion
       ? {
-          id: organizacion.direccion.id,
-          calle: organizacion.direccion.calle,
-          numero: organizacion.direccion.numero,
-          provincia: organizacion.direccion.provincia,
-          ciudad: organizacion.direccion.ciudad,
-          codigo_postal: organizacion.direccion.codigo_postal,
-        }
+        id: organizacion.direccion.id,
+        calle: organizacion.direccion.calle,
+        numero: organizacion.direccion.numero,
+        provincia: organizacion.direccion.provincia,
+        ciudad: organizacion.direccion.ciudad,
+        codigo_postal: organizacion.direccion.codigo_postal,
+      }
       : undefined;
 
     return dto;

@@ -181,8 +181,11 @@ export class OrganizacionesController {
     const imagenes = files.map((x) =>
       SettingsService.getCampaignImageUrl(x.filename),
     );
+
+    const organizacion = await this.organizacionService.getOrganizacionByUsuario(req.user.id);
+
     return this.organizacionService.createCampaign(
-      req.user.id,
+      organizacion.id,
       createCampaignsDto,
       imagenes,
     );
@@ -351,7 +354,7 @@ export class OrganizacionesController {
     @Req() req: RequestConUsuario,
     @Body() updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.update(updateDto,req.user.id);
+    return this.organizacionService.update(updateDto, req.user.id);
   }
 
   /**
@@ -417,7 +420,7 @@ export class OrganizacionesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    return this.organizacionService.update(dto,id);
+    return this.organizacionService.update(dto, id);
   }
 
   /**
