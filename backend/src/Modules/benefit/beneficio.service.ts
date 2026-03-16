@@ -213,11 +213,7 @@ export class BeneficioService {
       }
 
       const usuario = await usuarioRepo.findOne({
-        relations: ['empresa_usuario'],
-        where: {
-          id: userId,
-          empresaUsuario: { usuario: { habilitado: true } },
-        },
+        where: { id: userId, habilitado: true },
         lock: { mode: 'pessimistic_write' },
       });
 
