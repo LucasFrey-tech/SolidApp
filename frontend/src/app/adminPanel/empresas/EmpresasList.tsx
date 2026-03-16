@@ -47,7 +47,6 @@ export default function EmpresasList() {
       Swal.fire("Error", "No se pudieron cargar las empresas", "error");
     } finally {
       setLoading(false);
-      // Restaurar foco en input
       if (inputRef.current) inputRef.current.focus();
     }
   };

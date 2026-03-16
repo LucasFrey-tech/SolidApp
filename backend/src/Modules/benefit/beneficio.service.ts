@@ -53,14 +53,15 @@ export class BeneficioService {
     const queryBuilder = this.beneficiosRepository
       .createQueryBuilder('beneficio')
       .leftJoinAndSelect('beneficio.empresa', 'empresa')
-      .leftJoinAndSelect('empresa.cuenta', 'cuenta');
+      .leftJoinAndSelect('empresa.empresaUsuarios', 'empresaUsuario')
+      .leftJoinAndSelect('empresaUsuario.usuario', 'usuario');
 
     if (onlyEnabled) {
       queryBuilder.andWhere('beneficio.estado = :estado', {
         estado: BeneficioEstado.APROBADO,
       });
-      queryBuilder.andWhere('cuenta.deshabilitado = :deshabilitado', {
-        deshabilitado: 0,
+      queryBuilder.andWhere('usuario.habilitado = :habilitado', {
+        habilitado: true,
       });
     }
 
@@ -100,6 +101,16 @@ export class BeneficioService {
         empresa: {
           empresaUsuarios: {
             usuario: true,
+          },
+        },
+      },
+      where: {
+        empresa: {
+          id: idEmpresa,
+          empresaUsuarios: {
+            usuario: {
+              habilitado: true,
+            },
           },
         },
       },
@@ -324,8 +335,23 @@ export class BeneficioService {
     estado: BeneficioEstado,
   ): Promise<BeneficiosResponseDTO> {
     const beneficio = await this.beneficiosRepository.findOne({
-      where: { id },
-      relations: ['empresa', 'empresa.cuenta'],
+      where: {
+        id,
+        empresa: {
+          empresaUsuarios: {
+            usuario: {
+              habilitado: true,
+            },
+          },
+        },
+      },
+      relations: {
+        empresa: {
+          empresaUsuarios: {
+            usuario: true,
+          },
+        },
+      },
     });
 
     if (!beneficio) {

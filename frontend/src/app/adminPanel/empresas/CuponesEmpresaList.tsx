@@ -51,7 +51,6 @@ export default function CuponesEmpresaList() {
       Swal.fire('Error', 'No se pudieron cargar los cupones', 'error');
     } finally {
       setLoading(false);
-      // restaurar foco en input
       if (inputRef.current) inputRef.current.focus();
     }
   };
