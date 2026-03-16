@@ -16,9 +16,7 @@ export default function EmpresaLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
-
-    if (!user) return;
+    if (loading || !user) return;
 
     if (user.rol !== Rol.GESTOR && user.gestion !== GestionTipo.EMPRESA) {
       Swal.fire({

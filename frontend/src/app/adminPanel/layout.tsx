@@ -15,8 +15,8 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading) {
-      if (!user || user.rol !== Rol.ADMIN) {
+    if (loading || !user) return;
+      if (user.rol !== Rol.ADMIN) {
         Swal.fire({
           icon: 'error',
           title: 'Acceso denegado',
@@ -26,8 +26,7 @@ export default function AdminLayout({
           router.replace('/inicio');
         });
       }
-    }
-  }, [user, loading, router]);
+    }, [user, loading, router]);
 
   if (loading) return null;
 

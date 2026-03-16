@@ -16,9 +16,7 @@ export default function OrganizacionLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
-
-    if (!user) return;
+    if (loading || !user) return;
 
     if (
       !user ||
