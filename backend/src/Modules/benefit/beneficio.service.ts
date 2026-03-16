@@ -96,11 +96,11 @@ export class BeneficioService {
     limit: number,
   ): Promise<PaginatedBeneficiosResponseDTO> {
     const [beneficios, total] = await this.beneficiosRepository.findAndCount({
-      relations: ['empresa', 'empresa_usuario'],
-      where: {
+      relations: {
         empresa: {
-          id: idEmpresa,
-          empresaUsuarios: { usuario: { habilitado: true } },
+          empresaUsuarios: {
+            usuario: true,
+          },
         },
       },
       skip: (page - 1) * limit,
@@ -128,7 +128,11 @@ export class BeneficioService {
         id: createDto.id_empresa,
         empresaUsuarios: { usuario: { habilitado: true } },
       },
-      relations: ['empresa_usuario'],
+      relations: {
+        empresaUsuarios: {
+          usuario: true,
+        },
+      },
     });
 
     if (!empresa) {
