@@ -1,19 +1,22 @@
-// invitacion.service.ts
 import { Injectable } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull, MoreThan } from 'typeorm';
 import { Invitacion } from '../../Entities/invitacion.entity';
+import { Contacto } from '../../Entities/contacto.entity';
 
 @Injectable()
 export class InvitacionesService {
   constructor(
     @InjectRepository(Invitacion)
     private invitacionRepo: Repository<Invitacion>,
+
+    @InjectRepository(Contacto)
+    private contactoRepo: Repository<Contacto>,
   ) {}
 
   // ================================
-  // INVITAR A EMPRESA
+  // CREAR INVITACIONES PARA EMPRESA
   // ================================
   async crearInvitacionesEmpresa(
     correos: string[],
@@ -21,8 +24,51 @@ export class InvitacionesService {
     usuarioInvitadorId: number,
   ) {
     const invitaciones: Invitacion[] = [];
+    const correosExistentes: string[] = [];
+    const correosYaInvitados: string[] = [];
 
     for (const correo of correos) {
+
+      // verificar si el usuario ya existe
+      const existe = await this.contactoRepo.findOne({
+        where: { correo },
+      });
+
+      if (existe) {
+        correosExistentes.push(correo);
+        continue;
+      }
+
+      // verificar si ya tiene invitación
+      const invitacionExistente = await this.invitacionRepo.findOne({
+        where: { correo },
+        order: { fecha_creacion: 'DESC' },
+      });
+
+      if (invitacionExistente && !invitacionExistente.fecha_registro) {
+
+        const ahora = new Date();
+
+        if (
+          invitacionExistente.fecha_expiracion &&
+          invitacionExistente.fecha_expiracion > ahora
+        ) {
+          correosYaInvitados.push(correo);
+          continue;
+        }
+
+        // si expiró → reenviar
+        invitacionExistente.token = randomBytes(32).toString('hex');
+
+        const nuevaFecha = new Date();
+        nuevaFecha.setDate(nuevaFecha.getDate() + 2);
+
+        invitacionExistente.fecha_expiracion = nuevaFecha;
+
+        invitaciones.push(invitacionExistente);
+        continue;
+      }
+
       const token = randomBytes(32).toString('hex');
 
       const fechaExpiracion = new Date();
@@ -34,29 +80,37 @@ export class InvitacionesService {
         empresaId,
         invitadorID: usuarioInvitadorId,
         rol: 'MIEMBRO',
+        expirada: false,
         fecha_expiracion: fechaExpiracion,
       });
 
       invitaciones.push(invitacion);
     }
 
-    return await this.invitacionRepo.save(invitaciones);
+    const guardadas = await this.invitacionRepo.save(invitaciones);
+
+    return {
+      invitaciones: guardadas,
+      correosExistentes,
+      correosYaInvitados,
+    };
   }
 
   // ================================
-  // INVITAR A ORGANIZACION
+  // CREAR INVITACIONES ORGANIZACION
   // ================================
   async crearInvitacionesOrganizacion(
     correos: string[],
     organizacionId: number,
     usuarioInvitadorId: number,
   ) {
-    // validar máximo 5 pendientes
+
     const pendientes = await this.invitacionRepo.count({
       where: {
         organizacionId,
-        usada: false,
-        cancelada: false,
+        fecha_registro: IsNull(),
+        fecha_expiracion: MoreThan(new Date()),
+        expirada: false,
       },
     });
 
@@ -67,8 +121,48 @@ export class InvitacionesService {
     }
 
     const invitaciones: Invitacion[] = [];
+    const correosExistentes: string[] = [];
+    const correosYaInvitados: string[] = [];
 
     for (const correo of correos) {
+
+      const existe = await this.contactoRepo.findOne({
+        where: { correo },
+      });
+
+      if (existe) {
+        correosExistentes.push(correo);
+        continue;
+      }
+
+      const invitacionExistente = await this.invitacionRepo.findOne({
+        where: { correo },
+        order: { fecha_creacion: 'DESC' },
+      });
+
+      if (invitacionExistente && !invitacionExistente.fecha_registro) {
+
+        const ahora = new Date();
+
+        if (
+          invitacionExistente.fecha_expiracion &&
+          invitacionExistente.fecha_expiracion > ahora
+        ) {
+          correosYaInvitados.push(correo);
+          continue;
+        }
+
+        invitacionExistente.token = randomBytes(32).toString('hex');
+
+        const nuevaFecha = new Date();
+        nuevaFecha.setDate(nuevaFecha.getDate() + 2);
+
+        invitacionExistente.fecha_expiracion = nuevaFecha;
+
+        invitaciones.push(invitacionExistente);
+        continue;
+      }
+
       const token = randomBytes(32).toString('hex');
 
       const fechaExpiracion = new Date();
@@ -80,36 +174,30 @@ export class InvitacionesService {
         organizacionId,
         invitadorID: usuarioInvitadorId,
         rol: 'MIEMBRO',
+        expirada: false,
         fecha_expiracion: fechaExpiracion,
       });
 
       invitaciones.push(invitacion);
     }
 
-    return await this.invitacionRepo.save(invitaciones);
+    const guardadas = await this.invitacionRepo.save(invitaciones);
+
+    return {
+      invitaciones: guardadas,
+      correosExistentes,
+      correosYaInvitados,
+    };
   }
 
   // ================================
-  // LISTAR INVITACIONES POR EMPRESA
+  // LISTAR INVITACIONES EMPRESA
   // ================================
   async listarInvitacionesEmpresa(
     empresaId: number,
     page: number = 1,
     limit: number = 5,
   ) {
-    const ahora = new Date();
-
-    // cancelar invitaciones expiradas
-    await this.invitacionRepo
-      .createQueryBuilder()
-      .update(Invitacion)
-      .set({ cancelada: true })
-      .where('empresaId = :empresaId', { empresaId })
-      .andWhere('fecha_expiracion < :ahora', { ahora })
-      .andWhere("cancelada = 0")
-      .andWhere("usada = 0")
-      .execute();
-
     const [items, total] = await this.invitacionRepo.findAndCount({
       where: { empresaId },
       order: { fecha_creacion: 'DESC' },
@@ -117,30 +205,22 @@ export class InvitacionesService {
       take: limit,
     });
 
-    return { items, total };
+    const itemsConEstado = items.map((inv) => ({
+      ...inv,
+      estado: inv.estado,
+    }));
+
+    return { items: itemsConEstado, total };
   }
 
   // ================================
-  // LISTAR INVITACIONES POR ORGANIZACION
+  // LISTAR INVITACIONES ORGANIZACION
   // ================================
   async listarInvitacionesOrganizacion(
     organizacionId: number,
     page: number = 1,
     limit: number = 5,
   ) {
-    const ahora = new Date();
-
-    // cancelar invitaciones expiradas
-    await this.invitacionRepo
-      .createQueryBuilder()
-      .update(Invitacion)
-      .set({ cancelada: true })
-      .where('organizacionId = :organizacionId', { organizacionId })
-      .andWhere('fecha_expiracion < :ahora', { ahora })
-      .andWhere("cancelada = 0")
-      .andWhere("usada = 0")
-      .execute();
-
     const [items, total] = await this.invitacionRepo.findAndCount({
       where: { organizacionId },
       order: { fecha_creacion: 'DESC' },
@@ -148,6 +228,11 @@ export class InvitacionesService {
       take: limit,
     });
 
-    return { items, total };
+    const itemsConEstado = items.map((inv) => ({
+      ...inv,
+      estado: inv.estado,
+    }));
+
+    return { items: itemsConEstado, total };
   }
 }

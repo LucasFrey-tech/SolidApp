@@ -8,43 +8,37 @@ import { useUser } from "@/app/context/UserContext";
 import { Invitacion } from "@/API/types/invitaciones/invitaciones";
 import InvitarUsuariosModal from "./InvitarUsuariosModal";
 
-type InvitacionUI = Invitacion & {
-  estado: "Pendiente" | "Expirada" | "Aceptada";
-};
-
 export default function InvitacionesPanel() {
   const { user } = useUser();
-  const organizacionId = user?.sub;
+  const organizacionId = user?.organizacionId;
 
-  const [invitaciones, setInvitaciones] = useState<InvitacionUI[]>([]);
+  const [invitaciones, setInvitaciones] = useState<Invitacion[]>([]);
   const [openModal, setOpenModal] = useState(false);
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
-      case "Pendiente":
-        return "#eab308"; // amarillo
-      case "Expirada":
-        return "#ef4444"; // rojo
-      case "Aceptada":
-        return "#22c55e"; // verde
+      case "pendiente":
+        return "#eab308";
+      case "expirada":
+        return "#ef4444";
+      case "usada":
+        return "#22c55e";
       default:
-        return "#6b7280"; // gris
+        return "#6b7280";
     }
   };
 
-  const calcularEstado = (
-    inv: Invitacion
-  ): "Pendiente" | "Expirada" | "Aceptada" => {
-    const ahora = new Date();
-
-    if (inv.usada) return "Aceptada";
-
-    // Ahora también chequea si fue cancelada
-    if (inv.cancelada || (inv.fecha_expiracion && new Date(inv.fecha_expiracion) <= ahora)) {
-      return "Expirada";
+  const getEstadoLabel = (estado: string) => {
+    switch (estado) {
+      case "pendiente":
+        return "Pendiente";
+      case "expirada":
+        return "Expirada";
+      case "usada":
+        return "Aceptada";
+      default:
+        return estado;
     }
-
-    return "Pendiente";
   };
 
   const fetchInvitaciones = async () => {
@@ -54,12 +48,7 @@ export default function InvitacionesPanel() {
       const response =
         await baseApi.invitacionesOrg.getInvitaciones(organizacionId);
 
-      const invitacionesMapped: InvitacionUI[] = response.items.map((inv) => ({
-        ...inv,
-        estado: calcularEstado(inv),
-      }));
-
-      setInvitaciones(invitacionesMapped);
+      setInvitaciones(response.items);
     } catch (error) {
       console.error(error);
 
@@ -86,20 +75,28 @@ export default function InvitacionesPanel() {
     }
 
     try {
-      await baseApi.invitacionesOrg.crearInvitaciones(
+      const response = await baseApi.invitacionesOrg.crearInvitaciones(
         organizacionId,
         correosValidos
       );
 
-      Swal.fire(
-        "Invitaciones enviadas",
-        "Los usuarios recibirán un correo de invitación",
-        "success"
-      );
+      if (response.correosExistentes.length > 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "Algunos usuarios ya están registrados",
+          text: `No se enviaron invitaciones a: ${response.correosExistentes.join(
+            ", "
+          )}`,
+        });
+      } else {
+        Swal.fire(
+          "Invitaciones enviadas",
+          "Los usuarios recibirán un correo de invitación",
+          "success"
+        );
+      }
 
       setOpenModal(false);
-
-      // Refresca la lista con los estados actualizados
       fetchInvitaciones();
     } catch (error: any) {
       Swal.fire(
@@ -151,7 +148,7 @@ export default function InvitacionesPanel() {
                     fontWeight: "bold",
                   }}
                 >
-                  {i.estado}
+                  {getEstadoLabel(i.estado)}
                 </span>
               </td>
             </tr>

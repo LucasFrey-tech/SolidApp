@@ -20,6 +20,8 @@ export interface User {
   rol: Rol;
   gestion?: GestionTipo | null;
   gestionId?: number | null;
+
+  organizacionId?: number | null;
 }
 
 interface UserContextType {
@@ -35,36 +37,37 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-const refreshUser = async () => {
-  const token = localStorage.getItem("token");
+  const refreshUser = async () => {
+    const token = localStorage.getItem("token");
 
-  if (!token) {
-    setUser(null);
-    setLoading(false);
-    return;
-  }
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
 
-  try {
-    const decoded = jwtDecode<User>(token);
+    try {
+      const decoded = jwtDecode<User>(token);
 
-    const perfil = await baseApi.usuario.getPerfil();
+      const perfil: any = await baseApi.usuario.getPerfil();
 
-    setUser({
-      sub: decoded.sub,
-      username: `${perfil.nombre} ${perfil.apellido}`,
-      rol: decoded.rol,
-      gestion: decoded.gestion,
-      gestionId: decoded.gestionId,
-      email: perfil.contacto?.correo,
-    });
+      setUser({
+        sub: decoded.sub,
+        username: `${perfil.nombre} ${perfil.apellido}`,
+        rol: decoded.rol,
+        gestion: decoded.gestion,
+        gestionId: decoded.gestionId,
+        email: perfil.contacto?.correo,
+        organizacionId: perfil.organizacion_usuario?.[0]?.id_organizacion ?? null
+      });
 
-  } catch (error) {
-    console.error("Error cargando usuario:", error);
-    setUser(null);
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (error) {
+      console.error("Error cargando usuario:", error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     refreshUser();
   }, []);

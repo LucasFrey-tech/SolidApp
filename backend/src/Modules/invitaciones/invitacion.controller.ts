@@ -20,7 +20,7 @@ export class InvitacionesController {
   ) {
     console.log(req.user);
     const usuarioInvitadorId = (req.user as any).id;
-
+    console.log("Usuario invitador ID:", usuarioInvitadorId);
     return this.invitacionesService.crearInvitacionesEmpresa(
       dto.correos,
       empresaId,

@@ -1,4 +1,3 @@
-// types/invitacion.ts
 export type Invitacion = {
   id: number;
   correo: string;
@@ -7,15 +6,14 @@ export type Invitacion = {
   organizacionId?: number;
   invitadorID: number;
   rol: string;
-  usada: boolean;
-  cancelada: boolean;
+  expirada: boolean;
+  fecha_registro?: string;
   fecha_creacion: string;
   fecha_expiracion?: string;
+  estado: "pendiente" | "expirada" | "usada";
 };
 
-export type InvitacionConEstado = Invitacion & {
-  estado: "Pendiente" | "Expirada" | "Aceptada";
+export type InvitacionCrearResponse = {
+  invitaciones: Invitacion[];
+  correosExistentes: string[];
 };
-
-
-

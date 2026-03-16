@@ -9,7 +9,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 /**
  * Entidad Invitacion
  * Representa una invitación enviada a un correo para unirse
- * a una empresa y organización dentro del sistema.
+ * a una empresa o organización dentro del sistema.
  */
 @Entity('invitaciones')
 export class Invitacion {
@@ -59,11 +59,7 @@ export class Invitacion {
     example: 'MIEMBRO',
     description: 'Rol que tendrá el usuario al aceptar la invitación',
   })
-  @Column({
-    type: 'varchar',
-    length: 20,
-    default: 'MIEMBRO',
-  })
+  @Column({ type: 'varchar', length: 20, default: 'MIEMBRO' })
   rol: string;
 
   @ApiProperty({
@@ -71,14 +67,14 @@ export class Invitacion {
     description: 'Indica si la invitación ya fue utilizada',
   })
   @Column({ default: false })
-  usada: boolean;
+  expirada: boolean;
 
-  @ApiProperty({
-    example: false,
-    description: 'Indica si la invitación fue cancelada manualmente',
+  @ApiPropertyOptional({
+    example: '2026-03-16T14:00:00Z',
+    description: 'Fecha en que el usuario invitado se registró usando la invitación',
   })
-  @Column({ default: false })
-  cancelada: boolean;
+  @Column({ type: 'datetime2', nullable: true })
+  fecha_registro?: Date;
 
   @ApiProperty({
     example: '2026-03-14T10:30:00Z',
@@ -86,6 +82,7 @@ export class Invitacion {
   })
   @CreateDateColumn({ type: 'datetime2' })
   fecha_creacion: Date;
+  descripcion: 'Fecha cuando el usuario se registra usando la invitación';
 
   @ApiPropertyOptional({
     example: '2026-03-20T10:30:00Z',
@@ -93,4 +90,14 @@ export class Invitacion {
   })
   @Column({ type: 'datetime2', nullable: true })
   fecha_expiracion?: Date;
+
+  // ================================
+  // Getter virtual para estado calculado
+  // ================================
+  get estado(): 'pendiente' | 'usada' | 'expirada' {
+    if (this.expirada) return 'usada';
+    if (this.fecha_expiracion && this.fecha_expiracion < new Date())
+      return 'expirada';
+    return 'pendiente';
+  }
 }
