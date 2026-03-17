@@ -31,6 +31,11 @@ export class CreateOrganizacionDto {
   @MinLength(6)
   clave: string;
 
+  @ApiProperty({ example: '11' })
+  @IsString()
+  @IsNotEmpty()
+  prefijo: string;
+
   @ApiProperty({ example: '1123456789' })
   @IsString()
   @IsNotEmpty()
