@@ -20,24 +20,34 @@ const formatCuit = (raw: string): string => {
 const stripCuit = (formatted: string): string =>
   formatted.replace(/\D/g, "");
 
+const formatTelefono = (raw: string): string => {
+  const digits = raw.replace(/\D/g, "").slice(0, 10);
+  if (digits.length <= 2) return digits;
+  return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+};
+
+const stripTelefono = (formatted: string): string =>
+  formatted.replace(/\D/g, "");
+
 /* ==================== ESQUEMAS ==================== */
 
 const empresaSchema = z
   .object({
-    nombre:         z.string().min(2, "Nombre inválido"),
-    apellido:       z.string().min(2, "Apellido inválido"),
-    documento:      z.string().min(7, "Documento inválido"),
-    correo:         z.string().email("Email inválido"),
-    clave:          z.string().min(6, "Mínimo 6 caracteres"),
+    nombre: z.string().min(2, "Nombre inválido"),
+    apellido: z.string().min(2, "Apellido inválido"),
+    documento: z.string().min(7, "Documento inválido"),
+    correo: z.string().email("Email inválido"),
+    clave: z.string().min(6, "Mínimo 6 caracteres"),
     confirmarClave: z.string(),
-    telefono:       z.string().min(8, "Teléfono inválido"),
+    prefijo: z.string().min(2, "prefijo invalido"),
+    telefono: z.string().min(8, "Teléfono inválido"),
     correo_empresa: z.string().email("Email de empresa inválido"),
-    cuit_empresa:   z.string().length(11, "El CUIT debe tener 11 dígitos"),
-    razon_social:   z.string().min(3, "Razón social inválida"),
+    cuit_empresa: z.string().length(11, "El CUIT debe tener 11 dígitos"),
+    razon_social: z.string().min(3, "Razón social inválida"),
     nombre_empresa: z.string().min(3, "Nombre de fantasía inválido"),
-    calle:          z.string().min(3, "Calle inválida"),
-    numero:         z.string().min(1, "Número inválido"),
-    web:            z.string().optional(),
+    calle: z.string().min(3, "Calle inválida"),
+    numero: z.string().min(1, "Número inválido"),
+    web: z.string().optional(),
   })
   .refine((d) => d.clave === d.confirmarClave, {
     message: "Las contraseñas no coinciden",
@@ -46,20 +56,21 @@ const empresaSchema = z
 
 const organizacionSchema = z
   .object({
-    nombre:               z.string().min(2, "Nombre inválido"),
-    apellido:             z.string().min(2, "Apellido inválido"),
-    documento:            z.string().min(7, "Documento inválido"),
-    correo:               z.string().email("Email inválido"),
-    clave:                z.string().min(6, "Mínimo 6 caracteres"),
-    confirmarClave:       z.string(),
-    telefono:             z.string().min(8, "Teléfono inválido"),
-    correo_organizacion:  z.string().email("Email de organización inválido"),
-    cuit_organizacion:    z.string().length(11, "El CUIT debe tener 11 dígitos"),
-    razon_social:         z.string().min(3, "Razón social inválida"),
-    nombre_organizacion:  z.string().min(3, "Nombre inválido"),
-    calle:                z.string().min(3, "Calle inválida"),
-    numero:               z.string().min(1, "Número inválido"),
-    web:                  z.string().optional(),
+    nombre: z.string().min(2, "Nombre inválido"),
+    apellido: z.string().min(2, "Apellido inválido"),
+    documento: z.string().min(7, "Documento inválido"),
+    correo: z.string().email("Email inválido"),
+    clave: z.string().min(6, "Mínimo 6 caracteres"),
+    confirmarClave: z.string(),
+    prefijo: z.string().min(2, "prefijo invalido"),
+    telefono: z.string().min(8, "Teléfono inválido"),
+    correo_organizacion: z.string().email("Email de organización inválido"),
+    cuit_organizacion: z.string().length(11, "El CUIT debe tener 11 dígitos"),
+    razon_social: z.string().min(3, "Razón social inválida"),
+    nombre_organizacion: z.string().min(3, "Nombre inválido"),
+    calle: z.string().min(3, "Calle inválida"),
+    numero: z.string().min(1, "Número inválido"),
+    web: z.string().optional(),
   })
   .refine((d) => d.clave === d.confirmarClave, {
     message: "Las contraseñas no coinciden",
@@ -71,22 +82,22 @@ const organizacionSchema = z
 type FormType = "empresa" | "organizacion";
 type Step = "select" | FormType;
 
-type EmpresaData      = z.infer<typeof empresaSchema>;
+type EmpresaData = z.infer<typeof empresaSchema>;
 type OrganizacionData = z.infer<typeof organizacionSchema>;
-type Errors  = Record<string, string | undefined>;
+type Errors = Record<string, string | undefined>;
 type Touched = Record<string, boolean>;
 
 type FieldConfig = {
-  field:       string;
-  label:       string;
-  type:        string;
+  field: string;
+  label: string;
+  type: string;
   placeholder: string;
-  optional?:   boolean;
+  optional?: boolean;
 };
 
 /* ==================== CAMPOS NUMÉRICOS ==================== */
 
-const numericFields = ["documento", "telefono", "numero"];
+const numericFields = ["documento", "numero"];
 
 /* ==================== CAMPOS CUIT (para el display con guiones) ==================== */
 
@@ -96,36 +107,36 @@ const cuitFields = ["cuit_empresa", "cuit_organizacion"];
 
 const fieldConfigs: Record<FormType, FieldConfig[]> = {
   empresa: [
-    { field: "nombre",         label: "Nombre del gestor",    type: "text",     placeholder: "Juan"                    },
-    { field: "apellido",       label: "Apellido del gestor",  type: "text",     placeholder: "Pérez"                   },
-    { field: "documento",      label: "DNI del gestor",       type: "text",     placeholder: "12345678"                },
-    { field: "correo",         label: "Correo del gestor",    type: "email",    placeholder: "gestor@empresa.com"      },
-    { field: "clave",          label: "Contraseña",           type: "password", placeholder: "••••••••"                },
-    { field: "confirmarClave", label: "Repetir contraseña",   type: "password", placeholder: "••••••••"                },
-    { field: "telefono",       label: "Teléfono",             type: "text",     placeholder: "1123456789"              },
-    { field: "correo_empresa", label: "Correo de la empresa", type: "email",    placeholder: "contacto@empresa.com"    },
-    { field: "cuit_empresa",   label: "CUIT empresa",         type: "text",     placeholder: "30-12345678-9"           },
-    { field: "razon_social",   label: "Razón social",         type: "text",     placeholder: "Empresa SA"              },
-    { field: "nombre_empresa", label: "Nombre de fantasía",   type: "text",     placeholder: "Nombre comercial"        },
-    { field: "calle",          label: "Calle",                type: "text",     placeholder: "Av. Siempre Viva"        },
-    { field: "numero",         label: "Número",               type: "text",     placeholder: "742"                     },
-    { field: "web",            label: "Web",                  type: "text",     placeholder: "https://...", optional: true },
+    { field: "nombre", label: "Nombre del gestor", type: "text", placeholder: "Juan" },
+    { field: "apellido", label: "Apellido del gestor", type: "text", placeholder: "Pérez" },
+    { field: "documento", label: "DNI del gestor", type: "text", placeholder: "12345678" },
+    { field: "correo", label: "Correo del gestor", type: "email", placeholder: "gestor@empresa.com" },
+    { field: "clave", label: "Contraseña", type: "password", placeholder: "••••••••" },
+    { field: "confirmarClave", label: "Repetir contraseña", type: "password", placeholder: "••••••••" },
+    { field: "telefono", label: "Teléfono", type: "text", placeholder: "1123456789" },
+    { field: "correo_empresa", label: "Correo de la empresa", type: "email", placeholder: "contacto@empresa.com" },
+    { field: "cuit_empresa", label: "CUIT empresa", type: "text", placeholder: "30-12345678-9" },
+    { field: "razon_social", label: "Razón social", type: "text", placeholder: "Empresa SA" },
+    { field: "nombre_empresa", label: "Nombre de fantasía", type: "text", placeholder: "Nombre comercial" },
+    { field: "calle", label: "Calle", type: "text", placeholder: "Av. Siempre Viva" },
+    { field: "numero", label: "Número", type: "text", placeholder: "742" },
+    { field: "web", label: "Web", type: "text", placeholder: "https://...", optional: true },
   ],
   organizacion: [
-    { field: "nombre",               label: "Nombre del gestor",          type: "text",     placeholder: "Juan"                       },
-    { field: "apellido",             label: "Apellido del gestor",        type: "text",     placeholder: "Pérez"                      },
-    { field: "documento",            label: "DNI del gestor",             type: "text",     placeholder: "12345678"                   },
-    { field: "correo",               label: "Correo del gestor",          type: "email",    placeholder: "gestor@organizacion.com"    },
-    { field: "clave",                label: "Contraseña",                 type: "password", placeholder: "••••••••"                   },
-    { field: "confirmarClave",       label: "Repetir contraseña",         type: "password", placeholder: "••••••••"                   },
-    { field: "telefono",             label: "Teléfono",                   type: "text",     placeholder: "1123456789"                 },
-    { field: "correo_organizacion",  label: "Correo de la organización",  type: "email",    placeholder: "contacto@organizacion.com"  },
-    { field: "cuit_organizacion",    label: "CUIT organización",          type: "text",     placeholder: "30-12345678-9"              },
-    { field: "razon_social",         label: "Razón social",               type: "text",     placeholder: "Fundación Ayudar"           },
-    { field: "nombre_organizacion",  label: "Nombre",                     type: "text",     placeholder: "Nombre público"             },
-    { field: "calle",                label: "Calle",                      type: "text",     placeholder: "Av. Siempre Viva"           },
-    { field: "numero",               label: "Número",                     type: "text",     placeholder: "742"                        },
-    { field: "web",                  label: "Web",                        type: "text",     placeholder: "https://...", optional: true },
+    { field: "nombre", label: "Nombre del gestor", type: "text", placeholder: "Juan" },
+    { field: "apellido", label: "Apellido del gestor", type: "text", placeholder: "Pérez" },
+    { field: "documento", label: "DNI del gestor", type: "text", placeholder: "12345678" },
+    { field: "correo", label: "Correo del gestor", type: "email", placeholder: "gestor@organizacion.com" },
+    { field: "clave", label: "Contraseña", type: "password", placeholder: "••••••••" },
+    { field: "confirmarClave", label: "Repetir contraseña", type: "password", placeholder: "••••••••" },
+    { field: "telefono", label: "Teléfono", type: "text", placeholder: "1123456789" },
+    { field: "correo_organizacion", label: "Correo de la organización", type: "email", placeholder: "contacto@organizacion.com" },
+    { field: "cuit_organizacion", label: "CUIT organización", type: "text", placeholder: "30-12345678-9" },
+    { field: "razon_social", label: "Razón social", type: "text", placeholder: "Fundación Ayudar" },
+    { field: "nombre_organizacion", label: "Nombre", type: "text", placeholder: "Nombre público" },
+    { field: "calle", label: "Calle", type: "text", placeholder: "Av. Siempre Viva" },
+    { field: "numero", label: "Número", type: "text", placeholder: "742" },
+    { field: "web", label: "Web", type: "text", placeholder: "https://...", optional: true },
   ],
 };
 
@@ -133,14 +144,14 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
 
 const initialEmpresaData: EmpresaData = {
   nombre: "", apellido: "", documento: "",
-  correo: "", clave: "", confirmarClave: "", telefono: "",
+  correo: "", clave: "", confirmarClave: "", prefijo: "", telefono: "",
   correo_empresa: "", cuit_empresa: "", razon_social: "", nombre_empresa: "",
   calle: "", numero: "", web: "",
 };
 
 const initialOrganizacionData: OrganizacionData = {
   nombre: "", apellido: "", documento: "",
-  correo: "", clave: "", confirmarClave: "", telefono: "",
+  correo: "", clave: "", confirmarClave: "", prefijo: "", telefono: "",
   correo_organizacion: "", cuit_organizacion: "", razon_social: "", nombre_organizacion: "",
   calle: "", numero: "", web: "",
 };
@@ -150,25 +161,26 @@ const initialOrganizacionData: OrganizacionData = {
 export default function RegistroEntidades() {
   const [step, setStep] = useState<Step>("select");
 
-  const [empresaData,      setEmpresaData]      = useState<EmpresaData>(initialEmpresaData);
+  const [empresaData, setEmpresaData] = useState<EmpresaData>(initialEmpresaData);
   const [organizacionData, setOrganizacionData] = useState<OrganizacionData>(initialOrganizacionData);
 
   // Un solo display compartido — solo un CUIT activo a la vez según el step
   const [cuitDisplay, setCuitDisplay] = useState("");
+  const [telefonoDisplay, setTelefonoDisplay] = useState("");
 
-  const [errors,  setErrors]  = useState<Errors>({});
+  const [errors, setErrors] = useState<Errors>({});
   const [touched, setTouched] = useState<Touched>({});
 
   /* ── helpers ── */
 
   const getCurrentData = () => {
-    if (step === "empresa")      return empresaData;
+    if (step === "empresa") return empresaData;
     if (step === "organizacion") return organizacionData;
     return null;
   };
 
   const getCurrentSchema = () => {
-    if (step === "empresa")      return empresaSchema;
+    if (step === "empresa") return empresaSchema;
     if (step === "organizacion") return organizacionSchema;
     return null;
   };
@@ -188,7 +200,7 @@ export default function RegistroEntidades() {
 
   const validateAll = () => {
     const schema = getCurrentSchema();
-    const data   = getCurrentData();
+    const data = getCurrentData();
     if (!schema || !data) return { isValid: false, errors: {} };
     try {
       schema.parse(data);
@@ -206,29 +218,57 @@ export default function RegistroEntidades() {
   /* ── handlers ── */
 
   const handleChange = (field: string, value: string) => {
-    // Manejo unificado de ambos campos CUIT
+    // ── CUIT ──
     if (cuitFields.includes(field)) {
       const formatted = formatCuit(value);
-      const digits    = stripCuit(formatted);
+      const digits = stripCuit(formatted);
       setCuitDisplay(formatted);
 
       if (field === "cuit_empresa") {
-        setEmpresaData((prev) => ({ ...prev, cuit_empresa: digits }));
+        const next = { ...empresaData, cuit_empresa: digits };
+        setEmpresaData(next);
         if (touched[field]) {
-          const error = validateField(field, { ...empresaData, cuit_empresa: digits });
+          const error = validateField(field, next as Record<string, string>);
           setErrors((prev) => ({ ...prev, [field]: error }));
         }
       } else {
-        // cuit_organizacion
-        setOrganizacionData((prev) => ({ ...prev, cuit_organizacion: digits }));
+        const next = { ...organizacionData, cuit_organizacion: digits };
+        setOrganizacionData(next);
         if (touched[field]) {
-          const error = validateField(field, { ...organizacionData, cuit_organizacion: digits });
+          const error = validateField(field, next as Record<string, string>);
           setErrors((prev) => ({ ...prev, [field]: error }));
         }
       }
       return;
     }
 
+    // ── TELÉFONO ──
+    if (field === "telefono") {
+      const formatted = formatTelefono(value);
+      const digits = stripTelefono(formatted);
+      const prefijo = digits.slice(0, 2);
+      const numero = digits.slice(2);
+      setTelefonoDisplay(formatted);
+
+      if (step === "empresa") {
+        const next = { ...empresaData, prefijo, telefono: numero };
+        setEmpresaData(next);
+        if (touched[field]) {
+          const error = validateField(field, next as Record<string, string>);
+          setErrors((prev) => ({ ...prev, [field]: error }));
+        }
+      } else if (step === "organizacion") {
+        const next = { ...organizacionData, prefijo, telefono: numero };
+        setOrganizacionData(next);
+        if (touched[field]) {
+          const error = validateField(field, next as Record<string, string>);
+          setErrors((prev) => ({ ...prev, [field]: error }));
+        }
+      }
+      return;
+    }
+
+    // ── RESTO DE CAMPOS ──
     if (step === "empresa") {
       const next = { ...empresaData, [field]: value };
       setEmpresaData(next);
@@ -260,6 +300,7 @@ export default function RegistroEntidades() {
     setErrors({});
     setTouched({});
     setCuitDisplay("");
+    setTelefonoDisplay("");
     setStep("select");
   };
 
@@ -313,9 +354,11 @@ export default function RegistroEntidades() {
     // Los campos CUIT usan el display visual con guiones
     const value = cuitFields.includes(field)
       ? cuitDisplay
-      : data
-        ? (data as Record<string, string>)[field] ?? ""
-        : "";
+      : field === "telefono"        // ← add this
+        ? telefonoDisplay           // ← add this
+        : data
+          ? (data as Record<string, string>)[field] ?? ""
+          : "";
 
     const isNumeric = numericFields.includes(field);
     const showError = touched[field] && errors[field];

@@ -10,8 +10,7 @@ import HistorialDonacionUsuario from "@/components/pages/perfil/historialDonacio
 import UserCoupons from "@/components/pages/perfil/cuponesUsuarios";
 import { useUser } from "../context/UserContext";
 import { useSearchParams } from "next/navigation";
-import { GestionTipo } from "@/API/types/gestion/enum";
-import GestionData from "@/components/pages/data/gestionData";
+
 
 type Section = "data" | "user&pass" | "cupons" | "donations";
 
@@ -34,17 +33,7 @@ export default function Panel() {
     <div className={styles.PanelLayout}>
       <main className={styles.Panel}>
         <section className={styles.Content}>
-          {activeSection === "data" && (
-            <>
-              <UserData />
-              {user.gestion === GestionTipo.EMPRESA && (
-                <GestionData tipo={GestionTipo.EMPRESA} />
-              )}
-              {user.gestion === GestionTipo.ORGANIZACION && (
-                <GestionData tipo={GestionTipo.ORGANIZACION} />
-              )}
-            </>
-          )}
+          {activeSection === "data" && <UserData/>}
           {activeSection === "user&pass" && <UserAndPass />}
           {activeSection === "cupons" && <UserCoupons />}
           {activeSection === "donations" && <HistorialDonacionUsuario />}
