@@ -90,7 +90,7 @@ export default function Empresas() {
         {/* ===== GRID ===== */}
         <div className={styles.grid}>
           {empresas
-            .filter((empresa) => !empresa.deshabilitado)
+            .filter((empresa) => empresa.habilitada)
             .map((empresa) => (
               <button
                 key={empresa.id}

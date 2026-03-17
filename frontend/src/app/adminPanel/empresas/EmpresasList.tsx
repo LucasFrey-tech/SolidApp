@@ -38,7 +38,7 @@ export default function EmpresasList() {
       const empresasFormated = res.items.map((u: any) => ({
         id: u.id,
         name: u.razon_social,
-        enabled: !u.deshabilitado,
+        enabled: u.habilitada,
       }));
       setEmpresas(empresasFormated);
       setEmpresasCount(res.total);
@@ -66,7 +66,7 @@ export default function EmpresasList() {
 
   const toggleEmpresa = async (empresa: Empresa) => {
     const result = await Swal.fire({
-      title: empresa.enabled ? "¿Deshabilitar empresa?" : "¿Habilitar empresa?",
+      title: empresa.enabled ? "¿Deshabilitar empresa?" : "Habilitar empresa?",
       text: empresa.name,
       icon: "warning",
       showCancelButton: true,

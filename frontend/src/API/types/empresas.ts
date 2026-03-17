@@ -62,5 +62,5 @@ export interface EmpresaRegistroRequest {
 export interface EmpresaSummary {
   nombre_empresa: string;
   logo: string;
-  deshabilitado: boolean;
+  habilitada: boolean;
 }
