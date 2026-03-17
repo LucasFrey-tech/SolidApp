@@ -67,6 +67,7 @@ export class CampaignsService {
       query.andWhere('campaign.estado = :estado', {
         estado: CampaignEstado.ACTIVA,
       });
+      query.andWhere('campaign.objetivo > 0', );
     }
 
     if (search) {

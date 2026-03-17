@@ -60,6 +60,9 @@ export class BeneficioService {
       queryBuilder.andWhere('beneficio.estado = :estado', {
         estado: BeneficioEstado.APROBADO,
       });
+      queryBuilder.andWhere('empresa.habilitada = :habilitada', {
+        habilitada: true,
+      });
       queryBuilder.andWhere('usuario.habilitado = :habilitado', {
         habilitado: true,
       });
