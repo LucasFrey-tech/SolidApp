@@ -5,6 +5,20 @@ import { ContactoDto, DireccionDto } from '../../contacto_direccion/dto';
 import { EmpresaUsuario } from '../../../Entities/empresa_usuario.entity';
 import { OrganizacionUsuario } from '../../../Entities/organizacion_usuario.entity';
 
+export class UsuarioResumenDto {
+  @ApiProperty({ example: 5, description: 'ID del usuario' })
+  id: number;
+
+  @ApiProperty({ example: 'Juan', description: 'Nombre del usuario' })
+  nombre: string;
+
+  @ApiProperty({ example: 'Pérez', description: 'Apellido del usuario' })
+  apellido: string;
+
+  @ApiProperty({ example: 'juan@email.com', description: 'Email del usuario' })
+  email?: string;
+}
+
 export class ResponseUsuarioDto {
   @ApiProperty({ example: 12, description: 'Identificador único del usuario' })
   id: number;
@@ -83,8 +97,9 @@ export class ResponseUsuarioDto {
   empresa_usuario?: EmpresaUsuario;
 
   @ApiPropertyOptional({
-    description: 'ID de la organización a la que pertenece el usuario (si aplica)',
+    description:
+      'ID de la organización a la que pertenece el usuario (si aplica)',
     example: 3,
   })
-  organizacion_usuario?: OrganizacionUsuario;  
+  organizacion_usuario?: OrganizacionUsuario;
 }

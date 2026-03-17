@@ -100,11 +100,7 @@ export class DonacionService {
       where: {
         usuario: { id: userId },
       },
-      relations: [
-        'campaña',
-        'campaña.organizacion',
-        //'campaña.organizacion.cuenta',
-      ],
+      relations: ['campaña', 'campaña.organizacion'],
       order: {
         estado: 'ASC',
         fecha_registro: 'DESC',
@@ -154,7 +150,7 @@ export class DonacionService {
       campaña: campaign,
       estado: DonacionEstado.PENDIENTE,
       puntos: puntosFinales,
-      fecha_estado: new Date(),
+      creado_por: { id: usuarioId },
     });
 
     const savedDonation = await this.donacionRepository.save(donation);
@@ -171,6 +167,7 @@ export class DonacionService {
   async confirmarDonacion(
     id: number,
     dto: UpdateDonacionEstadoDto,
+    gestorId: number,
   ): Promise<ResponseDonationDto> {
     return await this.donacionRepository.manager.transaction(
       async (manager) => {
@@ -189,14 +186,35 @@ export class DonacionService {
           donacion.estado === DonacionEstado.RECHAZADA &&
           dto.estado === DonacionEstado.APROBADA
         ) {
-          this.validarVentanaReversion(donacion.fecha_estado);
+          if (!donacion.fecha_rechazo) {
+            throw new BadRequestException(
+              'La donación no tiene fecha de rechazo',
+            );
+          }
+          this.validarVentanaReversion(donacion.fecha_rechazo);
+        }
+
+        if (dto.estado === DonacionEstado.APROBADA) {
+          donacion.aprobado_por = { id: gestorId } as Usuario;
+          donacion.fecha_aprobacion = new Date();
+
+          this.logger.log(`Donación ${id} aprobada por gestor ${gestorId}`);
+        } else if (dto.estado === DonacionEstado.RECHAZADA) {
+          donacion.rechazado_por = { id: gestorId } as Usuario;
+          donacion.fecha_rechazo = new Date();
+          donacion.motivo_rechazo = dto.motivo ?? '';
+
+          donacion.aprobado_por = undefined;
+          donacion.fecha_aprobacion = undefined;
+
+          this.logger.log(
+            `Donación ${id} rechazada por gestor ${gestorId} - Motivo: ${dto.motivo}`,
+          );
         }
 
         await this.aplicarEfectosDeEstado(manager, donacion, dto.estado);
 
         donacion.estado = dto.estado;
-        donacion.fecha_estado = new Date();
-        donacion.motivo_rechazo = dto.motivo ?? '';
 
         await manager.save(donacion);
 
@@ -312,8 +330,36 @@ export class DonacionService {
       correo: donation.usuario.contacto.correo,
       campaignId: donation.campaña.id,
       campaignTitulo: donation.campaña.titulo,
-      fecha_estado: donation.fecha_estado,
       cantidad: donation.cantidad,
+
+      creado_por: donation.creado_por
+        ? {
+            id: donation.creado_por.id,
+            nombre: donation.creado_por.nombre,
+            apellido: donation.creado_por.apellido,
+          }
+        : undefined,
+
+      aprobado_por: donation.aprobado_por
+        ? {
+            id: donation.aprobado_por.id,
+            nombre: donation.aprobado_por.nombre,
+            apellido: donation.aprobado_por.apellido,
+          }
+        : undefined,
+
+      fecha_aprobacion: donation.fecha_aprobacion,
+
+      rechazado_por: donation.rechazado_por
+        ? {
+            id: donation.rechazado_por.id,
+            nombre: donation.rechazado_por.nombre,
+            apellido: donation.rechazado_por.apellido,
+          }
+        : undefined,
+
+      fecha_rechazo: donation.fecha_rechazo,
+      motivo_rechazo: donation.motivo_rechazo ?? undefined,
     };
   }
 
@@ -330,8 +376,9 @@ export class DonacionService {
       numero: donation.campaña.organizacion.direccion.numero,
       organizacionId: donation.campaña.organizacion.id,
       titulo_campaña: donation.campaña.titulo,
-      fecha_estado: donation.fecha_estado,
       motivo_rechazo: donation.motivo_rechazo || '',
+      fecha_aprobacion: donation.fecha_aprobacion,
+      fecha_rechazo: donation.fecha_rechazo,
     };
   }
 }

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ContactoDto, DireccionDto } from '../../contacto_direccion/dto';
+import { UsuarioResumenDto } from '../../user/dto/response_usuario.dto';
 
 export class EmpresaResponseDTO {
   @ApiProperty({ example: 1, description: 'ID único de la Empresa' })
@@ -67,11 +68,17 @@ export class EmpresaResponseDTO {
   })
   fecha_registro: Date;
 
+  @ApiProperty({ type: UsuarioResumenDto, required: false })
+  creado_por?: UsuarioResumenDto;
+
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha de última modificación',
   })
   ultimo_cambio: Date;
+
+  @ApiProperty({ type: UsuarioResumenDto, required: false })
+  actualizado_por?: UsuarioResumenDto;
 
   @ApiProperty({
     example: '/Logo.png',

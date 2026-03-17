@@ -13,6 +13,7 @@ import { Beneficios } from './beneficio.entity';
 import { EmpresaUsuario } from './empresa_usuario.entity';
 import { Contacto } from './contacto.entity';
 import { Direccion } from './direccion.entity';
+import { Usuario } from './usuario.entity';
 
 /**
  * Entidad Empresa
@@ -157,6 +158,14 @@ export class Empresa {
   })
   @Column({ type: 'bit', nullable: false, default: true })
   habilitada: boolean;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'creado_por_id' })
+  creado_por?: Usuario;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'actualizado_por_id' })
+  actualizado_por?: Usuario;
 
   // ==================== RELACIONES ====================
 

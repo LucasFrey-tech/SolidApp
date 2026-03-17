@@ -87,11 +87,23 @@ export class Donaciones {
   @CreateDateColumn({ type: 'datetime2' })
   fecha_registro: Date;
 
-  /**
-   * Fecha de cuando cambio el estado
-   */
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'creado_por_id' })
+  creado_por?: Usuario;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'aprobado_por_id' })
+  aprobado_por?: Usuario;
+
   @Column({ type: 'datetime2', nullable: true })
-  fecha_estado: Date;
+  fecha_aprobacion?: Date;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'rechazado_por_id' })
+  rechazado_por?: Usuario;
+
+  @Column({ type: 'datetime2', nullable: true })
+  fecha_rechazo?: Date;
 
   @ApiProperty({ example: 'Articulos dañados' })
   @Column({ type: 'varchar', length: 255, nullable: true })

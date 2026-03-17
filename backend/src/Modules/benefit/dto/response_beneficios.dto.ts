@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { EmpresaSummaryDTO } from '../../empresa/dto/summary_empresa.dto';
+import { UsuarioResumenDto } from '../../user/dto/response_usuario.dto';
 
 /**
  * DTO para la respuesta de los Beneficios.
@@ -53,4 +54,28 @@ export class BeneficiosResponseDTO {
   /** Estado del Beneficio */
   @ApiProperty({ example: 'Estado del Descuento', description: 'Estado' })
   estado: string;
+
+  @ApiProperty({
+    description: 'Usuario que creó el beneficio',
+    type: () => UsuarioResumenDto,
+    required: false,
+    example: {
+      id: 5,
+      nombre: 'Juan',
+      apellido: 'Pérez',
+    },
+  })
+  creado_por?: UsuarioResumenDto;
+
+  @ApiProperty({
+    description: 'Usuario que actualizó el beneficio por última vez',
+    type: () => UsuarioResumenDto,
+    required: false,
+    example: {
+      id: 5,
+      nombre: 'Juan',
+      apellido: 'Pérez',
+    },
+  })
+  actualizado_por?: UsuarioResumenDto;
 }
