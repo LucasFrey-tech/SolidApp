@@ -240,6 +240,7 @@ export class PerfilOrganizacionService {
         rol: Rol.GESTOR,
         contacto: {
           correo: dto.correo,
+          prefijo: dto.prefijo,
           telefono: dto.telefono,
         },
         direccion: {},
