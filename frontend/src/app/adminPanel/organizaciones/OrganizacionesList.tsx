@@ -35,7 +35,7 @@ export default function OrganizacionesList() {
       const formatted: Organizacion[] = res.items.map((u: any) => ({
         id: u.id,
         name: u.nombre_organizacion,
-        habilitado: !u.cuenta?.deshabilitado,
+        habilitado: u.habilitada,
       }));
 
       setOrganizaciones(formatted);
