@@ -196,6 +196,7 @@ export class OrganizacionesController {
       organizacion.id,
       createCampaignsDto,
       imagenes,
+      req.user.id,
     );
   }
 
@@ -257,6 +258,7 @@ export class OrganizacionesController {
     return this.organizacionService.updateCampaign(
       organizacion.id,
       updateCampaignsDto,
+      req.user.id,
       imagenes,
     );
   }
@@ -338,8 +340,13 @@ export class OrganizacionesController {
   async actualizarEstadoDonación(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateDonacionEstadoDto,
+    @Req() req: RequestConUsuario,
   ) {
-    return await this.organizacionService.confirmarDonacion(id, dto);
+    return await this.organizacionService.confirmarDonacion(
+      id,
+      dto,
+      req.user.id,
+    );
   }
 
   /**

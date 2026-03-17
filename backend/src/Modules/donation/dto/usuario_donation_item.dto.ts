@@ -92,4 +92,7 @@ export class UserDonationItemDto {
     description: 'ID de la organización a la que se donó',
   })
   organizacionId: number;
+
+  fecha_aprobacion?: Date;
+  fecha_rechazo?: Date;
 }

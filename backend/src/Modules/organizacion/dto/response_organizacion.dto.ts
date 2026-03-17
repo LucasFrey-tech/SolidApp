@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DireccionDto, ContactoDto } from '../../contacto_direccion/dto';
+import { UsuarioResumenDto } from '../../user/dto/response_usuario.dto';
 
 export class ResponseOrganizacionDto {
   @ApiProperty({
@@ -82,8 +83,34 @@ export class ResponseOrganizacionDto {
   fecha_registro: Date;
 
   @ApiProperty({
+    description: 'Usuario que creó la organización',
+    type: UsuarioResumenDto,
+    required: false,
+    example: {
+      id: 5,
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      email: 'juan@email.com',
+    },
+  })
+  creado_por?: UsuarioResumenDto;
+
+  @ApiProperty({
     description: 'Fecha del último cambio realizado en la cuenta',
     example: '2026-02-21T21:54:00.000Z',
   })
   ultimo_cambio: Date;
+
+  @ApiProperty({
+    description: 'Usuario que actualizó la organización por última vez',
+    type: UsuarioResumenDto,
+    required: false,
+    example: {
+      id: 5,
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      email: 'juan@email.com',
+    },
+  })
+  actualizado_por?: UsuarioResumenDto;
 }

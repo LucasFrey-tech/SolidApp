@@ -142,11 +142,18 @@ export class EmpresaService {
   async createCupon(usuarioId: number, dto: CreateBeneficiosDTO) {
     const empresa = await this.getEmpresaByUsuario(usuarioId);
 
-    return this.beneficioService.create({ ...dto, id_empresa: empresa.id });
+    return this.beneficioService.create(
+      { ...dto, id_empresa: empresa.id },
+      usuarioId,
+    );
   }
 
-  async updateCupon(cuponId: number, dto: UpdateBeneficiosDTO) {
-    return this.beneficioService.update(cuponId, dto);
+  async updateCupon(
+    cuponId: number,
+    dto: UpdateBeneficiosDTO,
+    usuarioId: number,
+  ) {
+    return this.beneficioService.update(cuponId, dto, usuarioId);
   }
 
   async registrarEmpresa(dto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {
@@ -212,6 +219,9 @@ export class EmpresaService {
         },
         habilitada: true,
         verificada: false,
+
+        creado_por: { id: savedGestor.id },
+        actualizado_por: { id: savedGestor.id },
       });
 
       const savedEmpresa = await empresaRepo.save(empresa);
@@ -273,6 +283,8 @@ export class EmpresaService {
             ...updateDto.direccion,
           }
         : undefined,
+
+      actualizado_por: { id: usuarioId },
     });
 
     if (!empresaPreload) {
@@ -381,6 +393,24 @@ export class EmpresaService {
         codigo_postal: empresa.direccion.codigo_postal,
       };
     }
+
+    dto.creado_por = empresa.creado_por
+      ? {
+          id: empresa.creado_por.id,
+          nombre: empresa.creado_por.nombre,
+          apellido: empresa.creado_por.apellido,
+          email: empresa.creado_por.contacto?.correo,
+        }
+      : undefined;
+
+    dto.actualizado_por = empresa.actualizado_por
+      ? {
+          id: empresa.actualizado_por.id,
+          nombre: empresa.actualizado_por.nombre,
+          apellido: empresa.actualizado_por.apellido,
+          email: empresa.actualizado_por.contacto?.correo,
+        }
+      : undefined;
 
     return dto;
   }

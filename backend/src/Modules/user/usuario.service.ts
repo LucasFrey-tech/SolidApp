@@ -41,7 +41,12 @@ export class UsuarioService {
    */
   async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuarioRepository.findOne({
-      relations: ['contacto', 'direccion', 'empresaUsuario', 'organizacionUsuario'],
+      relations: [
+        'contacto',
+        'direccion',
+        'empresaUsuario',
+        'organizacionUsuario',
+      ],
       where: { contacto: { correo: email } },
     });
   }
@@ -287,7 +292,12 @@ export class UsuarioService {
    */
   async findOne(id: number): Promise<ResponseUsuarioDto> {
     const usuario = await this.usuarioRepository.findOne({
-      relations: ['contacto', 'direccion', 'empresaUsuario', 'organizacionUsuario'],
+      relations: [
+        'contacto',
+        'direccion',
+        'empresaUsuario',
+        'organizacionUsuario',
+      ],
       where: { id },
     });
 

@@ -13,6 +13,7 @@ import { Organizacion } from './organizacion.entity';
 import { Donaciones } from './donacion.entity';
 import { CampaignEstado } from '../Modules/campaign/enum';
 import { imagenes_campania } from './imagenes_campania.entity';
+import { Usuario } from './usuario.entity';
 
 @Entity('campañas')
 export class Campaigns {
@@ -90,6 +91,10 @@ export class Campaigns {
   @CreateDateColumn({ type: 'datetime2' })
   fecha_Registro: Date;
 
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'creado_por_id' })
+  creado_por?: Usuario;
+
   /**
    * Objetivo de la Campaña
    * @type {number}
@@ -119,6 +124,10 @@ export class Campaigns {
   })
   @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'actualizado_por_id' })
+  actualizado_por?: Usuario;
 
   /**
    * Organización asociadas

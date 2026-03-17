@@ -242,8 +242,9 @@ export class EmpresaController {
   async updateCupon(
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Body() dto: UpdateBeneficiosDTO,
+    @Req() req: RequestConUsuario,
   ) {
-    return await this.empresasService.updateCupon(cuponId, dto);
+    return await this.empresasService.updateCupon(cuponId, dto, req.user.id);
   }
 
   // =====Panel Admin=====

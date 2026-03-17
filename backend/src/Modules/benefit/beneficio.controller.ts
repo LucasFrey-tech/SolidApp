@@ -105,7 +105,8 @@ export class BeneficioController {
   updateEstado(
     @Param('id', ParseIntPipe) id: number,
     @Body('estado') estado: BeneficioEstado,
+    @Req() req: RequestConUsuario,
   ) {
-    return this.beneficiosService.updateEstado(id, estado);
+    return this.beneficiosService.updateEstado(id, estado, req.user.id);
   }
 }

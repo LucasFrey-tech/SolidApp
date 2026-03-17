@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DonacionEstado } from '../enum';
+import { UsuarioResumenDto } from '../../user/dto/response_usuario.dto';
 
 /**
  * DTO de la Donación.
@@ -52,4 +53,22 @@ export class OrganizationDonationItemDto {
 
   @ApiProperty({ example: 'objetivo' })
   cantidad: number;
+
+  @ApiPropertyOptional({ type: () => UsuarioResumenDto })
+  creado_por?: UsuarioResumenDto;
+
+  @ApiPropertyOptional({ type: () => UsuarioResumenDto })
+  aprobado_por?: UsuarioResumenDto;
+
+  @ApiPropertyOptional()
+  fecha_aprobacion?: Date;
+
+  @ApiPropertyOptional({ type: () => UsuarioResumenDto })
+  rechazado_por?: UsuarioResumenDto;
+
+  @ApiPropertyOptional()
+  fecha_rechazo?: Date;
+
+  @ApiPropertyOptional()
+  motivo_rechazo?: string;
 }

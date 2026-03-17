@@ -12,6 +12,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Empresa } from './empresa.entity';
 import { BeneficioEstado } from '../Modules/benefit/dto/enum/enum';
 import { UsuarioBeneficio } from './usuario-beneficio.entity';
+import { Usuario } from './usuario.entity';
 
 @Entity('beneficios')
 export class Beneficios {
@@ -75,6 +76,10 @@ export class Beneficios {
   @CreateDateColumn({ type: 'datetime2' })
   fecha_registro: Date;
 
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'creado_por_id' })
+  creado_por?: Usuario;
+
   /**
    * Fecha del ultimo cambio del Beneficio
    * @type {date}
@@ -85,6 +90,10 @@ export class Beneficios {
   })
   @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'actualizado_por_id' })
+  actualizado_por?: Usuario;
 
   /**
    * Valor del Beneficio

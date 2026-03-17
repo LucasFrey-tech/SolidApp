@@ -164,24 +164,40 @@ export class PerfilOrganizacionService {
     return this.donacionService.findAllPaginatedByOrganizacion(id, page, limit);
   }
 
-  async confirmarDonacion(id: number, dto: UpdateDonacionEstadoDto) {
-    return await this.donacionService.confirmarDonacion(id, dto);
+  async confirmarDonacion(
+    id: number,
+    dto: UpdateDonacionEstadoDto,
+    gestorId: number,
+  ) {
+    return await this.donacionService.confirmarDonacion(id, dto, gestorId);
   }
 
   async createCampaign(
     id: number,
     createDto: CreateCampaignsDto,
     imagenes: string[],
+    usuarioId: number,
   ): Promise<ResponseCampaignsDto> {
-    return await this.campaignService.create(id, createDto, imagenes);
+    return await this.campaignService.create(
+      id,
+      createDto,
+      imagenes,
+      usuarioId,
+    );
   }
 
   async updateCampaign(
     id: number,
     updateDto: UpdateCampaignsDto,
+    usuarioId: number,
     imagenes?: string[],
   ): Promise<ResponseCampaignsDto> {
-    return await this.campaignService.update(id, updateDto, imagenes);
+    return await this.campaignService.update(
+      id,
+      updateDto,
+      usuarioId,
+      imagenes,
+    );
   }
 
   async registrarOrganizacion(
@@ -249,6 +265,9 @@ export class PerfilOrganizacionService {
         },
         habilitada: true,
         verificada: false,
+
+        creado_por: { id: savedGestor.id },
+        actualizado_por: { id: savedGestor.id },
       });
 
       const savedOrganizacion = await organizacionRepo.save(organizacion);
@@ -316,6 +335,8 @@ export class PerfilOrganizacionService {
             ...updateDto.direccion,
           }
         : undefined,
+
+      actualizado_por: { id: usuarioId },
     });
 
     if (!organizacionPreload) {
@@ -427,6 +448,27 @@ export class PerfilOrganizacionService {
           codigo_postal: organizacion.direccion.codigo_postal,
         }
       : undefined;
+
+    dto.creado_por = organizacion.creado_por
+      ? {
+          id: organizacion.creado_por.id,
+          nombre: organizacion.creado_por.nombre,
+          apellido: organizacion.creado_por.apellido,
+          email: organizacion.creado_por.contacto?.correo,
+        }
+      : undefined;
+
+    dto.actualizado_por = organizacion.actualizado_por
+      ? {
+          id: organizacion.actualizado_por.id,
+          nombre: organizacion.actualizado_por.nombre,
+          apellido: organizacion.actualizado_por.apellido,
+          email: organizacion.actualizado_por.contacto?.correo,
+        }
+      : undefined;
+
+    dto.fecha_registro = organizacion.fecha_registro;
+    dto.ultimo_cambio = organizacion.ultimo_cambio;
 
     return dto;
   }

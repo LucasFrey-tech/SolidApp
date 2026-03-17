@@ -3,6 +3,8 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,6 +19,7 @@ import { imagenes_campania } from '../../Entities/imagenes_campania.entity';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
 import * as path from 'path';
 import { ResponseCampaignsDetailPaginatedDto } from './dto/response_campaign_paginated.dto';
+import { Usuario } from '../../Entities/usuario.entity';
 
 /**
  * Servicio que maneja la lógica de negocio de las Campañas Solidarias
@@ -34,7 +37,7 @@ export class CampaignsService {
 
     @InjectRepository(imagenes_campania)
     private readonly campaignsImagesRepository: Repository<imagenes_campania>,
-  ) { }
+  ) {}
 
   /**
    * Obtiene todas las Campañas paginadas activas, incluyendo imagenes.
@@ -144,6 +147,7 @@ export class CampaignsService {
     id: number,
     createDto: CreateCampaignsDto,
     imagenes: string[],
+    usuarioId: number,
   ): Promise<ResponseCampaignsDto> {
     const organizacion = await this.organizacionRepository.findOne({
       where: {
@@ -173,6 +177,8 @@ export class CampaignsService {
       puntos: createDto.puntos,
       estado: CampaignEstado.PENDIENTE,
       organizacion,
+      creado_por: { id: usuarioId },
+      actualizado_por: { id: usuarioId },
     });
 
     const saveCampaign = await this.campaignsRepository.save(campaign);
@@ -189,7 +195,18 @@ export class CampaignsService {
       await this.campaignsImagesRepository.save(imagenesCampania);
     }
 
-    return this.mapToResponseDto(saveCampaign);
+    const campaignCompleta = await this.campaignsRepository.findOne({
+      where: { id: saveCampaign.id },
+      relations: ['creado_por', 'actualizado_por', 'organizacion', 'imagenes'],
+    });
+
+    if (!campaignCompleta) {
+      throw new InternalServerErrorException(
+        'Error al recuperar la campaña recién creada',
+      );
+    }
+
+    return this.mapToResponseDto(campaignCompleta);
   }
 
   /**
@@ -208,11 +225,12 @@ export class CampaignsService {
   async update(
     id: number,
     updateDto: UpdateCampaignsDto,
+    usuarioId: number,
     imagenes?: string[],
   ): Promise<ResponseCampaignsDto> {
     const campaign = await this.campaignsRepository.findOne({
       where: { id: id },
-      relations: ['organizacion'],
+      relations: ['organizacion', 'creador_por', 'actualizado_por'],
     });
 
     if (!campaign) {
@@ -221,22 +239,26 @@ export class CampaignsService {
       );
     }
 
-    if (id !== undefined) {
-      const organizacion = await this.organizacionRepository.findOne({
-        where: {
-          id: id,
-          habilitada: true,
-        },
-      });
-
-      if (!organizacion) {
-        throw new NotFoundException(
-          `Organización con ID ${id} no encontrada o está deshabilitada`,
-        );
-      }
-
-      campaign.organizacion = organizacion;
+    if (campaign.organizacion.id !== id) {
+      throw new ForbiddenException(
+        'Esta campaña no pertenece a tu organización',
+      );
     }
+
+    const organizacion = await this.organizacionRepository.findOne({
+      where: {
+        id: id,
+        habilitada: true,
+      },
+    });
+
+    if (!organizacion) {
+      throw new NotFoundException(
+        `Organización con ID ${id} no encontrada o está deshabilitada`,
+      );
+    }
+
+    campaign.organizacion = organizacion;
 
     if (updateDto.objetivo !== undefined && updateDto.objetivo < 0) {
       throw new BadRequestException('El objetivo no puede ser negativo');
@@ -265,6 +287,7 @@ export class CampaignsService {
       );
     }
 
+    campaign.actualizado_por = { id: usuarioId } as Usuario;
     campaign.ultimo_cambio = new Date();
 
     const updatedCampaign = await this.campaignsRepository.save(campaign);
@@ -373,6 +396,24 @@ export class CampaignsService {
       puntos: campaign.puntos,
       organizacion: organizationSummary,
       imagenPortada: portada ? portada.imagen : null,
+
+      creado_por: campaign.creado_por
+        ? {
+            id: campaign.creado_por.id,
+            nombre: campaign.creado_por.nombre,
+            apellido: campaign.creado_por.apellido,
+          }
+        : undefined,
+
+      actualizado_por: campaign.actualizado_por
+        ? {
+            id: campaign.actualizado_por.id,
+            nombre: campaign.actualizado_por.nombre,
+            apellido: campaign.actualizado_por.apellido,
+          }
+        : undefined,
+
+      ultimo_cambio: campaign.ultimo_cambio,
     };
   };
 

@@ -133,7 +133,10 @@ export class BeneficioService {
    * @throws {NotFoundException}  Cuando alguna de las Empresas no se encuenta o esta deshabilitada.
    * @throws {BadRequestException} Cuando la cantidad o valor del beneficio es menor a 0 (cero)
    */
-  async create(createDto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO> {
+  async create(
+    createDto: CreateBeneficiosDTO,
+    usuarioId: number,
+  ): Promise<BeneficiosResponseDTO> {
     const empresa = await this.empresasRepository.findOne({
       where: {
         id: createDto.id_empresa,
@@ -168,6 +171,8 @@ export class BeneficioService {
       valor: createDto.valor,
       estado: createDto.estado ?? BeneficioEstado.PENDIENTE,
       empresa,
+      creado_por: { id: usuarioId } as Usuario,
+      actualizado_por: { id: usuarioId } as Usuario,
     });
 
     const saved = await this.beneficiosRepository.save(beneficio);
@@ -289,9 +294,18 @@ export class BeneficioService {
   async update(
     id: number,
     updateDto: UpdateBeneficiosDTO,
+    usuarioId: number,
   ): Promise<BeneficiosResponseDTO> {
     const beneficio = await this.beneficiosRepository.findOne({
-      where: { id },
+      where: {
+        id,
+        empresa: {
+          empresaUsuarios: {
+            usuario: { id: usuarioId },
+            activo: true,
+          },
+        },
+      },
       relations: {
         empresa: {
           empresaUsuarios: true,
@@ -309,7 +323,10 @@ export class BeneficioService {
       Object.entries(updateDto).filter(([_, valor]) => valor !== undefined),
     );
 
-    Object.assign(beneficio, datosActualizar);
+    Object.assign(beneficio, {
+      ...datosActualizar,
+      actualizado_por: { id: usuarioId } as Usuario,
+    });
 
     const updated = await this.beneficiosRepository.save(beneficio);
     this.logger.log(`Beneficio ${id} actualizado`);
@@ -329,15 +346,15 @@ export class BeneficioService {
   async updateEstado(
     id: number,
     estado: BeneficioEstado,
+    usuarioId: number,
   ): Promise<BeneficiosResponseDTO> {
     const beneficio = await this.beneficiosRepository.findOne({
       where: {
         id,
         empresa: {
           empresaUsuarios: {
-            usuario: {
-              habilitado: true,
-            },
+            usuario: { id: usuarioId },
+            activo: true,
           },
         },
       },
@@ -355,6 +372,7 @@ export class BeneficioService {
     }
 
     beneficio.estado = estado;
+    beneficio.actualizado_por = { id: usuarioId } as Usuario;
 
     const updated = await this.beneficiosRepository.save(beneficio);
 
@@ -405,6 +423,22 @@ export class BeneficioService {
       ultimo_cambio: beneficio.ultimo_cambio,
       empresa: empresaSummary,
       estado: beneficio.estado,
+
+      creado_por: beneficio.creado_por
+        ? {
+            id: beneficio.creado_por.id,
+            nombre: beneficio.creado_por.nombre,
+            apellido: beneficio.creado_por.apellido,
+          }
+        : undefined,
+
+      actualizado_por: beneficio.actualizado_por
+        ? {
+            id: beneficio.actualizado_por.id,
+            nombre: beneficio.actualizado_por.nombre,
+            apellido: beneficio.actualizado_por.apellido,
+          }
+        : undefined,
     };
   };
 }

@@ -10,10 +10,10 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Campaigns } from './campaigns.entity';
-import { ImagenesOrganizacion } from './imagenes_organizacion.entity';
 import { OrganizacionUsuario } from './organizacion_usuario.entity';
 import { Contacto } from './contacto.entity';
 import { Direccion } from './direccion.entity';
+import { Usuario } from './usuario.entity';
 
 /**
  * Entidad Organizacion
@@ -106,12 +106,20 @@ export class Organizacion {
   @CreateDateColumn({ type: 'datetime2', nullable: false })
   fecha_registro: Date;
 
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'creado_por_id' })
+  creado_por?: Usuario;
+
   @ApiProperty({
     example: '2024-03-20T15:45:00Z',
     description: 'Fecha de última modificación',
   })
   @UpdateDateColumn({ type: 'datetime2', nullable: false })
   ultimo_cambio: Date;
+
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'actualizado_por_id' })
+  actualizado_por?: Usuario;
 
   @ApiProperty({
     example: false,
@@ -136,11 +144,4 @@ export class Organizacion {
   })
   @OneToMany(() => Campaigns, (campaña) => campaña.organizacion)
   campaign?: Campaigns[];
-
-  @ApiPropertyOptional({
-    description: 'Imágenes de la organización (logo/banner)',
-    type: () => [ImagenesOrganizacion],
-  })
-  @OneToMany(() => ImagenesOrganizacion, (imagen) => imagen.organizacion)
-  imagenes?: ImagenesOrganizacion[];
 }
