@@ -34,7 +34,7 @@ export class BeneficioService {
     private readonly empresasRepository: Repository<Empresa>,
 
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   /**
    *
@@ -328,10 +328,18 @@ export class BeneficioService {
       actualizado_por: { id: usuarioId } as Usuario,
     });
 
-    const updated = await this.beneficiosRepository.save(beneficio);
-    this.logger.log(`Beneficio ${id} actualizado`);
+    await this.beneficiosRepository.save(beneficio);
 
-    return this.mapToResponseDto(updated);
+    const updated = await this.beneficiosRepository.findOne({
+      where: { id },
+      relations: {
+        empresa: true,
+        creado_por: true,
+        actualizado_por: true,
+      },
+    });
+
+    return this.mapToResponseDto(updated!);
   }
 
   /**
@@ -347,25 +355,31 @@ export class BeneficioService {
     id: number,
     estado: BeneficioEstado,
     usuarioId: number,
+    rol: Rol,
   ): Promise<BeneficiosResponseDTO> {
-    const beneficio = await this.beneficiosRepository.findOne({
-      where: {
-        id,
-        empresa: {
-          empresaUsuarios: {
-            usuario: { id: usuarioId },
-            activo: true,
+
+    let beneficio: Beneficios | null;
+
+    if (rol === Rol.ADMIN) {
+      beneficio = await this.beneficiosRepository.findOne({
+        where: { id },
+      });
+    } else {
+      beneficio = await this.beneficiosRepository.findOne({
+        where: {
+          id,
+          empresa: {
+            empresaUsuarios: {
+              usuario: { id: usuarioId },
+              activo: true,
+            },
           },
         },
-      },
-      relations: {
-        empresa: {
-          empresaUsuarios: {
-            usuario: true,
-          },
+        relations: {
+          empresa: { empresaUsuarios: { usuario: true } },
         },
-      },
-    });
+      });
+    }
 
     if (!beneficio) {
       throw new NotFoundException(`Beneficio con ID ${id} no encontrado`);
@@ -373,12 +387,19 @@ export class BeneficioService {
 
     beneficio.estado = estado;
     beneficio.actualizado_por = { id: usuarioId } as Usuario;
+    await this.beneficiosRepository.save(beneficio);
 
-    const updated = await this.beneficiosRepository.save(beneficio);
+    const updated = await this.beneficiosRepository.findOne({
+      where: { id },
+      relations: {
+        empresa: true,
+        creado_por: true,
+        actualizado_por: true,
+      },
+    });
 
     this.logger.log(`Estado del beneficio ${id} actualizado a ${estado}`);
-
-    return this.mapToResponseDto(updated);
+    return this.mapToResponseDto(updated!);
   }
 
   private validateBeneficioData(data: UpdateBeneficiosDTO): void {
@@ -426,18 +447,18 @@ export class BeneficioService {
 
       creado_por: beneficio.creado_por
         ? {
-            id: beneficio.creado_por.id,
-            nombre: beneficio.creado_por.nombre,
-            apellido: beneficio.creado_por.apellido,
-          }
+          id: beneficio.creado_por.id,
+          nombre: beneficio.creado_por.nombre,
+          apellido: beneficio.creado_por.apellido,
+        }
         : undefined,
 
       actualizado_por: beneficio.actualizado_por
         ? {
-            id: beneficio.actualizado_por.id,
-            nombre: beneficio.actualizado_por.nombre,
-            apellido: beneficio.actualizado_por.apellido,
-          }
+          id: beneficio.actualizado_por.id,
+          nombre: beneficio.actualizado_por.nombre,
+          apellido: beneficio.actualizado_por.apellido,
+        }
         : undefined,
     };
   };
