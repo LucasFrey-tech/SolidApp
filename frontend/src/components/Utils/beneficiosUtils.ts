@@ -15,7 +15,7 @@ export const isBeneficioVisible = (beneficio?: Beneficio): boolean => {
   if (!beneficio.empresa) return false;
 
   // La empresa no debe estar deshabilitada
-  if (beneficio.empresa.deshabilitado) return false;
+  if (!beneficio.empresa.habilitada) return false;
 
   return true;
 };
