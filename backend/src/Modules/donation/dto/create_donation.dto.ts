@@ -7,7 +7,6 @@ import { Type } from 'class-transformer';
  * Contiene las validaciones para los campos del cuerpo de la petición.
  */
 export class CreateDonationDto {
-  /** Descripción de la Donación */
   @ApiProperty({
     example: 'Arroz, fideos y enlatados',
     description: 'Detalle o descripción de la donación realizada',
@@ -15,7 +14,6 @@ export class CreateDonationDto {
   @IsString()
   detalle: string;
 
-  /** Cantidad de unidades donadas */
   @ApiProperty({
     example: 10,
     description: 'Cantidad de unidades donadas',
@@ -24,7 +22,6 @@ export class CreateDonationDto {
   @IsInt()
   cantidad: number;
 
-  /** ID de la Campaña asociada */
   @ApiProperty({
     example: 3,
     description: 'Identificador de la campaña solidaria asociada a la donación',
@@ -33,7 +30,6 @@ export class CreateDonationDto {
   @IsInt()
   campaignId: number;
 
-  /** Puntos asociados a la campaña */
   @ApiProperty({
     example: 50,
     description: 'Puntos x la cantidad de articulos donados',

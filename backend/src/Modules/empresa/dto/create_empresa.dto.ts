@@ -1,4 +1,12 @@
-import { IsOptional, IsString, IsEmail, MinLength, IsNotEmpty, MaxLength, Matches } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEmail,
+  MinLength,
+  IsNotEmpty,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateEmpresaDTO {
@@ -45,7 +53,9 @@ export class CreateEmpresaDTO {
   @ApiProperty({ example: '30123456789' })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d{11}$/, { message: 'El CUIT debe tener exactamente 11 dígitos numéricos' })
+  @Matches(/^\d{11}$/, {
+    message: 'El CUIT debe tener exactamente 11 dígitos numéricos',
+  })
   cuit_empresa: string;
 
   @ApiProperty({ example: 'Empresa S.A.' })

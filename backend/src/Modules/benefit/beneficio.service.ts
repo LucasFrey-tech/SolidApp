@@ -34,7 +34,7 @@ export class BeneficioService {
     private readonly empresasRepository: Repository<Empresa>,
 
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   /**
    *
@@ -360,7 +360,6 @@ export class BeneficioService {
     usuarioId: number,
     rol: Rol,
   ): Promise<BeneficiosResponseDTO> {
-
     let beneficio: Beneficios | null;
 
     if (rol === Rol.ADMIN) {
@@ -450,18 +449,18 @@ export class BeneficioService {
 
       creado_por: beneficio.creado_por
         ? {
-          id: beneficio.creado_por.id,
-          nombre: beneficio.creado_por.nombre,
-          apellido: beneficio.creado_por.apellido,
-        }
+            id: beneficio.creado_por.id,
+            nombre: beneficio.creado_por.nombre,
+            apellido: beneficio.creado_por.apellido,
+          }
         : undefined,
 
       actualizado_por: beneficio.actualizado_por
         ? {
-          id: beneficio.actualizado_por.id,
-          nombre: beneficio.actualizado_por.nombre,
-          apellido: beneficio.actualizado_por.apellido,
-        }
+            id: beneficio.actualizado_por.id,
+            nombre: beneficio.actualizado_por.nombre,
+            apellido: beneficio.actualizado_por.apellido,
+          }
         : undefined,
     };
   };

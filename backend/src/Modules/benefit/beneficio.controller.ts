@@ -107,6 +107,11 @@ export class BeneficioController {
     @Body('estado') estado: BeneficioEstado,
     @Req() req: RequestConUsuario,
   ) {
-    return this.beneficiosService.updateEstado(id, estado, req.user.id, req.user.rol);
+    return this.beneficiosService.updateEstado(
+      id,
+      estado,
+      req.user.id,
+      req.user.rol,
+    );
   }
 }

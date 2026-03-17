@@ -35,3 +35,14 @@ export interface UserPoints {
   id: number;
   puntos: number;
 }
+
+export interface Perfil {
+  nombre: string;
+  apellido: string;
+  contacto?: {
+    correo?: string;
+  };
+  organizacion_usuario?: Array<{
+    id_organizacion: number;
+  }>;
+}

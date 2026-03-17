@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
-import { Rol } from '../../../Entities/usuario.entity';
+import { IsEmail, IsString, MinLength } from 'class-validator';
 
 /**
  * Data Transfer Object (DTO) para Register y Login.
@@ -22,7 +21,6 @@ export class LoginDto {
   @IsString()
   @MinLength(6)
   clave: string;
-
 }
 
 export class RegisterDto {

@@ -12,6 +12,7 @@ import { jwtDecode } from "jwt-decode";
 import { Rol } from "@/API/types/auth";
 import { GestionTipo } from "@/API/types/gestion/enum";
 import { baseApi } from "@/API/baseApi";
+import { Perfil } from "@/API/types/user";
 
 export interface User {
   sub: number;
@@ -49,7 +50,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     try {
       const decoded = jwtDecode<User>(token);
 
-      const perfil: any = await baseApi.usuario.getPerfil();
+      const perfil: Perfil = await baseApi.usuario.getPerfil();
 
       setUser({
         sub: decoded.sub,

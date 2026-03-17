@@ -73,10 +73,7 @@ export class AuthService {
       rol: Rol.USUARIO,
     });
 
-    const tokenPayload = this.createPayload(
-      usuario.id,
-      usuario.rol,
-    );
+    const tokenPayload = this.createPayload(usuario.id, usuario.rol);
 
     this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
 
@@ -84,10 +81,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const usuario = await this.usuarioService.findByEmail(
-      dto.correo,
-    
-    );
+    const usuario = await this.usuarioService.findByEmail(dto.correo);
 
     if (!usuario) throw new UnauthorizedException('Credenciales incorrectas');
 
