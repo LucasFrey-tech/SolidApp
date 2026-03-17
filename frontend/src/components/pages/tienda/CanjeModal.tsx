@@ -23,7 +23,7 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const incrementar = () => {
-    setCantidad((prev) => prev + 1);
+    setCantidad((prev) => (prev < beneficio.cantidad ? prev + 1 : prev));
   };
 
   const decrementar = () => {
@@ -128,10 +128,14 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
               ref={inputRef}
               type="number"
               min={1}
+              max={beneficio.cantidad}
               value={cantidad}
-              onChange={(e) =>
-                setCantidad(Number(e.target.value) > 0 ? Number(e.target.value) : 1)
-              }
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                if (val < 1) setCantidad(1);
+                else if (val > beneficio.cantidad) setCantidad(beneficio.cantidad);
+                else setCantidad(val);
+              }}
               className={styles.counterInput}
             />
 
