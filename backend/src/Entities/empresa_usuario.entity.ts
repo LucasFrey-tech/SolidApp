@@ -10,6 +10,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Usuario } from './usuario.entity';
 import { Empresa } from './empresa.entity';
+import { RolSecundario } from '../Modules/user/enums/enums';
 
 /**
  * Entidad EmpresaUsuario
@@ -64,9 +65,9 @@ export class EmpresaUsuario {
   @Column({
   type: 'varchar',
   length: 20,
-  default: 'MIEMBRO'
+  default: RolSecundario.MIEMBRO
   })
-  rol: string;
+  rol: RolSecundario;
   // ==================== RELACIONES ====================
 
   @ApiProperty({

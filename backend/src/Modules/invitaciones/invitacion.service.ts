@@ -4,16 +4,27 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull, MoreThan } from 'typeorm';
 import { Invitacion } from '../../Entities/invitacion.entity';
 import { Contacto } from '../../Entities/contacto.entity';
-
+import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
+import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity';
+import { EmailService } from '../email/email.service';
+import { RolSecundario } from '../user/enums/enums';
 @Injectable()
 export class InvitacionesService {
+
   constructor(
     @InjectRepository(Invitacion)
     private invitacionRepo: Repository<Invitacion>,
 
     @InjectRepository(Contacto)
     private contactoRepo: Repository<Contacto>,
-  ) {}
+    @InjectRepository(EmpresaUsuario)
+    private empresaUsuarioRepo: Repository<EmpresaUsuario>,
+
+    @InjectRepository(OrganizacionUsuario)
+    private organizacionUsuarioRepo: Repository<OrganizacionUsuario>,
+    
+    private readonly emailService: EmailService,
+  ) { }
 
   // ================================
   // CREAR INVITACIONES PARA EMPRESA
@@ -79,7 +90,7 @@ export class InvitacionesService {
         token,
         empresaId,
         invitadorID: usuarioInvitadorId,
-        rol: 'MIEMBRO',
+        rol: RolSecundario.MIEMBRO,
         expirada: false,
         fecha_expiracion: fechaExpiracion,
       });
@@ -88,6 +99,13 @@ export class InvitacionesService {
     }
 
     const guardadas = await this.invitacionRepo.save(invitaciones);
+
+    for (const inv of guardadas) {
+      await this.emailService.sendInvitationEmail(
+        inv.correo,
+        inv.token
+      );
+    }
 
     return {
       invitaciones: guardadas,
@@ -173,7 +191,7 @@ export class InvitacionesService {
         token,
         organizacionId,
         invitadorID: usuarioInvitadorId,
-        rol: 'MIEMBRO',
+        rol: RolSecundario.MIEMBRO,
         expirada: false,
         fecha_expiracion: fechaExpiracion,
       });
@@ -182,6 +200,13 @@ export class InvitacionesService {
     }
 
     const guardadas = await this.invitacionRepo.save(invitaciones);
+    
+    for (const inv of guardadas) {
+      await this.emailService.sendInvitationEmail(
+        inv.correo,
+        inv.token
+      );
+    }
 
     return {
       invitaciones: guardadas,
@@ -234,5 +259,96 @@ export class InvitacionesService {
     }));
 
     return { items: itemsConEstado, total };
+    
+  }
+
+  async validarToken(token: string) {
+
+    const invitacion = await this.invitacionRepo.findOne({
+      where: { token },
+    });
+
+    if (!invitacion) {
+      throw new Error('Invitación inválida');
+    }
+
+    if (
+      invitacion.fecha_expiracion &&
+      invitacion.fecha_expiracion < new Date()
+    ) {
+      throw new Error('Invitación expirada');
+    }
+
+    if (invitacion.expirada) {
+      throw new Error('Invitación ya utilizada');
+    }
+
+    return {
+      correo: invitacion.correo,
+      organizacionId: invitacion.organizacionId,
+      empresaId: invitacion.empresaId,
+      rol: invitacion.rol,
+    };
+  }
+
+  async buscarPorToken(token: string) {
+    return this.invitacionRepo.findOne({
+      where: { token },
+    });
+  }
+
+  async agregarUsuarioAOrganizacion(
+    usuarioId: number,
+    organizacionId: number,
+  ) {
+
+    const relacion = this.organizacionUsuarioRepo.create({
+      id_usuario: usuarioId,
+      id_organizacion: organizacionId,
+      rol: RolSecundario.MIEMBRO,
+      activo: true,
+    });
+
+    return this.organizacionUsuarioRepo.save(relacion);
+  }
+  async agregarUsuarioAEmpresa(
+    usuarioId: number,
+    empresaId: number,
+  ) {
+
+    const relacion = this.empresaUsuarioRepo.create({
+      id_usuario: usuarioId,
+      id_empresa: empresaId,
+      rol: RolSecundario.MIEMBRO,
+      activo: true,
+    });
+
+    return this.empresaUsuarioRepo.save(relacion);
+  }
+  async marcarAceptada(invitacionId: number) {
+
+    const invitacion = await this.invitacionRepo.findOne({
+      where: { id: invitacionId },
+    });
+
+    if (!invitacion) return;
+
+    invitacion.expirada = true;
+
+    return this.invitacionRepo.save(invitacion);
+  }
+
+  // TEST
+  async obtenerRelacionOrganizacion(usuarioId: number) {
+    return this.organizacionUsuarioRepo.findOne({
+      where: { id: usuarioId },
+    });
+  }
+
+  // TEST
+  async obtenerRelacionEmpresa(usuarioId: number) {
+    return this.empresaUsuarioRepo.findOne({
+      where: { id: usuarioId },
+    });
   }
 }

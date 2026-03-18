@@ -21,6 +21,9 @@ import { UsuarioBeneficioModule } from '../user/usuario-beneficio/usuario-benefi
 import { GestionDetector } from './estrategias/gestion/gestion_detector';
 import { EmpresaGestionStrategy } from './estrategias/gestion/gestion_empresa.strategy';
 import { OrganizacionGestionStrategy } from './estrategias/gestion/gestion_organizacion.strategy';
+import { InvitacionesModule } from '../invitaciones/invitacion.module';
+import { RelacionRolesGuard } from './guards/relacion-roles.guard';
+import { RelacionGuard } from './guards/relacion.guard';
 
 /**
  * Módulo de NestJS que agrupa los componentes relacionados a la Autenticación:
@@ -49,6 +52,7 @@ import { OrganizacionGestionStrategy } from './estrategias/gestion/gestion_organ
       }),
     }),
     CommonMulterModule,
+    InvitacionesModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -56,11 +60,14 @@ import { OrganizacionGestionStrategy } from './estrategias/gestion/gestion_organ
     UsuarioService,
     JwtStrategy,
     RolesGuard,
+    RelacionGuard,
+    RelacionRolesGuard,
     EmailService,
     GestionDetector,
     EmpresaGestionStrategy,
     OrganizacionGestionStrategy,
   ],
-  exports: [AuthService, RolesGuard],
+  exports: [AuthService, RolesGuard, RelacionGuard,
+    RelacionRolesGuard,],
 })
 export class AuthModule {}

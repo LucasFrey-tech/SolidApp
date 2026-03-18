@@ -37,7 +37,7 @@ export default function OrganizationCampaignsPage() {
   const [view, setView] = useState<ViewMode>("campaigns");
 
   const { user } = useUser();
-  const organizacionId = user?.sub;
+  const organizacionId = user?.id_organizacion;
 
   const [campaigns, setCampaigns] = useState<CampaignDetalle[]>([]);
   const [campaignsPage, setCampaignsPage] = useState(1);
@@ -54,7 +54,6 @@ export default function OrganizationCampaignsPage() {
   /* ===============================
      COLORES DE ESTADO
   ================================ */
-
   const getStatusColor = (estado: string) => {
     switch (estado.toLowerCase()) {
       case "activa":
@@ -270,7 +269,6 @@ export default function OrganizationCampaignsPage() {
   /* ===============================
      RENDER
   ================================ */
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -405,13 +403,12 @@ export default function OrganizationCampaignsPage() {
 
                   <td>
                     <span
-                      className={`${styles.badge} ${
-                        d.estado === DonacionEstado.APROBADA
-                          ? styles.badgeAprobada
-                          : d.estado === DonacionEstado.RECHAZADA
+                      className={`${styles.badge} ${d.estado === DonacionEstado.APROBADA
+                        ? styles.badgeAprobada
+                        : d.estado === DonacionEstado.RECHAZADA
                           ? styles.badgeRechazada
                           : styles.badgePendiente
-                      }`}
+                        }`}
                     >
                       {DonacionEstado[d.estado]}
                     </span>
@@ -473,9 +470,16 @@ export default function OrganizationCampaignsPage() {
         </>
       )}
 
-      {view === "info" && <OrganizationInfo />}
+      {view === "info" && (
+        <OrganizationInfo></OrganizationInfo>
+      )}
 
-      {view === "invitaciones" && <InvitacionesPanel />}
+      {view === "invitaciones" && (
+        <InvitacionesPanel
+          entidadId={organizacionId ?? undefined}
+          service={baseApi.invitacionesOrg}
+        />
+      )}
 
       <Modal
         open={open}
@@ -488,16 +492,16 @@ export default function OrganizationCampaignsPage() {
           initialValues={
             editingCampaign
               ? {
-                  titulo: editingCampaign.titulo,
-                  descripcion: editingCampaign.descripcion,
-                  objetivo: editingCampaign.objetivo,
-                  puntos: editingCampaign.puntos,
-                  fecha_Inicio: editingCampaign.fecha_Inicio,
-                  fecha_Fin: editingCampaign.fecha_Fin,
-                  estado: editingCampaign.estado,
-                  imagenesExistentes:
-                    editingCampaign.imagenes?.map((img) => img.url) ?? [],
-                }
+                titulo: editingCampaign.titulo,
+                descripcion: editingCampaign.descripcion,
+                objetivo: editingCampaign.objetivo,
+                puntos: editingCampaign.puntos,
+                fecha_Inicio: editingCampaign.fecha_Inicio,
+                fecha_Fin: editingCampaign.fecha_Fin,
+                estado: editingCampaign.estado,
+                imagenesExistentes:
+                  editingCampaign.imagenes?.map((img) => img.url) ?? [],
+              }
               : undefined
           }
           onSubmit={handleSubmitCampaign}

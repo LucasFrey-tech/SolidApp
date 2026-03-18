@@ -1,7 +1,7 @@
 export enum Rol {
   USUARIO = "USUARIO",
-  GESTOR = 'GESTOR',
-  ADMIN = 'ADMIN',
+  GESTOR = "GESTOR",
+  ADMIN = "ADMIN",
 }
 
 export interface LoginRequestBody {
@@ -13,8 +13,10 @@ export interface RegisterRequestBody {
   nombre: string;
   apellido: string;
   correo: string;
-  imagen: string;
   clave: string;
+  documento: string;
+  imagen?: string;
+  token?: string;
 }
 
 export interface RegistroUsuarioDto {
@@ -23,6 +25,7 @@ export interface RegistroUsuarioDto {
   nombre: string;
   apellido: string;
   documento: string;
+  token?: string;
 }
 
 export interface RegistroEmpresaDto {

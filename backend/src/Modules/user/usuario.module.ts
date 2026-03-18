@@ -10,6 +10,7 @@ import { DonacionModule } from '../donation/donacion.module';
 import { BeneficioModule } from '../benefit/beneficio.module';
 import { UsuarioBeneficioModule } from './usuario-beneficio/usuario-beneficio.module';
 import { HashService } from '../../common/bcryptService/hashService';
+import { InvitacionesModule } from '../invitaciones/invitacion.module';
 
 /**
  * -----------------------------------------------------------------------------
@@ -54,12 +55,14 @@ import { HashService } from '../../common/bcryptService/hashService';
     DonacionModule,
     BeneficioModule,
     UsuarioBeneficioModule,
+    
 
     /**
      * Módulo personalizado para manejo de archivos
      * (por ejemplo imagen de perfil).
      */
     CommonMulterModule,
+    InvitacionesModule,
   ],
 
   /**

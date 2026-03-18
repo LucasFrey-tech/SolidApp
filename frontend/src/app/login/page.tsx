@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -8,10 +8,20 @@ import Login from "@/components/pages/login/login";
 import RegistroUsuario from "@/components/RegistroUsuario/page";
 
 import styles from "@/styles/login-registro/login.module.css";
+import { useSearchParams } from "next/navigation";
 
 export default function LogInPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
+  useEffect(() => {
+    if (token) {
+      setActiveTab("register");
+    }
+  }, [token]);
+
 
   return (
     <div className={styles.container}>
@@ -63,7 +73,9 @@ export default function LogInPage() {
           <div className={styles.contentArea}>
             {activeTab === "login" && <Login />}
             {activeTab === "register" && (
-              <RegistroUsuario onRegisterSuccess={() => setActiveTab("login")} />
+              <RegistroUsuario
+                token={token}
+                onRegisterSuccess={() => setActiveTab("login")} />
             )}
           </div>
         </div>

@@ -16,6 +16,7 @@ import { SettingsService } from './common/settings/settings.service';
 import { RankingModule } from './Modules/ranking/ranking.module';
 import { UsuarioBeneficioModule } from './Modules/user/usuario-beneficio/usuario-beneficio.module';
 import { InvitacionesModule } from './Modules/invitaciones/invitacion.module';
+import { EmailModule } from './Modules/email/email.module';
 
 @Module({
   imports: [
@@ -60,7 +61,8 @@ import { InvitacionesModule } from './Modules/invitaciones/invitacion.module';
     AuthModule,
     RankingModule,
     UsuarioBeneficioModule,
-    InvitacionesModule, // 👈 AGREGAR
+    InvitacionesModule, 
+    EmailModule,
   ],
   providers: [SettingsService],
 })

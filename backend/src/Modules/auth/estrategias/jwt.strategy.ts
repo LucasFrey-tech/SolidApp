@@ -32,7 +32,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<UsuarioAutenticado> {
-  this.logger.debug(`Validando token para userId=${payload.sub}`);
 
   try {
     const usuario = await this.usuarioService.findOne(payload.sub);

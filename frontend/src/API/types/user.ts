@@ -27,8 +27,14 @@ export interface User {
   };
 
   gestion?: GestionTipo;
-  empresaId?: number;
-  organizacionId?: number;
+  empresaUsuario?: {
+    id_usuario: number;
+    id_empresa: number;
+  } 
+  organizacionUsuario?: {
+    id_usuario: number;
+    id_organizacion: number;
+  }
 }
 
 export interface UserPoints {

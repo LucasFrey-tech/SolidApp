@@ -13,11 +13,12 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { BeneficioService } from './beneficio.service';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
 
-import { Rol } from '../../Entities/usuario.entity';
+
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 import { BeneficioEstado } from './dto/enum/enum';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
 import { CanjearBeneficioDto } from './dto/canjear_beneficio.dto';
+import { Rol } from '../user/enums/enums';
 
 /**
  * Controlador para gestionar las operaciones de los Beneficios.

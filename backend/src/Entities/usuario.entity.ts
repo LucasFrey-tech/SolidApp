@@ -17,13 +17,7 @@ import { EmpresaUsuario } from './empresa_usuario.entity';
 import { OrganizacionUsuario } from './organizacion_usuario.entity';
 import { Contacto } from './contacto.entity';
 import { Direccion } from './direccion.entity';
-
-export enum Rol {
-  USUARIO = 'USUARIO',
-  MIEMBRO = 'MIEMBRO',
-  GESTOR = 'GESTOR',
-  ADMIN = 'ADMIN',
-}
+import { Rol } from '../Modules/user/enums/enums';
 
 /**
  * Entidad Usuario

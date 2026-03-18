@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
@@ -19,9 +20,10 @@ import { CreateDonationDto } from '../donation/dto/create_donation.dto';
 
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 
-import { Rol } from '../../Entities/usuario.entity';
+import { Rol } from '../user/enums/enums';
 import { Auth } from '../auth/decoradores/auth.decorador';
 import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
+import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
 
 /**
  * -----------------------------------------------------------------------------
@@ -126,6 +128,18 @@ export class UsuarioController {
   ) {
     return this.userService.canjearCupon(req.user.id, cuponId, cantidad);
   }
+
+
+
+  @Get('test-relacion')
+  @AuthRelacion('GESTOR', 'MIEMBRO')
+  testRelacion(@Req() req: RequestConUsuario) {
+    return {
+      message: 'El usuario tiene relación y rol permitido',
+      relacion: req.relacion,
+    };
+  }
+  
 
   // Panel Admin
 

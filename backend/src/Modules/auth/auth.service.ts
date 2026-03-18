@@ -8,33 +8,32 @@ import {
 } from '@nestjs/common';
 
 import { UsuarioService } from '../user/usuario.service';
-import { Rol } from '../../Entities/usuario.entity';
+import { Rol }  from '../user/enums/enums';
 
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 
-import { DataSource } from 'typeorm';
 import { HashService } from '../../common/bcryptService/hashService';
 import { EmailService } from '../email/email.service';
 
 import { randomBytes } from 'crypto';
 import { JwtPayload } from './dto/token_payload';
 import { GestionTipo } from './dto/gestion.enum';
-
+import { InvitacionesService } from '../invitaciones/invitacion.service';
 import { GestionDetector } from './estrategias/gestion/gestion_detector';
-/**
- * Servicio que maneja la lógica de negocio para el Sistema de Autenticación
- */
+import { Invitacion } from '../../Entities/invitacion.entity';
+import { ResponseUsuarioDto } from '../user/dto/response_usuario.dto';
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
     private readonly usuarioService: UsuarioService,
-    private readonly dataSource: DataSource,
     private readonly jwtService: JwtService,
     private readonly hashService: HashService,
     private readonly emailService: EmailService,
     private readonly gestionDetector: GestionDetector,
+    private readonly invitacionesService: InvitacionesService,
   ) {
     this.logger.log('AuthService inicializado');
   }
@@ -58,36 +57,65 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const existe = await this.usuarioService.findByEmail(dto.correo);
+  // Verificar si el correo ya existe
+  if (await this.usuarioService.findByEmail(dto.correo)) {
+    throw new BadRequestException('El correo ya está registrado');
+  }
 
-    if (existe) throw new BadRequestException('El correo ya está registrado');
+  const clave = await this.hashService.hash(dto.clave);
 
-    const clave = await this.hashService.hash(dto.clave);
+  let usuario: ResponseUsuarioDto;
 
-    const usuario = await this.usuarioService.create({
+  if (dto.token) {
+    // Buscar invitación
+    const invitacion = await this.invitacionesService.buscarPorToken(dto.token);
+    if (!invitacion) throw new BadRequestException('Invitación inválida');
+    if (invitacion.correo !== dto.correo) {
+      throw new BadRequestException('El correo no coincide con la invitación');
+    }
+
+    // Crear usuario con rol GESTOR
+    usuario = await this.usuarioService.create({
       correo: dto.correo,
-      clave: clave,
+      clave,
+      nombre: dto.nombre,
+      apellido: dto.apellido,
+      documento: dto.documento,
+      rol: Rol.GESTOR,
+    });
+
+    // Agregar usuario a empresa/organización si existen
+    await Promise.all([
+      invitacion.organizacionId
+        ? this.invitacionesService.agregarUsuarioAOrganizacion(usuario.id, invitacion.organizacionId)
+        : Promise.resolve(),
+      invitacion.empresaId
+        ? this.invitacionesService.agregarUsuarioAEmpresa(usuario.id, invitacion.empresaId)
+        : Promise.resolve(),
+    ]);
+
+    await this.invitacionesService.marcarAceptada(invitacion.id);
+
+  } else {
+    // Crear usuario sin invitación (rol normal)
+    usuario = await this.usuarioService.create({
+      correo: dto.correo,
+      clave,
       nombre: dto.nombre,
       apellido: dto.apellido,
       documento: dto.documento,
       rol: Rol.USUARIO,
     });
-
-    const tokenPayload = this.createPayload(
-      usuario.id,
-      usuario.rol,
-    );
-
-    this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
-
-    return this.buildToken(tokenPayload);
   }
 
+  const tokenPayload = this.createPayload(usuario.id, usuario.rol);
+  this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
+
+  return this.buildToken(tokenPayload);
+}
+
   async login(dto: LoginDto) {
-    const usuario = await this.usuarioService.findByEmail(
-      dto.correo,
-    
-    );
+    const usuario = await this.usuarioService.findByEmail(dto.correo);
 
     if (!usuario) throw new UnauthorizedException('Credenciales incorrectas');
 
@@ -125,16 +153,18 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     const usuario = await this.usuarioService.findByEmail(email);
+
     if (!usuario) {
       return { message: 'Si el email existe, recibirás un enlace' };
     }
 
     const token = randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 3600000); // 1 hora
+    const expires = new Date(Date.now() + 3600000);
 
     await this.usuarioService.setResetToken(usuario.id, token, expires);
 
     await this.emailService.sendResetPasswordEmail(email, token);
+
     return { message: 'Email enviado' };
   }
 
@@ -147,7 +177,10 @@ export class AuthService {
 
     const hashedPassword = await this.hashService.hash(newPassword);
 
-    await this.usuarioService.resetPassword(usuario.id, hashedPassword);
+    await this.usuarioService.resetPassword(
+      usuario.id,
+      hashedPassword,
+    );
 
     return { message: 'Contraseña actualizada correctamente' };
   }

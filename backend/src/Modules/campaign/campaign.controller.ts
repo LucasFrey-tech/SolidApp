@@ -15,7 +15,8 @@ import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
 import { CampaignEstado } from './enum';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
-import { Rol } from '../../Entities/usuario.entity';
+import { Rol } from '../user/enums/enums';
+
 
 /**
  * Controlador para gestionar las operaciones de las Campañas.

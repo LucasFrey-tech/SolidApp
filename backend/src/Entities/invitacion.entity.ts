@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { RolSecundario } from '../Modules/user/enums/enums';
 
 /**
  * Entidad Invitacion
@@ -59,8 +60,8 @@ export class Invitacion {
     example: 'MIEMBRO',
     description: 'Rol que tendrá el usuario al aceptar la invitación',
   })
-  @Column({ type: 'varchar', length: 20, default: 'MIEMBRO' })
-  rol: string;
+  @Column({ type: 'varchar', length: 20, default: RolSecundario.MIEMBRO })
+  rol: RolSecundario;
 
   @ApiProperty({
     example: false,

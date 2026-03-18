@@ -7,9 +7,10 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decoradores/roles.decorador';
 import { PUBLIC_KEY } from '../decoradores/auth.decorador';
-import { Rol } from '../../../Entities/usuario.entity';
+
 import { UsuarioAutenticado } from '../interfaces/authenticated_request.interface';
 import { Request } from 'express';
+import { Rol } from '../../user/enums/enums';
 
 interface RequestConUsuario extends Request {
   user: UsuarioAutenticado;

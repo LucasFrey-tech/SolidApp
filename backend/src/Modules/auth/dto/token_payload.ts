@@ -1,4 +1,5 @@
-import { Rol } from '../../../Entities/usuario.entity';
+
+import { Rol } from '../../user/enums/enums';
 import { GestionTipo } from './gestion.enum';
 
 export interface JwtPayload {

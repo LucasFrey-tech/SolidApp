@@ -12,6 +12,7 @@ import { useUser } from "@/app/context/UserContext";
 
 import { baseApi } from "@/API/baseApi";
 import EmpresaInfo from "@/components/panelEmpresa/EmpresaInfo";
+import InvitacionesPanel from "@/components/pages/panelOrganizacion/InvitacionesPanel";
 
 type Coupon = {
   id: number;
@@ -22,13 +23,13 @@ type Coupon = {
   estado: "pendiente" | "aprobado" | "rechazado";
 };
 
-type ViewMode = "coupons" | "info";
+type ViewMode = "coupons" | "info" | "invitaciones";
 
 export default function OrganizationCouponsPage() {
   const [view, setView] = useState<ViewMode>("coupons");
 
   const { user } = useUser();
-  const empresaId = user?.sub;
+  const empresaId = user?.id_empresa;
 
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [open, setOpen] = useState(false);
@@ -46,7 +47,7 @@ export default function OrganizationCouponsPage() {
 
       const { items, total } = await baseApi.empresa.getCuponesPaginated(
         page,
-        10,
+        10
       );
 
       const couponsWithEstado: Coupon[] = items.map((b: any) => ({
@@ -113,11 +114,12 @@ export default function OrganizationCouponsPage() {
       Swal.fire(
         "Error",
         "No se pudo guardar el cupón. Verificá los datos.",
-        "error",
+        "error"
       );
     }
   };
-
+  
+  console.log("EMPRESA ID: ", empresaId)
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -154,16 +156,26 @@ export default function OrganizationCouponsPage() {
         >
           Información
         </button>
+
+        <button
+          className={`${styles.tabButton} ${
+            view === "invitaciones" ? styles.active : ""
+          }`}
+          onClick={() => setView("invitaciones")}
+        >
+          Invitaciones
+        </button>
       </div>
 
       <div className={styles.divider} />
 
-      {/*CUPONES*/}
+      {/* CUPONES */}
       {view === "coupons" && (
         <>
           {!loading && coupons.length === 0 && (
             <p>No hay cupones en el momento</p>
           )}
+
           <ul className={styles.list}>
             {coupons.map((c) => (
               <li key={c.id} className={styles.card}>
@@ -180,8 +192,8 @@ export default function OrganizationCouponsPage() {
                         c.estado === "pendiente"
                           ? "blue"
                           : c.estado === "rechazado"
-                            ? "red"
-                            : "green",
+                          ? "red"
+                          : "green",
                     }}
                   >
                     {c.estado}
@@ -238,8 +250,15 @@ export default function OrganizationCouponsPage() {
           )}
         </>
       )}
-
+      {/* INFO */}
       {view === "info" && <EmpresaInfo />}
+      {/* INVITACIONES */}
+      {view === "invitaciones" && (
+        <InvitacionesPanel
+          entidadId={empresaId ?? undefined}
+          service={baseApi.invitacionesEmp}
+        />
+      )}
     </div>
   );
 }

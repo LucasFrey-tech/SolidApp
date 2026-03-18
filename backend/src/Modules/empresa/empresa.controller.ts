@@ -23,12 +23,13 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { NullableImageValidationPipe } from '../../common/pipes/mediaFilePipes';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
-import { Rol } from '../../Entities/usuario.entity';
+
 import { PaginatedBeneficiosResponseDTO } from '../benefit/dto/response_paginated_beneficios';
 import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
+import { Rol } from '../user/enums/enums';
 
 /**
  * ============================================================

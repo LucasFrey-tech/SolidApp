@@ -62,4 +62,19 @@ export class InvitacionesEmpresaService {
 
     return res.json();
   }
+
+  async validarToken(token: string) {
+  const res = await fetch(
+    `${API_URL}/invitaciones/validar/${token}`,
+    {
+      method: "GET",
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Invitación inválida");
+  }
+
+  return res.json();
+}
 }

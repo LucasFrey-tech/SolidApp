@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Rol } from '../../../Entities/usuario.entity';
+import { Rol } from '../enums/enums';
 import { Expose, Type } from 'class-transformer';
 import { ContactoDto, DireccionDto } from '../../contacto_direccion/dto';
 import { EmpresaUsuario } from '../../../Entities/empresa_usuario.entity';
@@ -94,12 +94,12 @@ export class ResponseUsuarioDto {
     description: 'ID de la empresa a la que pertenece el usuario (si aplica)',
     example: 5,
   })
-  empresa_usuario?: EmpresaUsuario;
+  empresaUsuario?: EmpresaUsuario;
 
   @ApiPropertyOptional({
     description:
       'ID de la organización a la que pertenece el usuario (si aplica)',
     example: 3,
   })
-  organizacion_usuario?: OrganizacionUsuario;
+  organizacionUsuario?: OrganizacionUsuario;
 }

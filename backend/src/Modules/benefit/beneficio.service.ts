@@ -16,8 +16,9 @@ import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_benefic
 import { Usuario } from '../../Entities/usuario.entity';
 import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
 import { SettingsService } from '../../common/settings/settings.service';
-import { Rol } from '../../Entities/usuario.entity';
+
 import { BeneficioEstado, BeneficiosUsuarioEstado } from './dto/enum/enum';
+import { Rol } from '../user/enums/enums';
 
 /**
  * Servicio que maneja la lógica de negocio para los Beneficios.

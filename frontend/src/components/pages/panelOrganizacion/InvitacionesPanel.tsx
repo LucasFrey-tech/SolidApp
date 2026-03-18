@@ -3,18 +3,28 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Paneles/organizationPanel.module.css";
-import { baseApi } from "@/API/baseApi";
-import { useUser } from "@/app/context/UserContext";
 import { Invitacion } from "@/API/types/invitaciones/invitaciones";
 import InvitarUsuariosModal from "./InvitarUsuariosModal";
 
-export default function InvitacionesPanel() {
-  const { user } = useUser();
-  const organizacionId = user?.organizacionId;
+// INTERFAZ COMÚN para los servicios
+export interface InvitacionesService {
+  getInvitaciones(entidadId: number): Promise<{ items: Invitacion[]; total: number }>;
+  crearInvitaciones(entidadId: number, correos: string[]): Promise<{ correosExistentes: string[] }>;
+}
 
+// Props usando la interfaz común
+type Props = {
+  entidadId?: number;
+  service: InvitacionesService;
+};
+
+export default function InvitacionesPanel({ entidadId, service }: Props) {
   const [invitaciones, setInvitaciones] = useState<Invitacion[]>([]);
   const [openModal, setOpenModal] = useState(false);
 
+  /* ===============================
+     FUNCIONES DE ESTADO
+  ================================ */
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case "pendiente":
@@ -41,31 +51,30 @@ export default function InvitacionesPanel() {
     }
   };
 
+  /* ===============================
+     OBTENER INVITACIONES
+  ================================ */
   const fetchInvitaciones = async () => {
-    if (!organizacionId) return;
+    if (!entidadId) return;
 
     try {
-      const response =
-        await baseApi.invitacionesOrg.getInvitaciones(organizacionId);
-
+      const response = await service.getInvitaciones(entidadId);
       setInvitaciones(response.items);
     } catch (error) {
       console.error(error);
-
-      Swal.fire(
-        "Error",
-        "No se pudieron cargar las invitaciones",
-        "error"
-      );
+      Swal.fire("Error", "No se pudieron cargar las invitaciones", "error");
     }
   };
 
   useEffect(() => {
     fetchInvitaciones();
-  }, [organizacionId]);
+  }, [entidadId]);
 
+  /* ===============================
+     ENVIAR INVITACIONES
+  ================================ */
   const handleEnviarInvitaciones = async (emails: string[]) => {
-    if (!organizacionId) return;
+    if (!entidadId) return;
 
     const correosValidos = emails.filter((i) => i && i.includes("@"));
 
@@ -75,18 +84,13 @@ export default function InvitacionesPanel() {
     }
 
     try {
-      const response = await baseApi.invitacionesOrg.crearInvitaciones(
-        organizacionId,
-        correosValidos
-      );
+      const response = await service.crearInvitaciones(entidadId, correosValidos);
 
       if (response.correosExistentes.length > 0) {
         Swal.fire({
           icon: "warning",
           title: "Algunos usuarios ya están registrados",
-          text: `No se enviaron invitaciones a: ${response.correosExistentes.join(
-            ", "
-          )}`,
+          text: `No se enviaron invitaciones a: ${response.correosExistentes.join(", ")}`,
         });
       } else {
         Swal.fire(
@@ -107,6 +111,9 @@ export default function InvitacionesPanel() {
     }
   };
 
+  /* ===============================
+     RENDER
+  ================================ */
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -140,7 +147,6 @@ export default function InvitacionesPanel() {
           {invitaciones.map((i) => (
             <tr key={i.id}>
               <td>{i.correo}</td>
-
               <td>
                 <span
                   style={{

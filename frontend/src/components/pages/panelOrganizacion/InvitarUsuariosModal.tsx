@@ -62,7 +62,7 @@ export default function InvitarUsuariosModal({
         ) : (
           <>
             <h2>Ingresar mails</h2>
-
+            
             <div className={styles.inputs}>
               {emails.map((email, i) => (
                 <input

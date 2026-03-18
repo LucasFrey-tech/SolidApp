@@ -28,7 +28,7 @@ import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
 import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { ResponseOrganizationPaginatedDto } from './dto/response_organizacion_paginated.dto';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
-import { Rol } from '../../Entities/usuario.entity';
+import { Rol } from '../user/enums/enums';
 import { ResponseCampaignDetalleDto } from '../campaign/dto/response_campaignDetalle.dto';
 import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
 import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';

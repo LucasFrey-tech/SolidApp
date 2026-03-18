@@ -17,8 +17,10 @@ import { BeneficioService } from '../benefit/beneficio.service';
 import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
-import { Rol, Usuario } from '../../Entities/usuario.entity';
+import {Usuario } from '../../Entities/usuario.entity';
+
 import { HashService } from '../../common/bcryptService/hashService';
+import { Rol } from '../user/enums/enums';
 
 /**
  * ============================================================

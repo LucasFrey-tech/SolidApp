@@ -22,7 +22,8 @@ import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
 import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
 import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.dto';
 import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity';
-import { Rol, Usuario } from '../../Entities/usuario.entity';
+import { Usuario } from '../../Entities/usuario.entity';
+import { Rol } from '../user/enums/enums';
 import { HashService } from '../../common/bcryptService/hashService';
 
 /**

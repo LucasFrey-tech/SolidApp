@@ -20,8 +20,9 @@ export interface User {
   rol: Rol;
   gestion?: GestionTipo | null;
   gestionId?: number | null;
-
-  organizacionId?: number | null;
+  
+  id_organizacion?: number | null;
+  id_empresa?: number | null;
 }
 
 interface UserContextType {
@@ -49,8 +50,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     try {
       const decoded = jwtDecode<User>(token);
 
-      const perfil: any = await baseApi.usuario.getPerfil();
-
+      const perfil = await baseApi.usuario.getPerfil();
+      
       setUser({
         sub: decoded.sub,
         username: `${perfil.nombre} ${perfil.apellido}`,
@@ -58,7 +59,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         gestion: decoded.gestion,
         gestionId: decoded.gestionId,
         email: perfil.contacto?.correo,
-        organizacionId: perfil.organizacion_usuario?.[0]?.id_organizacion ?? null
+        id_organizacion: Array.isArray(perfil.organizacionUsuario) 
+          ? perfil.organizacionUsuario[0]?.id_organizacion 
+          : undefined,
+        id_empresa: Array.isArray(perfil.empresaUsuario) 
+          ? perfil.empresaUsuario[0]?.id_empresa 
+          : undefined,
       });
 
     } catch (error) {

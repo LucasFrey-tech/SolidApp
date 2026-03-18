@@ -361,8 +361,8 @@ export class UsuarioService {
     dto.fecha_registro = usuario.fecha_registro;
     dto.ultimo_cambio = usuario.ultimo_cambio;
     dto.ultima_conexion = usuario.ultima_conexion;
-    dto.empresa_usuario = usuario.empresaUsuario;
-    dto.organizacion_usuario = usuario.organizacionUsuario;
+    dto.empresaUsuario = usuario.empresaUsuario;
+    dto.organizacionUsuario = usuario.organizacionUsuario;
     return dto;
   }
 

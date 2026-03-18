@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import styles from "@/styles/login-registro/registro.module.css";
 import Swal from "sweetalert2";
@@ -41,9 +41,16 @@ const usuarioSchema = z
   });
 
 type UsuarioData = z.infer<typeof usuarioSchema>;
-type RegistroUsuarioProps = { onRegisterSuccess: () => void; };
 
-export default function RegistroUsuario({ onRegisterSuccess }: RegistroUsuarioProps) {
+type RegistroUsuarioProps = {
+  onRegisterSuccess: () => void;
+  token?: string | null;
+};
+
+export default function RegistroUsuario({
+  onRegisterSuccess,
+  token,
+}: RegistroUsuarioProps) {
   const [data, setData] = useState<UsuarioData>({
     documento: "",
     correo: "",
@@ -53,12 +60,51 @@ export default function RegistroUsuario({ onRegisterSuccess }: RegistroUsuarioPr
     apellido: "",
   });
 
+  const [correoBloqueado, setCorreoBloqueado] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loadingInvitacion, setLoadingInvitacion] = useState(!!token);
 
   const handleChange = (field: string, value: string) => {
     setData((prev) => ({ ...prev, [field]: value }));
   };
 
+  //  VALIDAR INVITACIÓN 
+  useEffect(() => {
+    if (!token) {
+      setLoadingInvitacion(false);
+      return;
+    }
+
+    const validarInvitacion = async () => {
+      try {
+        console.log("TOKEN:", token);
+
+        const invitacion =
+          await baseApi.invitacionesOrg.validarToken(token);
+
+        console.log("INVITACION:", invitacion);
+
+        setData((prev) => ({
+          ...prev,
+          correo: invitacion.correo,
+        }));
+
+        setCorreoBloqueado(true);
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Invitación inválida",
+          text: "La invitación no es válida o expiró",
+        });
+      } finally {
+        setLoadingInvitacion(false);
+      }
+    };
+
+    validarInvitacion();
+  }, [token]);
+
+  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -66,15 +112,20 @@ export default function RegistroUsuario({ onRegisterSuccess }: RegistroUsuarioPr
       usuarioSchema.parse(data);
 
       const { confirmarClave, ...dto } = data;
-      await baseApi.auth.register(dto);
+
+      await baseApi.auth.register({
+        ...dto,
+        token: token || undefined,
+      });
 
       await Swal.fire({
         icon: "success",
         title: "Registro exitoso",
         text: "Tu cuenta fue creada correctamente",
       });
+
       onRegisterSuccess();
-      
+
       setData({
         documento: "",
         correo: "",
@@ -86,6 +137,8 @@ export default function RegistroUsuario({ onRegisterSuccess }: RegistroUsuarioPr
 
       setErrors({});
     } catch (error: any) {
+      console.log("ERROR BACKEND:", error);
+
       if (error.errors) {
         const newErrors: Record<string, string> = {};
 
@@ -99,7 +152,7 @@ export default function RegistroUsuario({ onRegisterSuccess }: RegistroUsuarioPr
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Revisá los campos",
+        text: error.message || "Error desconocido",
       });
     }
   };
@@ -110,102 +163,156 @@ export default function RegistroUsuario({ onRegisterSuccess }: RegistroUsuarioPr
         <h2 className={styles.title}>Registro de Usuario</h2>
 
         <div className={styles.scrollableFields}>
+          {/* DOCUMENTO */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Documento</label>
             <input
-              className={`${styles.input} ${errors.documento ? styles.inputError : ""
-                }`}
+              className={`${styles.input} ${
+                errors.documento ? styles.inputError : ""
+              }`}
               placeholder="Documento"
               value={data.documento}
-              onChange={(e) => handleChange("documento", e.target.value)}
+              onChange={(e) =>
+                handleChange("documento", e.target.value)
+              }
             />
             {errors.documento && (
-              <span className={styles.errorText}>{errors.documento}</span>
+              <span className={styles.errorText}>
+                {errors.documento}
+              </span>
             )}
           </div>
 
+          {/* CORREO */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Correo electrónico</label>
             <input
-              className={`${styles.input} ${errors.correo ? styles.inputError : ""
-                }`}
+              className={`${styles.input} ${
+                errors.correo ? styles.inputError : ""
+              }`}
               placeholder="Correo electrónico"
               value={data.correo}
-              onChange={(e) => handleChange("correo", e.target.value)}
+              readOnly={correoBloqueado}
+              onChange={(e) =>
+                handleChange("correo", e.target.value)
+              }
             />
+            {correoBloqueado && (
+              <div className={styles.inviteInfo}>
+                Estás registrándote mediante una invitación.
+              </div>
+            )}
             {errors.correo && (
-              <span className={styles.errorText}>{errors.correo}</span>
+              <span className={styles.errorText}>
+                {errors.correo}
+              </span>
             )}
           </div>
 
+          {/* CONTRASEÑA */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Contraseña</label>
             <input
               type="password"
-              className={`${styles.input} ${errors.clave ? styles.inputError : ""
-                }`}
+              className={`${styles.input} ${
+                errors.clave ? styles.inputError : ""
+              }`}
               placeholder="Contraseña"
               value={data.clave}
-              onChange={(e) => handleChange("clave", e.target.value)}
+              onChange={(e) =>
+                handleChange("clave", e.target.value)
+              }
             />
             {errors.clave && (
-              <span className={styles.errorText}>{errors.clave}</span>
+              <span className={styles.errorText}>
+                {errors.clave}
+              </span>
             )}
           </div>
 
+          {/* CONFIRMAR CONTRASEÑA */}
           <div className={styles.fieldGroup}>
-            <label className={styles.label}>Repetir contraseña</label>
+            <label className={styles.label}>
+              Repetir contraseña
+            </label>
             <input
               type="password"
-              className={`${styles.input} ${errors.confirmarClave ? styles.inputError : ""
-                }`}
+              className={`${styles.input} ${
+                errors.confirmarClave ? styles.inputError : ""
+              }`}
               placeholder="Repetir contraseña"
               value={data.confirmarClave}
-              onChange={(e) => handleChange("confirmarClave", e.target.value)}
+              onChange={(e) =>
+                handleChange(
+                  "confirmarClave",
+                  e.target.value
+                )
+              }
             />
             {errors.confirmarClave && (
-              <span className={styles.errorText}>{errors.confirmarClave}</span>
+              <span className={styles.errorText}>
+                {errors.confirmarClave}
+              </span>
             )}
           </div>
 
+          {/* NOMBRE */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Nombre</label>
             <input
-              className={`${styles.input} ${errors.nombre ? styles.inputError : ""
-                }`}
+              className={`${styles.input} ${
+                errors.nombre ? styles.inputError : ""
+              }`}
               placeholder="Nombre"
               value={data.nombre}
-              onChange={(e) => handleChange("nombre", e.target.value)}
+              onChange={(e) =>
+                handleChange("nombre", e.target.value)
+              }
             />
             {errors.nombre && (
-              <span className={styles.errorText}>{errors.nombre}</span>
+              <span className={styles.errorText}>
+                {errors.nombre}
+              </span>
             )}
           </div>
 
+          {/* APELLIDO */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Apellido</label>
             <input
-              className={`${styles.input} ${errors.apellido ? styles.inputError : ""
-                }`}
+              className={`${styles.input} ${
+                errors.apellido ? styles.inputError : ""
+              }`}
               placeholder="Apellido"
               value={data.apellido}
-              onChange={(e) => handleChange("apellido", e.target.value)}
+              onChange={(e) =>
+                handleChange("apellido", e.target.value)
+              }
             />
             {errors.apellido && (
-              <span className={styles.errorText}>{errors.apellido}</span>
+              <span className={styles.errorText}>
+                {errors.apellido}
+              </span>
             )}
           </div>
         </div>
 
-        <div className={styles.buttonContainer}>
-          <button type="submit" className={styles.btn}>
-            Registrarme
-          </button>
+        {/* BOTÓN */}
+        <button
+          type="submit"
+          className={styles.btn}
+          disabled={
+            loadingInvitacion || (!!token && !data.correo)
+          }
+        >
+          {loadingInvitacion
+            ? "Cargando invitación..."
+            : "Registrarme"}
+        </button>
 
-          <p className={styles.requiredHint}>
-            Los campos con * son obligatorios
-          </p>
-        </div>
+        <p className={styles.requiredHint}>
+          Los campos con * son obligatorios
+        </p>
       </form>
     </div>
   );
