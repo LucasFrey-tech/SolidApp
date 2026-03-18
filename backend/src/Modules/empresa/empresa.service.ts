@@ -232,7 +232,7 @@ export class EmpresaService {
         usuario: { id: savedGestor.id },
         empresa: { id: savedEmpresa.id },
         activo: true,
-        rol: RolSecundario.COLABORADOR,
+        rol: RolSecundario.GESTOR,
       });
 
       await empresaUsuarioRepo.save(vinculo);

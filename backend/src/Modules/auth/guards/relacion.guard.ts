@@ -4,9 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { Request } from 'express';
-import { RequestConUsuario, UsuarioAutenticado } from '../interfaces/authenticated_request.interface';
-import { InvitacionesService } from '../../invitaciones/invitacion.service';
+import { RequestConUsuario } from '../interfaces/authenticated_request.interface';
 
 
 @Injectable()

@@ -15,7 +15,7 @@ export class InvitacionesController {
   // CREAR invitaciones para empresa
   // ==============================
   @Post('empresa/:empresaId')
-  @AuthRelacion(RolSecundario.COLABORADOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   crearInvitacionesEmpresa(
     @Param('empresaId', ParseIntPipe) empresaId: number,
     @Body() dto: CreateInvitacionDto,
@@ -33,7 +33,7 @@ export class InvitacionesController {
   // LISTAR invitaciones de empresa
   // ==============================
   @Get('empresa/:empresaId')
-  @AuthRelacion(RolSecundario.COLABORADOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   getInvitacionesEmpresa(
     @Param('empresaId', ParseIntPipe) empresaId: number,
     @Query('page') page: number = 1,
@@ -50,7 +50,7 @@ export class InvitacionesController {
   // CREAR invitaciones para organización
   // ==============================
   @Post('organizacion/:organizacionId')
-  @AuthRelacion(RolSecundario.COLABORADOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   crearInvitacionesOrganizacion(
     @Param('organizacionId', ParseIntPipe) organizacionId: number,
     @Body() dto: CreateInvitacionDto,
@@ -68,7 +68,7 @@ export class InvitacionesController {
   // LISTAR invitaciones de organización
   // ==============================
   @Get('organizacion/:organizacionId')
-  @AuthRelacion(RolSecundario.COLABORADOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   getInvitacionesOrganizacion(
     @Param('organizacionId', ParseIntPipe) organizacionId: number,
     @Query('page') page: number = 1,

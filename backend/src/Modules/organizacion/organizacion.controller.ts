@@ -76,7 +76,7 @@ export class OrganizacionesController {
    */
   @Get('perfil')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener organización por ID' })
   @ApiParam({
     name: 'id',
@@ -98,7 +98,7 @@ export class OrganizacionesController {
 
   @Get('campanas')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener campañas de la organizacion' })
   @ApiResponse({
     status: 200,
@@ -150,7 +150,7 @@ export class OrganizacionesController {
    */
   @Post('campana')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear nueva Campaña Solidaria' })
   @ApiBody({
@@ -212,7 +212,7 @@ export class OrganizacionesController {
    */
   @Patch('campana')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   @ApiOperation({ summary: 'Actualizar Campaña Solidaria existente' })
   @ApiParam({
     name: 'id',
@@ -269,7 +269,7 @@ export class OrganizacionesController {
 
   @Get('mis-donaciones')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
   @ApiResponse({
     status: 200,
@@ -307,7 +307,7 @@ export class OrganizacionesController {
    */
   @Patch('donaciones/:id')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({
     summary: 'Actualizar el estado de la donación',
     description: 'Modifica el estado de una donación (ej. RECHAZADA)',
@@ -364,7 +364,7 @@ export class OrganizacionesController {
    */
   @Patch('perfil')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   @ApiOperation({ summary: 'Actualizar una organización' })
   @ApiParam({
     name: 'id',

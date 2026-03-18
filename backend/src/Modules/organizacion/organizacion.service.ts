@@ -278,7 +278,7 @@ export class PerfilOrganizacionService {
         usuario: { id: savedGestor.id },
         organizacion: { id: savedOrganizacion.id },
         activo: true,
-        rol: RolSecundario.COLABORADOR,
+        rol: RolSecundario.GESTOR,
       });
 
       await orgUsuarioRepo.save(vinculo);

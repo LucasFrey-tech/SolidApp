@@ -5,6 +5,6 @@ export enum Rol {
 }
 
 export enum RolSecundario {
-  COLABORADOR = 'COLABORADOR',
+  GESTOR = 'GESTOR',
   MIEMBRO = 'MIEMBRO',
 }

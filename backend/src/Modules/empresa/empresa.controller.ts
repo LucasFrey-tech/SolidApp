@@ -115,7 +115,7 @@ export class EmpresaController {
    */
   @Get('perfil')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener una empresa por ID' })
   @ApiResponse({
     status: 200,
@@ -165,7 +165,7 @@ export class EmpresaController {
    */
   @Patch('perfil')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   @ApiOperation({ summary: 'Actualizar una empresa' })
   @ApiBody({ type: UpdateEmpresaDTO })
   @ApiResponse({
@@ -214,7 +214,7 @@ export class EmpresaController {
 
   @Get('cupones')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener los cupones paginados de una empresa' })
   @ApiResponse({
     status: 200,
@@ -235,7 +235,7 @@ export class EmpresaController {
 
   @Post('cupones')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   async createCupon(
     @Req() req: RequestConUsuario,
     @Body() dto: CreateBeneficiosDTO,
@@ -245,7 +245,7 @@ export class EmpresaController {
 
   @Patch('cupones/:cuponId')
   @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   async updateCupon(
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Body() dto: UpdateBeneficiosDTO,
