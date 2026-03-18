@@ -18,7 +18,7 @@ function cleanObject(obj: any) {
 
 export default function OrganizationInfo() {
     const { user } = useUser();
-    const isGestor = user?.rol?.toUpperCase() === "GESTOR";
+    const isGestor = user?.rol?.toUpperCase() === "COLABORADOR";
 
     const [org, setOrg] = useState<Organizacion | null>(null);
 

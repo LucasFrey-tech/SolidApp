@@ -74,14 +74,14 @@ export class AuthService {
       throw new BadRequestException('El correo no coincide con la invitación');
     }
 
-    // Crear usuario con rol GESTOR
+    // Crear usuario con rol COLABORADOR
     usuario = await this.usuarioService.create({
       correo: dto.correo,
       clave,
       nombre: dto.nombre,
       apellido: dto.apellido,
       documento: dto.documento,
-      rol: Rol.GESTOR,
+      rol: Rol.COLABORADOR,
     });
 
     // Agregar usuario a empresa/organización si existen
@@ -140,7 +140,7 @@ export class AuthService {
     let gestion: GestionTipo | null = null;
     let gestionId: number | null = null;
 
-    if (usuario.rol === Rol.GESTOR) {
+    if (usuario.rol === Rol.COLABORADOR) {
       const gestionInfo = await this.gestionDetector.detectar(usuario.id);
 
       gestion = gestionInfo?.tipo ?? null;

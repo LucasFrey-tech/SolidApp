@@ -25,7 +25,7 @@ export class CreateEmpresaDTO {
   @IsNotEmpty()
   documento: string;
 
-  @ApiProperty({ example: 'gestor@empresa.com' })
+  @ApiProperty({ example: 'colaborador@empresa.com' })
   @IsEmail()
   correo: string;
 

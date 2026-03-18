@@ -1,10 +1,10 @@
 export enum Rol {
   USUARIO = 'USUARIO',
-  GESTOR = 'GESTOR',
+  COLABORADOR = 'COLABORADOR',
   ADMIN = 'ADMIN',
 }
 
 export enum RolSecundario {
-  GESTOR = 'GESTOR',
+  COLABORADOR = 'COLABORADOR',
   MIEMBRO = 'MIEMBRO',
 }

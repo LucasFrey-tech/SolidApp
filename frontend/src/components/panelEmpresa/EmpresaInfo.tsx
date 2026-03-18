@@ -18,7 +18,7 @@ function cleanObject(obj: any) {
 
 export default function EmpresaInfo() {
   const { user } = useUser();
-  const isGestor = user?.rol?.toUpperCase() === "GESTOR";
+  const isGestor = user?.rol?.toUpperCase() === "COLABORADOR";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [emp, setOrg] = useState<Empresa | null>(null);

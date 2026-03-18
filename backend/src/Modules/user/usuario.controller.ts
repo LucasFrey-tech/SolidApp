@@ -51,14 +51,14 @@ export class UsuarioController {
 
   // Panel de Usuario
 
-  @Auth(Rol.USUARIO, Rol.ADMIN, Rol.GESTOR)
+  @Auth(Rol.USUARIO, Rol.ADMIN, Rol.COLABORADOR)
   @Get('perfil')
   @ApiOperation({ summary: 'Obtener mi perfil completo' })
   async getMiPerfil(@Req() req: RequestConUsuario) {
     return this.userService.findOne(req.user.id);
   }
 
-  @Auth(Rol.USUARIO, Rol.ADMIN, Rol.GESTOR)
+  @Auth(Rol.USUARIO, Rol.ADMIN, Rol.COLABORADOR)
   @Patch('perfil')
   @ApiOperation({ summary: 'Actualizar mis datos personales' })
   async updateMiPerfil(
@@ -69,7 +69,7 @@ export class UsuarioController {
   }
 
   @Patch('credenciales')
-  @Auth(Rol.USUARIO, Rol.ADMIN, Rol.GESTOR)
+  @Auth(Rol.USUARIO, Rol.ADMIN, Rol.COLABORADOR)
   @ApiOperation({ summary: 'Actualizar mi email y/o contraseña' })
   async updateMisCredenciales(
     @Req() req: RequestConUsuario,

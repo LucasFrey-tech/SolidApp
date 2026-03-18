@@ -18,7 +18,7 @@ export default function EmpresaLayout({
   useEffect(() => {
     if (loading || !user) return;
 
-    if (user.rol !== Rol.GESTOR && user.gestion !== GestionTipo.EMPRESA) {
+    if (user.rol !== Rol.COLABORADOR && user.gestion !== GestionTipo.EMPRESA) {
       Swal.fire({
         icon: "error",
         title: "Acceso denegado",
@@ -33,7 +33,7 @@ export default function EmpresaLayout({
   if (loading) return null;
   if (
     !user ||
-    (user.rol !== Rol.GESTOR && user.gestion !== GestionTipo.EMPRESA)
+    (user.rol !== Rol.COLABORADOR && user.gestion !== GestionTipo.EMPRESA)
   )
     return null;
 

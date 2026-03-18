@@ -101,7 +101,7 @@ export class BeneficioController {
    * @param {BeneficioEstado} estado - Estado actualizado del Beneficio
    * @returns Beneficio actualizado
    */
-  @Auth(Rol.GESTOR, Rol.ADMIN)
+  @Auth(Rol.COLABORADOR, Rol.ADMIN)
   @Patch(':id/estado')
   updateEstado(
     @Param('id', ParseIntPipe) id: number,

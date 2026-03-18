@@ -30,7 +30,7 @@ export default function Navbar() {
 
   const navbarConfig = useMemo(() => {
     if (!user) return null;
-    if (user.rol === Rol.GESTOR) return getGestorNavbarConfig(user.gestion);
+    if (user.rol === Rol.COLABORADOR) return getGestorNavbarConfig(user.gestion);
     return USER_NAVBAR_CONFIG[user.rol];
   }, [user]);
 

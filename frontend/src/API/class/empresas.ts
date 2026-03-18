@@ -17,7 +17,7 @@ export class EmpresasService extends Crud<Empresa> {
   // =====Registro Público=====
 
   /**
-   * Registra una nueva empresa junto con su usuario gestor.
+   * Registra una nueva empresa junto con su usuario colaborador.
    * No requiere autenticación.
    * POST /empresas/registro
    */

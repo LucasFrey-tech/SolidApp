@@ -21,7 +21,7 @@ export interface Organizacion {
 }
 
 /**
- * Payload para registrar una nueva organización junto con su gestor
+ * Payload para registrar una nueva organización junto con su colaborador
  */
 export interface OrganizacionRegistroRequest {
   nombre: string;

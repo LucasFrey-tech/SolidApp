@@ -75,8 +75,8 @@ export class OrganizacionesController {
    * @throws NotFoundException si no existe
    */
   @Get('perfil')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener organización por ID' })
   @ApiParam({
     name: 'id',
@@ -97,8 +97,8 @@ export class OrganizacionesController {
   }
 
   @Get('campanas')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener campañas de la organizacion' })
   @ApiResponse({
     status: 200,
@@ -127,11 +127,11 @@ export class OrganizacionesController {
   @Public()
   @Post('registro')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Registrar nueva organización con su gestor' })
+  @ApiOperation({ summary: 'Registrar nueva organización con su colaborador' })
   @ApiBody({ type: CreateOrganizacionDto })
   @ApiResponse({
     status: 201,
-    description: 'Organización y gestor creados',
+    description: 'Organización y colaborador creados',
     type: ResponseOrganizacionDto,
   })
   @ApiResponse({ status: 409, description: 'CUIT o correo ya registrado' })
@@ -149,8 +149,8 @@ export class OrganizacionesController {
    * @returns {Promise<ResponseCampaignsDto>} Campaña creada
    */
   @Post('campana')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear nueva Campaña Solidaria' })
   @ApiBody({
@@ -211,8 +211,8 @@ export class OrganizacionesController {
    * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
    */
   @Patch('campana')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR)
   @ApiOperation({ summary: 'Actualizar Campaña Solidaria existente' })
   @ApiParam({
     name: 'id',
@@ -268,8 +268,8 @@ export class OrganizacionesController {
   }
 
   @Get('mis-donaciones')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
   @ApiResponse({
     status: 200,
@@ -306,8 +306,8 @@ export class OrganizacionesController {
    * @returns {Promise<void>} Resultado de la operación.
    */
   @Patch('donaciones/:id')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
   @ApiOperation({
     summary: 'Actualizar el estado de la donación',
     description: 'Modifica el estado de una donación (ej. RECHAZADA)',
@@ -363,8 +363,8 @@ export class OrganizacionesController {
    * @returns Organización actualizada
    */
   @Patch('perfil')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR)
   @ApiOperation({ summary: 'Actualizar una organización' })
   @ApiParam({
     name: 'id',

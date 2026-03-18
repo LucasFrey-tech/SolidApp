@@ -20,7 +20,7 @@ export default function OrganizacionLayout({
 
     if (
       !user ||
-      (user.rol !== Rol.GESTOR && user.gestion !== GestionTipo.ORGANIZACION)
+      (user.rol !== Rol.COLABORADOR && user.gestion !== GestionTipo.ORGANIZACION)
     ) {
       Swal.fire({
         icon: "error",
@@ -36,7 +36,7 @@ export default function OrganizacionLayout({
   if (loading) return null;
   if (
     !user ||
-    (user.rol !== Rol.GESTOR && user.gestion !== GestionTipo.ORGANIZACION)
+    (user.rol !== Rol.COLABORADOR && user.gestion !== GestionTipo.ORGANIZACION)
   )
     return null;
 

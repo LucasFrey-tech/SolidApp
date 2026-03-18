@@ -198,7 +198,7 @@ export class DonacionService {
           donacion.aprobado_por = { id: gestorId } as Usuario;
           donacion.fecha_aprobacion = new Date();
 
-          this.logger.log(`Donación ${id} aprobada por gestor ${gestorId}`);
+          this.logger.log(`Donación ${id} aprobada por colaborador ${gestorId}`);
         } else if (dto.estado === DonacionEstado.RECHAZADA) {
           donacion.rechazado_por = { id: gestorId } as Usuario;
           donacion.fecha_rechazo = new Date();
@@ -208,7 +208,7 @@ export class DonacionService {
           donacion.fecha_aprobacion = undefined;
 
           this.logger.log(
-            `Donación ${id} rechazada por gestor ${gestorId} - Motivo: ${dto.motivo}`,
+            `Donación ${id} rechazada por colaborador ${gestorId} - Motivo: ${dto.motivo}`,
           );
         }
 

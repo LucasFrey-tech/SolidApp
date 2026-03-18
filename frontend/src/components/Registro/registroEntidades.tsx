@@ -107,10 +107,10 @@ const cuitFields = ["cuit_empresa", "cuit_organizacion"];
 
 const fieldConfigs: Record<FormType, FieldConfig[]> = {
   empresa: [
-    { field: "nombre", label: "Nombre del gestor", type: "text", placeholder: "Juan" },
-    { field: "apellido", label: "Apellido del gestor", type: "text", placeholder: "Pérez" },
-    { field: "documento", label: "DNI del gestor", type: "text", placeholder: "12345678" },
-    { field: "correo", label: "Correo del gestor", type: "email", placeholder: "gestor@empresa.com" },
+    { field: "nombre", label: "Nombre del colaborador", type: "text", placeholder: "Juan" },
+    { field: "apellido", label: "Apellido del colaborador", type: "text", placeholder: "Pérez" },
+    { field: "documento", label: "DNI del colaborador", type: "text", placeholder: "12345678" },
+    { field: "correo", label: "Correo del colaborador", type: "email", placeholder: "colaborador@empresa.com" },
     { field: "clave", label: "Contraseña", type: "password", placeholder: "••••••••" },
     { field: "confirmarClave", label: "Repetir contraseña", type: "password", placeholder: "••••••••" },
     { field: "telefono", label: "Teléfono", type: "text", placeholder: "1123456789" },
@@ -123,10 +123,10 @@ const fieldConfigs: Record<FormType, FieldConfig[]> = {
     { field: "web", label: "Web", type: "text", placeholder: "https://...", optional: true },
   ],
   organizacion: [
-    { field: "nombre", label: "Nombre del gestor", type: "text", placeholder: "Juan" },
-    { field: "apellido", label: "Apellido del gestor", type: "text", placeholder: "Pérez" },
-    { field: "documento", label: "DNI del gestor", type: "text", placeholder: "12345678" },
-    { field: "correo", label: "Correo del gestor", type: "email", placeholder: "gestor@organizacion.com" },
+    { field: "nombre", label: "Nombre del colaborador", type: "text", placeholder: "Juan" },
+    { field: "apellido", label: "Apellido del colaborador", type: "text", placeholder: "Pérez" },
+    { field: "documento", label: "DNI del colaborador", type: "text", placeholder: "12345678" },
+    { field: "correo", label: "Correo del colaborador", type: "email", placeholder: "colaborador@organizacion.com" },
     { field: "clave", label: "Contraseña", type: "password", placeholder: "••••••••" },
     { field: "confirmarClave", label: "Repetir contraseña", type: "password", placeholder: "••••••••" },
     { field: "telefono", label: "Teléfono", type: "text", placeholder: "1123456789" },

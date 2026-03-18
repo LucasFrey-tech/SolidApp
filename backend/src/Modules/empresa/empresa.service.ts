@@ -186,12 +186,12 @@ export class EmpresaService {
 
       const claveHash = await this.hashService.hash(dto.clave);
 
-      const gestor = usuarioRepo.create({
+      const colaborador = usuarioRepo.create({
         nombre: dto.nombre,
         apellido: dto.apellido,
         documento: dto.documento,
         clave: claveHash,
-        rol: Rol.GESTOR,
+        rol: Rol.COLABORADOR,
         contacto: {
           correo: dto.correo,
           prefijo: dto.prefijo,
@@ -203,8 +203,8 @@ export class EmpresaService {
         verificado: false,
       });
 
-      const savedGestor = await usuarioRepo.save(gestor);
-      this.logger.log(`Gestor creado con ID ${savedGestor.id}`);
+      const savedGestor = await usuarioRepo.save(colaborador);
+      this.logger.log(`COLABORADOR creado con ID ${savedGestor.id}`);
 
       const empresa = empresaRepo.create({
         cuit: dto.cuit_empresa,
@@ -232,11 +232,11 @@ export class EmpresaService {
         usuario: { id: savedGestor.id },
         empresa: { id: savedEmpresa.id },
         activo: true,
-        rol: RolSecundario.GESTOR,
+        rol: RolSecundario.COLABORADOR,
       });
 
       await empresaUsuarioRepo.save(vinculo);
-      this.logger.log(`Vínculo gestor-empresa creado`);
+      this.logger.log(`Vínculo colaborador-empresa creado`);
 
       return this.mapToResponseDto(savedEmpresa);
     });

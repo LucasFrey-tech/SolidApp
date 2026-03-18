@@ -27,14 +27,14 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
   const puedeVerCupones = () => {
     if (!user) return false;
     if (user.rol === Rol.USUARIO) return true;
-    if (user.rol === Rol.GESTOR && user.gestion === GestionTipo.EMPRESA)
+    if (user.rol === Rol.COLABORADOR && user.gestion === GestionTipo.EMPRESA)
       return true;
     return false;
   };
 
   const puedeVerDonaciones = () => {
     if (!user) return false;
-    return (user.rol === Rol.GESTOR && user.gestion === GestionTipo.ORGANIZACION) || user.rol === Rol.USUARIO;
+    return (user.rol === Rol.COLABORADOR && user.gestion === GestionTipo.ORGANIZACION) || user.rol === Rol.USUARIO;
   };
 
   const puedeVerData = () => {
@@ -48,7 +48,7 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
     if (user?.rol === Rol.USUARIO) {
       onChangeSection("cupons");
     } else if (
-      user?.rol === Rol.GESTOR &&
+      user?.rol === Rol.COLABORADOR &&
       user?.gestion === GestionTipo.EMPRESA
     ) {
       router.push("/empresaPanel");

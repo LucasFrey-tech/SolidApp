@@ -41,7 +41,7 @@ export interface EmpresaUpdateRequest {
 }
 
 /**
- * Payload para registrar una nueva empresa junto con su gestor
+ * Payload para registrar una nueva empresa junto con su colaborador
  */
 export interface EmpresaRegistroRequest {
   nombre: string;

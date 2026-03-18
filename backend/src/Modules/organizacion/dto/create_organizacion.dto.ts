@@ -10,7 +10,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateOrganizacionDto {
-  // ===== Datos del Gestor =====
+  // ===== Datos del COLABORADOR =====
 
   @ApiProperty({ example: 'Juan' })
   @IsString()
@@ -27,7 +27,7 @@ export class CreateOrganizacionDto {
   @IsNotEmpty()
   documento: string;
 
-  @ApiProperty({ example: 'gestor@organizacion.com' })
+  @ApiProperty({ example: 'colaborador@organizacion.com' })
   @IsEmail()
   correo: string;
 

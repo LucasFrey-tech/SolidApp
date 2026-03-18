@@ -232,12 +232,12 @@ export class PerfilOrganizacionService {
 
       const claveHash = await this.hashService.hash(dto.clave);
 
-      const gestor = usuarioRepo.create({
+      const colaborador = usuarioRepo.create({
         nombre: dto.nombre,
         apellido: dto.apellido,
         documento: dto.documento,
         clave: claveHash,
-        rol: Rol.GESTOR,
+        rol: Rol.COLABORADOR,
         contacto: {
           correo: dto.correo,
           prefijo: dto.prefijo,
@@ -249,8 +249,8 @@ export class PerfilOrganizacionService {
         verificado: false,
       });
 
-      const savedGestor = await usuarioRepo.save(gestor);
-      this.logger.log(`Gestor creado con ID ${savedGestor.id}`);
+      const savedGestor = await usuarioRepo.save(colaborador);
+      this.logger.log(`COLABORADOR creado con ID ${savedGestor.id}`);
 
       const organizacion = organizacionRepo.create({
         cuit: dto.cuit_organizacion,
@@ -278,11 +278,11 @@ export class PerfilOrganizacionService {
         usuario: { id: savedGestor.id },
         organizacion: { id: savedOrganizacion.id },
         activo: true,
-        rol: RolSecundario.GESTOR,
+        rol: RolSecundario.COLABORADOR,
       });
 
       await orgUsuarioRepo.save(vinculo);
-      this.logger.log(`Vínculo gestor-organización creado`);
+      this.logger.log(`Vínculo colaborador-organización creado`);
 
       return this.mapToResponseDto(savedOrganizacion);
     });

@@ -13,7 +13,7 @@ export interface UserNavbarConfig {
   panelLink?: PanelLink;
 }
 
-export const USER_NAVBAR_CONFIG: Record<Exclude<NavbarRole, Rol.GESTOR>, UserNavbarConfig> = {
+export const USER_NAVBAR_CONFIG: Record<Exclude<NavbarRole, Rol.COLABORADOR>, UserNavbarConfig> = {
   [Rol.USUARIO]: {
     showPoints: true,
   },

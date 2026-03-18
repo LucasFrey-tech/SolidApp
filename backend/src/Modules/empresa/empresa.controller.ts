@@ -114,8 +114,8 @@ export class EmpresaController {
    * Si la empresa no existe.
    */
   @Get('perfil')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener una empresa por ID' })
   @ApiResponse({
     status: 200,
@@ -135,11 +135,11 @@ export class EmpresaController {
   @Post('registro')
   @Public()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Registrar nueva empresa con su gestor' })
+  @ApiOperation({ summary: 'Registrar nueva empresa con su colaborador' })
   @ApiBody({ type: CreateEmpresaDTO })
   @ApiResponse({
     status: 201,
-    description: 'Empresa y gestor creados',
+    description: 'Empresa y colaborador creados',
     type: EmpresaResponseDTO,
   })
   @ApiResponse({ status: 409, description: 'CUIT o correo ya registrado' })
@@ -164,8 +164,8 @@ export class EmpresaController {
    * Si la empresa no existe.
    */
   @Patch('perfil')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR)
   @ApiOperation({ summary: 'Actualizar una empresa' })
   @ApiBody({ type: UpdateEmpresaDTO })
   @ApiResponse({
@@ -213,8 +213,8 @@ export class EmpresaController {
   }
 
   @Get('cupones')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener los cupones paginados de una empresa' })
   @ApiResponse({
     status: 200,
@@ -234,8 +234,8 @@ export class EmpresaController {
   }
 
   @Post('cupones')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
   async createCupon(
     @Req() req: RequestConUsuario,
     @Body() dto: CreateBeneficiosDTO,
@@ -244,8 +244,8 @@ export class EmpresaController {
   }
 
   @Patch('cupones/:cuponId')
-  @Auth(Rol.GESTOR)
-  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.COLABORADOR, RolSecundario.MIEMBRO)
   async updateCupon(
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Body() dto: UpdateBeneficiosDTO,

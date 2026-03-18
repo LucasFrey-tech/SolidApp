@@ -21,7 +21,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   // ===== Registro Público =====
 
   /**
-   * Registra una nueva organización junto con su usuario gestor.
+   * Registra una nueva organización junto con su usuario colaborador.
    * No requiere autenticación.
    * POST /organizaciones/registro
    */
