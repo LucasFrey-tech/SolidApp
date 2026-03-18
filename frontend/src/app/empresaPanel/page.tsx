@@ -12,7 +12,7 @@ import { useUser } from "@/app/context/UserContext";
 
 import { baseApi } from "@/API/baseApi";
 import EmpresaInfo from "@/components/panelEmpresa/EmpresaInfo";
-import InvitacionesPanel from "@/components/pages/panelOrganizacion/InvitacionesPanel";
+import InvitacionesPanel from "@/components/invitaciones/InvitacionesPanel";
 
 type Coupon = {
   id: number;

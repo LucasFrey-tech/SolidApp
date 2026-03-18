@@ -10,7 +10,7 @@ import { useUser } from "../context/UserContext";
 import Modal from "@/components/ui/Modal";
 import { DonacionEstado } from "@/API/types/donaciones/enum";
 import OrganizationInfo from "@/components/pages/panelOrganizacion/OrganizacionInfo";
-import InvitacionesPanel from "@/components/pages/panelOrganizacion/InvitacionesPanel";
+import InvitacionesPanel from "@/components/invitaciones/InvitacionesPanel";
 
 import {
   CampaignCreateRequest,
