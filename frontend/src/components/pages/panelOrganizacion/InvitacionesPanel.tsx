@@ -4,11 +4,16 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import styles from "@/styles/Paneles/organizationPanel.module.css";
 import { Invitacion } from "@/API/types/invitaciones/invitaciones";
-import InvitarUsuariosModal from "./InvitarUsuariosModal";
+import InvitarUsuariosModal from "@/components/invitaciones/InvitarUsuariosModal";
 
 export interface InvitacionesService {
-  getInvitaciones(entidadId: number): Promise<{ items: Invitacion[]; total: number }>;
-  crearInvitaciones(entidadId: number, correos: string[]): Promise<{ correosExistentes: string[] }>;
+  getInvitaciones(
+    entidadId: number,
+  ): Promise<{ items: Invitacion[]; total: number }>;
+  crearInvitaciones(
+    entidadId: number,
+    correos: string[],
+  ): Promise<{ correosExistentes: string[] }>;
 }
 
 type Props = {
@@ -82,7 +87,10 @@ export default function InvitacionesPanel({ entidadId, service }: Props) {
     }
 
     try {
-      const response = await service.crearInvitaciones(entidadId, correosValidos);
+      const response = await service.crearInvitaciones(
+        entidadId,
+        correosValidos,
+      );
 
       if (response.correosExistentes.length > 0) {
         Swal.fire({
@@ -94,7 +102,7 @@ export default function InvitacionesPanel({ entidadId, service }: Props) {
         Swal.fire(
           "Invitaciones enviadas",
           "Los usuarios recibirán un correo de invitación",
-          "success"
+          "success",
         );
       }
 
@@ -104,7 +112,7 @@ export default function InvitacionesPanel({ entidadId, service }: Props) {
       Swal.fire(
         "Error",
         error.message || "No se pudo enviar la invitación",
-        "error"
+        "error",
       );
     }
   };
@@ -117,10 +125,7 @@ export default function InvitacionesPanel({ entidadId, service }: Props) {
       <div className={styles.header}>
         <h2>Invitaciones</h2>
 
-        <button
-          className={styles.button}
-          onClick={() => setOpenModal(true)}
-        >
+        <button className={styles.button} onClick={() => setOpenModal(true)}>
           Invitar usuarios
         </button>
       </div>

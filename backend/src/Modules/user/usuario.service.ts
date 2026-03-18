@@ -246,7 +246,7 @@ export class UsuarioService {
     return { id: usuario.id, puntos: usuario.puntos ?? 0 };
   }
 
-  // Panel Admin
+  // ================ Panel Admin ================
 
   /**
    * Obtiene usuarios de forma paginada.

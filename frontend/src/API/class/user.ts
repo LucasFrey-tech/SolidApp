@@ -177,7 +177,6 @@ export class Usuario extends Crud<User> {
     }
   }
 
-  // Metodos no implementados
   getAll(): Promise<User[]> {
     throw new Error("Method not implemented.");
   }

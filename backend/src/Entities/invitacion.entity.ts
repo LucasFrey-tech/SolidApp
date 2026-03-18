@@ -72,7 +72,8 @@ export class Invitacion {
 
   @ApiPropertyOptional({
     example: '2026-03-16T14:00:00Z',
-    description: 'Fecha en que el usuario invitado se registró usando la invitación',
+    description:
+      'Fecha en que el usuario invitado se registró usando la invitación',
   })
   @Column({ type: 'datetime2', nullable: true })
   fecha_registro?: Date;

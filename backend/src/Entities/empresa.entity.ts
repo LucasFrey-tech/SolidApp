@@ -75,7 +75,7 @@ export class Empresa {
     description: 'ID del contacto asociado (obligatorio)',
   })
   @Column({ type: 'int', nullable: false })
-  contacto_id: number; //ES NECESARIO ???
+  contacto_id: number;
 
   @ApiProperty({
     description: 'Información de contacto de la empresa',
@@ -93,7 +93,7 @@ export class Empresa {
     description: 'ID de la dirección fiscal/comercial (opcional)',
   })
   @Column({ type: 'int', nullable: true })
-  direccion_id?: number; // ES NECESARIO ???
+  direccion_id?: number;
 
   @ApiPropertyOptional({
     description: 'Dirección fiscal/comercial de la empresa',

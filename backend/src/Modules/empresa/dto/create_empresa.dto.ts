@@ -44,8 +44,6 @@ export class CreateEmpresaDTO {
   @IsNotEmpty()
   telefono: string;
 
-  // ===== Datos de la Empresa =====
-
   @ApiProperty({ example: 'contacto@empresa.com' })
   @IsEmail()
   correo_empresa: string;

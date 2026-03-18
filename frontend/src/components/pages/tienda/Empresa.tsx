@@ -8,11 +8,9 @@ import { Empresa } from '@/API/types/empresas';
 import { baseApi } from '@/API/baseApi';
 import BeneficiosPanel from '@/components/pages/tienda/Beneficios';
 
-// ==================== CONSTANTES ====================
 const PLACEHOLDER_IMG = '/img/placeholder.svg';
 const LIMIT = 12;
 
-// ==================== COMPONENTE LOGO ====================
 function EmpresaLogo({
   src,
   alt,
@@ -34,7 +32,6 @@ function EmpresaLogo({
   );
 }
 
-// ==================== PAGE ====================
 export default function Empresas() {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
 
@@ -46,7 +43,6 @@ export default function Empresas() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ==================== FETCH ====================
   useEffect(() => {
     const fetchEmpresas = async () => {
       try {
@@ -77,11 +73,9 @@ export default function Empresas() {
     fetchEmpresas();
   }, [page]);
 
-  // ==================== ESTADOS ====================
   if (loading) return <p className={styles.loading}>Cargando empresas...</p>;
   if (error) return <p className={styles.error}>{error}</p>;
 
-  // ==================== RENDER ====================
   return (
     <>
       <section className={styles.container}>

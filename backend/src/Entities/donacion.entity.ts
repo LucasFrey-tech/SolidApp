@@ -26,7 +26,7 @@ export class Donaciones {
    * @type {string}
    */
   @ApiProperty({
-    example: 'Donación Solidaria de Lucas Frey', // Ver otras opciones de titulo
+    example: 'Donación Solidaria de Lucas Frey',
     description: 'Titulo de la Donación indicando el usuario que donó',
   })
   @Column({ type: 'varchar', length: 100 })
@@ -37,7 +37,7 @@ export class Donaciones {
    * @type {string}
    */
   @ApiProperty({
-    example: 'INSERTE-DETALLE', // Ver opciones de Detalles
+    example: 'INSERTE-DETALLE',
     description: 'Información sobre la Donación realizada por el Usuario',
   })
   @Column({ type: 'varchar', length: 255 })

@@ -10,7 +10,6 @@ import { EmailService } from '../email/email.service';
 import { RolSecundario } from '../user/enums/enums';
 @Injectable()
 export class InvitacionesService {
-
   constructor(
     @InjectRepository(Invitacion)
     private invitacionRepo: Repository<Invitacion>,
@@ -22,13 +21,10 @@ export class InvitacionesService {
 
     @InjectRepository(OrganizacionUsuario)
     private organizacionUsuarioRepo: Repository<OrganizacionUsuario>,
-    
-    private readonly emailService: EmailService,
-  ) { }
 
-  // ================================
-  // CREAR INVITACIONES PARA EMPRESA
-  // ================================
+    private readonly emailService: EmailService,
+  ) {}
+
   async crearInvitacionesEmpresa(
     correos: string[],
     empresaId: number,
@@ -39,8 +35,6 @@ export class InvitacionesService {
     const correosYaInvitados: string[] = [];
 
     for (const correo of correos) {
-
-      // verificar si el usuario ya existe
       const existe = await this.contactoRepo.findOne({
         where: { correo },
       });
@@ -50,14 +44,12 @@ export class InvitacionesService {
         continue;
       }
 
-      // verificar si ya tiene invitación
       const invitacionExistente = await this.invitacionRepo.findOne({
         where: { correo },
         order: { fecha_creacion: 'DESC' },
       });
 
       if (invitacionExistente && !invitacionExistente.fecha_registro) {
-
         const ahora = new Date();
 
         if (
@@ -68,7 +60,6 @@ export class InvitacionesService {
           continue;
         }
 
-        // si expiró → reenviar
         invitacionExistente.token = randomBytes(32).toString('hex');
 
         const nuevaFecha = new Date();
@@ -101,10 +92,7 @@ export class InvitacionesService {
     const guardadas = await this.invitacionRepo.save(invitaciones);
 
     for (const inv of guardadas) {
-      await this.emailService.sendInvitationEmail(
-        inv.correo,
-        inv.token
-      );
+      await this.emailService.sendInvitationEmail(inv.correo, inv.token);
     }
 
     return {
@@ -114,15 +102,11 @@ export class InvitacionesService {
     };
   }
 
-  // ================================
-  // CREAR INVITACIONES ORGANIZACION
-  // ================================
   async crearInvitacionesOrganizacion(
     correos: string[],
     organizacionId: number,
     usuarioInvitadorId: number,
   ) {
-
     const pendientes = await this.invitacionRepo.count({
       where: {
         organizacionId,
@@ -133,9 +117,7 @@ export class InvitacionesService {
     });
 
     if (pendientes + correos.length > 5) {
-      throw new Error(
-        'No se pueden enviar más de 5 invitaciones pendientes.',
-      );
+      throw new Error('No se pueden enviar más de 5 invitaciones pendientes.');
     }
 
     const invitaciones: Invitacion[] = [];
@@ -143,7 +125,6 @@ export class InvitacionesService {
     const correosYaInvitados: string[] = [];
 
     for (const correo of correos) {
-
       const existe = await this.contactoRepo.findOne({
         where: { correo },
       });
@@ -159,7 +140,6 @@ export class InvitacionesService {
       });
 
       if (invitacionExistente && !invitacionExistente.fecha_registro) {
-
         const ahora = new Date();
 
         if (
@@ -200,12 +180,9 @@ export class InvitacionesService {
     }
 
     const guardadas = await this.invitacionRepo.save(invitaciones);
-    
+
     for (const inv of guardadas) {
-      await this.emailService.sendInvitationEmail(
-        inv.correo,
-        inv.token
-      );
+      await this.emailService.sendInvitationEmail(inv.correo, inv.token);
     }
 
     return {
@@ -215,9 +192,6 @@ export class InvitacionesService {
     };
   }
 
-  // ================================
-  // LISTAR INVITACIONES EMPRESA
-  // ================================
   async listarInvitacionesEmpresa(
     empresaId: number,
     page: number = 1,
@@ -238,9 +212,6 @@ export class InvitacionesService {
     return { items: itemsConEstado, total };
   }
 
-  // ================================
-  // LISTAR INVITACIONES ORGANIZACION
-  // ================================
   async listarInvitacionesOrganizacion(
     organizacionId: number,
     page: number = 1,
@@ -259,11 +230,9 @@ export class InvitacionesService {
     }));
 
     return { items: itemsConEstado, total };
-    
   }
 
   async validarToken(token: string) {
-
     const invitacion = await this.invitacionRepo.findOne({
       where: { token },
     });
@@ -297,11 +266,7 @@ export class InvitacionesService {
     });
   }
 
-  async agregarUsuarioAOrganizacion(
-    usuarioId: number,
-    organizacionId: number,
-  ) {
-
+  async agregarUsuarioAOrganizacion(usuarioId: number, organizacionId: number) {
     const relacion = this.organizacionUsuarioRepo.create({
       id_usuario: usuarioId,
       id_organizacion: organizacionId,
@@ -311,11 +276,7 @@ export class InvitacionesService {
 
     return this.organizacionUsuarioRepo.save(relacion);
   }
-  async agregarUsuarioAEmpresa(
-    usuarioId: number,
-    empresaId: number,
-  ) {
-
+  async agregarUsuarioAEmpresa(usuarioId: number, empresaId: number) {
     const relacion = this.empresaUsuarioRepo.create({
       id_usuario: usuarioId,
       id_empresa: empresaId,
@@ -326,7 +287,6 @@ export class InvitacionesService {
     return this.empresaUsuarioRepo.save(relacion);
   }
   async marcarAceptada(invitacionId: number) {
-
     const invitacion = await this.invitacionRepo.findOne({
       where: { id: invitacionId },
     });
@@ -336,19 +296,5 @@ export class InvitacionesService {
     invitacion.expirada = true;
 
     return this.invitacionRepo.save(invitacion);
-  }
-
-  // TEST
-  async obtenerRelacionOrganizacion(usuarioId: number) {
-    return this.organizacionUsuarioRepo.findOne({
-      where: { id: usuarioId },
-    });
-  }
-
-  // TEST
-  async obtenerRelacionEmpresa(usuarioId: number) {
-    return this.empresaUsuarioRepo.findOne({
-      where: { id: usuarioId },
-    });
   }
 }

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 
 import { UsuarioService } from '../user/usuario.service';
-import { Rol }  from '../user/enums/enums';
+import { Rol } from '../user/enums/enums';
 
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 
@@ -57,68 +57,72 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-  // Verificar si el correo ya existe
-  if (await this.usuarioService.findByEmail(dto.correo)) {
-    throw new BadRequestException('El correo ya está registrado');
-  }
-
-  const clave = await this.hashService.hash(dto.clave);
-
-  let usuario: ResponseUsuarioDto;
-
-  if (dto.token) {
-    // Buscar invitación
-    const invitacion = await this.invitacionesService.buscarPorToken(dto.token);
-    if (!invitacion) throw new BadRequestException('Invitación inválida');
-    if (invitacion.correo !== dto.correo) {
-      throw new BadRequestException('El correo no coincide con la invitación');
+    if (await this.usuarioService.findByEmail(dto.correo)) {
+      throw new BadRequestException('El correo ya está registrado');
     }
 
-    // Crear usuario con rol COLABORADOR
-    usuario = await this.usuarioService.create({
-      correo: dto.correo,
-      clave,
-      nombre: dto.nombre,
-      apellido: dto.apellido,
-      documento: dto.documento,
-      rol: Rol.COLABORADOR,
-    });
+    const clave = await this.hashService.hash(dto.clave);
 
-    // Agregar usuario a empresa/organización si existen
-    await Promise.all([
-      invitacion.organizacionId
-        ? this.invitacionesService.agregarUsuarioAOrganizacion(usuario.id, invitacion.organizacionId)
-        : Promise.resolve(),
-      invitacion.empresaId
-        ? this.invitacionesService.agregarUsuarioAEmpresa(usuario.id, invitacion.empresaId)
-        : Promise.resolve(),
-    ]);
+    let usuario: ResponseUsuarioDto;
 
-    await this.invitacionesService.marcarAceptada(invitacion.id);
+    if (dto.token) {
+      const invitacion = await this.invitacionesService.buscarPorToken(
+        dto.token,
+      );
+      if (!invitacion) throw new BadRequestException('Invitación inválida');
+      if (invitacion.correo !== dto.correo) {
+        throw new BadRequestException(
+          'El correo no coincide con la invitación',
+        );
+      }
 
-  } else {
-    // Crear usuario sin invitación (rol normal)
-    usuario = await this.usuarioService.create({
-      correo: dto.correo,
-      clave,
-      nombre: dto.nombre,
-      apellido: dto.apellido,
-      documento: dto.documento,
-      rol: Rol.USUARIO,
-    });
+      usuario = await this.usuarioService.create({
+        correo: dto.correo,
+        clave,
+        nombre: dto.nombre,
+        apellido: dto.apellido,
+        documento: dto.documento,
+        rol: Rol.COLABORADOR,
+      });
+
+      await Promise.all([
+        invitacion.organizacionId
+          ? this.invitacionesService.agregarUsuarioAOrganizacion(
+              usuario.id,
+              invitacion.organizacionId,
+            )
+          : Promise.resolve(),
+        invitacion.empresaId
+          ? this.invitacionesService.agregarUsuarioAEmpresa(
+              usuario.id,
+              invitacion.empresaId,
+            )
+          : Promise.resolve(),
+      ]);
+
+      await this.invitacionesService.marcarAceptada(invitacion.id);
+    } else {
+      usuario = await this.usuarioService.create({
+        correo: dto.correo,
+        clave,
+        nombre: dto.nombre,
+        apellido: dto.apellido,
+        documento: dto.documento,
+        rol: Rol.USUARIO,
+      });
+
+      const tokenPayload = this.createPayload(usuario.id, usuario.rol);
+
+      this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
+
+      return this.buildToken(tokenPayload);
+    }
 
     const tokenPayload = this.createPayload(usuario.id, usuario.rol);
-
     this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
 
     return this.buildToken(tokenPayload);
   }
-
-  const tokenPayload = this.createPayload(usuario.id, usuario.rol);
-  this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
-
-  return this.buildToken(tokenPayload);
-}
 
   async login(dto: LoginDto) {
     const usuario = await this.usuarioService.findByEmail(dto.correo);
@@ -183,10 +187,7 @@ export class AuthService {
 
     const hashedPassword = await this.hashService.hash(newPassword);
 
-    await this.usuarioService.resetPassword(
-      usuario.id,
-      hashedPassword,
-    );
+    await this.usuarioService.resetPassword(usuario.id, hashedPassword);
 
     return { message: 'Contraseña actualizada correctamente' };
   }

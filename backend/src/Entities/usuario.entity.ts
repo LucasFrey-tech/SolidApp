@@ -33,8 +33,6 @@ export class Usuario {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // ==================== DATOS DE AUTENTICACIÓN (antes en cuenta) ====================
-
   @ApiProperty({
     example: '$2b$10$...',
     description: 'Contraseña hasheada con bcrypt',
@@ -56,8 +54,6 @@ export class Usuario {
     default: Rol.USUARIO,
   })
   rol: Rol;
-
-  // ==================== DATOS PERSONALES (antes en perfil_usuario) ====================
 
   @ApiProperty({
     example: '12345678',
@@ -96,8 +92,6 @@ export class Usuario {
   @Column({ type: 'varchar', length: 10, nullable: true })
   departamento?: string;
 
-  // ==================== RELACIONES CON CONTACTO ====================
-
   @ApiProperty({
     description: 'Información de contacto del usuario (correo y teléfono)',
     type: () => Contacto,
@@ -113,8 +107,6 @@ export class Usuario {
   @OneToOne(() => Direccion, { cascade: ['insert', 'update'] })
   @JoinColumn({ name: 'direccion_id' })
   direccion?: Direccion;
-
-  // ==================== CAMPOS DEL SISTEMA ====================
 
   @ApiProperty({
     example: false,
@@ -169,16 +161,12 @@ export class Usuario {
   @Exclude()
   resetPasswordExpires?: Date;
 
-  // ==================== RELACIONES N:M CON EMPRESAS ====================
-
   @ApiPropertyOptional({
     description: 'Relaciones empresa-usuario (tabla intermedia con detalles)',
     type: () => [EmpresaUsuario],
   })
   @OneToMany(() => EmpresaUsuario, (empresaUsuario) => empresaUsuario.usuario)
   empresaUsuario?: EmpresaUsuario;
-
-  // ==================== RELACIONES N:M CON ORGANIZACIONES ====================
 
   @ApiPropertyOptional({
     description:
@@ -187,8 +175,6 @@ export class Usuario {
   })
   @OneToMany(() => OrganizacionUsuario, (orgUsuario) => orgUsuario.usuario)
   organizacionUsuario?: OrganizacionUsuario;
-
-  // ==================== RELACIONES DE DONADOR ====================
 
   @ApiPropertyOptional({
     description: 'Donaciones realizadas por este usuario',

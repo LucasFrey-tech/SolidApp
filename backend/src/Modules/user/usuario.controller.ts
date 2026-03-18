@@ -22,7 +22,6 @@ import { RequestConUsuario } from '../auth/interfaces/authenticated_request.inte
 import { Rol } from '../user/enums/enums';
 import { Auth } from '../auth/decoradores/auth.decorador';
 import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
-import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
 
 /**
  * -----------------------------------------------------------------------------
@@ -152,7 +151,7 @@ export class UsuarioController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
-    return this.userService.getDonaciones(id, page, limit); // donacionService
+    return this.userService.getDonaciones(id, page, limit);
   }
 
   @Auth(Rol.ADMIN)

@@ -26,9 +26,6 @@ export default function UsuariosAdminPanel() {
   const [search, setSearch] = useState('');
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // =============================
-  // FETCH USUARIOS
-  // =============================
   useEffect(() => {
     async function fetchUsers() {
       setLoading(true);
@@ -66,9 +63,6 @@ export default function UsuariosAdminPanel() {
     };
   }, []);
 
-  // =============================
-  // BUSCADOR
-  // =============================
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
 
@@ -82,9 +76,6 @@ export default function UsuariosAdminPanel() {
     }, 300);
   };
 
-  // =============================
-  // HABILITAR / DESHABILITAR 
-  // =============================
   const toggleUserStatus = async (user: User, enable: boolean) => {
     const confirm = await Swal.fire({
       title: '¿Estás seguro?',
@@ -99,7 +90,6 @@ export default function UsuariosAdminPanel() {
 
     setUpdatingUserId(user.id);
 
-    // Actualización
     setUsers((prev) =>
       prev.map((u) =>
         u.id === user.id ? { ...u, enabled: enable } : u
@@ -121,7 +111,6 @@ export default function UsuariosAdminPanel() {
     } catch (err) {
       console.error(err);
 
-      // revertir si falla
       setUsers((prev) =>
         prev.map((u) =>
           u.id === user.id ? { ...u, enabled: !enable } : u
@@ -136,9 +125,6 @@ export default function UsuariosAdminPanel() {
 
   const totalPages = Math.ceil(usersCount / PAGE_SIZE) || 1;
 
-  // =============================
-  // RENDER
-  // =============================
   return (
     <div className={styles.UsersBox}>
       <h2 className={styles.Title}>Usuarios</h2>

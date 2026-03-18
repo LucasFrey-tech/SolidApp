@@ -129,8 +129,6 @@ export class Organizacion {
   @Column({ type: 'bit', nullable: false, default: true })
   habilitada: boolean;
 
-  // ==================== RELACIONES ====================
-
   @ApiPropertyOptional({
     description: 'Relaciones organización-usuario con roles (tabla intermedia)',
     type: () => [OrganizacionUsuario],

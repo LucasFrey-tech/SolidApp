@@ -17,7 +17,7 @@ async function bootstrap() {
    */
   const logger = Log.getLogger();
 
-  // Setup users image directory
+  // Configurar el directorio de imágenes de usuarios
   if (!existsSync(SettingsService.getStaticResourcesPath())) {
     mkdirSync(SettingsService.getStaticResourcesPath());
     console.log('PREFIX:', SettingsService.getStaticResourcesPrefix());
@@ -77,10 +77,10 @@ async function bootstrap() {
    * CORS
    */
   app.enableCors({
-    origin: 'http://localhost:3000', // Url Front
+    origin: 'http://localhost:3000',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: 'Content-Type, Authorization', // Encabezados de solicitud permitidos
+    allowedHeaders: 'Content-Type, Authorization',
   });
 
   /**

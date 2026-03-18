@@ -235,8 +235,6 @@ export class OrganizacionesService extends Crud<Organizacion> {
     }
   }
 
-  // Stubs requeridos por Crud<Organizacion>
-  /** @future reemplazado por registrarOrganizacion() */
   create(data: OrganizacionCreateRequest): Promise<Organizacion> {
     throw new Error("Method not implemented. Usar registrarOrganizacion()");
   }

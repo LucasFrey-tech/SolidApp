@@ -1,19 +1,24 @@
-import { Controller, Post, Get, Body, Param, ParseIntPipe, Req, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  ParseIntPipe,
+  Req,
+  Query,
+} from '@nestjs/common';
 import { InvitacionesService } from './invitacion.service';
 import { CreateInvitacionDto } from './dto/crear_invitacion.dto';
 import { Request } from 'express';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
 import { RolSecundario } from '../user/enums/enums';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 
 @Controller('invitaciones')
 export class InvitacionesController {
-  constructor(private readonly invitacionesService: InvitacionesService) { }
+  constructor(private readonly invitacionesService: InvitacionesService) {}
 
-  // ==============================
-  // CREAR invitaciones para empresa
-  // ==============================
   @Post('empresa/:empresaId')
   @AuthRelacion(RolSecundario.GESTOR)
   crearInvitacionesEmpresa(
@@ -29,9 +34,6 @@ export class InvitacionesController {
     );
   }
 
-  // ==============================
-  // LISTAR invitaciones de empresa
-  // ==============================
   @Get('empresa/:empresaId')
   @AuthRelacion(RolSecundario.GESTOR)
   getInvitacionesEmpresa(
@@ -39,16 +41,14 @@ export class InvitacionesController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ) {
-    console.log("ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", empresaId)
+    console.log('ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', empresaId);
     return this.invitacionesService.listarInvitacionesEmpresa(
       empresaId,
       page,
       limit,
     );
   }
-  // ==============================
-  // CREAR invitaciones para organización
-  // ==============================
+
   @Post('organizacion/:organizacionId')
   @AuthRelacion(RolSecundario.GESTOR)
   crearInvitacionesOrganizacion(
@@ -64,9 +64,6 @@ export class InvitacionesController {
     );
   }
 
-  // ==============================
-  // LISTAR invitaciones de organización
-  // ==============================
   @Get('organizacion/:organizacionId')
   @AuthRelacion(RolSecundario.GESTOR)
   getInvitacionesOrganizacion(
@@ -74,20 +71,16 @@ export class InvitacionesController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ) {
-    console.log("ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",organizacionId)
+    console.log('ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', organizacionId);
     return this.invitacionesService.listarInvitacionesOrganizacion(
       organizacionId,
       page,
       limit,
     );
   }
-  // ==============================
-  // VALIDAR TOKEN DE INVITACIÓN
-  // ==============================
 
   @Get('validar/:token')
   async validarToken(@Param('token') token: string) {
-
     const invitacion = await this.invitacionesService.validarToken(token);
 
     return {
@@ -97,6 +90,5 @@ export class InvitacionesController {
       organizacionId: invitacion.organizacionId,
       rol: invitacion.rol,
     };
-
   }
 }

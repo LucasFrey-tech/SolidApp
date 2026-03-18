@@ -68,7 +68,6 @@ export default function RegistroUsuario({
     setData((prev) => ({ ...prev, [field]: value }));
   };
 
-  //  VALIDAR INVITACIÓN 
   useEffect(() => {
     if (!token) {
       setLoadingInvitacion(false);
@@ -104,7 +103,6 @@ export default function RegistroUsuario({
     validarInvitacion();
   }, [token]);
 
-  // SUBMIT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

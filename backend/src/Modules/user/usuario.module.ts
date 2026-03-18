@@ -55,7 +55,6 @@ import { InvitacionesModule } from '../invitaciones/invitacion.module';
     DonacionModule,
     BeneficioModule,
     UsuarioBeneficioModule,
-    
 
     /**
      * Módulo personalizado para manejo de archivos

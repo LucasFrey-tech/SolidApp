@@ -18,7 +18,7 @@ import { RolSecundario } from '../Modules/user/enums/enums';
  * Almacena información adicional sobre la relación (rol, fecha, estado)
  */
 @Entity('empresa_usuario')
-@Unique(['usuario', 'empresa']) // No duplicar mismo usuario-empresa
+@Unique(['usuario', 'empresa'])
 export class EmpresaUsuario {
   @ApiProperty({
     example: 1,
@@ -57,17 +57,17 @@ export class EmpresaUsuario {
   @Column({ type: 'bit', nullable: false, default: true })
   activo: boolean;
 
-
   @ApiProperty({
-  example: "MIEMBRO",
-  description: "Rol del usuario dentro de la empresa"
+    example: 'MIEMBRO',
+    description: 'Rol del usuario dentro de la empresa',
   })
   @Column({
-  type: 'varchar',
-  length: 20,
-  default: RolSecundario.MIEMBRO
+    type: 'varchar',
+    length: 20,
+    default: RolSecundario.MIEMBRO,
   })
   rol: RolSecundario;
+
   // ==================== RELACIONES ====================
 
   @ApiProperty({

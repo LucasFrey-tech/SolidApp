@@ -53,7 +53,6 @@ export default function Navbar() {
     };
   }, [profileOpen]);
 
-  //traer los puntos
   useEffect(() => {
     const fetchPoints = async () => {
       if (!user) {

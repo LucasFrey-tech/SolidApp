@@ -17,7 +17,6 @@ export default function InvitarUsuariosModal({
   const [cantidad, setCantidad] = useState<number | null>(null);
   const [emails, setEmails] = useState<string[]>([]);
 
-  // Resetear el estado cada vez que se abre el modal
   useEffect(() => {
     if (open) {
       setCantidad(null);

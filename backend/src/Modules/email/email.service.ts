@@ -34,18 +34,14 @@ export class EmailService {
     await this.transporter.sendMail(mailOptions);
   }
 
-  async sendInvitationEmail(
-  to: string,
-  token: string
-): Promise<void> {
+  async sendInvitationEmail(to: string, token: string): Promise<void> {
+    const inviteLink = `http://localhost:3000/login?token=${token}`;
 
-  const inviteLink = `http://localhost:3000/login?token=${token}`;
-
-  const mailOptions = {
-    from: '"SolidApp" <noreply@solidapp.com>',
-    to,
-    subject: 'Invitación a SolidApp',
-    html: `
+    const mailOptions = {
+      from: '"SolidApp" <noreply@solidapp.com>',
+      to,
+      subject: 'Invitación a SolidApp',
+      html: `
       <h2>Te invitaron a SolidApp</h2>
 
       <p>Hacé click en el siguiente enlace para completar tu registro:</p>
@@ -54,9 +50,8 @@ export class EmailService {
 
       <p>Este enlace expira en 48 horas.</p>
     `,
-  };
+    };
 
-  await this.transporter.sendMail(mailOptions);
-}
-
+    await this.transporter.sendMail(mailOptions);
+  }
 }
