@@ -23,7 +23,7 @@ import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
 import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.dto';
 import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity';
 import { Usuario } from '../../Entities/usuario.entity';
-import { Rol } from '../user/enums/enums';
+import { Rol, RolSecundario } from '../user/enums/enums';
 import { HashService } from '../../common/bcryptService/hashService';
 
 /**
@@ -279,6 +279,7 @@ export class PerfilOrganizacionService {
         usuario: { id: savedGestor.id },
         organizacion: { id: savedOrganizacion.id },
         activo: true,
+        rol: RolSecundario.GESTOR,
       });
 
       await orgUsuarioRepo.save(vinculo);

@@ -20,7 +20,7 @@ import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
 import {Usuario } from '../../Entities/usuario.entity';
 
 import { HashService } from '../../common/bcryptService/hashService';
-import { Rol } from '../user/enums/enums';
+import { Rol, RolSecundario } from '../user/enums/enums';
 
 /**
  * ============================================================
@@ -234,6 +234,7 @@ export class EmpresaService {
         usuario: { id: savedGestor.id },
         empresa: { id: savedEmpresa.id },
         activo: true,
+        rol: RolSecundario.GESTOR,
       });
 
       await empresaUsuarioRepo.save(vinculo);
