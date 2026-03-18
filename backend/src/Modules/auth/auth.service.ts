@@ -20,7 +20,7 @@ import { JwtPayload } from './dto/token_payload';
 import { GestionTipo } from './dto/gestion.enum';
 import { InvitacionesService } from '../invitaciones/invitacion.service';
 import { GestionDetector } from './estrategias/gestion/gestion_detector';
-import { Invitacion } from '../../Entities/invitacion.entity';
+
 import { ResponseUsuarioDto } from '../user/dto/response_usuario.dto';
 
 @Injectable()
@@ -106,6 +106,12 @@ export class AuthService {
       documento: dto.documento,
       rol: Rol.USUARIO,
     });
+
+    const tokenPayload = this.createPayload(usuario.id, usuario.rol);
+
+    this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
+
+    return this.buildToken(tokenPayload);
   }
 
   const tokenPayload = this.createPayload(usuario.id, usuario.rol);

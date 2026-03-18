@@ -22,7 +22,6 @@ export class LoginDto {
   @IsString()
   @MinLength(6)
   clave: string;
-
 }
 
 export class RegisterDto {

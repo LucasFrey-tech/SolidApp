@@ -1,9 +1,6 @@
 import { OrganizacionSummary } from "../organizaciones";
 import { CampaignEstado } from "./enum";
 
-/* ===============================
-   CAMPAIGN BASE
-================================ */
 export interface Campaign {
   id: number;
   imagenPortada?: string;
@@ -24,9 +21,6 @@ export interface Campaign {
   organizacion: OrganizacionSummary;
 }
 
-/* ===============================
-   CREATE REQUEST
-================================ */
 export interface CampaignCreateRequest {
   titulo: string;
   imagen?: string;
@@ -41,9 +35,6 @@ export interface CampaignCreateRequest {
   estado?: CampaignEstado; 
 }
 
-/* ===============================
-   UPDATE REQUEST
-================================ */
 export interface CampaignUpdateRequest {
   titulo?: string;
   descripcion?: string;
@@ -57,16 +48,10 @@ export interface CampaignUpdateRequest {
   puntos?: number;
 }
 
-/* ===============================
-   DETALLE
-================================ */
 export interface CampaignDetalle extends Campaign {
   imagenes: CampaignImagen[];
 }
 
-/* ===============================
-   IMAGEN
-================================ */
 export interface CampaignImagen {
   id: number;
   url: string;

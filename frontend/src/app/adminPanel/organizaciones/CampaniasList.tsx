@@ -17,9 +17,6 @@ export default function CampaniasList() {
   const [loading, setLoading] = useState(true);
   const [campaniasCount, setCampaniasCount] = useState(0);
 
-  /* ===============================
-     FETCH
-  ================================ */
   useEffect(() => {
     async function fetchCampanias() {
       setLoading(true);
@@ -44,9 +41,7 @@ export default function CampaniasList() {
     fetchCampanias();
   }, [page]);
 
-  /* ===============================
-     BUSCADOR
-  ================================ */
+  
   const campaniasFiltradas = useMemo(() => {
     if (!search.trim()) return campanias;
 
@@ -64,9 +59,6 @@ export default function CampaniasList() {
 
   const totalPages = Math.ceil(campaniasCount / PAGE_SIZE) || 1;
 
-  /* ===============================
-     UPDATE ESTADO REAL EN DB
-  ================================ */
   const updateEstado = async (camp: Campaign, nuevoEstado: CampaignEstado) => {
     const confirm = await Swal.fire({
       title:

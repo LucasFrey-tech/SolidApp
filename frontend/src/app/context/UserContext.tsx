@@ -13,6 +13,7 @@ import { Rol } from "@/API/types/auth";
 import { GestionTipo } from "@/API/types/gestion/enum";
 import { baseApi } from "@/API/baseApi";
 
+
 export interface User {
   sub: number;
   email: string | undefined;

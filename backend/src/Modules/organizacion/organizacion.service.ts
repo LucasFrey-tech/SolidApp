@@ -66,7 +66,7 @@ export class PerfilOrganizacionService {
     private readonly usuarioService: UsuarioService,
     private readonly hashService: HashService,
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   /**
    * Obtiene organizaciones paginadas con búsqueda opcional.
@@ -327,15 +327,15 @@ export class PerfilOrganizacionService {
       ...updateDto,
       contacto: updateDto.contacto
         ? {
-          ...organizacionActual.organizacion.contacto,
-          ...updateDto.contacto,
-        }
+            ...organizacionActual.organizacion.contacto,
+            ...updateDto.contacto,
+          }
         : undefined,
       direccion: updateDto.direccion
         ? {
-          ...organizacionActual.organizacion.direccion,
-          ...updateDto.direccion,
-        }
+            ...organizacionActual.organizacion.direccion,
+            ...updateDto.direccion,
+          }
         : undefined,
 
       actualizado_por: { id: usuarioId },
@@ -433,40 +433,40 @@ export class PerfilOrganizacionService {
 
     dto.contacto = organizacion.contacto
       ? {
-        id: organizacion.contacto.id,
-        correo: organizacion.contacto.correo,
-        telefono: organizacion.contacto.telefono,
-        prefijo: organizacion.contacto.prefijo,
-      }
+          id: organizacion.contacto.id,
+          correo: organizacion.contacto.correo,
+          telefono: organizacion.contacto.telefono,
+          prefijo: organizacion.contacto.prefijo,
+        }
       : undefined;
 
     dto.direccion = organizacion.direccion
       ? {
-        id: organizacion.direccion.id,
-        calle: organizacion.direccion.calle,
-        numero: organizacion.direccion.numero,
-        provincia: organizacion.direccion.provincia,
-        ciudad: organizacion.direccion.ciudad,
-        codigo_postal: organizacion.direccion.codigo_postal,
-      }
+          id: organizacion.direccion.id,
+          calle: organizacion.direccion.calle,
+          numero: organizacion.direccion.numero,
+          provincia: organizacion.direccion.provincia,
+          ciudad: organizacion.direccion.ciudad,
+          codigo_postal: organizacion.direccion.codigo_postal,
+        }
       : undefined;
 
     dto.creado_por = organizacion.creado_por
       ? {
-        id: organizacion.creado_por.id,
-        nombre: organizacion.creado_por.nombre,
-        apellido: organizacion.creado_por.apellido,
-        email: organizacion.creado_por.contacto?.correo,
-      }
+          id: organizacion.creado_por.id,
+          nombre: organizacion.creado_por.nombre,
+          apellido: organizacion.creado_por.apellido,
+          email: organizacion.creado_por.contacto?.correo,
+        }
       : undefined;
 
     dto.actualizado_por = organizacion.actualizado_por
       ? {
-        id: organizacion.actualizado_por.id,
-        nombre: organizacion.actualizado_por.nombre,
-        apellido: organizacion.actualizado_por.apellido,
-        email: organizacion.actualizado_por.contacto?.correo,
-      }
+          id: organizacion.actualizado_por.id,
+          nombre: organizacion.actualizado_por.nombre,
+          apellido: organizacion.actualizado_por.apellido,
+          email: organizacion.actualizado_por.contacto?.correo,
+        }
       : undefined;
 
     dto.fecha_registro = organizacion.fecha_registro;

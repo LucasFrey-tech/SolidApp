@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { CampaignCreateRequest } from "@/API/types/campañas/campaigns";
 import styles from "@/styles/Paneles/campaignPanel.module.css";
 import { NumericInput } from "@/components/Utils/NumericInputProp";
+import Image from "next/image";
 
 export type CampaignFormValues = Omit<
   CampaignCreateRequest,
@@ -260,7 +261,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
                   key={`existing-${index}`}
                   className={styles.previewWrapper}
                 >
-                  <img src={src} className={styles.previewImage} />
+                  <Image src={src} alt='Previsualización' className={styles.previewImage} />
                   <button
                     type="button"
                     className={styles.removeButton}
@@ -273,7 +274,7 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
 
               {previews.map((src, index) => (
                 <div key={`new-${index}`} className={styles.previewWrapper}>
-                  <img src={src} className={styles.previewImage} />
+                  <Image src={src} alt='Previsualización' className={styles.previewImage} />
                   <button
                     type="button"
                     className={styles.removeButton}

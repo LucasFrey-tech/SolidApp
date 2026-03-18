@@ -32,35 +32,36 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<UsuarioAutenticado> {
+    this.logger.debug(`Validando token para userId=${payload.sub}`);
 
-  try {
-    const usuario = await this.usuarioService.findOne(payload.sub);
+    try {
+      const usuario = await this.usuarioService.findOne(payload.sub);
 
-    if (!usuario) {
-      throw new UnauthorizedException('Usuario no encontrado');
+      if (!usuario) {
+        throw new UnauthorizedException('Usuario no encontrado');
+      }
+
+      if (!usuario.habilitado) {
+        throw new UnauthorizedException('Usuario deshabilitado');
+      }
+
+      this.usuarioService
+        .actualizarUltimaConexion(usuario.id)
+        .catch((error: Error) => {
+          this.logger.error(
+            `Error actualizando última conexión: ${error.message}`,
+          );
+        });
+
+      return usuario;
+    } catch (error) {
+      if (error instanceof Error) {
+        this.logger.error(`Error validando token: ${error.message}`);
+      } else {
+        this.logger.error('Error desconocido validando token');
+      }
+
+      throw new UnauthorizedException('Token inválido');
     }
-
-    if (!usuario.habilitado) {
-      throw new UnauthorizedException('Usuario deshabilitado');
-    }
-
-    this.usuarioService
-      .actualizarUltimaConexion(usuario.id)
-      .catch((error: Error) => {
-        this.logger.error(
-          `Error actualizando última conexión: ${error.message}`,
-        );
-      });
-
-    return usuario;
-  } catch (error) {
-    if (error instanceof Error) {
-      this.logger.error(`Error validando token: ${error.message}`);
-    } else {
-      this.logger.error('Error desconocido validando token');
-    }
-
-    throw new UnauthorizedException('Token inválido');
   }
-}
 }

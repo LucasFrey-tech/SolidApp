@@ -1,6 +1,11 @@
 import {
-  IsOptional, IsString, IsEmail,
-  MinLength, IsNotEmpty, MaxLength, Matches,
+  IsOptional,
+  IsString,
+  IsEmail,
+  MinLength,
+  IsNotEmpty,
+  MaxLength,
+  Matches,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -50,7 +55,9 @@ export class CreateOrganizacionDto {
   @ApiProperty({ example: '30123456789' })
   @IsString()
   @IsNotEmpty()
-  @Matches(/^\d{11}$/, { message: 'El CUIT debe tener exactamente 11 dígitos numéricos' })
+  @Matches(/^\d{11}$/, {
+    message: 'El CUIT debe tener exactamente 11 dígitos numéricos',
+  })
   cuit_organizacion: string;
 
   @ApiProperty({ example: 'Fundación Ayudar' })

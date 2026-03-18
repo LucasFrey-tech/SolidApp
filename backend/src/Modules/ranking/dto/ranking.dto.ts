@@ -6,19 +6,15 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 
 export class RankingDTO {
-  /** ID del Usuario */
   @ApiProperty({ example: 1 })
   id_usuario: number;
 
-  /** Cantidad de Puntos */
   @ApiProperty({ example: 1500 })
   puntos: number;
 
-  /** Nombre del Usuario */
   @ApiProperty({ example: 'Pepe' })
   nombre: string;
 
-  /** Apellido del Usuario */
   @ApiProperty({ example: 'Argento' })
   apellido: string;
 }
