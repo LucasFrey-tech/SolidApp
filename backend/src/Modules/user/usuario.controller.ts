@@ -9,7 +9,6 @@ import {
   ParseIntPipe,
   Query,
   Req,
-  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
@@ -70,7 +69,7 @@ export class UsuarioController {
   }
 
   @Patch('credenciales')
-  @Auth(Rol.USUARIO)
+  @Auth(Rol.USUARIO, Rol.ADMIN, Rol.GESTOR)
   @ApiOperation({ summary: 'Actualizar mi email y/o contraseña' })
   async updateMisCredenciales(
     @Req() req: RequestConUsuario,
@@ -79,8 +78,8 @@ export class UsuarioController {
     return this.userService.updateCredenciales(req.user.id, dto);
   }
 
-  @Auth(Rol.USUARIO)
   @Get('puntos')
+  @Auth(Rol.USUARIO)
   @ApiOperation({ summary: 'Obtener mis puntos' })
   async getMisPuntos(@Req() req: RequestConUsuario) {
     return this.userService.getPoints(req.user.id);
@@ -128,18 +127,6 @@ export class UsuarioController {
   ) {
     return this.userService.canjearCupon(req.user.id, cuponId, cantidad);
   }
-
-
-
-  @Get('test-relacion')
-  @AuthRelacion('GESTOR', 'MIEMBRO')
-  testRelacion(@Req() req: RequestConUsuario) {
-    return {
-      message: 'El usuario tiene relación y rol permitido',
-      relacion: req.relacion,
-    };
-  }
-  
 
   // Panel Admin
 

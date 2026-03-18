@@ -29,7 +29,8 @@ import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
-import { Rol } from '../user/enums/enums';
+import { Rol, RolSecundario } from '../user/enums/enums';
+import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
 
 /**
  * ============================================================
@@ -75,8 +76,8 @@ export class EmpresaController {
    * - items: lista de empresas
    * - total: cantidad total de registros
    */
-  @Public()
   @Get('list')
+  @Public()
   @ApiOperation({ summary: 'Listar empresas paginadas' })
   @ApiResponse({
     status: 200,
@@ -112,8 +113,9 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
-  @Auth(Rol.GESTOR)
   @Get('perfil')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener una empresa por ID' })
   @ApiResponse({
     status: 200,
@@ -130,8 +132,8 @@ export class EmpresaController {
     return this.empresasService.getEmpresaByUsuario(req.user.id);
   }
 
-  @Public()
   @Post('registro')
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Registrar nueva empresa con su gestor' })
   @ApiBody({ type: CreateEmpresaDTO })
@@ -161,8 +163,9 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
-  @Auth(Rol.GESTOR)
   @Patch('perfil')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   @ApiOperation({ summary: 'Actualizar una empresa' })
   @ApiBody({ type: UpdateEmpresaDTO })
   @ApiResponse({
@@ -209,8 +212,9 @@ export class EmpresaController {
     return this.empresasService.update(req.user.id, updateDto ?? {});
   }
 
-  @Auth(Rol.GESTOR)
   @Get('cupones')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener los cupones paginados de una empresa' })
   @ApiResponse({
     status: 200,
@@ -229,8 +233,9 @@ export class EmpresaController {
     return this.empresasService.getCupones(req.user.id, page, limit);
   }
 
-  @Auth(Rol.GESTOR)
   @Post('cupones')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   async createCupon(
     @Req() req: RequestConUsuario,
     @Body() dto: CreateBeneficiosDTO,
@@ -238,8 +243,9 @@ export class EmpresaController {
     return await this.empresasService.createCupon(req.user.id, dto);
   }
 
-  @Auth(Rol.GESTOR)
   @Patch('cupones/:cuponId')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   async updateCupon(
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Body() dto: UpdateBeneficiosDTO,
@@ -263,8 +269,8 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
-  @Auth(Rol.ADMIN)
   @Delete(':id/borrar')
+  @Auth(Rol.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deshabilitar una empresa' })
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
@@ -286,8 +292,8 @@ export class EmpresaController {
    * @throws BadRequestException
    * Si la empresa ya está activa.
    */
-  @Auth(Rol.ADMIN)
   @Patch(':id/restaurar')
+  @Auth(Rol.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Restaurar una empresa deshabilitada' })
   async restore(@Param('id', ParseIntPipe) id: number): Promise<void> {

@@ -25,10 +25,9 @@ import {
 import { PerfilOrganizacionService } from './organizacion.service';
 import { UpdateOrganizacionDto } from './dto/update_organizacion.dto';
 import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
-import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { ResponseOrganizationPaginatedDto } from './dto/response_organizacion_paginated.dto';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
-import { Rol } from '../user/enums/enums';
+import { Rol, RolSecundario } from '../user/enums/enums';
 import { ResponseCampaignDetalleDto } from '../campaign/dto/response_campaignDetalle.dto';
 import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
 import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
@@ -42,6 +41,7 @@ import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
 import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.dto';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
 import { CreateOrganizacionDto } from './dto/create_organizacion.dto';
+import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
 
 /**
  * Controlador encargado de gestionar las operaciones HTTP
@@ -74,8 +74,9 @@ export class OrganizacionesController {
    * @returns Organización encontrada
    * @throws NotFoundException si no existe
    */
-  @Auth(Rol.GESTOR)
   @Get('perfil')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener organización por ID' })
   @ApiParam({
     name: 'id',
@@ -95,8 +96,9 @@ export class OrganizacionesController {
     return this.organizacionService.getOrganizacionByUsuario(req.user.id);
   }
 
-  @Auth(Rol.GESTOR)
   @Get('campanas')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener campañas de la organizacion' })
   @ApiResponse({
     status: 200,
@@ -146,8 +148,9 @@ export class OrganizacionesController {
    * @param {Express.Multer.File} files - Imagenes de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña creada
    */
-  @Auth(Rol.GESTOR)
   @Post('campana')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear nueva Campaña Solidaria' })
   @ApiBody({
@@ -207,8 +210,9 @@ export class OrganizacionesController {
    * @param {UpdateCampaignsDto} updateCampaignsDto - Datos actualizados de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
    */
-  @Auth(Rol.GESTOR)
   @Patch('campana')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   @ApiOperation({ summary: 'Actualizar Campaña Solidaria existente' })
   @ApiParam({
     name: 'id',
@@ -263,8 +267,9 @@ export class OrganizacionesController {
     );
   }
 
-  @Auth(Rol.GESTOR)
   @Get('mis-donaciones')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
   @ApiResponse({
     status: 200,
@@ -300,8 +305,9 @@ export class OrganizacionesController {
    * @param {string} motivo - Motivo del rechazo (opcional, requerido si estado=RECHAZADA).
    * @returns {Promise<void>} Resultado de la operación.
    */
-  @Auth(Rol.GESTOR)
   @Patch('donaciones/:id')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({
     summary: 'Actualizar el estado de la donación',
     description: 'Modifica el estado de una donación (ej. RECHAZADA)',
@@ -356,8 +362,9 @@ export class OrganizacionesController {
    * @param updateDto Datos a modificar
    * @returns Organización actualizada
    */
-  @Auth(Rol.GESTOR)
   @Patch('perfil')
+  @Auth(Rol.GESTOR)
+  @AuthRelacion(RolSecundario.GESTOR)
   @ApiOperation({ summary: 'Actualizar una organización' })
   @ApiParam({
     name: 'id',
@@ -375,31 +382,6 @@ export class OrganizacionesController {
     @Body() updateDto: UpdateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
     return this.organizacionService.update(updateDto, req.user.id);
-  }
-
-  /**
-   * Permite actualizar el correo y/o contraseña
-   * de la organización.
-   *
-   * @param id ID de la organización
-   * @param dto Datos de actualización de credenciales
-   * @returns Usuario actualizado + nuevo token JWT
-   */
-  @Auth(Rol.GESTOR)
-  @Patch('credenciales')
-  @ApiOperation({
-    summary: 'Actualizar correo y/o contraseña de la organización',
-  })
-  @ApiBody({ type: UpdateCredencialesDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Credenciales actualizadas correctamente',
-  })
-  async updateMisCredenciales(
-    @Req() req: RequestConUsuario,
-    @Body() dto: UpdateCredencialesDto,
-  ) {
-    return await this.organizacionService.updateCredenciales(req.user.id, dto);
   }
 
   // ====== Panel Admin ======

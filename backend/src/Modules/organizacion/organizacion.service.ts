@@ -14,7 +14,6 @@ import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
 import { CampaignsService } from '../campaign/campaign.service';
 import { DonacionService } from '../donation/donacion.service';
 import { UsuarioService } from '../user/usuario.service';
-import { UpdateCredencialesDto } from '../user/dto/panelUsuario.dto';
 import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
 import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
 import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
@@ -352,13 +351,6 @@ export class PerfilOrganizacionService {
     this.logger.log(`Organización ${organizacionId} actualizada`);
 
     return this.mapToResponseDto(updated);
-  }
-
-  /**
-   * Actualiza las credenciales del usuario
-   */
-  async updateCredenciales(cuentaId: number, dto: UpdateCredencialesDto) {
-    return this.usuarioService.updateCredenciales(cuentaId, dto);
   }
 
   /**

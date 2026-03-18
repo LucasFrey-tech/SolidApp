@@ -17,7 +17,7 @@ import { BeneficioService } from '../benefit/beneficio.service';
 import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
-import {Usuario } from '../../Entities/usuario.entity';
+import { Usuario } from '../../Entities/usuario.entity';
 
 import { HashService } from '../../common/bcryptService/hashService';
 import { Rol, RolSecundario } from '../user/enums/enums';
@@ -33,14 +33,12 @@ import { Rol, RolSecundario } from '../user/enums/enums';
  * - CRUD de empresas
  * - Soft delete (deshabilitar / restaurar)
  * - Paginación y búsqueda
- * - Gestión de credenciales (correo y contraseña)
  * - Manejo de imágenes asociadas
  * - Generación de JWT tras cambios sensibles
  *
  * Seguridad implementada:
  * - Hash de contraseñas con bcrypt
  * - Validación de contraseña actual antes de modificarla
- * - Emisión de nuevo token JWT tras actualización de credenciales
  *
  * Arquitectura:
  * - Patrón Service + Repository (TypeORM)
