@@ -59,8 +59,6 @@ export default function EmpresaInfo() {
     try {
       const data = await baseApi.empresa.getPerfil();
 
-      console.log("Logo recibido:", data.logo);
-
       setOrg(data);
       setLogoPreview(data.logo ?? "");
 

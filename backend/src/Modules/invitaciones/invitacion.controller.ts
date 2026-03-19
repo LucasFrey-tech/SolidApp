@@ -41,7 +41,6 @@ export class InvitacionesController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ) {
-    console.log('ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', empresaId);
     return this.invitacionesService.listarInvitacionesEmpresa(
       empresaId,
       page,
@@ -89,7 +88,6 @@ export class InvitacionesController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ) {
-    console.log('ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', organizacionId);
     return this.invitacionesService.listarInvitacionesOrganizacion(
       organizacionId,
       page,

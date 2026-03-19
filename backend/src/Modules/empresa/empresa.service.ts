@@ -242,7 +242,6 @@ export class EmpresaService {
           );
         }
 
-        console.log('ID INVITACION: ', invitacion.id);
         await this.invitacionesService.marcarAceptada(invitacion.id);
       }
 

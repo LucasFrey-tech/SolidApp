@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../../app.module';
-import { Rol }  from '../../Modules/user/enums/enums';
+import { Rol } from '../../Modules/user/enums/enums';
 import * as bcrypt from 'bcrypt';
 import { UsuarioService } from '../../Modules/user/usuario.service';
 

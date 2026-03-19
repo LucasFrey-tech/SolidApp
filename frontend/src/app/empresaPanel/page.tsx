@@ -119,7 +119,6 @@ export default function OrganizationCouponsPage() {
     }
   };
   
-  console.log("EMPRESA ID: ", empresaId)
   return (
     <div className={styles.container}>
       <div className={styles.header}>

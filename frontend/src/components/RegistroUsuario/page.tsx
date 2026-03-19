@@ -76,12 +76,10 @@ export default function RegistroUsuario({
 
     const validarInvitacion = async () => {
       try {
-        console.log("TOKEN:", token);
 
         const invitacion =
           await baseApi.invitacionesOrg.validarToken(token);
 
-        console.log("INVITACION:", invitacion);
 
         setData((prev) => ({
           ...prev,
@@ -135,7 +133,6 @@ export default function RegistroUsuario({
 
       setErrors({});
     } catch (error: any) {
-      console.log("ERROR BACKEND:", error);
 
       if (error.errors) {
         const newErrors: Record<string, string> = {};
