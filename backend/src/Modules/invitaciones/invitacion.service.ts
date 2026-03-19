@@ -49,7 +49,7 @@ export class InvitacionesService {
         order: { fecha_creacion: 'DESC' },
       });
 
-      if (invitacionExistente && !invitacionExistente.fecha_registro) {
+      if (invitacionExistente && !invitacionExistente.expirada) {
         const ahora = new Date();
 
         if (
@@ -110,7 +110,6 @@ export class InvitacionesService {
     const pendientes = await this.invitacionRepo.count({
       where: {
         organizacionId,
-        fecha_registro: IsNull(),
         fecha_expiracion: MoreThan(new Date()),
         expirada: false,
       },
@@ -139,7 +138,7 @@ export class InvitacionesService {
         order: { fecha_creacion: 'DESC' },
       });
 
-      if (invitacionExistente && !invitacionExistente.fecha_registro) {
+      if (invitacionExistente && !invitacionExistente.expirada) {
         const ahora = new Date();
 
         if (

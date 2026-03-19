@@ -7,7 +7,6 @@ export type Invitacion = {
   invitadorID: number;
   rol: string;
   expirada: boolean;
-  fecha_registro?: string;
   fecha_creacion: string;
   fecha_expiracion?: string;
   estado: "pendiente" | "expirada" | "usada";
