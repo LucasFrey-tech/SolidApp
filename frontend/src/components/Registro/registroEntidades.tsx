@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import Image from "next/image";
 import styles from "../../styles/login-registro/registro.module.css";
 import { baseApi } from "@/API/baseApi";
 import { NumericInput } from "../Utils/NumericInputProp";
 import Swal from "sweetalert2";
+import { useSearchParams } from 'next/navigation';
 
 /* ==================== UTILIDAD CUIT ==================== */
 
@@ -302,6 +303,9 @@ const initialOrganizacionData: OrganizacionData = {
 export default function RegistroEntidades() {
   const [step, setStep] = useState<Step>("select");
 
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token')
+
   const [empresaData, setEmpresaData] =
     useState<EmpresaData>(initialEmpresaData);
   const [organizacionData, setOrganizacionData] = useState<OrganizacionData>(
@@ -313,6 +317,43 @@ export default function RegistroEntidades() {
 
   const [errors, setErrors] = useState<Errors>({});
   const [touched, setTouched] = useState<Touched>({});
+
+  const [correoBloqueado, setCorreoBloqueado] = useState(false);
+  const [loadingInvitacion, setLoadingInvitacion] = useState(!!token);
+
+  useEffect(() => {
+    if (!token) {
+      setLoadingInvitacion(false);
+      return;
+    }
+
+    const validarInvitacion = async () => {
+      try {
+        const invitacion = await baseApi.invitacionesOrg.validarToken(token);
+
+        setEmpresaData(prev => ({
+          ...prev,
+          correo: invitacion.correo,
+        }));
+        setOrganizacionData(prev => ({
+          ...prev,
+          correo: invitacion.correo,
+        }));
+
+        setCorreoBloqueado(true);
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Invitación inválida",
+          text: "La invitación no es válida o expiró",
+        });
+      } finally {
+        setLoadingInvitacion(false);
+      }
+    };
+
+    validarInvitacion();
+  }, [token]);
 
   const getCurrentData = () => {
     if (step === "empresa") return empresaData;
@@ -468,7 +509,7 @@ export default function RegistroEntidades() {
     try {
       if (step === "empresa") {
         const { confirmarClave, ...payload } = empresaData;
-        await baseApi.empresa.registrarEmpresa(payload);
+        await baseApi.empresa.registrarEmpresa({ ...payload, token: token || undefined });
       }
 
       if (step === "organizacion") {
@@ -477,6 +518,7 @@ export default function RegistroEntidades() {
         await baseApi.organizacion.registrarOrganizacion({
           ...rest,
           cuit_organizacion: cuit_organizacion,
+          token: token || undefined,
         });
       }
 

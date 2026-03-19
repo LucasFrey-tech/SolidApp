@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -24,6 +25,7 @@ import { OrganizacionUsuario } from '../../Entities/organizacion_usuario.entity'
 import { Usuario } from '../../Entities/usuario.entity';
 import { Rol, RolSecundario } from '../user/enums/enums';
 import { HashService } from '../../common/bcryptService/hashService';
+import { InvitacionesService } from '../invitaciones/invitacion.service';
 
 /**
  * ============================================================
@@ -65,6 +67,7 @@ export class PerfilOrganizacionService {
     private readonly usuarioService: UsuarioService,
     private readonly hashService: HashService,
     private readonly dataSource: DataSource,
+    private readonly invitacionesService: InvitacionesService,
   ) {}
 
   /**
@@ -273,6 +276,20 @@ export class PerfilOrganizacionService {
 
       const savedOrganizacion = await organizacionRepo.save(organizacion);
       this.logger.log(`Organización creada con ID ${savedOrganizacion.id}`);
+
+      if (dto.token) {
+        const invitacion = await this.invitacionesService.buscarPorToken(
+          dto.token,
+        );
+        if (!invitacion) throw new BadRequestException('Invitación inválida');
+        if (invitacion.correo !== dto.correo) {
+          throw new BadRequestException(
+            'El correo no coincide con la invitación',
+          );
+        }
+
+        await this.invitacionesService.marcarAceptada(invitacion.id);
+      }
 
       const vinculo = orgUsuarioRepo.create({
         usuario: { id: savedGestor.id },

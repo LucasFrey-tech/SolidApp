@@ -68,7 +68,7 @@ export class Empresa {
     example: 'GlobalServ',
     description: 'Nombre comercial de la empresa',
   })
-  @Column({ type: 'varchar', length: 15, nullable: false })
+  @Column({ type: 'varchar', length: 100, nullable: false })
   nombre_empresa: string;
 
   @ApiProperty({

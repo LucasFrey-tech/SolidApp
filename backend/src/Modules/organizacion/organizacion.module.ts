@@ -15,6 +15,7 @@ import {
   UpdateContactoOrganizacionDto,
   UpdateDireccionOrganizacionDto,
 } from './dto/update_organizacion.dto';
+import { InvitacionesModule } from '../invitaciones/invitacion.module';
 
 /**
  * OrganizationModule
@@ -77,6 +78,7 @@ import {
     UsuarioModule,
     CampaignModule,
     DonacionModule,
+    InvitacionesModule,
   ],
 
   /**

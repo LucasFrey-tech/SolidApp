@@ -57,6 +57,7 @@ export interface EmpresaRegistroRequest {
   calle: string;
   numero: string;
   web?: string;
+  token?: string;
 }
 
 export interface EmpresaSummary {

@@ -58,10 +58,10 @@ export class RegisterDto {
 
   @ApiProperty({
     example: 'a8sd7a98sd7as9d87',
-    required: false
+    required: false,
   })
-  @IsOptional()   
-  @IsString()    
+  @IsOptional()
+  @IsString()
   token?: string;
 }
 

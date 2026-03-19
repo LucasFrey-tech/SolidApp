@@ -23,7 +23,7 @@ export class InvitacionesService {
     private organizacionUsuarioRepo: Repository<OrganizacionUsuario>,
 
     private readonly emailService: EmailService,
-  ) { }
+  ) {}
 
   async crearInvitacionesEmpresa(
     correos: string[],
@@ -192,10 +192,7 @@ export class InvitacionesService {
     };
   }
 
-  async invitarEntidad(
-    correos: string[],
-    usuarioInvitadorId: number,
-  ) {
+  async invitarEntidad(correos: string[], usuarioInvitadorId: number) {
     const correosExistentes: string[] = [];
     const invitaciones: Invitacion[] = [];
 
@@ -240,7 +237,10 @@ export class InvitacionesService {
       take: limit,
     });
 
-    return { items: items.map(inv => ({ ...inv, estado: inv.estado })), total };
+    return {
+      items: items.map((inv) => ({ ...inv, estado: inv.estado })),
+      total,
+    };
   }
 
   async listarInvitacionesEmpresa(

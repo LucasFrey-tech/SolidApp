@@ -17,7 +17,7 @@ import { Auth } from '../auth/decoradores/auth.decorador';
 
 @Controller('invitaciones')
 export class InvitacionesController {
-  constructor(private readonly invitacionesService: InvitacionesService) { }
+  constructor(private readonly invitacionesService: InvitacionesService) {}
 
   @Post('empresa/:empresaId')
   @AuthRelacion(RolSecundario.GESTOR)
@@ -70,10 +70,7 @@ export class InvitacionesController {
     @Body() dto: CreateInvitacionDto,
     @Req() req: RequestConUsuario,
   ) {
-    return this.invitacionesService.invitarEntidad(
-      dto.correos,
-      req.user.id,
-    );
+    return this.invitacionesService.invitarEntidad(dto.correos, req.user.id);
   }
 
   @Get('entidad')

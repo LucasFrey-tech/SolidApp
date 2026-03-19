@@ -9,6 +9,7 @@ import { BeneficioModule } from '../benefit/beneficio.module';
 import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
 import { HashService } from '../../common/bcryptService/hashService';
 import { Usuario } from '../../Entities/usuario.entity';
+import { InvitacionesModule } from '../invitaciones/invitacion.module';
 
 /**
  * ============================================================
@@ -68,6 +69,7 @@ import { Usuario } from '../../Entities/usuario.entity';
     TypeOrmModule.forFeature([Empresa, EmpresaUsuario, Usuario]),
     UsuarioModule,
     BeneficioModule,
+    InvitacionesModule,
   ],
 
   /**

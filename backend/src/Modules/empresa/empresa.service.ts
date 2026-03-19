@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsWhere, Like, Repository } from 'typeorm';
@@ -21,6 +22,7 @@ import { Usuario } from '../../Entities/usuario.entity';
 
 import { HashService } from '../../common/bcryptService/hashService';
 import { Rol, RolSecundario } from '../user/enums/enums';
+import { InvitacionesService } from '../invitaciones/invitacion.service';
 
 /**
  * ============================================================
@@ -60,6 +62,7 @@ export class EmpresaService {
     private readonly beneficioService: BeneficioService,
     private readonly dataSource: DataSource,
     private readonly hashService: HashService,
+    private readonly invitacionesService: InvitacionesService,
   ) {}
 
   /**
@@ -227,6 +230,21 @@ export class EmpresaService {
 
       const savedEmpresa = await empresaRepo.save(empresa);
       this.logger.log(`Empresa creada con ID ${savedEmpresa.id}`);
+
+      if (dto.token) {
+        const invitacion = await this.invitacionesService.buscarPorToken(
+          dto.token,
+        );
+        if (!invitacion) throw new BadRequestException('Invitación inválida');
+        if (invitacion.correo !== dto.correo) {
+          throw new BadRequestException(
+            'El correo no coincide con la invitación',
+          );
+        }
+
+        console.log('ID INVITACION: ', invitacion.id);
+        await this.invitacionesService.marcarAceptada(invitacion.id);
+      }
 
       const vinculo = empresaUsuarioRepo.create({
         usuario: { id: savedGestor.id },

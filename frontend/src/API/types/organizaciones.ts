@@ -37,6 +37,7 @@ export interface OrganizacionRegistroRequest {
   calle: string;
   numero: string;
   web?: string;
+  token?: string;
 }
 
 /**

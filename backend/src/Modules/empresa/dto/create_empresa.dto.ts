@@ -83,4 +83,12 @@ export class CreateEmpresaDTO {
   @IsString()
   @MaxLength(150)
   web?: string;
+
+  @ApiProperty({
+    example: 'a8sd7a98sd7as9d87',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  token?: string;
 }

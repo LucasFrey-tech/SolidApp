@@ -87,4 +87,12 @@ export class CreateOrganizacionDto {
   @IsString()
   @MaxLength(255)
   web?: string;
+
+  @ApiProperty({
+    example: 'a8sd7a98sd7as9d87',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  token?: string;
 }
