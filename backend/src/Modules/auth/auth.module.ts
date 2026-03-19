@@ -67,7 +67,6 @@ import { RelacionGuard } from './guards/relacion.guard';
     EmpresaGestionStrategy,
     OrganizacionGestionStrategy,
   ],
-  exports: [AuthService, RolesGuard, RelacionGuard,
-    RelacionRolesGuard,],
+  exports: [AuthService, RolesGuard, RelacionGuard, RelacionRolesGuard],
 })
 export class AuthModule {}
