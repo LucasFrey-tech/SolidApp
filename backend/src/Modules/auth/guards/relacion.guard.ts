@@ -5,10 +5,11 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { RequestConUsuario } from '../interfaces/authenticated_request.interface';
+import { RolSecundario } from '../../user/enums/enums';
 
 @Injectable()
 export class RelacionGuard implements CanActivate {
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<RequestConUsuario>();
     const usuario = request.user;
 
@@ -16,8 +17,7 @@ export class RelacionGuard implements CanActivate {
       throw new ForbiddenException('Usuario no autenticado');
     }
 
-    const emp = usuario.empresaUsuario?.[0];
-
+    const emp = usuario.empresaUsuario?.[0] as { rol: RolSecundario; id_empresa: number } | undefined;
     if (emp) {
       request.relacion = {
         rol: emp.rol,
@@ -27,8 +27,7 @@ export class RelacionGuard implements CanActivate {
       return true;
     }
 
-    const org = usuario.organizacionUsuario?.[0];
-
+    const org = usuario.organizacionUsuario?.[0] as { rol: RolSecundario; id_organizacion: number } | undefined;
     if (org) {
       request.relacion = {
         rol: org.rol,
