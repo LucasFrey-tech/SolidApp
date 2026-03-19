@@ -43,6 +43,9 @@ export default function OrganizationCampaignsPage() {
   const [campaignsPage, setCampaignsPage] = useState(1);
   const [campaignsTotalPages, setCampaignsTotalPages] = useState(1);
 
+  const [searchEmail, setSearchEmail] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const [donations, setDonations] = useState<Donation[]>([]);
   const [donationsPage, setDonationsPage] = useState(1);
   const [donationsTotalPages, setDonationsTotalPages] = useState(1);
@@ -50,6 +53,18 @@ export default function OrganizationCampaignsPage() {
   const [open, setOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] =
     useState<CampaignDetalle | null>(null);
+
+  /* ===============================
+     DEBOUNCE SEARCH (🔥 CLAVE)
+  ================================ */
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(searchEmail);
+      setDonationsPage(1);
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [searchEmail]);
 
   /* ===============================
      COLORES DE ESTADO
@@ -109,6 +124,7 @@ export default function OrganizationCampaignsPage() {
     const response = await baseApi.organizacion.getAllPaginatedByOrganizacion(
       donationsPage,
       limit,
+      debouncedSearch, // ✅ usamos debounce
     );
 
     setDonations(
@@ -126,7 +142,7 @@ export default function OrganizationCampaignsPage() {
     if (view === "donations") {
       fetchDonations();
     }
-  }, [organizacionId, donationsPage, view]);
+  }, [organizacionId, donationsPage, view, debouncedSearch]);
 
   const handleAcceptDonation = async (donation: Donation) => {
     const res = await Swal.fire({
@@ -379,6 +395,29 @@ export default function OrganizationCampaignsPage() {
 
       {view === "donations" && (
         <>
+          <div className={styles.searchContainer}>
+            <input
+              type="text"
+              placeholder="Buscar por email..."
+              value={searchEmail}
+              onChange={(e) => setSearchEmail(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+
+          <table className={styles.table}>
+            <tbody>
+              {donations.length === 0 && (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: "center", padding: "1rem" }}>
+                    No se encontraron donaciones
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          {/* 👇 TU TABLA ORIGINAL */}
           <table className={styles.table}>
             <thead>
               <tr>
@@ -403,12 +442,13 @@ export default function OrganizationCampaignsPage() {
 
                   <td>
                     <span
-                      className={`${styles.badge} ${d.estado === DonacionEstado.APROBADA
-                        ? styles.badgeAprobada
-                        : d.estado === DonacionEstado.RECHAZADA
+                      className={`${styles.badge} ${
+                        d.estado === DonacionEstado.APROBADA
+                          ? styles.badgeAprobada
+                          : d.estado === DonacionEstado.RECHAZADA
                           ? styles.badgeRechazada
                           : styles.badgePendiente
-                        }`}
+                      }`}
                     >
                       {DonacionEstado[d.estado]}
                     </span>
@@ -470,9 +510,7 @@ export default function OrganizationCampaignsPage() {
         </>
       )}
 
-      {view === "info" && (
-        <OrganizationInfo></OrganizationInfo>
-      )}
+      {view === "info" && <OrganizationInfo />}
 
       {view === "invitaciones" && (
         <InvitacionesPanel
@@ -492,16 +530,16 @@ export default function OrganizationCampaignsPage() {
           initialValues={
             editingCampaign
               ? {
-                titulo: editingCampaign.titulo,
-                descripcion: editingCampaign.descripcion,
-                objetivo: editingCampaign.objetivo,
-                puntos: editingCampaign.puntos,
-                fecha_Inicio: editingCampaign.fecha_Inicio,
-                fecha_Fin: editingCampaign.fecha_Fin,
-                estado: editingCampaign.estado,
-                imagenesExistentes:
-                  editingCampaign.imagenes?.map((img) => img.url) ?? [],
-              }
+                  titulo: editingCampaign.titulo,
+                  descripcion: editingCampaign.descripcion,
+                  objetivo: editingCampaign.objetivo,
+                  puntos: editingCampaign.puntos,
+                  fecha_Inicio: editingCampaign.fecha_Inicio,
+                  fecha_Fin: editingCampaign.fecha_Fin,
+                  estado: editingCampaign.estado,
+                  imagenesExistentes:
+                    editingCampaign.imagenes?.map((img) => img.url) ?? [],
+                }
               : undefined
           }
           onSubmit={handleSubmitCampaign}

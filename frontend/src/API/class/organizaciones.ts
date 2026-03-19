@@ -10,7 +10,7 @@ import { DonacionEstado } from "../types/donaciones/enum";
 import {
   Organizacion,
   OrganizacionCreateRequest,
-  OrganizacionRegistroRequest,  
+  OrganizacionRegistroRequest,
   OrganizacionUpdateRequest,
 } from "../types/organizaciones";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
@@ -160,15 +160,24 @@ export class OrganizacionesService extends Crud<Organizacion> {
   async getAllPaginatedByOrganizacion(
     page = 1,
     limit = 10,
+    search?: string,
   ): Promise<PaginatedResponse<DonacionResponsePanel>> {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/mis-donaciones?page=${page}&limit=${limit}`,
-      { method: "GET", headers: this.getHeaders() },
-    );
+    let url = `${this.baseUrl}/${this.endPoint}/mis-donaciones?page=${page}&limit=${limit}`;
+
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+
+    const res = await fetch(url, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+
     if (!res.ok) {
       const errorDetails = await res.text();
       throw new Error(`Error al obtener donaciones (${res.status}): ${errorDetails}`);
     }
+
     return res.json();
   }
 

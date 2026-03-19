@@ -268,33 +268,25 @@ export class OrganizacionesController {
   }
 
   @Get('mis-donaciones')
-  @Auth(Rol.COLABORADOR)
-  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
-  @ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
-  @ApiResponse({
-    status: 200,
-    description: 'Donaciones encontradas',
-    type: ResponseCampaignDetalleDto,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Donaciones no encontradas',
-  })
-  async getMisDonaciones(
-    @Req() req: RequestConUsuario,
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-  ): Promise<PaginatedOrganizationDonationsResponseDto> {
-    const organizacion =
-      await this.organizacionService.getOrganizacionByUsuario(req.user.id);
+@Auth(Rol.COLABORADOR)
+@AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+@ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
+async getMisDonaciones(
+  @Req() req: RequestConUsuario,
+  @Query('page') page = 1,
+  @Query('limit') limit = 10,
+  @Query('search') search?: string, 
+): Promise<PaginatedOrganizationDonationsResponseDto> {
+  const organizacion =
+    await this.organizacionService.getOrganizacionByUsuario(req.user.id);
 
-    return await this.organizacionService.getDonaciones(
-      organizacion.id,
-      page,
-      limit,
-    );
-  }
-
+  return await this.organizacionService.getDonaciones(
+    organizacion.id,
+    page,
+    limit,
+    search, 
+  );
+}
   /**
    * Actualiza el estado de una donación.
    *

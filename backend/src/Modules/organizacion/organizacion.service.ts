@@ -159,13 +159,19 @@ export class PerfilOrganizacionService {
     return this.campaignService.findCampaignsPaginated(id, page, limit);
   }
 
-  async getDonaciones(
-    id: number,
-    page: number,
-    limit: number,
-  ): Promise<PaginatedOrganizationDonationsResponseDto> {
-    return this.donacionService.findAllPaginatedByOrganizacion(id, page, limit);
-  }
+ async getDonaciones(
+  organizacionId: number,
+  page: number,
+  limit: number,
+  search?: string,
+) {
+  return this.donacionService.findAllPaginatedByOrganizacion(
+    organizacionId,
+    page,
+    limit,
+    search,
+  );
+}
 
   async confirmarDonacion(
     id: number,
