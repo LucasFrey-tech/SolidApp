@@ -8,6 +8,7 @@ import { campaignService } from "./class/campaigns";
 import { AuthService } from "./class/auth";
 import { InvitacionesOrganizacionService } from "./class/invitacionesOrganizacion";
 import { InvitacionesEmpresaService } from "./class/invitacionesEmpresa";
+import { InvitacionesEntidadService } from "./class/invitacionesEntidad";
 
 export class BaseApi {
     public readonly auth: AuthService;
@@ -18,8 +19,9 @@ export class BaseApi {
     public readonly beneficio: BeneficiosService;
     public readonly ranking: RankingService;
     public readonly campaign: campaignService;
-     public readonly invitacionesOrg: InvitacionesOrganizacionService;
+    public readonly invitacionesOrg: InvitacionesOrganizacionService;
     public readonly invitacionesEmp: InvitacionesEmpresaService;
+    public readonly invitacionesEnt: InvitacionesEntidadService;
 
     constructor(){
         this.register = new RegisterService();
@@ -32,6 +34,7 @@ export class BaseApi {
         this.campaign = new campaignService();
         this.invitacionesOrg = new InvitacionesOrganizacionService();
         this.invitacionesEmp = new InvitacionesEmpresaService();
+        this.invitacionesEnt = new InvitacionesEntidadService();
     }
 
 }

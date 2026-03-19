@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import styles from "@/styles/invitaciones/invitaciones.module.css";
 
@@ -9,25 +8,25 @@ type Props = {
   onSend: (emails: string[]) => void;
 };
 
-export default function InvitarUsuariosModal({
-  open,
-  onClose,
-  onSend,
-}: Props) {
+export default function InvitarUsuariosModal({ open, onClose, onSend }: Props) {
   const [cantidad, setCantidad] = useState<number | null>(null);
+  const [cantidadInput, setCantidadInput] = useState<string>("");
   const [emails, setEmails] = useState<string[]>([]);
 
   useEffect(() => {
     if (open) {
       setCantidad(null);
+      setCantidadInput("");
       setEmails([]);
     }
   }, [open]);
 
   if (!open) return null;
 
-  const handleCantidad = (num: number) => {
-    const value = Math.max(1, Math.min(5, num));
+  const handleConfirmarCantidad = () => {
+    const num = Number(cantidadInput);
+    if (!num || num < 1) return;
+    const value = Math.min(5, num);
     setCantidad(value);
     setEmails(Array(value).fill(""));
   };
@@ -44,24 +43,30 @@ export default function InvitarUsuariosModal({
         {cantidad === null ? (
           <>
             <h2>¿Cuántos usuarios querés invitar?</h2>
-
             <input
               type="number"
               min={1}
               max={5}
               className={styles.numberInput}
-              onChange={(e) => handleCantidad(Number(e.target.value))}
+              value={cantidadInput}
+              onChange={(e) => setCantidadInput(e.target.value)}
               placeholder="Máximo 5"
             />
-
-            <button className={styles.cancel} onClick={onClose}>
-              Cancelar
-            </button>
+            <div className={styles.actions}>
+              <button
+                className={styles.send}
+                onClick={handleConfirmarCantidad}
+              >
+                Siguiente
+              </button>
+              <button className={styles.cancel} onClick={onClose}>
+                Cancelar
+              </button>
+            </div>
           </>
         ) : (
           <>
             <h2>Ingresar mails</h2>
-            
             <div className={styles.inputs}>
               {emails.map((email, i) => (
                 <input
@@ -73,7 +78,6 @@ export default function InvitarUsuariosModal({
                 />
               ))}
             </div>
-
             <div className={styles.actions}>
               <button
                 className={styles.send}
@@ -81,7 +85,6 @@ export default function InvitarUsuariosModal({
               >
                 Enviar invitaciones
               </button>
-
               <button className={styles.cancel} onClick={onClose}>
                 Cancelar
               </button>

@@ -6,8 +6,10 @@ import styles from '@/styles/Paneles/adminUsersPanel.module.css';
 import UsuariosAdminPanel from './usuarios/UsuariosAdminPanel';
 import EmpresasAdminPanel from './empresas/EmpresasAdminPanel';
 import OrganizacionesAdminPanel from './organizaciones/OrganizacionesAdminPanel';
+import InvitacionesPanel from '@/components/invitaciones/InvitacionesPanel';
+import { baseApi } from '@/API/baseApi';
 
-type View = 'usuarios' | 'empresa' | 'organizacion';
+type View = 'usuarios' | 'empresa' | 'organizacion' | 'invitaciones';
 
 export default function AdminPage() {
   const [view, setView] = useState<View>('usuarios');
@@ -40,6 +42,13 @@ export default function AdminPage() {
             >
               Organizaciones
             </button>
+
+            <button
+              className={`${styles.ButtonBase} ${getButtonClass('invitaciones')}`}
+              onClick={() => setView('invitaciones')}
+            >
+              Invitaciones
+            </button>
           </div>
 
           <div className={view === 'usuarios' ? '' : 'hidden'}>
@@ -52,6 +61,10 @@ export default function AdminPage() {
 
           <div className={view === 'organizacion' ? '' : 'hidden'}>
             <OrganizacionesAdminPanel />
+          </div>
+
+          <div className={view === 'invitaciones' ? '' : 'hidden'}>
+            <InvitacionesPanel service={baseApi.invitacionesEnt} />
           </div>
         </section>
       </main>

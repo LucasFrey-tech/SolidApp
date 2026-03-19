@@ -23,7 +23,7 @@ export class InvitacionesService {
     private organizacionUsuarioRepo: Repository<OrganizacionUsuario>,
 
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   async crearInvitacionesEmpresa(
     correos: string[],
@@ -190,6 +190,57 @@ export class InvitacionesService {
       correosExistentes,
       correosYaInvitados,
     };
+  }
+
+  async invitarEntidad(
+    correos: string[],
+    usuarioInvitadorId: number,
+  ) {
+    const correosExistentes: string[] = [];
+    const invitaciones: Invitacion[] = [];
+
+    for (const correo of correos) {
+      const existe = await this.contactoRepo.findOne({ where: { correo } });
+
+      if (existe) {
+        correosExistentes.push(correo);
+        continue;
+      }
+
+      const token = randomBytes(32).toString('hex');
+      const fechaExpiracion = new Date();
+      fechaExpiracion.setDate(fechaExpiracion.getDate() + 7);
+
+      const invitacion = this.invitacionRepo.create({
+        correo,
+        token,
+        invitadorID: usuarioInvitadorId,
+        rol: RolSecundario.ENTIDAD,
+        expirada: false,
+        fecha_expiracion: fechaExpiracion,
+      });
+
+      invitaciones.push(invitacion);
+    }
+
+    const guardadas = await this.invitacionRepo.save(invitaciones);
+
+    for (const inv of guardadas) {
+      await this.emailService.sendEntidadInvitationEmail(inv.correo, inv.token);
+    }
+
+    return { invitaciones: guardadas, correosExistentes };
+  }
+
+  async listarInvitacionesEntidad(page: number = 1, limit: number = 10) {
+    const [items, total] = await this.invitacionRepo.findAndCount({
+      where: { empresaId: IsNull(), organizacionId: IsNull() },
+      order: { fecha_creacion: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return { items: items.map(inv => ({ ...inv, estado: inv.estado })), total };
   }
 
   async listarInvitacionesEmpresa(

@@ -54,4 +54,22 @@ export class EmailService {
 
     await this.transporter.sendMail(mailOptions);
   }
+
+  async sendEntidadInvitationEmail(to: string, token: string): Promise<void> {
+    const inviteLink = `http://localhost:3000/registro-entidad?token=${token}`;
+
+    const mailOptions: SendMailOptions = {
+      from: '"SolidApp" <noreply@solidapp.com>',
+      to,
+      subject: 'Invitación a registrar tu entidad en SolidApp',
+      html: `
+      <h2>Te invitaron a unirte a SolidApp</h2>
+      <p>Hacé click en el siguiente enlace para registrar tu empresa u organización:</p>
+      <a href="${inviteLink}">${inviteLink}</a>
+      <p>Este enlace expira en 7 días.</p>
+    `,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
 }

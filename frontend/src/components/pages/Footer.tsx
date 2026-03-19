@@ -21,7 +21,6 @@ export default function Footer() {
     const legalLinks: FooterLink[] = [
         { label: "Políticas de Privacidad", href: "/privacy" },
         { label: "Términos y Condiciones", href: "/terms" },
-        { label: "TEST Entidad", href: "/registro-entidad" },
     ];
 
     const handleBackToTop = () => {

@@ -7,4 +7,5 @@ export enum Rol {
 export enum RolSecundario {
   GESTOR = 'GESTOR',
   MIEMBRO = 'MIEMBRO',
+  ENTIDAD = 'ENTIDAD',
 }

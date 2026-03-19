@@ -53,10 +53,9 @@ export default function InvitacionesPanel({ entidadId, service }: Props) {
      OBTENER INVITACIONES
   ================================ */
   const fetchInvitaciones = async () => {
-    if (!entidadId) return;
-
+    const idParaService = entidadId ?? 0;
     try {
-      const response = await service.getInvitaciones(entidadId);
+      const response = await service.getInvitaciones(idParaService);
       setInvitaciones(response.items);
     } catch (error) {
       console.error(error);
@@ -72,18 +71,16 @@ export default function InvitacionesPanel({ entidadId, service }: Props) {
      ENVIAR INVITACIONES
   ================================ */
   const handleEnviarInvitaciones = async (emails: string[]) => {
-    if (!entidadId) return;
+    const idParaService = entidadId ?? 0;
 
     const correosValidos = emails.filter((i) => i && i.includes("@"));
-
     if (correosValidos.length === 0) {
       Swal.fire("Error", "Debes ingresar al menos un correo válido", "error");
       return;
     }
 
     try {
-      const response = await service.crearInvitaciones(entidadId, correosValidos);
-
+      const response = await service.crearInvitaciones(idParaService, correosValidos);
       if (response.correosExistentes.length > 0) {
         Swal.fire({
           icon: "warning",
@@ -97,7 +94,6 @@ export default function InvitacionesPanel({ entidadId, service }: Props) {
           "success"
         );
       }
-
       setOpenModal(false);
       fetchInvitaciones();
     } catch (error: any) {

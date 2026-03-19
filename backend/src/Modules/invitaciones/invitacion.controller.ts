@@ -10,14 +10,14 @@ import {
 } from '@nestjs/common';
 import { InvitacionesService } from './invitacion.service';
 import { CreateInvitacionDto } from './dto/crear_invitacion.dto';
-import { Request } from 'express';
 import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
-import { RolSecundario } from '../user/enums/enums';
+import { Rol, RolSecundario } from '../user/enums/enums';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
+import { Auth } from '../auth/decoradores/auth.decorador';
 
 @Controller('invitaciones')
 export class InvitacionesController {
-  constructor(private readonly invitacionesService: InvitacionesService) {}
+  constructor(private readonly invitacionesService: InvitacionesService) { }
 
   @Post('empresa/:empresaId')
   @AuthRelacion(RolSecundario.GESTOR)
@@ -62,6 +62,27 @@ export class InvitacionesController {
       organizacionId,
       usuarioInvitadorId,
     );
+  }
+
+  @Post('entidad')
+  @Auth(Rol.ADMIN)
+  invitarEntidad(
+    @Body() dto: CreateInvitacionDto,
+    @Req() req: RequestConUsuario,
+  ) {
+    return this.invitacionesService.invitarEntidad(
+      dto.correos,
+      req.user.id,
+    );
+  }
+
+  @Get('entidad')
+  @Auth(Rol.ADMIN)
+  getInvitacionesEntidad(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.invitacionesService.listarInvitacionesEntidad(page, limit);
   }
 
   @Get('organizacion/:organizacionId')
