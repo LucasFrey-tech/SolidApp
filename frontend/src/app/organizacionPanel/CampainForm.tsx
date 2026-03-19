@@ -261,7 +261,12 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
                   key={`existing-${index}`}
                   className={styles.previewWrapper}
                 >
-                  <Image src={src} alt='Previsualización' className={styles.previewImage} />
+                  <Image
+                    src={src}
+                    alt="Previsualización"
+                    fill
+                    className={styles.previewImage}
+                  />
                   <button
                     type="button"
                     className={styles.removeButton}
@@ -274,7 +279,12 @@ export function CampaignForm({ initialValues, onSubmit, onCancel }: Props) {
 
               {previews.map((src, index) => (
                 <div key={`new-${index}`} className={styles.previewWrapper}>
-                  <Image src={src} alt='Previsualización' className={styles.previewImage} />
+                  <Image
+                    src={src}
+                    alt="Previsualización"
+                    fill
+                    className={styles.previewImage}
+                  />
                   <button
                     type="button"
                     className={styles.removeButton}

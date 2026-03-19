@@ -53,34 +53,40 @@ export class DonacionService {
    * @returns
    */
   async findAllPaginatedByOrganizacion(
-    organizacionId: number,
-    page = 1,
-    limit = 10,
-  ): Promise<PaginatedOrganizationDonationsResponseDto> {
-    const startIndex = (page - 1) * limit;
-    const [donations, total] = await this.donacionRepository.findAndCount({
-      where: {
-        campaña: {
-          organizacion: { id: organizacionId },
-        },
-      },
-      relations: {
-        campaña: { organizacion: true },
-        usuario: { contacto: true },
-      },
-      order: {
-        estado: 'ASC',
-        fecha_registro: 'DESC',
-      },
-      skip: startIndex,
-      take: limit,
-    });
+  organizacionId: number,
+  page = 1,
+  limit = 10,
+  search?: string,
+): Promise<PaginatedOrganizationDonationsResponseDto> {
+  const startIndex = (page - 1) * limit;
 
-    return {
-      items: donations.map((d) => this.mapToOrganizationDonationsResponse(d)),
-      total,
-    };
+  const query = this.donacionRepository
+    .createQueryBuilder('donacion')
+    .leftJoinAndSelect('donacion.campaña', 'campaña')
+    .leftJoinAndSelect('campaña.organizacion', 'organizacion')
+    .leftJoinAndSelect('donacion.usuario', 'usuario')
+    .leftJoinAndSelect('usuario.contacto', 'contacto')
+    .where('organizacion.id = :organizacionId', { organizacionId });
+
+  if (search) {
+    query.andWhere('LOWER(contacto.correo) LIKE LOWER(:search)', {
+      search: `%${search}%`,
+    });
   }
+
+  query
+    .orderBy('donacion.estado', 'ASC')
+    .addOrderBy('donacion.fecha_registro', 'DESC')
+    .skip(startIndex)
+    .take(limit);
+
+  const [donations, total] = await query.getManyAndCount();
+
+  return {
+    items: donations.map((d) => this.mapToOrganizationDonationsResponse(d)),
+    total,
+  };
+}
 
   /**
    * Obtiene
