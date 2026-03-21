@@ -1,70 +1,51 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { mock, DeepMockProxy } from 'jest-mock-extended';
 import { AuthService } from '../../src/Modules/auth/auth.service';
-import { CuentaService } from '../../src/Modules/cuenta/cuenta.service';
-import { PerfilUsuarioService } from '../../src/Modules/user/usuario.service';
-import { PerfilEmpresaService } from '../../src/Modules/empresa/empresa.service';
-import { PerfilOrganizacionService } from '../../src/Modules/organization/organizacion.service';
+import { UsuarioService } from '../../src/Modules/user/usuario.service';
 import { HashService } from '../../src/common/bcryptService/hashService';
 import { EmailService } from '../../src/Modules/email/email.service';
-import { DataSource } from 'typeorm';
-import { Cuenta, RolCuenta } from '../../src/Entities/cuenta.entity';
+import { GestionDetector } from '../../src/Modules/auth/estrategias/gestion/gestion_detector';
+import { InvitacionesService } from '../../src/Modules/invitaciones/invitacion.service';
 import { LoginDto, RegisterDto } from '../../src/Modules/auth/dto/auth.dto';
-import { EmpresaResponseDTO } from '../../src/Modules/empresa/dto/response_empresa.dto';
+import { ResponseUsuarioDto } from '../../src/Modules/user/dto/response_usuario.dto';
+import { Rol } from '../../src/Modules/user/enums/enums';
+import { GestionTipo } from '../../src/Modules/auth/dto/gestion.enum';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let mockCuentaService: DeepMockProxy<CuentaService>;
-  let mockPerfilUsuarioService: DeepMockProxy<PerfilUsuarioService>;
-  let mockPerfilEmpresaService: DeepMockProxy<PerfilEmpresaService>;
-  let mockPerfilOrganizacionService: DeepMockProxy<PerfilOrganizacionService>;
+  let mockUsuarioService: DeepMockProxy<UsuarioService>;
   let mockJwtService: DeepMockProxy<JwtService>;
   let mockHashService: DeepMockProxy<HashService>;
   let mockEmailService: DeepMockProxy<EmailService>;
-  let mockDataSource: any;
+  let mockGestionDetector: DeepMockProxy<GestionDetector>;
+  let mockInvitacionesService: DeepMockProxy<InvitacionesService>;
 
   let registerDto: RegisterDto;
+  let registerDtoConToken: RegisterDto;
   let loginDto: LoginDto;
-  let cuentaValida: Cuenta;
-  let cuentaBloqueada: Cuenta;
-  let cuentaCreada: Cuenta;
-  let empresaResponseDTO: EmpresaResponseDTO;
+  let usuarioHabilitado: ResponseUsuarioDto;
+  let usuarioDeshabilitado: ResponseUsuarioDto;
+  let usuarioColaborador: ResponseUsuarioDto;
   let tokenResponse: { token: string };
   let email: string;
 
   beforeEach(async () => {
-    mockCuentaService = mock<CuentaService>();
-    mockPerfilUsuarioService = mock<PerfilUsuarioService>();
-    mockPerfilEmpresaService = mock<PerfilEmpresaService>();
-    mockPerfilOrganizacionService = mock<PerfilOrganizacionService>();
+    mockUsuarioService = mock<UsuarioService>();
     mockJwtService = mock<JwtService>();
     mockHashService = mock<HashService>();
     mockEmailService = mock<EmailService>();
-    mockDataSource = {
-      transaction: jest.fn(),
-    };
+    mockGestionDetector = mock<GestionDetector>();
+    mockInvitacionesService = mock<InvitacionesService>();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         {
-          provide: CuentaService,
-          useValue: mockCuentaService,
-        },
-        {
-          provide: PerfilUsuarioService,
-          useValue: mockPerfilUsuarioService,
-        },
-        {
-          provide: PerfilEmpresaService,
-          useValue: mockPerfilEmpresaService,
-        },
-        {
-          provide: PerfilOrganizacionService,
-          useValue: mockPerfilOrganizacionService,
+          provide: UsuarioService,
+          useValue: mockUsuarioService,
         },
         {
           provide: JwtService,
@@ -79,8 +60,12 @@ describe('AuthService', () => {
           useValue: mockEmailService,
         },
         {
-          provide: DataSource,
-          useValue: mockDataSource,
+          provide: GestionDetector,
+          useValue: mockGestionDetector,
+        },
+        {
+          provide: InvitacionesService,
+          useValue: mockInvitacionesService,
         },
       ],
     }).compile();
@@ -89,74 +74,52 @@ describe('AuthService', () => {
 
     // ========== DTOs ==========
     registerDto = {
-      correo: 'empresa@example.com',
+      correo: 'usuario@example.com',
       clave: 'password123',
-      role: RolCuenta.EMPRESA,
-      perfilEmpresa: {
-        cuit_empresa: '20123456789',
-        razon_social: 'Mi Empresa SA',
-        nombre_empresa: 'Mi Empresa',
-        telefono: '1234567890',
-        calle: 'Avenida Siempreviva',
-        numero: '742',
-      },
+      nombre: 'Lucas',
+      apellido: 'Frey',
+      documento: '11888858',
+    };
+
+    registerDtoConToken = {
+      ...registerDto,
+      token: 'token-de-invitacion-valido',
     };
 
     loginDto = {
       correo: 'usuario@example.com',
       clave: 'password123',
-      rol: RolCuenta.USUARIO,
     };
 
     // ========== Objetos de respuesta ==========
-    cuentaValida = {
+    usuarioHabilitado = {
       id: 1,
       correo: 'usuario@example.com',
       clave: 'hashed-password',
-      role: RolCuenta.USUARIO,
-      deshabilitado: false,
-    } as Cuenta;
+      rol: Rol.USUARIO,
+      habilitado: true,
+    } as unknown as ResponseUsuarioDto;
 
-    cuentaBloqueada = {
-      id: 1,
+    usuarioDeshabilitado = {
+      id: 2,
       correo: 'bloqueado@example.com',
       clave: 'hashed-password',
-      role: RolCuenta.USUARIO,
-      deshabilitado: true,
-    } as Cuenta;
+      rol: Rol.USUARIO,
+      habilitado: false,
+    } as unknown as ResponseUsuarioDto;
+
+    usuarioColaborador = {
+      id: 3,
+      correo: 'colaborador@example.com',
+      clave: 'hashed-password',
+      rol: Rol.COLABORADOR,
+      habilitado: true,
+    } as unknown as ResponseUsuarioDto;
 
     tokenResponse = { token: 'jwt-token-valido' };
 
-    // ========== Objetos para register test ==========
-    cuentaCreada = { id: 1, ...registerDto } as Cuenta;
-
     // ========== Email para forgot password ==========
     email = 'usuario@example.com';
-
-    // ========== EmpresaResponseDTO para register test ==========
-    empresaResponseDTO = {
-      id: 1,
-      cuit_empresa: '20123456789',
-      correo: registerDto.correo,
-      razon_social: 'Mi Empresa SA',
-      nombre_empresa: 'Mi Empresa',
-      descripcion: 'Empresa de ejemplo',
-      rubro: 'Comercio',
-      prefijo: '+54',
-      telefono: '1234567890',
-      provincia: 'Buenos Aires',
-      ciudad: 'CABA',
-      calle: 'Avenida Siempreviva',
-      numero: '742',
-      codigo_postal: '1234',
-      web: 'www.miempresa.com',
-      verificada: false,
-      deshabilitado: false,
-      fecha_registro: new Date(),
-      ultima_conexion: new Date(),
-      ultimo_cambio: new Date(),
-      logo: '/logo.png',
-    };
   });
 
   afterEach(() => {
@@ -165,136 +128,251 @@ describe('AuthService', () => {
 
   // ========== TESTS DE REGISTER ==========
   describe('register', () => {
-    it('debe registrar una empresa correctamente', async () => {
-      mockCuentaService.findByEmail.mockResolvedValue(null);
+    it('debe registrar un usuario correctamente sin token de invitación', async () => {
+      mockUsuarioService.findByEmail.mockResolvedValue(null);
       mockHashService.hash.mockResolvedValue('hashed-password');
-      mockDataSource.transaction.mockImplementation((callback) => callback({}));
-      mockCuentaService.create.mockResolvedValue(cuentaCreada);
-      mockPerfilEmpresaService.create.mockResolvedValue(empresaResponseDTO);
+      mockUsuarioService.create.mockResolvedValue({
+        ...usuarioHabilitado,
+        rol: Rol.USUARIO,
+      });
       mockJwtService.sign.mockReturnValue(tokenResponse.token);
 
       const resultado = await service.register(registerDto);
 
       expect(resultado).toEqual(tokenResponse);
-      expect(mockCuentaService.findByEmail).toHaveBeenCalledWith(
-        registerDto.correo,
+      expect(mockUsuarioService.findByEmail).toHaveBeenCalledWith(registerDto.correo);
+      expect(mockHashService.hash).toHaveBeenCalledWith(registerDto.clave);
+      expect(mockUsuarioService.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          correo: registerDto.correo,
+          nombre: registerDto.nombre,
+          apellido: registerDto.apellido,
+          documento: registerDto.documento,
+          rol: Rol.USUARIO,
+        }),
       );
     });
 
-    it('debe lanzar error si el email ya existe', async () => {
-      mockCuentaService.findByEmail.mockResolvedValue(cuentaValida);
+    it('debe registrar un colaborador correctamente con token de invitación válido', async () => {
+      const invitacionMock = {
+        id: 10,
+        correo: registerDtoConToken.correo,
+        organizacionId: null,
+        empresaId: 5,
+      };
 
-      await expect(service.register(registerDto)).rejects.toThrow();
+      mockUsuarioService.findByEmail.mockResolvedValue(null);
+      mockHashService.hash.mockResolvedValue('hashed-password');
+      mockInvitacionesService.buscarPorToken.mockResolvedValue(invitacionMock as any);
+      mockUsuarioService.create.mockResolvedValue({
+        ...usuarioColaborador,
+      });
+      mockInvitacionesService.agregarUsuarioAEmpresa.mockResolvedValue(undefined as any);
+      mockInvitacionesService.marcarAceptada.mockResolvedValue(undefined as any);
+      mockJwtService.sign.mockReturnValue(tokenResponse.token);
+
+      const resultado = await service.register(registerDtoConToken);
+
+      expect(resultado).toEqual(tokenResponse);
+      expect(mockInvitacionesService.buscarPorToken).toHaveBeenCalledWith(registerDtoConToken.token);
+      expect(mockInvitacionesService.marcarAceptada).toHaveBeenCalledWith(invitacionMock.id);
+      expect(mockUsuarioService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ rol: Rol.COLABORADOR }),
+      );
+    });
+
+    it('debe lanzar BadRequestException si el email ya existe', async () => {
+      mockUsuarioService.findByEmail.mockResolvedValue(usuarioHabilitado);
+
+      await expect(service.register(registerDto)).rejects.toThrow(BadRequestException);
+      expect(mockUsuarioService.create).not.toHaveBeenCalled();
+    });
+
+    it('debe lanzar BadRequestException si el token de invitación es inválido', async () => {
+      mockUsuarioService.findByEmail.mockResolvedValue(null);
+      mockHashService.hash.mockResolvedValue('hashed-password');
+      mockInvitacionesService.buscarPorToken.mockResolvedValue(null);
+
+      await expect(service.register(registerDtoConToken)).rejects.toThrow(BadRequestException);
+    });
+
+    it('debe lanzar BadRequestException si el correo no coincide con la invitación', async () => {
+      const invitacionCorreoDistinto = {
+        id: 10,
+        correo: 'otro@example.com',
+        organizacionId: null,
+        empresaId: 5,
+      };
+
+      mockUsuarioService.findByEmail.mockResolvedValue(null);
+      mockHashService.hash.mockResolvedValue('hashed-password');
+      mockInvitacionesService.buscarPorToken.mockResolvedValue(invitacionCorreoDistinto as any);
+
+      await expect(service.register(registerDtoConToken)).rejects.toThrow(BadRequestException);
     });
   });
 
   // ========== TESTS DE LOGIN ==========
   describe('login', () => {
-    it('debe retornar un token si las credenciales son válidas', async () => {
-      mockCuentaService.findByEmailRol.mockResolvedValue(cuentaValida);
+    it('debe retornar un token si las credenciales son válidas (rol USUARIO)', async () => {
+      mockUsuarioService.findByEmail.mockResolvedValue(usuarioHabilitado);
       mockHashService.compare.mockResolvedValue(true);
-      mockCuentaService.actualizarUltimaConexion.mockResolvedValue(undefined);
+      mockUsuarioService.actualizarUltimaConexion.mockResolvedValue(undefined);
       mockJwtService.sign.mockReturnValue(tokenResponse.token);
 
       const resultado = await service.login(loginDto);
 
       expect(resultado).toEqual(tokenResponse);
-      expect(mockCuentaService.findByEmailRol).toHaveBeenCalledWith(
-        loginDto.correo,
-        loginDto.rol,
+      expect(mockUsuarioService.findByEmail).toHaveBeenCalledWith(loginDto.correo);
+      expect(mockHashService.compare).toHaveBeenCalledWith(loginDto.clave, usuarioHabilitado.clave);
+      expect(mockUsuarioService.actualizarUltimaConexion).toHaveBeenCalledWith(usuarioHabilitado.id);
+      expect(mockGestionDetector.detectar).not.toHaveBeenCalled();
+    });
+
+    it('debe retornar un token con gestion si el rol es COLABORADOR', async () => {
+      const gestionInfo = { tipo: GestionTipo.EMPRESA, entidadId: 5 };
+
+      mockUsuarioService.findByEmail.mockResolvedValue(usuarioColaborador);
+      mockHashService.compare.mockResolvedValue(true);
+      mockUsuarioService.actualizarUltimaConexion.mockResolvedValue(undefined);
+      mockGestionDetector.detectar.mockResolvedValue(gestionInfo as any);
+      mockJwtService.sign.mockReturnValue(tokenResponse.token);
+
+      const resultado = await service.login(loginDto);
+
+      expect(resultado).toEqual(tokenResponse);
+      expect(mockGestionDetector.detectar).toHaveBeenCalledWith(usuarioColaborador.id);
+      expect(mockJwtService.sign).toHaveBeenCalledWith(
+        expect.objectContaining({
+          gestion: GestionTipo.EMPRESA,
+          gestionId: 5,
+        }),
       );
     });
 
-    it('debe lanzar error si la cuenta no existe', async () => {
-      mockCuentaService.findByEmailRol.mockResolvedValue(null);
+    it('debe lanzar UnauthorizedException si la cuenta no existe', async () => {
+      mockUsuarioService.findByEmail.mockResolvedValue(null);
 
-      await expect(service.login(loginDto)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      expect(mockHashService.compare).not.toHaveBeenCalled();
     });
 
-    it('debe lanzar error si la contraseña es incorrecta', async () => {
-      mockCuentaService.findByEmailRol.mockResolvedValue(cuentaValida);
-      mockHashService.compare.mockResolvedValue(false);
-
-      await expect(service.login(loginDto)).rejects.toThrow(
-        UnauthorizedException,
-      );
-    });
-
-    it('debe lanzar error si la cuenta está deshabilitada', async () => {
-      mockCuentaService.findByEmailRol.mockResolvedValue(cuentaBloqueada);
+    it('debe lanzar ForbiddenException si la cuenta está deshabilitada', async () => {
+      mockUsuarioService.findByEmail.mockResolvedValue(usuarioDeshabilitado);
 
       await expect(service.login(loginDto)).rejects.toThrow(ForbiddenException);
+      expect(mockHashService.compare).not.toHaveBeenCalled();
+    });
+
+    it('debe lanzar UnauthorizedException si la contraseña es incorrecta', async () => {
+      mockUsuarioService.findByEmail.mockResolvedValue(usuarioHabilitado);
+      mockHashService.compare.mockResolvedValue(false);
+
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      expect(mockUsuarioService.actualizarUltimaConexion).not.toHaveBeenCalled();
     });
   });
 
   // ========== TESTS DE FORGOT PASSWORD ==========
   describe('forgotPassword', () => {
     it('debe enviar email de reset si el usuario existe', async () => {
-      mockCuentaService.findByEmail.mockResolvedValue(cuentaValida);
-      mockCuentaService.setResetToken.mockResolvedValue(undefined);
+      mockUsuarioService.findByEmail.mockResolvedValue(usuarioHabilitado);
+      mockUsuarioService.setResetToken.mockResolvedValue(undefined);
       mockEmailService.sendResetPasswordEmail.mockResolvedValue(undefined);
 
       const resultado = await service.forgotPassword(email);
 
       expect(resultado).toEqual({ message: 'Email enviado' });
-      expect(mockCuentaService.setResetToken).toHaveBeenCalled();
-      expect(mockEmailService.sendResetPasswordEmail).toHaveBeenCalled();
+      expect(mockUsuarioService.setResetToken).toHaveBeenCalledWith(
+        usuarioHabilitado.id,
+        expect.any(String),
+        expect.any(Date),
+      );
+      expect(mockEmailService.sendResetPasswordEmail).toHaveBeenCalledWith(
+        email,
+        expect.any(String),
+      );
     });
 
     it('debe retornar mensaje genérico si el usuario NO existe', async () => {
-      mockCuentaService.findByEmail.mockResolvedValue(null);
+      mockUsuarioService.findByEmail.mockResolvedValue(null);
 
       const resultado = await service.forgotPassword(email);
 
-      expect(resultado).toEqual({
-        message: 'Si el email existe, recibirás un enlace',
-      });
+      expect(resultado).toEqual({ message: 'Si el email existe, recibirás un enlace' });
+      expect(mockUsuarioService.setResetToken).not.toHaveBeenCalled();
       expect(mockEmailService.sendResetPasswordEmail).not.toHaveBeenCalled();
     });
   });
 
   // ========== TESTS DE RESET PASSWORD ==========
   describe('resetPassword', () => {
-    it('debe resetear la contraseña correctamente', async () => {
+    it('debe resetear la contraseña correctamente con token válido', async () => {
       const token = 'token-valido-123';
       const newPassword = 'nueva-password-456';
 
-      mockCuentaService.findByResetToken.mockResolvedValue(cuentaValida);
+      mockUsuarioService.findByResetToken.mockResolvedValue(usuarioHabilitado as any);
       mockHashService.hash.mockResolvedValue('new-hashed-password');
-      mockCuentaService.resetPassword.mockResolvedValue(undefined);
-      mockCuentaService.findById.mockResolvedValue(cuentaValida);
+      mockUsuarioService.resetPassword.mockResolvedValue(undefined);
 
       const resultado = await service.resetPassword(token, newPassword);
 
-      expect(resultado).toEqual({
-        message: 'Contraseña actualizada correctamente',
-      });
+      expect(resultado).toEqual({ message: 'Contraseña actualizada correctamente' });
+      expect(mockUsuarioService.findByResetToken).toHaveBeenCalledWith(token);
       expect(mockHashService.hash).toHaveBeenCalledWith(newPassword);
-      expect(mockCuentaService.resetPassword).toHaveBeenCalled();
+      expect(mockUsuarioService.resetPassword).toHaveBeenCalledWith(
+        usuarioHabilitado.id,
+        'new-hashed-password',
+      );
     });
 
-    it('debe lanzar error si el token es inválido', async () => {
+    it('debe lanzar UnauthorizedException si el token es inválido', async () => {
       const token = 'token-invalido';
       const newPassword = 'nueva-password';
 
-      mockCuentaService.findByResetToken.mockResolvedValue(null);
+      mockUsuarioService.findByResetToken.mockResolvedValue(null);
+
+      await expect(service.resetPassword(token, newPassword)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(mockHashService.hash).not.toHaveBeenCalled();
+      expect(mockUsuarioService.resetPassword).not.toHaveBeenCalled();
+    });
+
+    it('debe lanzar UnauthorizedException si el token está expirado', async () => {
+      const token = 'token-expirado';
+      const newPassword = 'nueva-password';
+
+      mockUsuarioService.findByResetToken.mockResolvedValue(null);
 
       await expect(service.resetPassword(token, newPassword)).rejects.toThrow(
         UnauthorizedException,
       );
     });
+  });
 
-    it('debe lanzar error si el token está expirado', async () => {
-      const token = 'token-expirado';
-      const newPassword = 'nueva-password';
+  // ========== TESTS DE createPayload ==========
+  describe('createPayload', () => {
+    it('debe construir el payload correctamente sin gestion', () => {
+      const payload = service.createPayload(1, Rol.USUARIO);
 
-      mockCuentaService.findByResetToken.mockResolvedValue(null);
+      expect(payload).toEqual({
+        sub: 1,
+        rol: Rol.USUARIO,
+        gestion: undefined,
+        gestionId: undefined,
+      });
+    });
 
-      await expect(service.resetPassword(token, newPassword)).rejects.toThrow(
-        UnauthorizedException,
-      );
+    it('debe construir el payload correctamente con gestion', () => {
+      const payload = service.createPayload(3, Rol.COLABORADOR, GestionTipo.EMPRESA, 5);
+
+      expect(payload).toEqual({
+        sub: 3,
+        rol: Rol.COLABORADOR,
+        gestion: GestionTipo.EMPRESA,
+        gestionId: 5,
+      });
     });
   });
 });

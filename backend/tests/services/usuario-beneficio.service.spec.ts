@@ -7,7 +7,7 @@ import { UsuarioBeneficioService } from '../../src/Modules/user/usuario-benefici
 import { UsuarioBeneficio } from '../../src/Entities/usuario-beneficio.entity';
 import { BeneficiosUsuarioEstado } from '../../src/Modules/benefit/dto/enum/enum';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { PerfilUsuario } from '../../src/Entities/perfil_Usuario.entity';
+import { Usuario } from '../../src/Entities/usuario.entity';
 import { Beneficios } from '../../src/Entities/beneficio.entity';
 
 describe('UsuarioBeneficioService', () => {
@@ -57,7 +57,7 @@ describe('UsuarioBeneficioService', () => {
         usados: 0,
         estado: BeneficiosUsuarioEstado.ACTIVO,
         fecha_reclamo: new Date(),
-        usuario: { id: 1 } as PerfilUsuario,
+        usuario: { id: 1 } as Usuario,
         beneficio: { id: 2 } as Beneficios,
       } as UsuarioBeneficio;
 
@@ -83,7 +83,7 @@ describe('UsuarioBeneficioService', () => {
         usados: 0,
         estado: BeneficiosUsuarioEstado.ACTIVO,
         fecha_reclamo: new Date(),
-        usuario: { id: 1 } as PerfilUsuario,
+        usuario: { id: 1 } as Usuario,
         beneficio: { id: 2 } as Beneficios,
       } as UsuarioBeneficio;
 
@@ -112,7 +112,7 @@ describe('UsuarioBeneficioService', () => {
         usados: 0,
         estado: BeneficiosUsuarioEstado.USADO,
         fecha_reclamo: new Date(),
-        usuario: { id: 1 } as PerfilUsuario,
+        usuario: { id: 1 } as Usuario,
         beneficio: { id: 2 } as Beneficios,
       } as UsuarioBeneficio;
 
@@ -130,7 +130,7 @@ describe('UsuarioBeneficioService', () => {
         usados: 1,
         estado: BeneficiosUsuarioEstado.ACTIVO,
         fecha_reclamo: new Date(),
-        usuario: { id: 1 } as PerfilUsuario,
+        usuario: { id: 1 } as Usuario,
         beneficio: { id: 2 } as Beneficios,
       } as UsuarioBeneficio;
 
@@ -148,7 +148,7 @@ describe('UsuarioBeneficioService', () => {
         usados: 0,
         estado: BeneficiosUsuarioEstado.ACTIVO,
         fecha_reclamo: new Date(),
-        usuario: { id: 1 } as PerfilUsuario,
+        usuario: { id: 1 } as Usuario,
         beneficio: { id: 2 } as Beneficios,
       } as UsuarioBeneficio;
 
@@ -171,7 +171,7 @@ describe('UsuarioBeneficioService', () => {
         usados: 0,
         estado: BeneficiosUsuarioEstado.ACTIVO,
         fecha_reclamo: new Date(),
-        usuario: { id: 1 } as PerfilUsuario,
+        usuario: { id: 1 } as Usuario,
         beneficio: { id: 2 } as Beneficios,
       } as UsuarioBeneficio;
 
