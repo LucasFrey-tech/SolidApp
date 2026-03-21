@@ -1,163 +1,226 @@
-@startuml SOLID_DB
+@startuml SOLID_DB_FINAL
 
 left to right direction
 skinparam linetype ortho
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 
+' ===================== USUARIOS =====================
 package "USUARIOS" {
 
-    class Usuario {
-        -Id: int
-        -Correo: string
-        -Clave: string
-        -Deshabilitado: boolean
-        -Nombre: string
-        -Apellido: string
-        -Imagen: text
-        -Direccion: string
-        -Rol: string
-        -Fecha_Registro: datetime
-        -Ultima_Conexion: datetime
-        -Ultimo_Cambio: datetime
-    }
-
-    class Donador {
-        -Id: int
-        -Puntos: int
-        -Id_Usuario: int
-    }
-
-    class Empresa {
-        -Id: int
-        -NroDocumento: int
-        -Razon_Social: string
-        -Nombre_Fantasia: string
-        -Descripcion: text
-        -Rubro: string
-        -Telefono: string
-        -Direccion: string
-        -Web: string
-        -Verificada: boolean
-        -Deshabilitado: boolean
-        -Fecha_Registro: date
-        -Ultimo_Cambio: datetime
-    }
-
-    class Organizacion {
-        -Id: int
-        -NroDocumento: int
-        -Verificada: boolean
-        -Deshabilitado: boolean
-        -Razon_Social: string
-        -Nombre_Fantasia: string
-        -Descripcion: text
-        -Telefono: string
-        -Direccion: string
-        -Web: string
-        -Fecha_Registro: date
-        -Ultimo_Cambio: datetime
-    }
-
-    class Usuarios_Empresa {
-        -Id: int
-        -Id_Usuario: int
-        -Id_Empresa: int
-    }
-
-    class Usuarios_Organizacion {
-        -Id: int
-        -Id_Usuario: int
-        -Id_Organizacion: int
-    }
+class Usuario {
+    -id: int
+    -correo: string
+    -clave: string
+    -nombre: string
+    -apellido: string
+    -rol: string
+    -puntos: int
+    -habilitado: boolean
+    -verificado: boolean
+    -fecha_registro: datetime
+    -ultima_conexion: datetime
+    -ultimo_cambio: datetime
 }
 
+class Donador {
+    -id: int
+    -puntos: int
+    -id_usuario: int
+}
+
+class RankingDonador {
+    -id_usuario: int
+    -puntos: int
+}
+
+class EmpresaUsuario {
+    -id: int
+    -id_usuario: int
+    -id_empresa: int
+    -rol: string
+    -activo: boolean
+    -fecha_asignacion: datetime
+}
+
+class OrganizacionUsuario {
+    -id: int
+    -id_usuario: int
+    -id_organizacion: int
+    -rol: string
+    -activo: boolean
+    -fecha_asignacion: datetime
+}
+
+class Invitacion {
+    -id: int
+    -token: string
+    -correo: string
+    -empresaId: int
+    -organizacionId: int
+    -invitadorId: int
+    -rol: string
+    -expirada: boolean
+    -fecha_creacion: datetime
+    -fecha_expiracion: datetime
+}
+
+}
+
+' ===================== EMPRESAS =====================
+package "EMPRESAS" {
+
+class Empresa {
+    -id: int
+    -cuit: string
+    -razon_social: string
+    -nombre_empresa: string
+    -descripcion: string
+    -rubro: string
+    -web: string
+    -verificada: boolean
+    -habilitada: boolean
+    -fecha_registro: datetime
+    -ultimo_cambio: datetime
+    -creado_por_id: int
+    -actualizado_por_id: int
+}
+
+class Beneficio {
+    -id: int
+    -titulo: string
+    -tipo: string
+    -detalle: string
+    -cantidad: int
+    -valor: int
+    -estado: string
+    -fecha_registro: datetime
+    -ultimo_cambio: datetime
+    -creado_por_id: int
+    -actualizado_por_id: int
+}
+
+class UsuarioBeneficio {
+    -id: int
+    -id_usuario: int
+    -id_beneficio: int
+    -cantidad: int
+    -usados: int
+    -estado: string
+    -fecha_reclamo: datetime
+    -fecha_uso: datetime
+    -ultimo_cambio: datetime
+}
+
+class Imagen_Empresa {
+    -id: int
+    -logo: string
+    -banner: string
+}
+
+class Imagen_Beneficio {
+    -id: int
+    -imagen: string
+}
+
+}
+
+' ===================== ORGANIZACIONES =====================
+package "ORGANIZACIONES" {
+
+class Organizacion {
+    -id: int
+    -cuit: string
+    -razon_social: string
+    -nombre_organizacion: string
+    -descripcion: string
+    -web: string
+    -verificada: boolean
+    -habilitada: boolean
+    -fecha_registro: datetime
+    -ultimo_cambio: datetime
+    -creado_por_id: int
+    -actualizado_por_id: int
+}
+
+class Imagen_Organizacion {
+    -id: int
+    -logo: string
+    -banner: string
+}
+
+}
+
+' ===================== CAMPAÑAS =====================
 package "CAMPAÑAS" {
 
-    class Campaña {
-        -Id: int
-        -Estado: string
-        -Titulo: string
-        -Descripcion: text
-        -Fecha_Inicio: date
-        -Fecha_Fin: date
-        -Fecha_Registro: date
-        -Objetivo: int
-        -Ultimo_Cambio: datetime
-    }
-
-    class Imagen_Campaña {
-        -Id: int
-        -Imagen: text
-    }
+class Campaña {
+    -id: int
+    -estado: string
+    -titulo: string
+    -descripcion: string
+    -fecha_inicio: date
+    -fecha_fin: date
+    -objetivo: int
+    -puntos: int
+    -fecha_registro: datetime
+    -ultimo_cambio: datetime
+    -creado_por_id: int
+    -actualizado_por_id: int
 }
 
+class Imagen_Campaña {
+    -id: int
+    -imagen: string
+    -esPortada: boolean
+}
+
+}
+
+' ===================== DONACIONES =====================
 package "DONACIONES" {
 
-    class Donacion {
-        -Id: int
-        -Titulo: string
-        -Detalle: text
-        -Tipo: string
-        -Cantidad: int
-        -Estado: string
-        -Fecha_Registro: datetime
-    }
-
-    class Imagen_Donacion {
-        -Id: int
-        -Imagen: text
-    }
+class Donacion {
+    -id: int
+    -titulo: string
+    -detalle: string
+    -tipo: string
+    -cantidad: int
+    -estado: string
+    -puntos: int
+    -fecha_registro: datetime
+    -fecha_aprobacion: datetime
+    -fecha_rechazo: datetime
+    -motivo_rechazo: string
+    -creado_por_id: int
+    -aprobado_por_id: int
+    -rechazado_por_id: int
 }
 
-package "BENEFICIOS" {
-
-    class Beneficio {
-        -Id: int
-        -Titulo: string
-        -Tipo: string
-        -Detalle: text
-        -Cantidad: int
-        -Fecha_Registro: datetime
-        -Ultimo_Cambio: datetime
-    }
-
-    class Imagen_Beneficio {
-        -Id: int
-        -Imagen: text
-    }
+class Imagen_Donacion {
+    -id: int
+    -imagen: string
 }
 
-package "MULTIMEDIA" {
-
-    class Imagen_Empresa {
-        -Id: int
-        -Logo: text
-        -Banner: text
-    }
-
-    class Imagen_Organizacion {
-        -Id: int
-        -Logo: text
-        -Banner: text
-    }
 }
 
-' ========================
-' RELACIONES ORDENADAS
-' ========================
+' ===================== RELACIONES =====================
 
 Usuario "1" -right- "1" Donador
-Usuario "1" -down- "0..*" Usuarios_Empresa
-Usuario "1" -down- "0..*" Usuarios_Organizacion
+Usuario "1" -right- "1" RankingDonador
 
-Empresa "1" -down- "0..*" Beneficio
+Usuario "1" -down- "0..*" EmpresaUsuario
+Usuario "1" -down- "0..*" OrganizacionUsuario
+Usuario "1" -down- "0..*" UsuarioBeneficio
+Usuario "1" -down- "0..*" Donacion
+
+Empresa "1" -down- "0..*" EmpresaUsuario
+Empresa "1" -right- "0..*" Beneficio
 Empresa "1" -down- "0..*" Imagen_Empresa
-Empresa "1" -left- "0..*" Usuarios_Empresa
 
-Organizacion "1" -down- "0..*" Campaña
+Organizacion "1" -down- "0..*" OrganizacionUsuario
+Organizacion "1" -right- "0..*" Campaña
 Organizacion "1" -down- "0..*" Imagen_Organizacion
-Organizacion "1" -left- "0..*" Usuarios_Organizacion
 
 Campaña "1" -down- "0..*" Donacion
 Campaña "1" -right- "0..*" Imagen_Campaña
@@ -166,6 +229,9 @@ Donador "1" -down- "0..*" Donacion
 
 Donacion "1" -right- "0..*" Imagen_Donacion
 
+Beneficio "1" -down- "0..*" UsuarioBeneficio
 Beneficio "1" -right- "0..*" Imagen_Beneficio
+
+Usuario "1" -right- "0..*" Invitacion
 
 @enduml
