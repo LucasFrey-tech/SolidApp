@@ -3,15 +3,15 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { RolSecundario } from '../Modules/user/enums/enums';
+import { Usuario } from './usuario.entity';
+import { Empresa } from './empresa.entity';
+import { Organizacion } from './organizacion.entity';
 
-/**
- * Entidad Invitacion
- * Representa una invitación enviada a un correo para unirse
- * a una empresa o organización dentro del sistema.
- */
 @Entity('invitaciones')
 export class Invitacion {
   @ApiProperty({
@@ -35,32 +35,55 @@ export class Invitacion {
   @Column({ type: 'varchar', length: 255 })
   correo: string;
 
-  @ApiProperty({
-    example: 3,
-    description: 'ID de la empresa a la que se invita',
-  })
+  // ================================
+  // RELACIÓN: EMPRESA (opcional)
+  // ================================
+  @ManyToOne(() => Empresa, { nullable: true })
+  @JoinColumn({ name: 'empresaId' })
+  empresa?: Empresa;
+
   @Column({ nullable: true })
   empresaId?: number;
 
-  @ApiProperty({
-    example: 5,
-    description: 'ID de la organización a la que se invita',
-  })
+  // ================================
+  // RELACIÓN: ORGANIZACIÓN (opcional)
+  // ================================
+  @ManyToOne(() => Organizacion, { nullable: true })
+  @JoinColumn({ name: 'organizacionId' })
+  organizacion?: Organizacion;
+
   @Column({ nullable: true })
   organizacionId?: number;
 
-  @ApiProperty({
-    example: 10,
-    description: 'ID del usuario que envió la invitación',
-  })
+  // ================================
+  // RELACIÓN: USUARIO QUE INVITA
+  // ================================
+  @ManyToOne(() => Usuario)
+  @JoinColumn({ name: 'invitadorID' })
+  invitador: Usuario;
+
   @Column()
   invitadorID: number;
+
+  // ================================
+  // RELACIÓN: USUARIO QUE ACEPTA 
+  // ================================
+  @ManyToOne(() => Usuario, { nullable: true })
+  @JoinColumn({ name: 'usuarioId' })
+  usuario?: Usuario;
+
+  @Column({ nullable: true })
+  usuarioId?: number;
 
   @ApiProperty({
     example: 'MIEMBRO',
     description: 'Rol que tendrá el usuario al aceptar la invitación',
   })
-  @Column({ type: 'varchar', length: 20, default: RolSecundario.MIEMBRO })
+  @Column({
+    type: 'varchar',
+    length: 20,
+    default: RolSecundario.MIEMBRO,
+  })
   rol: RolSecundario;
 
   @ApiProperty({
@@ -76,7 +99,6 @@ export class Invitacion {
   })
   @CreateDateColumn({ type: 'datetime2' })
   fecha_creacion: Date;
-  descripcion: 'Fecha cuando el usuario se registra usando la invitación';
 
   @ApiPropertyOptional({
     example: '2026-03-20T10:30:00Z',
@@ -86,7 +108,7 @@ export class Invitacion {
   fecha_expiracion?: Date;
 
   // ================================
-  // Getter virtual para estado calculado
+  // ESTADO CALCULADO
   // ================================
   get estado(): 'pendiente' | 'usada' | 'expirada' {
     if (this.expirada) return 'usada';

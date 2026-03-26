@@ -63,7 +63,7 @@ export class EmpresaService {
     private readonly dataSource: DataSource,
     private readonly hashService: HashService,
     private readonly invitacionesService: InvitacionesService,
-  ) {}
+  ) { }
 
   /**
    * Obtiene empresas paginadas con búsqueda opcional.
@@ -88,9 +88,9 @@ export class EmpresaService {
 
     const where: FindOptionsWhere<Empresa>[] = search
       ? [
-          { ...baseFilter, nombre_empresa: Like(`%${search}%`) },
-          { ...baseFilter, razon_social: Like(`%${search}%`) },
-        ]
+        { ...baseFilter, nombre_empresa: Like(`%${search}%`) },
+        { ...baseFilter, razon_social: Like(`%${search}%`) },
+      ]
       : [baseFilter];
 
     const [empresas, total] = await this.empresaRepository.findAndCount({
@@ -235,14 +235,31 @@ export class EmpresaService {
         const invitacion = await this.invitacionesService.buscarPorToken(
           dto.token,
         );
-        if (!invitacion) throw new BadRequestException('Invitación inválida');
+
+        if (!invitacion) {
+          throw new BadRequestException('Invitación inválida');
+        }
+
+        // validar que el mail coincida
         if (invitacion.correo !== dto.correo) {
           throw new BadRequestException(
             'El correo no coincide con la invitación',
           );
         }
 
-        await this.invitacionesService.marcarAceptada(invitacion.id);
+        // evitar reutilización
+        if (invitacion.expirada) {
+          throw new BadRequestException(
+            'La invitación ya fue utilizada',
+          );
+        }
+
+        // 
+        await this.invitacionesService.marcarAceptada(
+          invitacion.id,
+          savedGestor.id,
+          manager
+        );
       }
 
       const vinculo = empresaUsuarioRepo.create({
@@ -292,15 +309,15 @@ export class EmpresaService {
       logo: updateDto.logo,
       contacto: updateDto.contacto
         ? {
-            ...empresaUsuario.empresa.contacto,
-            ...updateDto.contacto,
-          }
+          ...empresaUsuario.empresa.contacto,
+          ...updateDto.contacto,
+        }
         : undefined,
       direccion: updateDto.direccion
         ? {
-            ...empresaUsuario.empresa.direccion,
-            ...updateDto.direccion,
-          }
+          ...empresaUsuario.empresa.direccion,
+          ...updateDto.direccion,
+        }
         : undefined,
 
       actualizado_por: { id: usuarioId },
@@ -415,20 +432,20 @@ export class EmpresaService {
 
     dto.creado_por = empresa.creado_por
       ? {
-          id: empresa.creado_por.id,
-          nombre: empresa.creado_por.nombre,
-          apellido: empresa.creado_por.apellido,
-          email: empresa.creado_por.contacto?.correo,
-        }
+        id: empresa.creado_por.id,
+        nombre: empresa.creado_por.nombre,
+        apellido: empresa.creado_por.apellido,
+        email: empresa.creado_por.contacto?.correo,
+      }
       : undefined;
 
     dto.actualizado_por = empresa.actualizado_por
       ? {
-          id: empresa.actualizado_por.id,
-          nombre: empresa.actualizado_por.nombre,
-          apellido: empresa.actualizado_por.apellido,
-          email: empresa.actualizado_por.contacto?.correo,
-        }
+        id: empresa.actualizado_por.id,
+        nombre: empresa.actualizado_por.nombre,
+        apellido: empresa.actualizado_por.apellido,
+        email: empresa.actualizado_por.contacto?.correo,
+      }
       : undefined;
 
     return dto;

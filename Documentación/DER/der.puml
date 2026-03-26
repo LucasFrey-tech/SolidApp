@@ -1,8 +1,4 @@
 @startuml DER
-' ===================== 
-'PARA EJECUTAR TENER PLANTUML INSTALADO + CLICK DERECHO'
-'A LA PANTALLA Y CLICKEAR "PREVIEW CURRENT DIAGRAM"'
- '====================='
 left to right direction
 skinparam linetype ortho
 skinparam packageStyle rectangle
@@ -197,9 +193,13 @@ entity Invitacion {
   +id : int <<PK>>
   token : varchar(255)
   correo : varchar(255)
-  empresaId : int
-  organizacionId : int
-  invitadorID : int
+
+  empresaId : int <<FK>>
+  organizacionId : int <<FK>>
+
+  invitadorID : int <<FK>>
+  usuarioId : int <<FK>>
+
   rol : varchar(20)
   expirada : boolean
   fecha_creacion : datetime2
@@ -234,5 +234,13 @@ Contacto ||--o{ Organizacion
 Direccion ||--o{ Usuario
 Direccion ||--o{ Empresa
 Direccion ||--o{ Organizacion
+
+' ===== INVITACIONES =====
+
+Usuario ||--o{ Invitacion : invitador
+Usuario ||--o{ Invitacion : usuario
+
+Empresa ||--o{ Invitacion
+Organizacion ||--o{ Invitacion
 
 @enduml

@@ -66,42 +66,55 @@ export class AuthService {
     let usuario: ResponseUsuarioDto;
 
     if (dto.token) {
-      const invitacion = await this.invitacionesService.buscarPorToken(
-        dto.token,
-      );
-      if (!invitacion) throw new BadRequestException('Invitación inválida');
-      if (invitacion.correo !== dto.correo) {
-        throw new BadRequestException(
-          'El correo no coincide con la invitación',
-        );
-      }
+  const invitacion = await this.invitacionesService.buscarPorToken(
+    dto.token,
+  );
 
-      usuario = await this.usuarioService.create({
-        correo: dto.correo,
-        clave,
-        nombre: dto.nombre,
-        apellido: dto.apellido,
-        documento: dto.documento,
-        rol: Rol.COLABORADOR,
-      });
+  if (!invitacion) {
+    throw new BadRequestException('Invitación inválida');
+  }
 
-      await Promise.all([
-        invitacion.organizacionId
-          ? this.invitacionesService.agregarUsuarioAOrganizacion(
-              usuario.id,
-              invitacion.organizacionId,
-            )
-          : Promise.resolve(),
-        invitacion.empresaId
-          ? this.invitacionesService.agregarUsuarioAEmpresa(
-              usuario.id,
-              invitacion.empresaId,
-            )
-          : Promise.resolve(),
-      ]);
+  if (invitacion.correo !== dto.correo) {
+    throw new BadRequestException(
+      'El correo no coincide con la invitación',
+    );
+  }
 
-      await this.invitacionesService.marcarAceptada(invitacion.id);
-    } else {
+  if (invitacion.expirada) {
+    throw new BadRequestException(
+      'La invitación ya fue utilizada',
+    );
+  }
+
+  usuario = await this.usuarioService.create({
+    correo: dto.correo,
+    clave,
+    nombre: dto.nombre,
+    apellido: dto.apellido,
+    documento: dto.documento,
+    rol: Rol.COLABORADOR,
+  });
+
+  await Promise.all([
+    invitacion.organizacionId
+      ? this.invitacionesService.agregarUsuarioAOrganizacion(
+          usuario.id,
+          invitacion.organizacionId,
+        )
+      : Promise.resolve(),
+    invitacion.empresaId
+      ? this.invitacionesService.agregarUsuarioAEmpresa(
+          usuario.id,
+          invitacion.empresaId,
+        )
+      : Promise.resolve(),
+  ]);
+
+  await this.invitacionesService.marcarAceptada(
+    invitacion.id,
+    usuario.id,
+  );
+} else {
       usuario = await this.usuarioService.create({
         correo: dto.correo,
         clave,

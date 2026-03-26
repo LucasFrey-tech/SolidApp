@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull, MoreThan } from 'typeorm';
+import { Repository, IsNull, MoreThan, EntityManager } from 'typeorm';
 import { Invitacion } from '../../Entities/invitacion.entity';
 import { Contacto } from '../../Entities/contacto.entity';
 import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
@@ -23,7 +23,7 @@ export class InvitacionesService {
     private organizacionUsuarioRepo: Repository<OrganizacionUsuario>,
 
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
 
   async crearInvitacionesEmpresa(
     correos: string[],
@@ -336,15 +336,26 @@ export class InvitacionesService {
 
     return this.empresaUsuarioRepo.save(relacion);
   }
-  async marcarAceptada(invitacionId: number) {
-    const invitacion = await this.invitacionRepo.findOne({
+  async marcarAceptada(
+    invitacionId: number,
+    usuarioId: number,
+    manager?: EntityManager,
+  ) {
+    const repo = manager
+      ? manager.getRepository(Invitacion)
+      : this.invitacionRepo;
+
+    const invitacion = await repo.findOne({
       where: { id: invitacionId },
     });
 
-    if (!invitacion) return;
+    if (!invitacion) {
+      throw new Error('Invitación no encontrada');
+    }
 
+    invitacion.usuarioId = usuarioId;
     invitacion.expirada = true;
 
-    return this.invitacionRepo.save(invitacion);
+    return repo.save(invitacion);
   }
 }
