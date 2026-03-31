@@ -1,11 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Like, MoreThan, Repository } from 'typeorm';
 import { Usuario } from '../../Entities/usuario.entity';
@@ -21,6 +14,7 @@ import { UsuarioBeneficioService } from './usuario-beneficio/usuario-beneficio.s
 import { HashService } from '../../common/bcryptService/hashService';
 import { JwtService } from '@nestjs/jwt';
 import { GestionTipo } from '../auth/dto/gestion.enum';
+import { ErrorManager } from '../../common/errors/error.manager';
 
 @Injectable()
 export class UsuarioService {
@@ -55,34 +49,45 @@ export class UsuarioService {
    * Crea un nuevo usuario.
    */
   async create(createDto: CreateUsuarioDto): Promise<ResponseUsuarioDto> {
-    const repo = this.usuarioRepository;
+    try {
+      const existente = await this.usuarioRepository.findOne({
+        relations: ['contacto', 'direccion'],
+        where: { documento: createDto.documento },
+      });
 
-    const existente = await repo.findOne({
-      relations: ['contacto', 'direccion'],
-      where: { documento: createDto.documento },
-    });
+      if (existente) {
+        throw new ErrorManager({
+          type: 'CONFLICT',
+          message: 'Ya existe este Usuario',
+        });
+      }
 
-    if (existente) {
-      throw new ConflictException('Ya existe este Usuario');
+      const { correo, ...dto } = createDto;
+
+      this.logger.log(`CORREO: ${correo}`);
+
+      const usuario = this.usuarioRepository.create({
+        ...dto,
+        contacto: {
+          correo: correo,
+        },
+        direccion: {},
+        puntos: 0,
+      });
+
+      const saved = await this.usuarioRepository.save(usuario);
+      this.logger.log(`Usuario creado con ID ${saved.id}`);
+
+      return this.mapToResponseDto(saved);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    const { correo, ...dto } = createDto;
-
-    this.logger.log(`CORREO: ${correo}`);
-
-    const usuario = repo.create({
-      ...dto,
-      contacto: {
-        correo: correo,
-      },
-      direccion: {},
-      puntos: 0,
-    });
-
-    const saved = await repo.save(usuario);
-    this.logger.log(`Usuario creado con ID ${saved.id}`);
-
-    return this.mapToResponseDto(saved);
   }
 
   // ================ Panel Usuario ===================
@@ -123,57 +128,79 @@ export class UsuarioService {
     id: number,
     dto: UpdateCredencialesDto,
   ): Promise<{ token: string }> {
-    const usuario = await this.usuarioRepository.findOne({
-      relations: ['contacto', 'empresaUsuario', 'organizacionUsuario'],
-      where: { id },
-    });
+    try {
+      const usuario = await this.usuarioRepository.findOne({
+        relations: ['contacto', 'empresaUsuario', 'organizacionUsuario'],
+        where: { id },
+      });
 
-    if (!usuario) throw new NotFoundException('Usuario no encontrado');
-
-    if (dto.passwordNueva) {
-      if (!dto.passwordActual) {
-        throw new BadRequestException('Debés ingresar la contraseña actual');
+      if (!usuario) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: 'Usuario no encontrado',
+        });
       }
 
-      const coincide = await this.hashService.compare(
-        dto.passwordActual,
-        usuario.clave,
-      );
-      if (!coincide) {
-        throw new UnauthorizedException('La contraseña actual es incorrecta');
+      if (dto.passwordNueva) {
+        if (!dto.passwordActual) {
+          throw new ErrorManager({
+            type: 'BAD_REQUEST',
+            message: 'Debés ingresar la contraseña actual',
+          });
+        }
+
+        const coincide = await this.hashService.compare(
+          dto.passwordActual,
+          usuario.clave,
+        );
+
+        if (!coincide) {
+          throw new ErrorManager({
+            type: 'UNAUTHORIZED',
+            message: 'La contraseña actual es incorrecta',
+          });
+        }
+
+        usuario.clave = await this.hashService.hash(dto.passwordNueva);
       }
 
-      usuario.clave = await this.hashService.hash(dto.passwordNueva);
+      if (dto.correo) {
+        usuario.contacto.correo = dto.correo;
+      }
+
+      const updated = await this.usuarioRepository.save(usuario);
+
+      let gestion: GestionTipo | null = null;
+      let gestionId: number | null = null;
+
+      if (updated.empresaUsuario) {
+        gestion = GestionTipo.EMPRESA;
+        gestionId = updated.empresaUsuario.id;
+      } else if (updated.organizacionUsuario) {
+        gestion = GestionTipo.ORGANIZACION;
+        gestionId = updated.organizacionUsuario.id;
+      }
+
+      const payload = {
+        sub: updated.id,
+        email: updated.contacto.correo,
+        rol: updated.rol,
+        gestion,
+        gestionId,
+      };
+
+      const newToken = this.jwtService.sign(payload);
+
+      return { token: newToken };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    if (dto.correo) {
-      usuario.contacto.correo = dto.correo;
-    }
-
-    const updated = await this.usuarioRepository.save(usuario);
-
-    let gestion: GestionTipo | null = null;
-    let gestionId: number | null = null;
-
-    if (updated.empresaUsuario) {
-      gestion = GestionTipo.EMPRESA;
-      gestionId = updated.empresaUsuario.id;
-    } else if (updated.organizacionUsuario) {
-      gestion = GestionTipo.ORGANIZACION;
-      gestionId = updated.organizacionUsuario.id;
-    }
-
-    const payload = {
-      sub: updated.id,
-      email: updated.contacto.correo,
-      rol: updated.rol,
-      gestion,
-      gestionId,
-    };
-
-    const newToken = this.jwtService.sign(payload);
-
-    return { token: newToken };
   }
 
   /**
@@ -183,22 +210,36 @@ export class UsuarioService {
     id: number,
     dto: UpdateUsuarioDto,
   ): Promise<ResponseUsuarioDto> {
-    const usuario = await this.usuarioRepository.findOne({
-      relations: ['contacto', 'direccion'],
-      where: { id },
-    });
+    try {
+      const usuario = await this.usuarioRepository.findOne({
+        relations: ['contacto', 'direccion'],
+        where: { id },
+      });
 
-    if (!usuario)
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      if (!usuario) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Usuario con ID ${id} no encontrado`,
+        });
+      }
 
-    this.usuarioRepository.merge(usuario, dto);
+      this.usuarioRepository.merge(usuario, dto);
 
-    Object.assign(usuario.contacto ?? {}, dto.contacto);
-    Object.assign(usuario.direccion ?? {}, dto.direccion);
+      Object.assign(usuario.contacto ?? {}, dto.contacto);
+      Object.assign(usuario.direccion ?? {}, dto.direccion);
 
-    await this.usuarioRepository.save(usuario);
+      await this.usuarioRepository.save(usuario);
 
-    return this.mapToResponseDto(usuario);
+      return this.mapToResponseDto(usuario);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   /**
@@ -208,20 +249,33 @@ export class UsuarioService {
     id: number,
     updateDto: UpdatePuntosDto,
   ): Promise<ResponseUsuarioDto> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-    });
+    try {
+      const usuario = await this.usuarioRepository.findOne({
+        where: { id },
+      });
 
-    if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      if (!usuario) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Usuario con ID ${id} no encontrado`,
+        });
+      }
+
+      Object.assign(usuario, updateDto);
+
+      const updated = await this.usuarioRepository.save(usuario);
+      this.logger.log(`Usuario ${id} actualizado`);
+
+      return this.mapToResponseDto(updated);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    Object.assign(usuario, updateDto);
-
-    const updated = await this.usuarioRepository.save(usuario);
-    this.logger.log(`Usuario ${id} actualizado`);
-
-    return this.mapToResponseDto(updated);
   }
 
   async actualizarUltimaConexion(id: number): Promise<void> {
@@ -234,16 +288,29 @@ export class UsuarioService {
    * Obtiene los puntos de un usuario específico.
    */
   async getPoints(id: number): Promise<{ id: number; puntos: number }> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-      select: ['id', 'puntos'],
-    });
+    try {
+      const usuario = await this.usuarioRepository.findOne({
+        where: { id },
+        select: ['id', 'puntos'],
+      });
 
-    if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      if (!usuario) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `message: Usuario con ID ${id} no encontrado`,
+        });
+      }
+
+      return { id: usuario.id, puntos: usuario.puntos ?? 0 };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    return { id: usuario.id, puntos: usuario.puntos ?? 0 };
   }
 
   // ================ Panel Admin ================
@@ -256,88 +323,137 @@ export class UsuarioService {
     limit: number,
     search: string,
   ): Promise<{ items: ResponseUsuarioDto[]; total: number }> {
-    const skip = (page - 1) * limit;
+    try {
+      const skip = (page - 1) * limit;
 
-    let whereConditions:
-      | FindOptionsWhere<Usuario>
-      | FindOptionsWhere<Usuario>[] = {};
+      let whereConditions:
+        | FindOptionsWhere<Usuario>
+        | FindOptionsWhere<Usuario>[] = {};
 
-    if (search) {
-      whereConditions = [
-        { nombre: Like(`%${search}%`) },
-        { apellido: Like(`%${search}%`) },
-        { contacto: { correo: Like(`%${search}%`) } },
-        { documento: Like(`%${search}%`) },
-      ];
+      if (search) {
+        whereConditions = [
+          { nombre: Like(`%${search}%`) },
+          { apellido: Like(`%${search}%`) },
+          { contacto: { correo: Like(`%${search}%`) } },
+          { documento: Like(`%${search}%`) },
+        ];
+      }
+
+      const [usuarios, total] = await this.usuarioRepository.findAndCount({
+        where: whereConditions,
+        relations: ['contacto'],
+        skip,
+        take: limit,
+        order: {
+          id: 'ASC',
+        },
+      });
+
+      return {
+        items: usuarios.map((usuario) => this.mapToResponseDto(usuario)),
+        total,
+      };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    const [usuarios, total] = await this.usuarioRepository.findAndCount({
-      where: whereConditions,
-      relations: ['contacto'],
-      skip,
-      take: limit,
-      order: {
-        id: 'ASC',
-      },
-    });
-
-    return {
-      items: usuarios.map((usuario) => this.mapToResponseDto(usuario)),
-      total,
-    };
   }
 
   /**
    * Obtiene un usuario por su ID.
    */
   async findOne(id: number): Promise<ResponseUsuarioDto> {
-    const usuario = await this.usuarioRepository.findOne({
-      relations: [
-        'contacto',
-        'direccion',
-        'empresaUsuario',
-        'organizacionUsuario',
-      ],
-      where: { id },
-    });
+    try {
+      const usuario = await this.usuarioRepository.findOne({
+        relations: [
+          'contacto',
+          'direccion',
+          'empresaUsuario',
+          'organizacionUsuario',
+        ],
+        where: { id },
+      });
 
-    if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      if (!usuario) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `message: Usuario con ID ${id} no encontrado`,
+        });
+      }
+
+      return this.mapToResponseDto(usuario);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    return this.mapToResponseDto(usuario);
   }
 
   /**
    * Deshabilita un usuario (soft delete sobre la Cuenta).
    */
   async delete(id: number): Promise<void> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-    });
+    try {
+      const usuario = await this.usuarioRepository.findOne({
+        where: { id },
+      });
 
-    if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      if (!usuario) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `message: Usuario con ID ${id} no encontrado`,
+        });
+      }
+
+      await this.usuarioRepository.update(id, { habilitado: false });
+      this.logger.log(`Usuario ${id} deshabilitado`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    await this.usuarioRepository.update(id, { habilitado: false });
-    this.logger.log(`Usuario ${id} deshabilitado`);
   }
 
   /**
    * Restaura un usuario deshabilitado.
    */
   async restore(id: number): Promise<void> {
-    const usuario = await this.usuarioRepository.findOne({
-      where: { id },
-    });
+    try {
+      const usuario = await this.usuarioRepository.findOne({
+        where: { id },
+      });
 
-    if (!usuario) {
-      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+      if (!usuario) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `message: Usuario con ID ${id} no encontrado`,
+        });
+      }
+
+      await this.usuarioRepository.update(id, { habilitado: true });
+      this.logger.log(`Usuario ${id} restaurado`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    await this.usuarioRepository.update(id, { habilitado: true });
-    this.logger.log(`Usuario ${id} restaurado`);
   }
 
   /**

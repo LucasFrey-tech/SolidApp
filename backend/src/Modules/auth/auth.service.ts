@@ -1,11 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import {
-  Injectable,
-  UnauthorizedException,
-  BadRequestException,
-  ForbiddenException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 
 import { UsuarioService } from '../user/usuario.service';
 import { Rol } from '../user/enums/enums';
@@ -21,7 +15,7 @@ import { GestionTipo } from './dto/gestion.enum';
 import { InvitacionesService } from '../invitaciones/invitacion.service';
 import { GestionDetector } from './estrategias/gestion/gestion_detector';
 
-import { ResponseUsuarioDto } from '../user/dto/response_usuario.dto';
+import { ErrorManager } from '../../common/errors/error.manager';
 
 @Injectable()
 export class AuthService {
@@ -49,146 +43,158 @@ export class AuthService {
     };
   }
 
-  private checkDeshabilitado(habilitado: boolean): void {
-    if (!habilitado)
-      throw new ForbiddenException(
-        'Usuario bloqueado. Contacte al administrador.',
-      );
-  }
-
   async register(dto: RegisterDto) {
-    if (await this.usuarioService.findByEmail(dto.correo)) {
-      throw new BadRequestException('El correo ya está registrado');
-    }
+    try {
+      if (await this.usuarioService.findByEmail(dto.correo)) {
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: 'El correo ya está registrado',
+        });
+      }
 
-    const clave = await this.hashService.hash(dto.clave);
+      const clave = await this.hashService.hash(dto.clave);
+      let rol = Rol.USUARIO;
 
-    let usuario: ResponseUsuarioDto;
+      if (dto.token) {
+        const invitacion = await this.invitacionesService.validarInvitacion(
+          dto.token,
+          dto.correo,
+        );
+        rol = Rol.COLABORADOR;
 
-    if (dto.token) {
-  const invitacion = await this.invitacionesService.buscarPorToken(
-    dto.token,
-  );
+        const usuario = await this.usuarioService.create({
+          correo: dto.correo,
+          clave,
+          nombre: dto.nombre,
+          apellido: dto.apellido,
+          documento: dto.documento,
+          rol,
+        });
 
-  if (!invitacion) {
-    throw new BadRequestException('Invitación inválida');
-  }
+        await Promise.all([
+          invitacion.organizacionId
+            ? this.invitacionesService.agregarUsuarioAOrganizacion(
+                usuario.id,
+                invitacion.organizacionId,
+              )
+            : Promise.resolve(),
+          invitacion.empresaId
+            ? this.invitacionesService.agregarUsuarioAEmpresa(
+                usuario.id,
+                invitacion.empresaId,
+              )
+            : Promise.resolve(),
+        ]);
 
-  if (invitacion.correo !== dto.correo) {
-    throw new BadRequestException(
-      'El correo no coincide con la invitación',
-    );
-  }
-
-  if (invitacion.expirada) {
-    throw new BadRequestException(
-      'La invitación ya fue utilizada',
-    );
-  }
-
-  usuario = await this.usuarioService.create({
-    correo: dto.correo,
-    clave,
-    nombre: dto.nombre,
-    apellido: dto.apellido,
-    documento: dto.documento,
-    rol: Rol.COLABORADOR,
-  });
-
-  await Promise.all([
-    invitacion.organizacionId
-      ? this.invitacionesService.agregarUsuarioAOrganizacion(
+        await this.invitacionesService.marcarAceptada(
+          invitacion.id,
           usuario.id,
-          invitacion.organizacionId,
-        )
-      : Promise.resolve(),
-    invitacion.empresaId
-      ? this.invitacionesService.agregarUsuarioAEmpresa(
-          usuario.id,
-          invitacion.empresaId,
-        )
-      : Promise.resolve(),
-  ]);
+        );
+        return this.buildToken(this.createPayload(usuario.id, usuario.rol));
+      }
 
-  await this.invitacionesService.marcarAceptada(
-    invitacion.id,
-    usuario.id,
-  );
-} else {
-      usuario = await this.usuarioService.create({
+      const usuario = await this.usuarioService.create({
         correo: dto.correo,
         clave,
         nombre: dto.nombre,
         apellido: dto.apellido,
         documento: dto.documento,
-        rol: Rol.USUARIO,
+        rol,
       });
 
-      const tokenPayload = this.createPayload(usuario.id, usuario.rol);
-
-      this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
-
-      return this.buildToken(tokenPayload);
+      return this.buildToken(this.createPayload(usuario.id, usuario.rol));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    const tokenPayload = this.createPayload(usuario.id, usuario.rol);
-    this.logger.log('DATOS DEL USUARIO REGISTRADO: ', usuario);
-
-    return this.buildToken(tokenPayload);
   }
 
   async login(dto: LoginDto) {
-    const usuario = await this.usuarioService.findByEmail(dto.correo);
+    try {
+      const usuario = await this.usuarioService.findByEmail(dto.correo);
 
-    if (!usuario) throw new UnauthorizedException('Credenciales incorrectas');
+      if (!usuario) {
+        throw new ErrorManager({
+          type: 'UNAUTHORIZED',
+          message: 'Credenciales incorrectas',
+        });
+      }
 
-    this.checkDeshabilitado(usuario.habilitado);
+      if (!usuario.habilitado) {
+        throw new ErrorManager({
+          type: 'FORBIDDEN',
+          message: 'Usuario bloqueado. Contacte al Administrador.',
+        });
+      }
 
-    const claveValida = await this.hashService.compare(
-      dto.clave,
-      usuario.clave,
-    );
+      const claveValida = await this.hashService.compare(
+        dto.clave,
+        usuario.clave,
+      );
 
-    if (!claveValida)
-      throw new UnauthorizedException('Credenciales incorrectas');
+      if (!claveValida) {
+        throw new ErrorManager({
+          type: 'UNAUTHORIZED',
+          message: 'Credenciales incorrectas',
+        });
+      }
 
-    await this.usuarioService.actualizarUltimaConexion(usuario.id);
+      await this.usuarioService.actualizarUltimaConexion(usuario.id);
 
-    let gestion: GestionTipo | null = null;
-    let gestionId: number | null = null;
+      const gestionInfo =
+        usuario.rol === Rol.COLABORADOR
+          ? await this.gestionDetector.detectar(usuario.id)
+          : null;
 
-    if (usuario.rol === Rol.COLABORADOR) {
-      const gestionInfo = await this.gestionDetector.detectar(usuario.id);
+      return this.buildToken(
+        this.createPayload(
+          usuario.id,
+          usuario.rol,
+          gestionInfo?.tipo ?? null,
+          gestionInfo?.entidadId ?? null,
+        ),
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
 
-      gestion = gestionInfo?.tipo ?? null;
-      gestionId = gestionInfo?.entidadId ?? null;
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    const tokenPayload = this.createPayload(
-      usuario.id,
-      usuario.rol,
-      gestion,
-      gestionId,
-    );
-
-    return this.buildToken(tokenPayload);
   }
 
   async forgotPassword(email: string) {
-    const usuario = await this.usuarioService.findByEmail(email);
+    try {
+      const usuario = await this.usuarioService.findByEmail(email);
 
-    if (!usuario) {
-      return { message: 'Si el email existe, recibirás un enlace' };
+      if (!usuario) {
+        return { message: 'Si el email existe, recibirás un enlace' };
+      }
+
+      const token = randomBytes(32).toString('hex');
+      const expires = new Date(Date.now() + 3600000);
+
+      await this.usuarioService.setResetToken(usuario.id, token, expires);
+      await this.emailService.sendResetPasswordEmail(email, token);
+
+      return { message: 'Email enviado' };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    const token = randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 3600000);
-
-    await this.usuarioService.setResetToken(usuario.id, token, expires);
-
-    await this.emailService.sendResetPasswordEmail(email, token);
-
-    return { message: 'Email enviado' };
   }
 
   async resetPassword(token: string, newPassword: string) {

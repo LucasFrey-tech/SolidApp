@@ -1,11 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  BadRequestException,
-  InternalServerErrorException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Campaigns } from '../../Entities/campaigns.entity';
@@ -20,6 +13,7 @@ import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
 import * as path from 'path';
 import { ResponseCampaignsDetailPaginatedDto } from './dto/response_campaign_paginated.dto';
 import { Usuario } from '../../Entities/usuario.entity';
+import { ErrorManager } from '../../common/errors/error.manager';
 
 /**
  * Servicio que maneja la lógica de negocio de las Campañas Solidarias
@@ -53,40 +47,52 @@ export class CampaignsService {
     search: string,
     onlyEnabled: boolean = false,
   ) {
-    const query = this.campaignsRepository
-      .createQueryBuilder('campaign')
-      .leftJoinAndSelect('campaign.organizacion', 'organizacion')
-      .leftJoinAndSelect('campaign.imagenes', 'imagenes')
-      .leftJoin('organizacion.organizacionUsuarios', 'orgUsers')
-      .leftJoin('orgUsers.usuario', 'usuario');
+    try {
+      const query = this.campaignsRepository
+        .createQueryBuilder('campaign')
+        .leftJoinAndSelect('campaign.organizacion', 'organizacion')
+        .leftJoinAndSelect('campaign.imagenes', 'imagenes')
+        .leftJoin('organizacion.organizacionUsuarios', 'orgUsers')
+        .leftJoin('orgUsers.usuario', 'usuario');
 
-    query.andWhere('usuario.habilitado = :habilitado', { habilitado: 1 });
-    query.andWhere('organizacion.habilitada = :habilitada', { habilitada: 1 });
-
-    if (onlyEnabled) {
-      query.andWhere('campaign.estado = :estado', {
-        estado: CampaignEstado.ACTIVA,
+      query.andWhere('usuario.habilitado = :habilitado', { habilitado: 1 });
+      query.andWhere('organizacion.habilitada = :habilitada', {
+        habilitada: 1,
       });
-      query.andWhere('campaign.objetivo > 0');
+
+      if (onlyEnabled) {
+        query.andWhere('campaign.estado = :estado', {
+          estado: CampaignEstado.ACTIVA,
+        });
+        query.andWhere('campaign.objetivo > 0');
+      }
+
+      if (search) {
+        query.andWhere(
+          '(campaign.titulo LIKE :search OR campaign.descripcion LIKE :search)',
+          { search: `%${search}%` },
+        );
+      }
+
+      const [campaigns, total] = await query
+        .orderBy('campaign.fecha_Registro', 'DESC')
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+
+      return {
+        items: campaigns.map((c) => this.mapToDetailDto(c)),
+        total,
+      };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    if (search) {
-      query.andWhere(
-        '(campaign.titulo LIKE :search OR campaign.descripcion LIKE :search)',
-        { search: `%${search}%` },
-      );
-    }
-
-    const [campaigns, total] = await query
-      .orderBy('campaign.fecha_Registro', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getManyAndCount();
-
-    return {
-      items: campaigns.map((c) => this.mapToDetailDto(c)),
-      total,
-    };
   }
 
   /**
@@ -102,17 +108,27 @@ export class CampaignsService {
     page: number,
     limit: number,
   ): Promise<ResponseCampaignsDetailPaginatedDto> {
-    const [campaigns, total] = await this.campaignsRepository.findAndCount({
-      where: { organizacion: { id: organizacionId } },
-      relations: ['organizacion', 'imagenes'],
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+    try {
+      const [campaigns, total] = await this.campaignsRepository.findAndCount({
+        where: { organizacion: { id: organizacionId } },
+        relations: ['organizacion', 'imagenes'],
+        skip: (page - 1) * limit,
+        take: limit,
+      });
 
-    return {
-      items: campaigns.map(this.mapToDetailDto),
-      total,
-    };
+      return {
+        items: campaigns.map(this.mapToDetailDto),
+        total,
+      };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   /**
@@ -123,16 +139,29 @@ export class CampaignsService {
    * @throws {NotFoundException} Si no encuentra ninguna campaña con el ID especificado
    */
   async findOneDetail(id: number): Promise<ResponseCampaignDetalleDto> {
-    const campaign = await this.campaignsRepository.findOne({
-      where: { id },
-      relations: ['organizacion', 'imagenes'],
-    });
+    try {
+      const campaign = await this.campaignsRepository.findOne({
+        where: { id },
+        relations: ['organizacion', 'imagenes'],
+      });
 
-    if (!campaign) {
-      throw new NotFoundException('Campaña no encontrada');
+      if (!campaign) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: 'Campaña no encontrada',
+        });
+      }
+
+      return this.mapToDetailDto(campaign);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    return this.mapToDetailDto(campaign);
   }
 
   /**
@@ -150,64 +179,83 @@ export class CampaignsService {
     imagenes: string[],
     usuarioId: number,
   ): Promise<ResponseCampaignsDto> {
-    const organizacion = await this.organizacionRepository.findOne({
-      where: {
-        id: id,
-        habilitada: true,
-      },
-    });
+    try {
+      const organizacion = await this.organizacionRepository.findOne({
+        where: {
+          id: id,
+          habilitada: true,
+        },
+      });
 
-    if (!organizacion) {
-      throw new NotFoundException(
-        `Organización con ID ${id} no encontrada o está deshabilitada`,
-      );
-    }
-
-    if (createDto.objetivo <= 0) {
-      throw new BadRequestException('El Objetivo tiene que ser mayor a 0');
-    }
-
-    this.validarRangoFechas(createDto.fecha_Inicio, createDto.fecha_Fin);
-
-    const campaign = this.campaignsRepository.create({
-      titulo: createDto.titulo,
-      descripcion: createDto.descripcion,
-      fecha_Inicio: createDto.fecha_Inicio,
-      fecha_Fin: createDto.fecha_Fin,
-      objetivo: createDto.objetivo,
-      puntos: createDto.puntos,
-      estado: CampaignEstado.PENDIENTE,
-      organizacion,
-      creado_por: { id: usuarioId },
-      actualizado_por: { id: usuarioId },
-    });
-
-    const saveCampaign = await this.campaignsRepository.save(campaign);
-    this.logger.log(`Campaña creado con ID ${saveCampaign.id}`);
-
-    for (let index = 0; index < imagenes.length; index++) {
-      const element = imagenes[index];
-      const imagenesCampania = new imagenes_campania();
-      if (index === 0) {
-        imagenesCampania.esPortada = true;
+      if (!organizacion) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Organización con ID ${id} no encontrada o está deshabilitada`,
+        });
       }
-      imagenesCampania.campaign = saveCampaign;
-      imagenesCampania.imagen = element;
-      await this.campaignsImagesRepository.save(imagenesCampania);
-    }
 
-    const campaignCompleta = await this.campaignsRepository.findOne({
-      where: { id: saveCampaign.id },
-      relations: ['creado_por', 'actualizado_por', 'organizacion', 'imagenes'],
-    });
+      if (createDto.objetivo <= 0) {
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: 'El objetivo tiene que ser mayor a 0',
+        });
+      }
 
-    if (!campaignCompleta) {
-      throw new InternalServerErrorException(
-        'Error al recuperar la campaña recién creada',
+      this.validarRangoFechas(createDto.fecha_Inicio, createDto.fecha_Fin);
+
+      const campaign = this.campaignsRepository.create({
+        titulo: createDto.titulo,
+        descripcion: createDto.descripcion,
+        fecha_Inicio: createDto.fecha_Inicio,
+        fecha_Fin: createDto.fecha_Fin,
+        objetivo: createDto.objetivo,
+        puntos: createDto.puntos,
+        estado: CampaignEstado.PENDIENTE,
+        organizacion,
+        creado_por: { id: usuarioId },
+        actualizado_por: { id: usuarioId },
+      });
+
+      const saveCampaign = await this.campaignsRepository.save(campaign);
+      this.logger.log(`Campaña creado con ID ${saveCampaign.id}`);
+
+      await Promise.all(
+        imagenes.map((imagen, index) => {
+          const imagenCampania = new imagenes_campania();
+          imagenCampania.esPortada = index === 0;
+          imagenCampania.campaign = saveCampaign;
+          imagenCampania.imagen = imagen;
+          return this.campaignsImagesRepository.save(imagenCampania);
+        }),
       );
-    }
 
-    return this.mapToResponseDto(campaignCompleta);
+      const campaignCompleta = await this.campaignsRepository.findOne({
+        where: { id: saveCampaign.id },
+        relations: [
+          'creado_por',
+          'actualizado_por',
+          'organizacion',
+          'imagenes',
+        ],
+      });
+
+      if (!campaignCompleta) {
+        throw new ErrorManager({
+          type: 'INTERNAL_SERVER_ERROR',
+          message: 'Error al recuperar la campaña recién creada',
+        });
+      }
+
+      return this.mapToResponseDto(campaignCompleta);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   /**
@@ -224,126 +272,156 @@ export class CampaignsService {
    * @throws {BadRequestException} cuando el objetivo de la Campaña es menor a 0
    */
   async update(
-    id: number,
+    organizacionId: number,
+    campaignId: number,
     updateDto: UpdateCampaignsDto,
     usuarioId: number,
     imagenes?: string[],
   ): Promise<ResponseCampaignsDto> {
-    const campaign = await this.campaignsRepository.findOne({
-      where: { id: id },
-      relations: ['organizacion', 'creador_por', 'actualizado_por'],
-    });
-
-    if (!campaign) {
-      throw new NotFoundException(
-        `Campaña Solidaria con ID ${id} no encontrada`,
-      );
-    }
-
-    if (campaign.organizacion.id !== id) {
-      throw new ForbiddenException(
-        'Esta campaña no pertenece a tu organización',
-      );
-    }
-
-    const organizacion = await this.organizacionRepository.findOne({
-      where: {
-        id: id,
-        habilitada: true,
-      },
-    });
-
-    if (!organizacion) {
-      throw new NotFoundException(
-        `Organización con ID ${id} no encontrada o está deshabilitada`,
-      );
-    }
-
-    campaign.organizacion = organizacion;
-
-    if (updateDto.objetivo !== undefined && updateDto.objetivo < 0) {
-      throw new BadRequestException('El objetivo no puede ser negativo');
-    }
-
-    Object.keys(updateDto).forEach((key) => {
-      if (
-        key !== 'id_organizacion' &&
-        key !== 'imagenesExistentes' &&
-        updateDto[key] !== undefined
-      ) {
-        campaign[key as keyof Omit<Campaigns, 'organizacion'>] = updateDto[
-          key as keyof UpdateCampaignsDto
-        ] as never;
-      }
-    });
-
-    if (
-      updateDto.estado === undefined &&
-      updateDto.fecha_Inicio &&
-      updateDto.fecha_Fin
-    ) {
-      campaign.estado = this.setEstado(
-        updateDto.fecha_Inicio,
-        updateDto.fecha_Fin,
-      );
-    }
-
-    campaign.actualizado_por = { id: usuarioId } as Usuario;
-    campaign.ultimo_cambio = new Date();
-
-    const updatedCampaign = await this.campaignsRepository.save(campaign);
-    this.logger.log(`Campaña Solidaria ${id} actualizada`);
-
-    const imagenesExistentesAConservar: string[] =
-      updateDto.imagenesExistentes ?? [];
-    const hayNuevasImagenes = imagenes && imagenes.length > 0;
-
-    if (hayNuevasImagenes || updateDto.imagenesExistentes !== undefined) {
-      const imagenesActuales = await this.campaignsImagesRepository.find({
-        where: { campaign: { id } },
+    try {
+      const campaign = await this.campaignsRepository.findOne({
+        where: { id: campaignId },
+        relations: ['organizacion', 'creador_por', 'actualizado_por'],
       });
 
-      const imagenesAEliminar = imagenesActuales.filter(
-        (img) => !imagenesExistentesAConservar.includes(img.imagen),
-      );
-
-      if (imagenesAEliminar.length > 0) {
-        await this.campaignsImagesRepository.remove(imagenesAEliminar);
+      if (!campaign) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Campaña con ID ${campaignId} no encontrada`,
+        });
       }
 
-      if (hayNuevasImagenes) {
-        const hayPortadaExistente =
-          await this.campaignsImagesRepository.findOne({
-            where: { campaign: { id }, esPortada: true },
-          });
+      if (campaign.organizacion.id !== organizacionId) {
+        throw new ErrorManager({
+          type: 'FORBIDDEN',
+          message: 'Esta campaña no pertenece a tu organización',
+        });
+      }
 
-        for (let index = 0; index < imagenes.length; index++) {
-          const newImage = new imagenes_campania();
-          newImage.campaign = campaign;
-          newImage.imagen = imagenes[index];
-          newImage.esPortada = !hayPortadaExistente && index === 0;
-          await this.campaignsImagesRepository.save(newImage);
+      const organizacion = await this.organizacionRepository.findOne({
+        where: {
+          id: organizacionId,
+          habilitada: true,
+        },
+      });
+
+      if (!organizacion) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Organización con ID ${organizacionId} no encontrada o está deshabilitada`,
+        });
+      }
+
+      campaign.organizacion = organizacion;
+
+      if (updateDto.objetivo !== undefined && updateDto.objetivo < 0) {
+        throw new ErrorManager({
+          type: 'BAD_REQUEST',
+          message: 'El objetivo no puede ser negativo',
+        });
+      }
+
+      Object.keys(updateDto).forEach((key) => {
+        if (
+          key !== 'id_organizacion' &&
+          key !== 'imagenesExistentes' &&
+          updateDto[key] !== undefined
+        ) {
+          campaign[key as keyof Omit<Campaigns, 'organizacion'>] = updateDto[
+            key as keyof UpdateCampaignsDto
+          ] as never;
+        }
+      });
+
+      if (
+        updateDto.estado === undefined &&
+        updateDto.fecha_Inicio &&
+        updateDto.fecha_Fin
+      ) {
+        campaign.estado = this.setEstado(
+          updateDto.fecha_Inicio,
+          updateDto.fecha_Fin,
+        );
+      }
+
+      campaign.actualizado_por = { id: usuarioId } as Usuario;
+      campaign.ultimo_cambio = new Date();
+
+      const updatedCampaign = await this.campaignsRepository.save(campaign);
+      this.logger.log(`Campaña Solidaria ${campaignId} actualizada`);
+
+      const imagenesExistentesAConservar: string[] =
+        updateDto.imagenesExistentes ?? [];
+      const hayNuevasImagenes = imagenes && imagenes.length > 0;
+
+      if (hayNuevasImagenes || updateDto.imagenesExistentes !== undefined) {
+        const imagenesActuales = await this.campaignsImagesRepository.find({
+          where: { campaign: { id: campaignId } },
+        });
+
+        const imagenesAEliminar = imagenesActuales.filter(
+          (img) => !imagenesExistentesAConservar.includes(img.imagen),
+        );
+
+        if (imagenesAEliminar.length > 0) {
+          await this.campaignsImagesRepository.remove(imagenesAEliminar);
+        }
+
+        if (hayNuevasImagenes) {
+          const hayPortadaExistente =
+            await this.campaignsImagesRepository.findOne({
+              where: { campaign: { id: campaignId }, esPortada: true },
+            });
+
+          await Promise.all(
+            imagenes.map((imagen, index) => {
+              const newImage = new imagenes_campania();
+              newImage.campaign = campaign;
+              newImage.imagen = imagen;
+              newImage.esPortada = !hayPortadaExistente && index === 0;
+              return this.campaignsImagesRepository.save(newImage);
+            }),
+          );
         }
       }
-    }
 
-    return this.mapToResponseDto(updatedCampaign);
+      return this.mapToResponseDto(updatedCampaign);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   async updateEstado(id: number, estado: CampaignEstado) {
-    const campaign = await this.campaignsRepository.findOne({
-      where: { id },
-    });
+    try {
+      const campaign = await this.campaignsRepository.findOne({
+        where: { id },
+      });
 
-    if (!campaign) {
-      throw new NotFoundException(
-        `Campaña Solidaria con ID ${id} no encontrada`,
-      );
+      if (!campaign) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Campaña con ID ${id} no encontrada`,
+        });
+      }
+
+      campaign.estado = estado;
+
+      await this.campaignsRepository.save(campaign);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    campaign.estado = estado;
-
-    await this.campaignsRepository.save(campaign);
   }
 
   /**
@@ -354,18 +432,29 @@ export class CampaignsService {
    * @throws {NotFoundException} cuando no se encuentra el ID de la campaña solicitada
    */
   async delete(id: number): Promise<void> {
-    const campaign = await this.campaignsRepository.findOne({
-      where: { id },
-    });
+    try {
+      const campaign = await this.campaignsRepository.findOne({
+        where: { id },
+      });
 
-    if (!campaign) {
-      throw new NotFoundException(
-        `Campaña Solidaria con ID ${id} no encontrada`,
-      );
+      if (!campaign) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Campaña con ID ${id} no encontrada`,
+        });
+      }
+
+      await this.campaignsRepository.remove(campaign);
+      this.logger.log(`Campaña Solidaria ${id} eliminada`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    await this.campaignsRepository.remove(campaign);
-    this.logger.log(`Campaña Solidaria ${id} eliminada`);
   }
 
   /**
@@ -383,7 +472,10 @@ export class CampaignsService {
       verificada: campaign.organizacion.verificada,
     };
 
-    const portada = campaign.imagenes?.[0] ?? null;
+    const portada =
+      campaign.imagenes?.find((img) => img.esPortada) ??
+      campaign.imagenes?.[0] ??
+      null;
 
     return {
       id: campaign.id,
@@ -435,19 +527,7 @@ export class CampaignsService {
   };
 
   private setEstado(inicio: Date, fin: Date): CampaignEstado {
-    if (!inicio || !fin) {
-      throw new BadRequestException('Las fechas son obligatorias');
-    }
-
-    if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
-      throw new BadRequestException('Fechas inválidas');
-    }
-
-    if (fin <= inicio) {
-      throw new BadRequestException(
-        'La fecha de fin debe ser posterior a la fecha de inicio',
-      );
-    }
+    this.validarRangoFechas(inicio, fin);
 
     const hoy = new Date();
 
@@ -458,17 +538,26 @@ export class CampaignsService {
     return CampaignEstado.ACTIVA;
   }
 
-  private validarRangoFechas(inicio: Date, fin: Date): boolean {
+  private validarRangoFechas(inicio: Date, fin: Date) {
     if (!inicio || !fin) {
-      throw new BadRequestException('Las fechas son obligatorias');
+      throw new ErrorManager({
+        type: 'BAD_REQUEST',
+        message: 'Las fechas son obligatorias',
+      });
+    }
+
+    if (isNaN(new Date(inicio).getTime()) || isNaN(new Date(fin).getTime())) {
+      throw new ErrorManager({
+        type: 'BAD_REQUEST',
+        message: 'Fechas inválidas',
+      });
     }
 
     if (fin <= inicio) {
-      throw new BadRequestException(
-        'La fecha de fin no puede ser anterior a la fecha de inicio',
-      );
+      throw new ErrorManager({
+        type: 'BAD_REQUEST',
+        message: 'La fecha de fin debe ser posterior a la fecha de inicio',
+      });
     }
-
-    return true;
   }
 }

@@ -1,11 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  ConflictException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Organizacion } from '../../Entities/organizacion.entity';
@@ -16,7 +9,6 @@ import { CampaignsService } from '../campaign/campaign.service';
 import { DonacionService } from '../donation/donacion.service';
 import { UsuarioService } from '../user/usuario.service';
 import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
-import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
 import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
 import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
 import { UpdateCampaignsDto } from '../campaign/dto/update_campaigns.dto';
@@ -26,6 +18,7 @@ import { Usuario } from '../../Entities/usuario.entity';
 import { Rol, RolSecundario } from '../user/enums/enums';
 import { HashService } from '../../common/bcryptService/hashService';
 import { InvitacionesService } from '../invitaciones/invitacion.service';
+import { ErrorManager } from '../../common/errors/error.manager';
 
 /**
  * ============================================================
@@ -68,7 +61,7 @@ export class PerfilOrganizacionService {
     private readonly hashService: HashService,
     private readonly dataSource: DataSource,
     private readonly invitacionesService: InvitacionesService,
-  ) { }
+  ) {}
 
   /**
    * Obtiene organizaciones paginadas con búsqueda opcional.
@@ -117,38 +110,62 @@ export class PerfilOrganizacionService {
    */
 
   async getOrganizacionByUsuario(usuarioId: number): Promise<Organizacion> {
-    const organizacionUsuario =
-      await this.organizacionUsuarioRepository.findOne({
-        where: {
-          id_usuario: usuarioId,
-          activo: true,
-        },
-        relations: [
-          'organizacion',
-          'organizacion.contacto',
-          'organizacion.direccion',
-        ],
+    try {
+      const organizacionUsuario =
+        await this.organizacionUsuarioRepository.findOne({
+          where: {
+            id_usuario: usuarioId,
+            activo: true,
+          },
+          relations: [
+            'organizacion',
+            'organizacion.contacto',
+            'organizacion.direccion',
+          ],
+        });
+
+      if (!organizacionUsuario) {
+        throw new ErrorManager({
+          type: 'FORBIDDEN',
+          message: 'El usuario no gestiona ninguna organizacion',
+        });
+      }
+
+      return organizacionUsuario.organizacion;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
       });
-
-    if (!organizacionUsuario) {
-      throw new ForbiddenException(
-        'El usuario no gestiona ninguna organizacion',
-      );
     }
-
-    return organizacionUsuario.organizacion;
   }
 
   async findById(id: number): Promise<Organizacion> {
-    const perfil = await this.organizacionRepository.findOne({
-      where: { id },
-    });
+    try {
+      const perfil = await this.organizacionRepository.findOne({
+        where: { id },
+      });
 
-    if (!perfil) {
-      throw new NotFoundException(`Organización ${id} no encontrado`);
+      if (!perfil) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Organización ${id} no encontrada`,
+        });
+      }
+
+      return perfil;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    return perfil;
   }
 
   async getCampaigns(
@@ -197,12 +214,14 @@ export class PerfilOrganizacionService {
 
   async updateCampaign(
     id: number,
+    campaignId: number,
     updateDto: UpdateCampaignsDto,
     usuarioId: number,
     imagenes?: string[],
   ): Promise<ResponseCampaignsDto> {
     return await this.campaignService.update(
       id,
+      campaignId,
       updateDto,
       usuarioId,
       imagenes,
@@ -212,120 +231,124 @@ export class PerfilOrganizacionService {
   async registrarOrganizacion(
     dto: CreateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
-    return await this.dataSource.transaction(async (manager) => {
-      const usuarioRepo = manager.getRepository(Usuario);
-      const organizacionRepo = manager.getRepository(Organizacion);
-      const orgUsuarioRepo = manager.getRepository(OrganizacionUsuario);
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const usuarioRepo = manager.getRepository(Usuario);
+        const organizacionRepo = manager.getRepository(Organizacion);
+        const orgUsuarioRepo = manager.getRepository(OrganizacionUsuario);
 
-      const cuitExistente = await organizacionRepo.findOne({
-        where: { cuit: dto.cuit_organizacion },
-      });
-      if (cuitExistente) {
-        throw new ConflictException('Ya existe una organización con ese CUIT');
-      }
+        const cuitExistente = await organizacionRepo.findOne({
+          where: { cuit: dto.cuit_organizacion },
+        });
 
-      const docExistente = await usuarioRepo.findOne({
-        where: { documento: dto.documento },
-      });
-      if (docExistente) {
-        throw new ConflictException('Ya existe un usuario con ese documento');
-      }
-
-      const correoExistente = await usuarioRepo.findOne({
-        relations: ['contacto'],
-        where: { contacto: { correo: dto.correo } },
-      });
-      if (correoExistente) {
-        throw new ConflictException('Ya existe un usuario con ese correo');
-      }
-
-      const claveHash = await this.hashService.hash(dto.clave);
-
-      const colaborador = usuarioRepo.create({
-        nombre: dto.nombre,
-        apellido: dto.apellido,
-        documento: dto.documento,
-        clave: claveHash,
-        rol: Rol.COLABORADOR,
-        contacto: {
-          correo: dto.correo,
-          prefijo: dto.prefijo,
-          telefono: dto.telefono,
-        },
-        direccion: {},
-        puntos: 0,
-        habilitado: true,
-        verificado: false,
-      });
-
-      const savedGestor = await usuarioRepo.save(colaborador);
-      this.logger.log(`COLABORADOR creado con ID ${savedGestor.id}`);
-
-      const organizacion = organizacionRepo.create({
-        cuit: dto.cuit_organizacion,
-        razon_social: dto.razon_social,
-        nombre_organizacion: dto.nombre_organizacion,
-        web: dto.web ?? '',
-        contacto: {
-          correo: dto.correo_organizacion,
-        },
-        direccion: {
-          calle: dto.calle,
-          numero: dto.numero,
-        },
-        habilitada: true,
-        verificada: false,
-
-        creado_por: { id: savedGestor.id },
-        actualizado_por: { id: savedGestor.id },
-      });
-
-      const savedOrganizacion = await organizacionRepo.save(organizacion);
-      this.logger.log(`Organización creada con ID ${savedOrganizacion.id}`);
-
-      if (dto.token) {
-        const invitacion = await this.invitacionesService.buscarPorToken(
-          dto.token,
-        );
-
-        if (!invitacion) {
-          throw new BadRequestException('Invitación inválida');
+        if (cuitExistente) {
+          throw new ErrorManager({
+            type: 'CONFLICT',
+            message: 'Ya existe una organización con ese CUIT',
+          });
         }
 
-        // validar email
-        if (invitacion.correo !== dto.correo) {
-          throw new BadRequestException(
-            'El correo no coincide con la invitación',
+        const docExistente = await usuarioRepo.findOne({
+          where: { documento: dto.documento },
+        });
+
+        if (docExistente) {
+          throw new ErrorManager({
+            type: 'CONFLICT',
+            message: 'Ya existe un usuario con ese documento',
+          });
+        }
+
+        const correoExistente = await usuarioRepo.findOne({
+          relations: ['contacto'],
+          where: { contacto: { correo: dto.correo } },
+        });
+
+        if (correoExistente) {
+          throw new ErrorManager({
+            type: 'CONFLICT',
+            message: 'Ya existe un usuario con ese correo',
+          });
+        }
+
+        const claveHash = await this.hashService.hash(dto.clave);
+
+        const colaborador = usuarioRepo.create({
+          nombre: dto.nombre,
+          apellido: dto.apellido,
+          documento: dto.documento,
+          clave: claveHash,
+          rol: Rol.COLABORADOR,
+          contacto: {
+            correo: dto.correo,
+            prefijo: dto.prefijo,
+            telefono: dto.telefono,
+          },
+          direccion: {},
+          puntos: 0,
+          habilitado: true,
+          verificado: false,
+        });
+
+        const savedGestor = await usuarioRepo.save(colaborador);
+        this.logger.log(`COLABORADOR creado con ID ${savedGestor.id}`);
+
+        const organizacion = organizacionRepo.create({
+          cuit: dto.cuit_organizacion,
+          razon_social: dto.razon_social,
+          nombre_organizacion: dto.nombre_organizacion,
+          web: dto.web ?? '',
+          contacto: {
+            correo: dto.correo_organizacion,
+          },
+          direccion: {
+            calle: dto.calle,
+            numero: dto.numero,
+          },
+          habilitada: true,
+          verificada: false,
+
+          creado_por: { id: savedGestor.id },
+          actualizado_por: { id: savedGestor.id },
+        });
+
+        const savedOrganizacion = await organizacionRepo.save(organizacion);
+        this.logger.log(`Organización creada con ID ${savedOrganizacion.id}`);
+
+        if (dto.token) {
+          const invitacion = await this.invitacionesService.validarInvitacion(
+            dto.token,
+            dto.correo,
+          );
+
+          await this.invitacionesService.marcarAceptada(
+            invitacion.id,
+            savedGestor.id,
+            manager,
           );
         }
 
-        // evitar reutilización
-        if (invitacion.expirada) {
-          throw new BadRequestException(
-            'La invitación ya fue utilizada',
-          );
-        }
+        const vinculo = orgUsuarioRepo.create({
+          usuario: { id: savedGestor.id },
+          organizacion: { id: savedOrganizacion.id },
+          activo: true,
+          rol: RolSecundario.GESTOR,
+        });
 
-        // Guardar quién aceptó
-        await this.invitacionesService.marcarAceptada(
-          invitacion.id,
-          savedGestor.id,
-          manager
-        );
-      }
+        await orgUsuarioRepo.save(vinculo);
+        this.logger.log(`Vínculo colaborador-organización creado`);
 
-      const vinculo = orgUsuarioRepo.create({
-        usuario: { id: savedGestor.id },
-        organizacion: { id: savedOrganizacion.id },
-        activo: true,
-        rol: RolSecundario.GESTOR,
+        return this.mapToResponseDto(savedOrganizacion);
       });
-
-      await orgUsuarioRepo.save(vinculo);
-      this.logger.log(`Vínculo colaborador-organización creado`);
-
-      return this.mapToResponseDto(savedOrganizacion);
-    });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   /**
@@ -343,88 +366,126 @@ export class PerfilOrganizacionService {
     updateDto: UpdateOrganizacionDto,
     usuarioId: number,
   ): Promise<ResponseOrganizacionDto> {
-    const organizacionActual = await this.organizacionUsuarioRepository.findOne(
-      {
-        where: { usuario: { id: usuarioId } },
-        relations: [
-          'organizacion',
-          'organizacion.contacto',
-          'organizacion.direccion',
-        ],
-      },
-    );
+    try {
+      const organizacionActual =
+        await this.organizacionUsuarioRepository.findOne({
+          where: { usuario: { id: usuarioId } },
+          relations: [
+            'organizacion',
+            'organizacion.contacto',
+            'organizacion.direccion',
+          ],
+        });
 
-    if (!organizacionActual) {
-      throw new NotFoundException(
-        'El usuario no gestiona ninguna organización',
-      );
+      if (!organizacionActual) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: 'El usuario no gestiona ninguna organización',
+        });
+      }
+
+      const organizacionId = organizacionActual.organizacion.id;
+
+      const organizacionPreload = await this.organizacionRepository.preload({
+        id: organizacionId,
+        ...updateDto,
+        contacto: updateDto.contacto
+          ? {
+              ...organizacionActual.organizacion.contacto,
+              ...updateDto.contacto,
+            }
+          : undefined,
+        direccion: updateDto.direccion
+          ? {
+              ...organizacionActual.organizacion.direccion,
+              ...updateDto.direccion,
+            }
+          : undefined,
+
+        actualizado_por: { id: usuarioId },
+      });
+
+      if (!organizacionPreload) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Organización con ID ${organizacionId} no encontrada`,
+        });
+      }
+
+      const updated =
+        await this.organizacionRepository.save(organizacionPreload);
+      this.logger.log(`Organización ${organizacionId} actualizada`);
+
+      return this.mapToResponseDto(updated);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    const organizacionId = organizacionActual.organizacion.id;
-
-    const organizacionPreload = await this.organizacionRepository.preload({
-      id: organizacionId,
-      ...updateDto,
-      contacto: updateDto.contacto
-        ? {
-          ...organizacionActual.organizacion.contacto,
-          ...updateDto.contacto,
-        }
-        : undefined,
-      direccion: updateDto.direccion
-        ? {
-          ...organizacionActual.organizacion.direccion,
-          ...updateDto.direccion,
-        }
-        : undefined,
-
-      actualizado_por: { id: usuarioId },
-    });
-
-    if (!organizacionPreload) {
-      throw new NotFoundException(
-        `Organización con ID ${organizacionId} no encontrada`,
-      );
-    }
-
-    const updated = await this.organizacionRepository.save(organizacionPreload);
-    this.logger.log(`Organización ${organizacionId} actualizada`);
-
-    return this.mapToResponseDto(updated);
   }
 
   /**
    * Marca una organización como verificada.
    */
   async verify(id: number): Promise<ResponseOrganizacionDto> {
-    const organizacion = await this.organizacionRepository.findOne({
-      where: { id },
-    });
+    try {
+      const organizacion = await this.organizacionRepository.findOne({
+        where: { id },
+      });
 
-    if (!organizacion) {
-      throw new NotFoundException(`Organización con ID ${id} no encontrada`);
+      if (!organizacion) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Organización con ID ${id} no encontrada`,
+        });
+      }
+
+      organizacion.verificada = true;
+      const updated = await this.organizacionRepository.save(organizacion);
+
+      return this.mapToResponseDto(updated);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    organizacion.verificada = true;
-    const updated = await this.organizacionRepository.save(organizacion);
-
-    return this.mapToResponseDto(updated);
   }
 
   /**
    * Deshabilita un organizacion (soft delete sobre la Cuenta).
    */
   async delete(id: number): Promise<void> {
-    const organizacion = await this.organizacionRepository.findOne({
-      where: { id },
-    });
+    try {
+      const organizacion = await this.organizacionRepository.findOne({
+        where: { id },
+      });
 
-    if (!organizacion) {
-      throw new NotFoundException(`Organizacion con ID ${id} no encontrada`);
+      if (!organizacion) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Organizacion con ID ${id} no encontrada`,
+        });
+      }
+
+      await this.organizacionRepository.update(id, { habilitada: false });
+      this.logger.log(`Organizacion ${id} deshabilitada`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    await this.organizacionRepository.update(id, { habilitada: false });
-    this.logger.log(`Organizacion ${id} deshabilitada`);
   }
 
   /**
@@ -436,7 +497,10 @@ export class PerfilOrganizacionService {
     });
 
     if (!organizacion) {
-      throw new NotFoundException(`Organizacion con ID ${id} no encontrada`);
+      throw new ErrorManager({
+        type: 'NOT_FOUND',
+        message: `Organizacion con ID ${id} no encontrada`,
+      });
     }
 
     await this.organizacionRepository.update(id, { habilitada: true });
@@ -466,40 +530,40 @@ export class PerfilOrganizacionService {
 
     dto.contacto = organizacion.contacto
       ? {
-        id: organizacion.contacto.id,
-        correo: organizacion.contacto.correo,
-        telefono: organizacion.contacto.telefono,
-        prefijo: organizacion.contacto.prefijo,
-      }
+          id: organizacion.contacto.id,
+          correo: organizacion.contacto.correo,
+          telefono: organizacion.contacto.telefono,
+          prefijo: organizacion.contacto.prefijo,
+        }
       : undefined;
 
     dto.direccion = organizacion.direccion
       ? {
-        id: organizacion.direccion.id,
-        calle: organizacion.direccion.calle,
-        numero: organizacion.direccion.numero,
-        provincia: organizacion.direccion.provincia,
-        ciudad: organizacion.direccion.ciudad,
-        codigo_postal: organizacion.direccion.codigo_postal,
-      }
+          id: organizacion.direccion.id,
+          calle: organizacion.direccion.calle,
+          numero: organizacion.direccion.numero,
+          provincia: organizacion.direccion.provincia,
+          ciudad: organizacion.direccion.ciudad,
+          codigo_postal: organizacion.direccion.codigo_postal,
+        }
       : undefined;
 
     dto.creado_por = organizacion.creado_por
       ? {
-        id: organizacion.creado_por.id,
-        nombre: organizacion.creado_por.nombre,
-        apellido: organizacion.creado_por.apellido,
-        email: organizacion.creado_por.contacto?.correo,
-      }
+          id: organizacion.creado_por.id,
+          nombre: organizacion.creado_por.nombre,
+          apellido: organizacion.creado_por.apellido,
+          email: organizacion.creado_por.contacto?.correo,
+        }
       : undefined;
 
     dto.actualizado_por = organizacion.actualizado_por
       ? {
-        id: organizacion.actualizado_por.id,
-        nombre: organizacion.actualizado_por.nombre,
-        apellido: organizacion.actualizado_por.apellido,
-        email: organizacion.actualizado_por.contacto?.correo,
-      }
+          id: organizacion.actualizado_por.id,
+          nombre: organizacion.actualizado_por.nombre,
+          apellido: organizacion.actualizado_por.apellido,
+          email: organizacion.actualizado_por.contacto?.correo,
+        }
       : undefined;
 
     dto.fecha_registro = organizacion.fecha_registro;

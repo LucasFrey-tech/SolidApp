@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { RankingDonador } from '../../Entities/ranking.entity';
 import { RankingDTO } from './dto/ranking.dto';
+import { ErrorManager } from '../../common/errors/error.manager';
 
 /**
  * Servicio que maneja la lÃ³gica de negocio para el Ranking
@@ -57,20 +58,23 @@ export class RankingService {
   ): Promise<void> {
     const repo = manager.getRepository(RankingDonador);
 
-    const exists = await this.puntosRepository.findOne({
+    if (puntos <= 0) {
+      throw new ErrorManager({
+        type: 'BAD_REQUEST',
+        message: 'Los puntos a sumar deben ser mayores a 0',
+      });
+    }
+
+    const exists = await repo.findOne({
       where: { id_usuario: userID },
     });
 
     if (!exists) {
       await repo.save({
         id_usuario: userID,
-        puntos: puntos,
+        puntos,
       });
       return;
-    }
-
-    if (exists.puntos + puntos < 0) {
-      throw new Error('No se puede dejar el ranking en negativo');
     }
 
     await repo.increment({ id_usuario: userID }, 'puntos', puntos);

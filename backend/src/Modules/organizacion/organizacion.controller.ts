@@ -210,7 +210,7 @@ export class OrganizacionesController {
    * @param {UpdateCampaignsDto} updateCampaignsDto - Datos actualizados de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
    */
-  @Patch('campana')
+  @Patch('campana/:campaignId')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR)
   @ApiOperation({ summary: 'Actualizar Campaña Solidaria existente' })
@@ -246,6 +246,7 @@ export class OrganizacionesController {
     }),
   )
   async updateMiCampaign(
+    @Param('campaignId') campaignId: number,
     @Req() req: RequestConUsuario,
     @Body() updateCampaignsDto: UpdateCampaignsDto,
     @UploadedFiles(new ImagesArrayValidationPipe())
@@ -261,6 +262,7 @@ export class OrganizacionesController {
       await this.organizacionService.getOrganizacionByUsuario(req.user.id);
     return this.organizacionService.updateCampaign(
       organizacion.id,
+      campaignId,
       updateCampaignsDto,
       req.user.id,
       imagenes,
@@ -268,25 +270,25 @@ export class OrganizacionesController {
   }
 
   @Get('mis-donaciones')
-@Auth(Rol.COLABORADOR)
-@AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
-@ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
-async getMisDonaciones(
-  @Req() req: RequestConUsuario,
-  @Query('page') page = 1,
-  @Query('limit') limit = 10,
-  @Query('search') search?: string, 
-): Promise<PaginatedOrganizationDonationsResponseDto> {
-  const organizacion =
-    await this.organizacionService.getOrganizacionByUsuario(req.user.id);
+  @Auth(Rol.COLABORADOR)
+  @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
+  @ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
+  async getMisDonaciones(
+    @Req() req: RequestConUsuario,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query('search') search?: string,
+  ): Promise<PaginatedOrganizationDonationsResponseDto> {
+    const organizacion =
+      await this.organizacionService.getOrganizacionByUsuario(req.user.id);
 
-  return await this.organizacionService.getDonaciones(
-    organizacion.id,
-    page,
-    limit,
-    search, 
-  );
-}
+    return await this.organizacionService.getDonaciones(
+      organizacion.id,
+      page,
+      limit,
+      search,
+    );
+  }
   /**
    * Actualiza el estado de una donación.
    *

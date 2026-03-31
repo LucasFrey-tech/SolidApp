@@ -1,11 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  ConflictException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsWhere, Like, Repository } from 'typeorm';
 import { Empresa } from '../../Entities/empresa.entity';
@@ -23,6 +16,7 @@ import { Usuario } from '../../Entities/usuario.entity';
 import { HashService } from '../../common/bcryptService/hashService';
 import { Rol, RolSecundario } from '../user/enums/enums';
 import { InvitacionesService } from '../invitaciones/invitacion.service';
+import { ErrorManager } from '../../common/errors/error.manager';
 
 /**
  * ============================================================
@@ -57,13 +51,11 @@ export class EmpresaService {
     private readonly empresaRepository: Repository<Empresa>,
     @InjectRepository(EmpresaUsuario)
     private readonly empresaUsuarioRepository: Repository<EmpresaUsuario>,
-    @InjectRepository(Usuario)
-    private readonly usuarioRepository: Repository<Usuario>,
     private readonly beneficioService: BeneficioService,
     private readonly dataSource: DataSource,
     private readonly hashService: HashService,
     private readonly invitacionesService: InvitacionesService,
-  ) { }
+  ) {}
 
   /**
    * Obtiene empresas paginadas con búsqueda opcional.
@@ -80,29 +72,39 @@ export class EmpresaService {
     search: string,
     onlyEnabled: boolean,
   ): Promise<{ items: EmpresaResponseDTO[]; total: number }> {
-    const skip = (page - 1) * limit;
+    try {
+      const skip = (page - 1) * limit;
 
-    const baseFilter: FindOptionsWhere<Empresa> = onlyEnabled
-      ? { habilitada: true }
-      : {};
+      const baseFilter: FindOptionsWhere<Empresa> = onlyEnabled
+        ? { habilitada: true }
+        : {};
 
-    const where: FindOptionsWhere<Empresa>[] = search
-      ? [
-        { ...baseFilter, nombre_empresa: Like(`%${search}%`) },
-        { ...baseFilter, razon_social: Like(`%${search}%`) },
-      ]
-      : [baseFilter];
+      const where: FindOptionsWhere<Empresa>[] = search
+        ? [
+            { ...baseFilter, nombre_empresa: Like(`%${search}%`) },
+            { ...baseFilter, razon_social: Like(`%${search}%`) },
+          ]
+        : [baseFilter];
 
-    const [empresas, total] = await this.empresaRepository.findAndCount({
-      where,
-      skip,
-      take: limit,
-      order: { id: 'ASC' },
-    });
+      const [empresas, total] = await this.empresaRepository.findAndCount({
+        where,
+        skip,
+        take: limit,
+        order: { id: 'ASC' },
+      });
 
-    const items = empresas.map((emp) => this.mapToResponseDto(emp));
+      const items = empresas.map((emp) => this.mapToResponseDto(emp));
 
-    return { items, total };
+      return { items, total };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   /**
@@ -114,18 +116,31 @@ export class EmpresaService {
    * @returns {Promise<EmpresaResponseDTO>}
    */
   async getEmpresaByUsuario(usuarioId: number): Promise<EmpresaResponseDTO> {
-    const empresaUsuario = await this.empresaUsuarioRepository.findOne({
-      where: {
-        usuario: { id: usuarioId },
-      },
-      relations: ['empresa'],
-    });
+    try {
+      const empresaUsuario = await this.empresaUsuarioRepository.findOne({
+        where: {
+          usuario: { id: usuarioId },
+        },
+        relations: ['empresa'],
+      });
 
-    if (!empresaUsuario) {
-      throw new ForbiddenException('El usuario no gestiona ninguna empresa');
+      if (!empresaUsuario) {
+        throw new ErrorManager({
+          type: 'FORBIDDEN',
+          message: 'El usuario no gestiona ninguna empresa',
+        });
+      }
+
+      return this.mapToResponseDto(empresaUsuario.empresa);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    return this.mapToResponseDto(empresaUsuario.empresa);
   }
 
   async getCupones(
@@ -133,22 +148,42 @@ export class EmpresaService {
     page: number,
     limit: number,
   ): Promise<PaginatedBeneficiosResponseDTO> {
-    const empresa = await this.getEmpresaByUsuario(usuarioid);
+    try {
+      const empresa = await this.getEmpresaByUsuario(usuarioid);
 
-    return await this.beneficioService.findByEmpresaPaginated(
-      empresa.id,
-      page,
-      limit,
-    );
+      return await this.beneficioService.findByEmpresaPaginated(
+        empresa.id,
+        page,
+        limit,
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   async createCupon(usuarioId: number, dto: CreateBeneficiosDTO) {
-    const empresa = await this.getEmpresaByUsuario(usuarioId);
+    try {
+      const empresa = await this.getEmpresaByUsuario(usuarioId);
 
-    return this.beneficioService.create(
-      { ...dto, id_empresa: empresa.id },
-      usuarioId,
-    );
+      return this.beneficioService.create(
+        { ...dto, id_empresa: empresa.id },
+        usuarioId,
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   async updateCupon(
@@ -156,124 +191,134 @@ export class EmpresaService {
     dto: UpdateBeneficiosDTO,
     usuarioId: number,
   ) {
-    return this.beneficioService.update(cuponId, dto, usuarioId);
+    try {
+      return this.beneficioService.update(cuponId, dto, usuarioId);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   async registrarEmpresa(dto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {
-    return await this.dataSource.transaction(async (manager) => {
-      const usuarioRepo = manager.getRepository(Usuario);
-      const empresaRepo = manager.getRepository(Empresa);
-      const empresaUsuarioRepo = manager.getRepository(EmpresaUsuario);
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+        const usuarioRepo = manager.getRepository(Usuario);
+        const empresaRepo = manager.getRepository(Empresa);
+        const empresaUsuarioRepo = manager.getRepository(EmpresaUsuario);
 
-      const cuitExistente = await empresaRepo.findOne({
-        where: { cuit: dto.cuit_empresa },
-      });
-      if (cuitExistente) {
-        throw new ConflictException('Ya existe una empresa con ese CUIT');
-      }
-
-      const docExistente = await usuarioRepo.findOne({
-        where: { documento: dto.documento },
-      });
-      if (docExistente) {
-        throw new ConflictException('Ya existe un usuario con ese documento');
-      }
-
-      const correoExistente = await usuarioRepo.findOne({
-        relations: ['contacto'],
-        where: { contacto: { correo: dto.correo } },
-      });
-      if (correoExistente) {
-        throw new ConflictException('Ya existe un usuario con ese correo');
-      }
-
-      const claveHash = await this.hashService.hash(dto.clave);
-
-      const colaborador = usuarioRepo.create({
-        nombre: dto.nombre,
-        apellido: dto.apellido,
-        documento: dto.documento,
-        clave: claveHash,
-        rol: Rol.COLABORADOR,
-        contacto: {
-          correo: dto.correo,
-          prefijo: dto.prefijo,
-          telefono: dto.telefono,
-        },
-        direccion: {},
-        puntos: 0,
-        habilitado: true,
-        verificado: false,
-      });
-
-      const savedGestor = await usuarioRepo.save(colaborador);
-      this.logger.log(`COLABORADOR creado con ID ${savedGestor.id}`);
-
-      const empresa = empresaRepo.create({
-        cuit: dto.cuit_empresa,
-        razon_social: dto.razon_social,
-        nombre_empresa: dto.nombre_empresa,
-        web: dto.web,
-        contacto: {
-          correo: dto.correo_empresa,
-        },
-        direccion: {
-          calle: dto.calle,
-          numero: dto.numero,
-        },
-        habilitada: true,
-        verificada: false,
-
-        creado_por: { id: savedGestor.id },
-        actualizado_por: { id: savedGestor.id },
-      });
-
-      const savedEmpresa = await empresaRepo.save(empresa);
-      this.logger.log(`Empresa creada con ID ${savedEmpresa.id}`);
-
-      if (dto.token) {
-        const invitacion = await this.invitacionesService.buscarPorToken(
-          dto.token,
-        );
-
-        if (!invitacion) {
-          throw new BadRequestException('Invitación inválida');
+        const cuitExistente = await empresaRepo.findOne({
+          where: { cuit: dto.cuit_empresa },
+        });
+        if (cuitExistente) {
+          throw new ErrorManager({
+            type: 'CONFLICT',
+            message: 'Ya existe una empresa con ese CUIT',
+          });
         }
 
-        // validar que el mail coincida
-        if (invitacion.correo !== dto.correo) {
-          throw new BadRequestException(
-            'El correo no coincide con la invitación',
+        const docExistente = await usuarioRepo.findOne({
+          where: { documento: dto.documento },
+        });
+        if (docExistente) {
+          throw new ErrorManager({
+            type: 'CONFLICT',
+            message: 'Ya existe un usuario con ese documento',
+          });
+        }
+
+        const correoExistente = await usuarioRepo.findOne({
+          relations: ['contacto'],
+          where: { contacto: { correo: dto.correo } },
+        });
+        if (correoExistente) {
+          throw new ErrorManager({
+            type: 'CONFLICT',
+            message: 'Ya existe un usuario con ese correo',
+          });
+        }
+
+        const claveHash = await this.hashService.hash(dto.clave);
+
+        const colaborador = usuarioRepo.create({
+          nombre: dto.nombre,
+          apellido: dto.apellido,
+          documento: dto.documento,
+          clave: claveHash,
+          rol: Rol.COLABORADOR,
+          contacto: {
+            correo: dto.correo,
+            prefijo: dto.prefijo,
+            telefono: dto.telefono,
+          },
+          direccion: {},
+          puntos: 0,
+          habilitado: true,
+          verificado: false,
+        });
+
+        const savedGestor = await usuarioRepo.save(colaborador);
+        this.logger.log(`COLABORADOR creado con ID ${savedGestor.id}`);
+
+        const empresa = empresaRepo.create({
+          cuit: dto.cuit_empresa,
+          razon_social: dto.razon_social,
+          nombre_empresa: dto.nombre_empresa,
+          web: dto.web,
+          contacto: {
+            correo: dto.correo_empresa,
+          },
+          direccion: {
+            calle: dto.calle,
+            numero: dto.numero,
+          },
+          habilitada: true,
+          verificada: false,
+
+          creado_por: { id: savedGestor.id },
+          actualizado_por: { id: savedGestor.id },
+        });
+
+        const savedEmpresa = await empresaRepo.save(empresa);
+        this.logger.log(`Empresa creada con ID ${savedEmpresa.id}`);
+
+        if (dto.token) {
+          const invitacion = await this.invitacionesService.validarInvitacion(
+            dto.token,
+            dto.correo,
+          );
+          await this.invitacionesService.marcarAceptada(
+            invitacion.id,
+            savedGestor.id,
+            manager,
           );
         }
 
-        // evitar reutilización
-        if (invitacion.expirada) {
-          throw new BadRequestException(
-            'La invitación ya fue utilizada',
-          );
-        }
+        const vinculo = empresaUsuarioRepo.create({
+          usuario: { id: savedGestor.id },
+          empresa: { id: savedEmpresa.id },
+          activo: true,
+          rol: RolSecundario.GESTOR,
+        });
 
-        // 
-        await this.invitacionesService.marcarAceptada(
-          invitacion.id,
-          savedGestor.id,
-          manager
-        );
-      }
+        await empresaUsuarioRepo.save(vinculo);
+        this.logger.log(`Vínculo colaborador-empresa creado`);
 
-      const vinculo = empresaUsuarioRepo.create({
-        usuario: { id: savedGestor.id },
-        empresa: { id: savedEmpresa.id },
-        activo: true,
-        rol: RolSecundario.GESTOR,
+        return this.mapToResponseDto(savedEmpresa);
       });
-
-      await empresaUsuarioRepo.save(vinculo);
-      this.logger.log(`Vínculo colaborador-empresa creado`);
-
-      return this.mapToResponseDto(savedEmpresa);
-    });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
   }
 
   /**
@@ -290,98 +335,150 @@ export class EmpresaService {
     usuarioId: number,
     updateDto: UpdateEmpresaDTO,
   ): Promise<EmpresaResponseDTO> {
-    const empresaUsuario = await this.empresaUsuarioRepository.findOne({
-      where: { usuario: { id: usuarioId } },
-      relations: ['empresa', 'empresa.contacto', 'empresa.direccion'],
-    });
+    try {
+      const empresaUsuario = await this.empresaUsuarioRepository.findOne({
+        where: { usuario: { id: usuarioId } },
+        relations: ['empresa', 'empresa.contacto', 'empresa.direccion'],
+      });
 
-    if (!empresaUsuario) {
-      throw new NotFoundException('El usuario no gestiona ninguna empresa');
+      if (!empresaUsuario) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: 'El usuario no gestiona ninguna empresa',
+        });
+      }
+
+      const empresaId = empresaUsuario.empresa.id;
+
+      const empresaPreload = await this.empresaRepository.preload({
+        id: empresaId,
+        descripcion: updateDto.descripcion,
+        rubro: updateDto.rubro,
+        web: updateDto.web,
+        logo: updateDto.logo,
+        contacto: updateDto.contacto
+          ? {
+              ...empresaUsuario.empresa.contacto,
+              ...updateDto.contacto,
+            }
+          : undefined,
+        direccion: updateDto.direccion
+          ? {
+              ...empresaUsuario.empresa.direccion,
+              ...updateDto.direccion,
+            }
+          : undefined,
+
+        actualizado_por: { id: usuarioId },
+      });
+
+      if (!empresaPreload) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Empresa con ID ${empresaId} no encontrada`,
+        });
+      }
+
+      const updated = await this.empresaRepository.save(empresaPreload);
+
+      this.logger.log(`Empresa ${empresaId} actualizada`);
+
+      return this.mapToResponseDto(updated);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    const empresaId = empresaUsuario.empresa.id;
-
-    const empresaPreload = await this.empresaRepository.preload({
-      id: empresaId,
-      descripcion: updateDto.descripcion,
-      rubro: updateDto.rubro,
-      web: updateDto.web,
-      logo: updateDto.logo,
-      contacto: updateDto.contacto
-        ? {
-          ...empresaUsuario.empresa.contacto,
-          ...updateDto.contacto,
-        }
-        : undefined,
-      direccion: updateDto.direccion
-        ? {
-          ...empresaUsuario.empresa.direccion,
-          ...updateDto.direccion,
-        }
-        : undefined,
-
-      actualizado_por: { id: usuarioId },
-    });
-
-    if (!empresaPreload) {
-      throw new NotFoundException(`Empresa con ID ${empresaId} no encontrada`);
-    }
-
-    const updated = await this.empresaRepository.save(empresaPreload);
-
-    this.logger.log(`Empresa ${empresaId} actualizada`);
-
-    return this.mapToResponseDto(updated);
   }
 
   /**
    * Marca una empresa como verificada.
    */
   async verify(id: number): Promise<EmpresaResponseDTO> {
-    const empresa = await this.empresaRepository.findOne({
-      where: { id },
-    });
+    try {
+      const empresa = await this.empresaRepository.findOne({
+        where: { id },
+      });
 
-    if (!empresa) {
-      throw new NotFoundException(`Empresa con ID ${id} no encontrada`);
+      if (!empresa) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Empresa con ID ${id} no encontrada`,
+        });
+      }
+
+      empresa.verificada = true;
+      const updated = await this.empresaRepository.save(empresa);
+
+      return this.mapToResponseDto(updated);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    empresa.verificada = true;
-    const updated = await this.empresaRepository.save(empresa);
-
-    return this.mapToResponseDto(updated);
   }
 
   /**
    * Deshabilita un empresa (soft delete sobre la Empresa).
    */
   async delete(id: number): Promise<void> {
-    const empresa = await this.empresaRepository.findOne({
-      where: { id },
-    });
+    try {
+      const empresa = await this.empresaRepository.findOne({
+        where: { id },
+      });
 
-    if (!empresa) {
-      throw new NotFoundException(`Empresa con ID ${id} no encontrado`);
+      if (!empresa) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Empresa con ID ${id} no encontrada`,
+        });
+      }
+
+      await this.empresaRepository.update(id, { habilitada: false });
+      this.logger.log(`Empresa ${id} deshabilitado`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    await this.empresaRepository.update(id, { habilitada: false });
-    this.logger.log(`Empresa ${id} deshabilitado`);
   }
 
   /**
    * Restaura un empresa deshabilitado.
    */
   async restore(id: number): Promise<void> {
-    const empresa = await this.empresaRepository.findOne({
-      where: { id },
-    });
+    try {
+      const empresa = await this.empresaRepository.findOne({
+        where: { id },
+      });
 
-    if (!empresa) {
-      throw new NotFoundException(`Empresa con ID ${id} no encontrado`);
+      if (!empresa) {
+        throw new NotFoundException(`Empresa con ID ${id} no encontrado`);
+      }
+
+      await this.empresaRepository.update(id, { habilitada: true });
+      this.logger.log(`Empresa ${id} restaurado`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    await this.empresaRepository.update(id, { habilitada: true });
-    this.logger.log(`Empresa ${id} restaurado`);
   }
 
   /**
@@ -432,20 +529,20 @@ export class EmpresaService {
 
     dto.creado_por = empresa.creado_por
       ? {
-        id: empresa.creado_por.id,
-        nombre: empresa.creado_por.nombre,
-        apellido: empresa.creado_por.apellido,
-        email: empresa.creado_por.contacto?.correo,
-      }
+          id: empresa.creado_por.id,
+          nombre: empresa.creado_por.nombre,
+          apellido: empresa.creado_por.apellido,
+          email: empresa.creado_por.contacto?.correo,
+        }
       : undefined;
 
     dto.actualizado_por = empresa.actualizado_por
       ? {
-        id: empresa.actualizado_por.id,
-        nombre: empresa.actualizado_por.nombre,
-        apellido: empresa.actualizado_por.apellido,
-        email: empresa.actualizado_por.contacto?.correo,
-      }
+          id: empresa.actualizado_por.id,
+          nombre: empresa.actualizado_por.nombre,
+          apellido: empresa.actualizado_por.apellido,
+          email: empresa.actualizado_por.contacto?.correo,
+        }
       : undefined;
 
     return dto;
