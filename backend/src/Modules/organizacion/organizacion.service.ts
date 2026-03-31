@@ -74,28 +74,38 @@ export class PerfilOrganizacionService {
    * Objeto con listado paginado y total de registros.
    */
   async findPaginated(page: number, limit: number, search: string) {
-    const skip = (page - 1) * limit;
+    try {
+      const skip = (page - 1) * limit;
 
-    const queryBuilder =
-      this.organizacionRepository.createQueryBuilder('organizacion');
+      const queryBuilder =
+        this.organizacionRepository.createQueryBuilder('organizacion');
 
-    if (search) {
-      queryBuilder.andWhere(
-        '(organizacion.razon_social LIKE :search OR organizacion.nombre_organizacion LIKE :search)',
-        { search: `%${search}%` },
-      );
+      if (search) {
+        queryBuilder.andWhere(
+          '(organizacion.razon_social LIKE :search OR organizacion.nombre_organizacion LIKE :search)',
+          { search: `%${search}%` },
+        );
+      }
+
+      const [organizaciones, total] = await queryBuilder
+        .skip(skip)
+        .take(limit)
+        .orderBy('organizacion.id', 'ASC')
+        .getManyAndCount();
+
+      return {
+        items: organizaciones.map((org) => this.mapToResponseDto(org)),
+        total,
+      };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    const [organizaciones, total] = await queryBuilder
-      .skip(skip)
-      .take(limit)
-      .orderBy('organizacion.id', 'ASC')
-      .getManyAndCount();
-
-    return {
-      items: organizaciones.map((org) => this.mapToResponseDto(org)),
-      total,
-    };
   }
 
   /**
@@ -492,19 +502,29 @@ export class PerfilOrganizacionService {
    * Restaura un organizacion deshabilitado.
    */
   async restore(id: number): Promise<void> {
-    const organizacion = await this.organizacionRepository.findOne({
-      where: { id },
-    });
+    try {
+      const organizacion = await this.organizacionRepository.findOne({
+        where: { id },
+      });
 
-    if (!organizacion) {
+      if (!organizacion) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Organizacion con ID ${id} no encontrada`,
+        });
+      }
+
+      await this.organizacionRepository.update(id, { habilitada: true });
+      this.logger.log(`Organizacion ${id} restaurada`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
       throw new ErrorManager({
-        type: 'NOT_FOUND',
-        message: `Organizacion con ID ${id} no encontrada`,
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
       });
     }
-
-    await this.organizacionRepository.update(id, { habilitada: true });
-    this.logger.log(`Organizacion ${id} restaurada`);
   }
 
   /**

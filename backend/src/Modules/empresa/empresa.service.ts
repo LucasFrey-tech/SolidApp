@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsWhere, Like, Repository } from 'typeorm';
 import { Empresa } from '../../Entities/empresa.entity';
@@ -465,7 +465,10 @@ export class EmpresaService {
       });
 
       if (!empresa) {
-        throw new NotFoundException(`Empresa con ID ${id} no encontrado`);
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Empresa con ID ${id} no encontrado`
+        });
       }
 
       await this.empresaRepository.update(id, { habilitada: true });

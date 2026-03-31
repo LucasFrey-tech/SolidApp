@@ -1,5 +1,5 @@
 import { JwtService } from '@nestjs/jwt';
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { UsuarioService } from '../user/usuario.service';
 import { Rol } from '../user/enums/enums';
@@ -198,17 +198,30 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string) {
-    const usuario = await this.usuarioService.findByResetToken(token);
+    try {
+      const usuario = await this.usuarioService.findByResetToken(token);
 
-    if (!usuario) {
-      throw new UnauthorizedException('Token inválido o expirado');
+      if (!usuario) {
+        throw new ErrorManager({
+          type: 'UNAUTHORIZED',
+          message: `Token inválido o expirado`,
+        });
+      }
+
+      const hashedPassword = await this.hashService.hash(newPassword);
+
+      await this.usuarioService.resetPassword(usuario.id, hashedPassword);
+
+      return { message: 'Contraseña actualizada correctamente' };
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
     }
-
-    const hashedPassword = await this.hashService.hash(newPassword);
-
-    await this.usuarioService.resetPassword(usuario.id, hashedPassword);
-
-    return { message: 'Contraseña actualizada correctamente' };
   }
 
   createPayload(
