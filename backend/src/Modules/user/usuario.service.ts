@@ -297,7 +297,7 @@ export class UsuarioService {
       if (!usuario) {
         throw new ErrorManager({
           type: 'NOT_FOUND',
-          message: `message: Usuario con ID ${id} no encontrado`,
+          message: `Usuario con ID ${id} no encontrado`,
         });
       }
 
@@ -382,7 +382,7 @@ export class UsuarioService {
       if (!usuario) {
         throw new ErrorManager({
           type: 'NOT_FOUND',
-          message: `message: Usuario con ID ${id} no encontrado`,
+          message: `Usuario con ID ${id} no encontrado`,
         });
       }
 
@@ -410,7 +410,7 @@ export class UsuarioService {
       if (!usuario) {
         throw new ErrorManager({
           type: 'NOT_FOUND',
-          message: `message: Usuario con ID ${id} no encontrado`,
+          message: `Usuario con ID ${id} no encontrado`,
         });
       }
 
@@ -439,7 +439,7 @@ export class UsuarioService {
       if (!usuario) {
         throw new ErrorManager({
           type: 'NOT_FOUND',
-          message: `message: Usuario con ID ${id} no encontrado`,
+          message: `Usuario con ID ${id} no encontrado`,
         });
       }
 
