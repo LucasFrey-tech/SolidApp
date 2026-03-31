@@ -492,19 +492,29 @@ export class PerfilOrganizacionService {
    * Restaura un organizacion deshabilitado.
    */
   async restore(id: number): Promise<void> {
-    const organizacion = await this.organizacionRepository.findOne({
-      where: { id },
-    });
+    try {
+      const organizacion = await this.organizacionRepository.findOne({
+        where: { id },
+      });
 
-    if (!organizacion) {
+      if (!organizacion) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Organizacion con ID ${id} no encontrada`,
+        });
+      }
+
+      await this.organizacionRepository.update(id, { habilitada: true });
+      this.logger.log(`Organizacion ${id} restaurada`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
       throw new ErrorManager({
-        type: 'NOT_FOUND',
-        message: `Organizacion con ID ${id} no encontrada`,
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
       });
     }
-
-    await this.organizacionRepository.update(id, { habilitada: true });
-    this.logger.log(`Organizacion ${id} restaurada`);
   }
 
   /**
