@@ -43,6 +43,20 @@ export class AuthService {
     };
   }
 
+  private createPayload(
+    id: number,
+    rol: Rol,
+    gestion?: GestionTipo | null,
+    gestionId?: number | null,
+  ): JwtPayload {
+    return {
+      sub: id,
+      rol: rol,
+      gestion,
+      gestionId,
+    };
+  }
+
   async register(dto: RegisterDto) {
     try {
       if (await this.usuarioService.findByEmail(dto.correo)) {
@@ -222,19 +236,5 @@ export class AuthService {
         message: 'Error desconocido',
       });
     }
-  }
-
-  createPayload(
-    id: number,
-    rol: Rol,
-    gestion?: GestionTipo | null,
-    gestionId?: number | null,
-  ): JwtPayload {
-    return {
-      sub: id,
-      rol: rol,
-      gestion,
-      gestionId,
-    };
   }
 }
