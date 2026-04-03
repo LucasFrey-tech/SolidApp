@@ -47,8 +47,8 @@ import { ErrorManager } from '../../common/errors/error.manager';
  * ============================================================
  */
 @Injectable()
-export class PerfilOrganizacionService {
-  private readonly logger = new Logger(PerfilOrganizacionService.name);
+export class OrganizacionService {
+  private readonly logger = new Logger(OrganizacionService.name);
 
   constructor(
     @InjectRepository(Organizacion)
@@ -57,7 +57,6 @@ export class PerfilOrganizacionService {
     private readonly organizacionUsuarioRepository: Repository<OrganizacionUsuario>,
     private readonly campaignService: CampaignsService,
     private readonly donacionService: DonacionService,
-    private readonly usuarioService: UsuarioService,
     private readonly hashService: HashService,
     private readonly dataSource: DataSource,
     private readonly invitacionesService: InvitacionesService,

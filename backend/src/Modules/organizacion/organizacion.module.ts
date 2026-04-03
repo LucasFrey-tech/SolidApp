@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { OrganizacionesController } from './organizacion.controller';
-import { PerfilOrganizacionService } from './organizacion.service';
+import { OrganizacionService } from './organizacion.service';
 import { Organizacion } from '../../Entities/organizacion.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
@@ -90,12 +90,12 @@ import { InvitacionesModule } from '../invitaciones/invitacion.module';
   /**
    * Providers disponibles dentro del módulo.
    */
-  providers: [PerfilOrganizacionService, HashService],
+  providers: [OrganizacionService, HashService],
 
   /**
    * Exporta el servicio para que pueda ser
    * utilizado en otros módulos si es necesario.
    */
-  exports: [PerfilOrganizacionService, TypeOrmModule],
+  exports: [OrganizacionService, TypeOrmModule],
 })
 export class OrganizacionModule {}

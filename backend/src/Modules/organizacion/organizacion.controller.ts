@@ -22,7 +22,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 
-import { PerfilOrganizacionService } from './organizacion.service';
+import { OrganizacionService } from './organizacion.service';
 import { UpdateOrganizacionDto } from './dto/update_organizacion.dto';
 import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
 import { ResponseOrganizationPaginatedDto } from './dto/response_organizacion_paginated.dto';
@@ -61,9 +61,7 @@ import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
 @ApiTags('Organizaciones')
 @Controller('organizaciones')
 export class OrganizacionesController {
-  constructor(
-    private readonly organizacionService: PerfilOrganizacionService,
-  ) {}
+  constructor(private readonly organizacionService: OrganizacionService) {}
 
   // ================= PanelOrganizacion ===================
 
