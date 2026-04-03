@@ -1,0 +1,299 @@
+@startuml
+
+class UsuarioController {
+  - userService: UsuarioService
+
+  + getMiPerfil()
+  + updateMiPerfil(dto)
+  + updateMisCredenciales(dto)
+  + getMisPuntos()
+  + getMisDonaciones(page, limit)
+  + donar(dto)
+  + getMisCuponesCanjeados()
+  + usarCupon(id)
+  + canjearCupon(cuponId, cantidad)
+
+  + findAll(page, limit, search)
+  + getDonacionesDeUsuario(id, page, limit)
+  + deleteUsuario(id)
+  + restoreUsuario(id)
+}
+
+class UsuarioService {
+  - usuarioRepository: Repository<Usuario>
+  - donacionService: DonacionService
+  - beneficioService: BeneficioService
+  - usuarioBeneficioService: UsuarioBeneficioService
+  - hashService: HashService
+  - jwtService: JwtService
+
+  + findByEmail(email)
+  + create(dto)
+  + getDonaciones(id, page, limit)
+  + donar(id, dto)
+  + getMisCuponesCanjeados(id)
+  + usarCupon(id)
+  + canjearCupon(usuarioId, cuponId, cantidad)
+  + updateCredenciales(id, dto)
+  + updateUsuario(id, dto)
+  + updatePuntos(id, dto)
+  + actualizarUltimaConexion(id)
+  + getPoints(id)
+  + findPaginated(page, limit, search)
+  + findOne(id)
+  + delete(id)
+  + restore(id)
+  + mapToResponseDto(usuario)
+  + findByResetToken(token)
+  + setResetToken(id, token, expires)
+  + clearResetToken(id)
+  + resetPassword(id, newHashedPassword)
+}
+
+class EmpresaController {
+  - empresasService: EmpresaService
+
+  + findPaginated(page, limit, search, enabled)
+  + getDatosEmpresa()
+  + registrarEmpresa(dto)
+  + updateMiPerfil(req, file, data)
+  + getMisCupones(req, page, limit)
+  + createCupon(req, dto)
+  + updateCupon(cuponId, dto, req)
+  + delete(id)
+  + restore(id)
+}
+
+class EmpresaService {
+    - empresaRepository: Repository<Empresa>
+    - empresaUsuarioRepository: Repository<EmpresaUsuario>
+    - beneficioService: BeneficioService
+    - dataSource: DataSource
+    - hashService: HashService
+    - invitacionesService: InvitacionesService
+
+    + findPaginated(page, limit, search, onlyEnabled)
+    + getEmpresaByUsuario(usuarioId)
+    + getCupones(usuarioId, page, limit)
+    + createCupon(usuarioId, dto)
+    + updateCupon(cuponId, dto, usuarioId)
+    + registrarEmpresa(dto)
+    + update(usuarioId, updateDto)
+    + verify(id)
+    + delete(id)
+    + restore(id)
+}
+
+class OrganizacionController {
+    - organizacionService: OrganizacionService
+    
+    + getMiPerfil(req)
+    + getMisCampanas(req, page, limit)
+    + registrarOrganizacion(dto)
+    + createMiCampaign(req, createCampaignsDto, files)
+    + updateMiCampaign(campaignId, req, updateCampaignsDto, files)
+    + getMisDonaciones(req, page, limit, search)
+    + actualizarEstadoDonacion(id, dto, req)
+    + updateMiPerfil(req, updateDto)
+    + findPaginated(page, limit, search)
+    + update(id, dto)
+    + delete(id)
+    + restore(id)
+}
+
+class OrganizacionService {
+    - logger: logger
+    - organizacionRepository: Repository<Organizacion>
+    - organizacionUsuarioRepository: Repository<OrganizacionUsuario>
+    - campaignService: CampaignService
+    - donacionService: DonacionService
+    - hashService: HashService
+    - dataSource: DataSource
+    - invitacionesService: InvitacionesService
+
+    + findPaginated(page, limit, search)
+    + getOrganizacionByUsuario(usuarioId)
+    + findById(id)
+    + getCampaigns(id, page, limit)
+    + getDonaciones(organizacionId, page, limit, search)
+    + confirmarDonacion(id, dto, gestorId)
+    + createCampaign(id, dto, imagenes, usuarioId)
+    + updateCampaign(id, campaignId, updateDto, usuarioId, imagenes)
+    + registrarOrganizacion(dto)
+    + update(dto, usuarioId)
+    + verify(id)
+    + delete(id)
+    + restore(id)
+}
+
+class AuthController {
+    - authService: AuthService
+
+    + register(dto)
+    + login(dto)
+    + forgotPassword(email)
+    + resetPassword(token, newPassword)
+}
+
+class AuthService {
+    - logger: logger
+    - usuarioService: UsuarioService
+    - jwtService: JwtService
+    - hashService: HashService
+    - emailService: EmailService
+    - gestionDetector: GestionDetector
+    - invitacionesService: InvitacionesService
+
+    - buildToken(payload)
+    - createPayload(id, rol, gestion, gestionId)
+    + register(dto)
+    + login(dto)
+    + forgotPassword(email)
+    + resetPassword(token, newPassword)
+}
+
+class BeneficioController {
+    - beneficiosService: BeneficioService
+
+    + findAllPaginated(page, limit, search, onlyEnabled)
+    + findByEmpresaPaginated(idEmpresa, page, limit)
+    + canjear(id, req, dto)
+    + updateEstado(id, estado, req)
+}
+
+class BeneficioService {
+    - logger: logger
+    - beneficiosRepository: Repository<Beneficios>
+    - empresasRepository: Repository<Empresa>
+    - dataSource: DataSource
+
+    + findAllPaginated(page, limit, search, onlyEnabled)
+    + findByEmpresaPaginated(idEmpresa, page, limit)
+    + create(dto, usuarioId)
+    + canjear(beneficioId, userId, cantidad)
+    + update(id, dto, usuarioId)
+    + updateEstado(id, estado, usuarioId, rol)
+    + validateBeneficioData(data)
+}
+
+class CampaignController {
+    - campaignService: CampaignsService
+
+    + findPaginated(page, limit, search, onlyEnabled)
+    + findOneDetail(id)
+    + updateEstado(id, estado)
+}
+
+class CampaignService {
+    - logger: logger
+    - campaignsRepository: Repository<Campaigns>
+    - organizacionRepository: Repository<Organizacion>
+    - campaignsImagesRepository: Repository<imagenes_campania>
+
+
+    + findPaginated(page, limit, search, onlyEnabled)
+    + findCampaignsPaginated(organizacionId, page, limit)
+    + findOneDetail(id)
+    + create(id, dto, imagenes, usuarioId)
+    + update(organizacionId, campaignId, dto, usuarioId, imagenes)
+    + updateEstado(id, estado)
+    + delete(id)
+
+    - mapToResponseDto(campaign)
+    - mapToDetailDto(campaign)
+    - setEstado(inicio, fin)
+    - validarRangoFechas(inicio, fin)
+}
+
+class DonacionService {
+    - logger: logger
+    - donacionRepository: Repository<Donaciones>
+    - campaignsRepository: Repository<Campaigns>
+    - usuarioRepository: Repository<Usuario>
+    - rankingService: RankingService
+
+    + findAllPaginatedByOrganizacion(organizacionId, page, limit, search)
+    + findAllPaginatedByUser(userId, page, limit)
+    + create(usuarioId, dto)
+    + confirmarDonacion(id, dto, gestorId)
+
+    - validarTransicion(estadoActual, nuevoEstado)
+    - validarVentanaReversion(fechaEstado)
+    - aplicarEfectosDeEstado(manager, donacion, nuevoEstado)
+    - mapToResponseDto(donation)
+    - mapToOrganizationDonationsResponse(donation)
+    - mapToUserDonationResponse(donation)
+}
+
+class EmailService {
+    - transporter: Transporter
+    - logger: logger
+    - baseUrl: string
+
+    + sendResetPasswordEmail(to, token)
+    + sendInvitationEmail(to, token)
+    + sendEntidadInvitationEmail(to, token)
+}
+
+class RankingController {
+    - rankingService: RankingService
+
+    + getTop10()
+}
+
+class RankingService {
+    - logger: logger
+    - puntosRepository: Repository<Ranking>
+
+    + getTop10()
+    + ajustarPuntos(userId, puntos, manager)
+}
+
+' Relaciones
+
+UsuarioController --> UsuarioService
+EmpresaController --> EmpresaService
+OrganizacionController --> OrganizacionService
+AuthController --> AuthService
+BeneficioController --> BeneficioService
+CampaignController --> CampaignService
+RankingController --> RankingService
+
+UsuarioService --> DonacionService
+UsuarioService --> BeneficioService
+UsuarioService --> UsuarioBeneficioService
+UsuarioService --> HashService
+UsuarioService --> JwtService
+
+EmpresaService --> BeneficioService
+EmpresaService --> DataSource
+EmpresaService --> HashService
+EmpresaService --> InvitacionesService
+
+OrganizacionService --> CampaignService
+OrganizacionService --> DonacionService
+OrganizacionService --> HashService
+OrganizacionService --> DataSource
+OrganizacionService --> InvitacionesService
+
+AuthService --> UsuarioService
+AuthService --> JwtService
+AuthService --> HashService
+AuthService --> EmailService 
+AuthService --> GestionDetector
+AuthService --> InvitacionesService
+
+'RESOLVER INCONSISTENCIA
+BeneficioService --> DataSource 
+
+'CampaignService (RESOLVER INCONSISTENCIA)
+
+'RESOLVER INCONSISTENCIA
+DonacionService --> RankingService 
+
+
+EmailService --> Transporter
+
+'RankingService
+
+@enduml
