@@ -197,6 +197,6 @@ export class Usuario {
     description: 'Registro en el ranking de donadores',
     type: () => RankingDonador,
   })
-  @OneToMany(() => RankingDonador, (ranking) => ranking.usuario)
+  @OneToOne(() => RankingDonador, (ranking) => ranking.usuario)
   rankingDonador?: RankingDonador;
 }

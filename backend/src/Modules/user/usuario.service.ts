@@ -118,7 +118,7 @@ export class UsuarioService {
    * Canjea un cupon o varios
    */
   async canjearCupon(usuarioId: number, cuponId: number, cantidad: number) {
-    return this.beneficioService.canjear(usuarioId, cuponId, cantidad);
+    return this.beneficioService.canjear(cuponId, usuarioId, cantidad);
   }
 
   /**

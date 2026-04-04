@@ -55,9 +55,9 @@ export class CampaignsService {
         .leftJoin('organizacion.organizacionUsuarios', 'orgUsers')
         .leftJoin('orgUsers.usuario', 'usuario');
 
-      query.andWhere('usuario.habilitado = :habilitado', { habilitado: 1 });
+      query.andWhere('usuario.habilitado = :habilitado', { habilitado: true });
       query.andWhere('organizacion.habilitada = :habilitada', {
-        habilitada: 1,
+        habilitada: true,
       });
 
       if (onlyEnabled) {

@@ -467,7 +467,7 @@ export class EmpresaService {
       if (!empresa) {
         throw new ErrorManager({
           type: 'NOT_FOUND',
-          message: `Empresa con ID ${id} no encontrado`
+          message: `Empresa con ID ${id} no encontrada`
         });
       }
 
