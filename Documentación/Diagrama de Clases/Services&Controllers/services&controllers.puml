@@ -102,7 +102,6 @@ class OrganizacionController {
 }
 
 class OrganizacionService {
-    - logger: logger
     - organizacionRepository: Repository<Organizacion>
     - organizacionUsuarioRepository: Repository<OrganizacionUsuario>
     - campaignService: CampaignService
@@ -136,7 +135,6 @@ class AuthController {
 }
 
 class AuthService {
-    - logger: logger
     - usuarioService: UsuarioService
     - jwtService: JwtService
     - hashService: HashService
@@ -152,6 +150,58 @@ class AuthService {
     + resetPassword(token, newPassword)
 }
 
+class HashService {
+    + hash(value)
+    + compare(value, hash)
+}
+
+class GestionDetector {
+    - empresaStrategy: EmpresaGestionStrategy,
+    - organizacionStrategy: OrganizacionGestionStrategy,
+
+    + detectar(usuarioId)
+}
+
+class EmpresaGestionStrategy {
+    - empresaUsuarioRepository: Repository<EmpresaUsuario>
+
+    + detectar(usuarioId)
+}
+
+class OrganizacionGestionStrategy {
+    - organizacionUsuarioRepository: Repository<OrganizacionUsuario>
+
+    + detectar(usuarioId)
+}
+
+class InvitacionesService {
+    - invitacionRepository: Repository<Invitacion>
+    - contactoRepository: Repository<Contacto>
+    - empresaUsuarioRepository: Repository<EmpresaUsuario>
+    - organizacionUsuarioRepository: Repository<OrganizacionUsuario>
+    - emailService: EmailService
+
+    + crearInvitacionesEmpresa(correos: string[], empresaId: number, usuarioInvitadorId: number)
+    + crearInvitacionesOrganizacion(correos: string[], organizacionId: number, usuarioInvitadorId: number)
+    + invitarEntidad(correos: string[], usuarioInvitadorId: number)
+
+    + listarInvitacionesEntidad(page: number, limit: number)
+    + listarInvitacionesEmpresa(empresaId: number, page: number, limit: number)
+    + listarInvitacionesOrganizacion(organizacionId: number, page: number, limit: number)
+
+    + validarToken(token: string)
+    + validarInvitacion(token: string, correo: string)
+
+    + buscarPorToken(token: string)
+
+    + agregarUsuarioAOrganizacion(usuarioId: number, organizacionId: number)
+    + agregarUsuarioAEmpresa(usuarioId: number, empresaId: number)
+
+    + marcarAceptada(invitacionId: number, usuarioId: number, manager?: EntityManager)
+
+    - procesarInvitacion(correo: string, datos: Partial<Invitacion>, diasExpiracion: number
+}
+
 class BeneficioController {
     - beneficiosService: BeneficioService
 
@@ -162,7 +212,6 @@ class BeneficioController {
 }
 
 class BeneficioService {
-    - logger: logger
     - beneficiosRepository: Repository<Beneficios>
     - empresasRepository: Repository<Empresa>
     - dataSource: DataSource
@@ -176,8 +225,16 @@ class BeneficioService {
     + validateBeneficioData(data)
 }
 
+class UsuarioBeneficioService {
+    - usuarioBeneficioRepo: Repository<UsuarioBeneficio>
+
+    - validarBeneficio(registro)
+    + getByUsuario(usuarioId)
+    + usarBeneficio(id)
+}
+
 class CampaignController {
-    - campaignService: CampaignsService
+    - campaignService: CampaignService
 
     + findPaginated(page, limit, search, onlyEnabled)
     + findOneDetail(id)
@@ -185,7 +242,6 @@ class CampaignController {
 }
 
 class CampaignService {
-    - logger: logger
     - campaignsRepository: Repository<Campaigns>
     - organizacionRepository: Repository<Organizacion>
     - campaignsImagesRepository: Repository<imagenes_campania>
@@ -206,7 +262,6 @@ class CampaignService {
 }
 
 class DonacionService {
-    - logger: logger
     - donacionRepository: Repository<Donaciones>
     - campaignsRepository: Repository<Campaigns>
     - usuarioRepository: Repository<Usuario>
@@ -227,7 +282,6 @@ class DonacionService {
 
 class EmailService {
     - transporter: Transporter
-    - logger: logger
     - baseUrl: string
 
     + sendResetPasswordEmail(to, token)
@@ -242,7 +296,6 @@ class RankingController {
 }
 
 class RankingService {
-    - logger: logger
     - puntosRepository: Repository<Ranking>
 
     + getTop10()
@@ -259,17 +312,22 @@ BeneficioController --> BeneficioService
 CampaignController --> CampaignService
 RankingController --> RankingService
 
+UsuarioService --> usuarioRepository
 UsuarioService --> DonacionService
 UsuarioService --> BeneficioService
 UsuarioService --> UsuarioBeneficioService
 UsuarioService --> HashService
 UsuarioService --> JwtService
 
+EmpresaService --> empresaRepository
+EmpresaService --> empresaUsuarioRepository
 EmpresaService --> BeneficioService
 EmpresaService --> DataSource
 EmpresaService --> HashService
 EmpresaService --> InvitacionesService
 
+OrganizacionService --> organizacionRepository
+OrganizacionService --> organizacionUsuarioRepository
 OrganizacionService --> CampaignService
 OrganizacionService --> DonacionService
 OrganizacionService --> HashService
@@ -283,17 +341,30 @@ AuthService --> EmailService
 AuthService --> GestionDetector
 AuthService --> InvitacionesService
 
-'RESOLVER INCONSISTENCIA
-BeneficioService --> DataSource 
+GestionDetector --> EmpresaGestionStrategy
+GestionDetector --> OrganizacionGestionStrategy
 
-'CampaignService (RESOLVER INCONSISTENCIA)
+InvitacionesService --> invitacionRepository
+InvitacionesService --> contactoRepository
+InvitacionesService --> empresaUsuarioRepository
+Invitaciones --> organizacionUsuarioRepository
+Invitaciones --> EmailService
 
-'RESOLVER INCONSISTENCIA
+BeneficioService --> beneficiosRepository
+BeneficioService --> empresasRepository
+
+UsuarioBeneficioService --> usuarioBeneficioRepo
+
+CampaignService --> campaignsRepository
+CampaignService --> organizacionRepository
+CampaignService --> campaignsImagesRepository
+
+DonacionService --> donacionRepository
+DonacionService --> campaignsRepository
+DonacionService --> usuarioRepository
 DonacionService --> RankingService 
 
 
-EmailService --> Transporter
-
-'RankingService
+RankingService --> puntosRepository
 
 @enduml
