@@ -47,58 +47,6 @@ export class UsuarioBeneficioService {
     }
   }
 
-  async reclamarBeneficio(
-    usuarioId: number,
-    beneficioId: number,
-  ): Promise<UsuarioBeneficio> {
-    try {
-      const existing = await this.usuarioBeneficioRepo.findOne({
-        where: {
-          usuario: { id: usuarioId },
-          beneficio: { id: beneficioId },
-          estado: BeneficiosUsuarioEstado.ACTIVO,
-        },
-      });
-
-      if (existing) {
-        existing.cantidad += 1;
-
-        const updated = await this.usuarioBeneficioRepo.save(existing);
-
-        this.logger.log(
-          `Usuario ${usuarioId} acumuló beneficio ${beneficioId}. Nueva cantidad: ${updated.cantidad}`,
-        );
-
-        return updated;
-      }
-
-      const nuevo = this.usuarioBeneficioRepo.create({
-        usuario: { id: usuarioId },
-        beneficio: { id: beneficioId },
-        cantidad: 1,
-        usados: 0,
-        estado: BeneficiosUsuarioEstado.ACTIVO,
-        fecha_reclamo: new Date(),
-      });
-
-      const saved = await this.usuarioBeneficioRepo.save(nuevo);
-
-      this.logger.log(
-        `Usuario ${usuarioId} reclamó nuevo beneficio ${beneficioId}`,
-      );
-
-      return saved;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw ErrorManager.createSignatureError(error.message);
-      }
-      throw new ErrorManager({
-        type: 'INTERNAL_SERVER_ERROR',
-        message: 'Error desconocido',
-      });
-    }
-  }
-
   async usarBeneficio(id: number): Promise<UsuarioBeneficio> {
     try {
       const registro = await this.usuarioBeneficioRepo.findOne({
