@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { OrganizacionesController } from './organizacion.controller';
 import { OrganizacionService } from './organizacion.service';
 import { Organizacion } from '../../Entities/organizacion.entity';
@@ -64,8 +64,6 @@ import { InvitacionesModule } from '../invitaciones/invitacion.module';
       Campaigns,
       OrganizacionUsuario,
       Usuario,
-      UpdateDireccionOrganizacionDto,
-      UpdateContactoOrganizacionDto,
     ]),
 
     /**
@@ -75,9 +73,9 @@ import { InvitacionesModule } from '../invitaciones/invitacion.module';
      * - Acceder a CampaignsService.
      * - Obtener campañas asociadas a una organización.
      */
-    UsuarioModule,
-    CampaignModule,
-    DonacionModule,
+    forwardRef(() => UsuarioModule),
+    forwardRef(() => CampaignModule),
+    forwardRef(() => DonacionModule),
     InvitacionesModule,
   ],
 

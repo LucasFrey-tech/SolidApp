@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, FindOptionsWhere, Like, Repository } from 'typeorm';
 import { Empresa } from '../../Entities/empresa.entity';
@@ -51,6 +51,7 @@ export class EmpresaService {
     private readonly empresaRepository: Repository<Empresa>,
     @InjectRepository(EmpresaUsuario)
     private readonly empresaUsuarioRepository: Repository<EmpresaUsuario>,
+    @Inject(forwardRef(() => BeneficioService))
     private readonly beneficioService: BeneficioService,
     private readonly dataSource: DataSource,
     private readonly hashService: HashService,
