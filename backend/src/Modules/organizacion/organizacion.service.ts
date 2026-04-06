@@ -7,7 +7,6 @@ import { UpdateOrganizacionDto } from './dto/update_organizacion.dto';
 import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
 import { CampaignsService } from '../campaign/campaign.service';
 import { DonacionService } from '../donation/donacion.service';
-import { UsuarioService } from '../user/usuario.service';
 import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
 import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
 import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
@@ -166,6 +165,34 @@ export class OrganizacionService {
       }
 
       return perfil;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
+  }
+
+  async findHabilitadaById(id: number): Promise<Organizacion> {
+    try {
+      const org = await this.organizacionRepository.findOne({
+        where: {
+          id,
+          habilitada: true,
+        },
+      });
+
+      if (!org) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Organización con ID ${id} no encontrada o está deshabilitada`,
+        });
+      }
+
+      return org;
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw ErrorManager.createSignatureError(error.message);
@@ -349,6 +376,30 @@ export class OrganizacionService {
 
         return this.mapToResponseDto(savedOrganizacion);
       });
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
+  }
+
+  async agregarUsuario(
+    usuarioId: number,
+    organizacionId: number,
+  ): Promise<OrganizacionUsuario> {
+    try {
+      const relacion = this.organizacionUsuarioRepository.create({
+        id_usuario: usuarioId,
+        id_organizacion: organizacionId,
+        rol: RolSecundario.MIEMBRO,
+        activo: true,
+      });
+
+      return this.organizacionUsuarioRepository.save(relacion);
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw ErrorManager.createSignatureError(error.message);

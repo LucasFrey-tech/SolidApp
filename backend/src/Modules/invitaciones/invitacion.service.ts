@@ -333,48 +333,6 @@ export class InvitacionesService {
     });
   }
 
-  async agregarUsuarioAOrganizacion(usuarioId: number, organizacionId: number) {
-    try {
-      const relacion = this.organizacionUsuarioRepo.create({
-        id_usuario: usuarioId,
-        id_organizacion: organizacionId,
-        rol: RolSecundario.MIEMBRO,
-        activo: true,
-      });
-
-      return this.organizacionUsuarioRepo.save(relacion);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw ErrorManager.createSignatureError(error.message);
-      }
-      throw new ErrorManager({
-        type: 'INTERNAL_SERVER_ERROR',
-        message: 'Error desconocido',
-      });
-    }
-  }
-
-  async agregarUsuarioAEmpresa(usuarioId: number, empresaId: number) {
-    try {
-      const relacion = this.empresaUsuarioRepo.create({
-        id_usuario: usuarioId,
-        id_empresa: empresaId,
-        rol: RolSecundario.MIEMBRO,
-        activo: true,
-      });
-
-      return this.empresaUsuarioRepo.save(relacion);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw ErrorManager.createSignatureError(error.message);
-      }
-      throw new ErrorManager({
-        type: 'INTERNAL_SERVER_ERROR',
-        message: 'Error desconocido',
-      });
-    }
-  }
-
   async marcarAceptada(
     invitacionId: number,
     usuarioId: number,

@@ -6,7 +6,6 @@ import { CreateCampaignsDto } from './dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from './dto/update_campaigns.dto';
 import { ResponseCampaignsDto } from './dto/response_campaigns.dto';
 import { OrganizacionSummaryDto } from '../organizacion/dto/summary_organizacion.dto';
-import { Organizacion } from '../../Entities/organizacion.entity';
 import { CampaignEstado } from './enum';
 import { imagenes_campania } from '../../Entities/imagenes_campania.entity';
 import { ResponseCampaignDetalleDto } from './dto/response_campaignDetalle.dto';
@@ -14,6 +13,7 @@ import * as path from 'path';
 import { ResponseCampaignsDetailPaginatedDto } from './dto/response_campaign_paginated.dto';
 import { Usuario } from '../../Entities/usuario.entity';
 import { ErrorManager } from '../../common/errors/error.manager';
+import { OrganizacionService } from '../organizacion/organizacion.service';
 
 /**
  * Servicio que maneja la lógica de negocio de las Campañas Solidarias
@@ -26,8 +26,7 @@ export class CampaignsService {
     @InjectRepository(Campaigns)
     private readonly campaignsRepository: Repository<Campaigns>,
 
-    @InjectRepository(Organizacion)
-    private readonly organizacionRepository: Repository<Organizacion>,
+    private readonly organizacionService: OrganizacionService,
 
     @InjectRepository(imagenes_campania)
     private readonly campaignsImagesRepository: Repository<imagenes_campania>,
@@ -164,6 +163,31 @@ export class CampaignsService {
     }
   }
 
+  async findById(id: number): Promise<Campaigns> {
+    try {
+      const campaign = await this.campaignsRepository.findOne({
+        where: { id },
+      });
+
+      if (!campaign) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: 'Campaña no encontrada',
+        });
+      }
+
+      return campaign;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
+  }
+
   /**
    * Crea una nueva Campaña en el sistema.
    *
@@ -180,19 +204,8 @@ export class CampaignsService {
     usuarioId: number,
   ): Promise<ResponseCampaignsDto> {
     try {
-      const organizacion = await this.organizacionRepository.findOne({
-        where: {
-          id: id,
-          habilitada: true,
-        },
-      });
-
-      if (!organizacion) {
-        throw new ErrorManager({
-          type: 'NOT_FOUND',
-          message: `Organización con ID ${id} no encontrada o está deshabilitada`,
-        });
-      }
+      const organizacion =
+        await this.organizacionService.findHabilitadaById(id);
 
       if (createDto.objetivo <= 0) {
         throw new ErrorManager({
@@ -298,12 +311,8 @@ export class CampaignsService {
         });
       }
 
-      const organizacion = await this.organizacionRepository.findOne({
-        where: {
-          id: organizacionId,
-          habilitada: true,
-        },
-      });
+      const organizacion =
+        await this.organizacionService.findHabilitadaById(organizacionId);
 
       if (!organizacion) {
         throw new ErrorManager({
@@ -313,13 +322,6 @@ export class CampaignsService {
       }
 
       campaign.organizacion = organizacion;
-
-      if (updateDto.objetivo !== undefined && updateDto.objetivo < 0) {
-        throw new ErrorManager({
-          type: 'BAD_REQUEST',
-          message: 'El objetivo no puede ser negativo',
-        });
-      }
 
       Object.keys(updateDto).forEach((key) => {
         if (

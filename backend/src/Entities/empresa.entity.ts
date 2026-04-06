@@ -72,12 +72,6 @@ export class Empresa {
   nombre_empresa: string;
 
   @ApiProperty({
-    description: 'ID del contacto asociado (obligatorio)',
-  })
-  @Column({ type: 'int', nullable: false })
-  contacto_id: number;
-
-  @ApiProperty({
     description: 'Información de contacto de la empresa',
     type: () => Contacto,
   })
@@ -88,12 +82,6 @@ export class Empresa {
   })
   @JoinColumn({ name: 'contacto_id' })
   contacto: Contacto;
-
-  @ApiPropertyOptional({
-    description: 'ID de la dirección fiscal/comercial (opcional)',
-  })
-  @Column({ type: 'int', nullable: true })
-  direccion_id?: number;
 
   @ApiPropertyOptional({
     description: 'Dirección fiscal/comercial de la empresa',

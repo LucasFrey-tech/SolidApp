@@ -15,6 +15,8 @@ import { PaginatedUserDonationsResponseDto } from './dto/response_donation_pagin
 import { UserDonationItemDto } from './dto/usuario_donation_item.dto';
 import { CampaignEstado } from '../campaign/enum';
 import { ErrorManager } from '../../common/errors/error.manager';
+import { CampaignsService } from '../campaign/campaign.service';
+import { UsuarioService } from '../user/usuario.service';
 
 /**
  * Servicio que maneja la lógica de negocio para las Donaciones.
@@ -27,11 +29,9 @@ export class DonacionService {
     @InjectRepository(Donaciones)
     private readonly donacionRepository: Repository<Donaciones>,
 
-    @InjectRepository(Campaigns)
-    private readonly campaignsRepository: Repository<Campaigns>,
+    private readonly campaignsService: CampaignsService,
 
-    @InjectRepository(Usuario)
-    private readonly usuarioRepository: Repository<Usuario>,
+    private readonly usuarioService: UsuarioService,
 
     private readonly rankingService: RankingService,
   ) {}
@@ -141,16 +141,9 @@ export class DonacionService {
     createDto: CreateDonationDto,
   ): Promise<ResponseDonationDto> {
     try {
-      const campaign = await this.campaignsRepository.findOne({
-        where: { id: createDto.campaignId },
-      });
-
-      if (!campaign) {
-        throw new ErrorManager({
-          type: 'NOT_FOUND',
-          message: 'Campaña no encontrada',
-        });
-      }
+      const campaign = await this.campaignsService.findById(
+        createDto.campaignId,
+      );
 
       if (createDto.cantidad > campaign.objetivo) {
         throw new ErrorManager({
@@ -159,16 +152,7 @@ export class DonacionService {
         });
       }
 
-      const usuario = await this.usuarioRepository.findOne({
-        where: { id: usuarioId, habilitado: true },
-      });
-
-      if (!usuario) {
-        throw new ErrorManager({
-          type: 'NOT_FOUND',
-          message: 'Usuario no encontrado',
-        });
-      }
+      const usuario = await this.usuarioService.findOne(usuarioId);
 
       const cantidadFinal = Math.min(createDto.cantidad, campaign.objetivo);
 

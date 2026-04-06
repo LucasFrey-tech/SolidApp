@@ -16,6 +16,8 @@ import { InvitacionesService } from '../invitaciones/invitacion.service';
 import { GestionDetector } from './estrategias/gestion/gestion_detector';
 
 import { ErrorManager } from '../../common/errors/error.manager';
+import { EmpresaService } from '../empresa/empresa.service';
+import { OrganizacionService } from '../organizacion/organizacion.service';
 
 @Injectable()
 export class AuthService {
@@ -28,6 +30,8 @@ export class AuthService {
     private readonly emailService: EmailService,
     private readonly gestionDetector: GestionDetector,
     private readonly invitacionesService: InvitacionesService,
+    private readonly empresaService: EmpresaService,
+    private readonly organizacionService: OrganizacionService,
   ) {
     this.logger.log('AuthService inicializado');
   }
@@ -87,13 +91,13 @@ export class AuthService {
 
         await Promise.all([
           invitacion.organizacionId
-            ? this.invitacionesService.agregarUsuarioAOrganizacion(
+            ? this.organizacionService.agregarUsuario(
                 usuario.id,
                 invitacion.organizacionId,
               )
             : Promise.resolve(),
           invitacion.empresaId
-            ? this.invitacionesService.agregarUsuarioAEmpresa(
+            ? this.empresaService.agregarUsuario(
                 usuario.id,
                 invitacion.empresaId,
               )

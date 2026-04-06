@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Beneficios } from '../../Entities/beneficio.entity';
-import { Empresa } from '../../Entities/empresa.entity';
 import { CreateBeneficiosDTO } from './dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from './dto/update_beneficios.dto';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
@@ -15,6 +14,8 @@ import { SettingsService } from '../../common/settings/settings.service';
 import { BeneficioEstado, BeneficiosUsuarioEstado } from './dto/enum/enum';
 import { Rol } from '../user/enums/enums';
 import { ErrorManager } from '../../common/errors/error.manager';
+import { EmpresaService } from '../empresa/empresa.service';
+import { Empresa } from '../../Entities/empresa.entity';
 
 /**
  * Servicio que maneja la lógica de negocio para los Beneficios.
@@ -27,8 +28,7 @@ export class BeneficioService {
     @InjectRepository(Beneficios)
     private readonly beneficiosRepository: Repository<Beneficios>,
 
-    @InjectRepository(Empresa)
-    private readonly empresasRepository: Repository<Empresa>,
+    private readonly empresaService: EmpresaService,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -158,24 +158,7 @@ export class BeneficioService {
     usuarioId: number,
   ): Promise<BeneficiosResponseDTO> {
     try {
-      const empresa = await this.empresasRepository.findOne({
-        where: {
-          id: createDto.id_empresa,
-          empresaUsuarios: { usuario: { habilitado: true } },
-        },
-        relations: {
-          empresaUsuarios: {
-            usuario: true,
-          },
-        },
-      });
-
-      if (!empresa) {
-        throw new ErrorManager({
-          type: 'NOT_FOUND',
-          message: `Empresa con ID ${createDto.id_empresa} no encontrada o deshabilitada`,
-        });
-      }
+      const empresa = await this.empresaService.findOne(createDto.id_empresa);
 
       if (createDto.cantidad <= 0) {
         throw new ErrorManager({
@@ -206,7 +189,10 @@ export class BeneficioService {
       const saved = await this.beneficiosRepository.save(beneficio);
       this.logger.log(`Beneficio creado ID ${saved.id}`);
 
-      return this.mapToResponseDto({ ...saved, empresa });
+      return this.mapToResponseDto({
+        ...saved,
+        empresa: empresa as unknown as Empresa,
+      });
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw ErrorManager.createSignatureError(error.message);

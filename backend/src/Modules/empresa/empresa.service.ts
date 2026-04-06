@@ -57,6 +57,39 @@ export class EmpresaService {
     private readonly invitacionesService: InvitacionesService,
   ) {}
 
+  async findOne(id: number): Promise<EmpresaResponseDTO> {
+    try {
+      const empresa = await this.empresaRepository.findOne({
+        relations: {
+          empresaUsuarios: {
+            usuario: true,
+          },
+        },
+        where: {
+          id,
+          empresaUsuarios: { usuario: { habilitado: true } },
+        },
+      });
+
+      if (!empresa) {
+        throw new ErrorManager({
+          type: 'NOT_FOUND',
+          message: `Empresa con ID ${id} no encontrada`,
+        });
+      }
+
+      return this.mapToResponseDto(empresa);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
+  }
+
   /**
    * Obtiene empresas paginadas con búsqueda opcional.
    *
@@ -321,6 +354,30 @@ export class EmpresaService {
     }
   }
 
+  async agregarUsuario(
+    usuarioId: number,
+    empresaId: number,
+  ): Promise<EmpresaUsuario> {
+    try {
+      const relacion = this.empresaUsuarioRepository.create({
+        id_usuario: usuarioId,
+        id_empresa: empresaId,
+        rol: RolSecundario.MIEMBRO,
+        activo: true,
+      });
+
+      return this.empresaUsuarioRepository.save(relacion);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw ErrorManager.createSignatureError(error.message);
+      }
+      throw new ErrorManager({
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Error desconocido',
+      });
+    }
+  }
+
   /**
    * Actualiza los datos generales de una empresa.
    *
@@ -467,7 +524,7 @@ export class EmpresaService {
       if (!empresa) {
         throw new ErrorManager({
           type: 'NOT_FOUND',
-          message: `Empresa con ID ${id} no encontrada`
+          message: `Empresa con ID ${id} no encontrada`,
         });
       }
 
