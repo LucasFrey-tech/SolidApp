@@ -1,0 +1,40 @@
+@startuml Diagrama de componentes
+
+package "Frontend (NextJS)"{
+    rectangle "UI (CSS + Tailwind)" as UI
+
+    rectangle "API Client" as API
+}
+
+package "Backend (NestJS)"{
+    rectangle Controller
+    rectangle Service
+    rectangle "Auth Module" as Auth
+
+    package "Capa de Validación"{
+        rectangle "DTOs" as dto
+        rectangle Entities
+    }
+}
+
+database "SQL Server" as SQL
+
+'relations
+
+'Front
+UI <--> API
+
+'Back
+API <--> Controller : HTTP Request
+
+Controller <--> Service : Lógica de negocio
+
+Service <--> Auth : Verificacion JWT
+Service <-d-> dto : Usa para validar
+Service <-d-> Entities : Acceso a datos
+
+Auth -r-> dto
+
+Entities <-d-> SQL : TypeORM
+
+@enduml
