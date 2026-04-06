@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 
@@ -52,7 +52,7 @@ import { InvitacionesModule } from '../invitaciones/invitacion.module';
      */
     TypeOrmModule.forFeature([Usuario]),
 
-    DonacionModule,
+    forwardRef(() => DonacionModule),
     BeneficioModule,
     UsuarioBeneficioModule,
 

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { EmpresaController } from './empresa.controller';
 import { EmpresaService } from './empresa.service';
 import { Empresa } from '../../Entities/empresa.entity';
@@ -67,8 +67,8 @@ import { InvitacionesModule } from '../invitaciones/invitacion.module';
      * @InjectRepository(Empresa)
      */
     TypeOrmModule.forFeature([Empresa, EmpresaUsuario, Usuario]),
-    UsuarioModule,
-    BeneficioModule,
+    forwardRef(() => UsuarioModule),
+    forwardRef(() => BeneficioModule),
     InvitacionesModule,
   ],
 
