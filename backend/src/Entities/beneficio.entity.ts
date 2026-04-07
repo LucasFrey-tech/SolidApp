@@ -6,12 +6,10 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Empresa } from './empresa.entity';
 import { BeneficioEstado } from '../Modules/benefit/dto/enum/enum';
-import { UsuarioBeneficio } from './usuario-beneficio.entity';
 import { Usuario } from './usuario.entity';
 
 @Entity('beneficios')
@@ -125,7 +123,4 @@ export class Beneficios {
   @ManyToOne(() => Empresa, (empresa) => empresa.beneficios)
   @JoinColumn({ name: 'id_empresa' })
   empresa: Empresa;
-
-  @OneToMany(() => UsuarioBeneficio, (ub) => ub.beneficio)
-  usuariosCanje: UsuarioBeneficio[];
 }
