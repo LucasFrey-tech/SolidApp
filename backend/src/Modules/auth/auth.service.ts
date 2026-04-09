@@ -32,7 +32,7 @@ export class AuthService {
     this.logger.log('AuthService inicializado');
   }
 
-  private buildToken(payload: JwtPayload) {
+  private buildToken(payload: JwtPayload): { token: string } {
     return {
       token: this.jwtService.sign({
         sub: payload.sub,
@@ -57,7 +57,7 @@ export class AuthService {
     };
   }
 
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto): Promise<{ token: string }> {
     try {
       if (await this.usuarioService.findByEmail(dto.correo)) {
         throw new ErrorManager({
@@ -128,7 +128,7 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto): Promise<{ token: string }> {
     try {
       const usuario = await this.usuarioService.findByEmail(dto.correo);
 
@@ -185,7 +185,7 @@ export class AuthService {
     }
   }
 
-  async forgotPassword(email: string) {
+  async forgotPassword(email: string): Promise<{ message: string }> {
     try {
       const usuario = await this.usuarioService.findByEmail(email);
 
@@ -211,7 +211,10 @@ export class AuthService {
     }
   }
 
-  async resetPassword(token: string, newPassword: string) {
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
     try {
       const usuario = await this.usuarioService.findByResetToken(token);
 

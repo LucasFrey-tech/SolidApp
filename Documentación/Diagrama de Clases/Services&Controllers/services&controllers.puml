@@ -3,20 +3,20 @@
 class UsuarioController {
   - userService: UsuarioService
 
-  + getMiPerfil()
-  + updateMiPerfil(dto)
-  + updateMisCredenciales(dto)
-  + getMisPuntos()
-  + getMisDonaciones(page, limit)
-  + donar(dto)
-  + getMisCuponesCanjeados()
-  + usarCupon(id)
-  + canjearCupon(cuponId, cantidad)
+  + getMiPerfil(req: RequestConUsuario): Promise<ResponseUsuarioDto>
+  + updateMiPerfil(dto: UpdateUsuarioDto): Promise<ResponseUsuarioDto>
+  + updateMisCredenciales(dto: UpdateCredencialesDto): Promise<{ token: string }>
+  + getMisPuntos(req: RequestConUsuario): Promise<{ id: number; puntos: number }>
+  + getMisDonaciones(req: RequestConUsuario, page: number, limit: number): Promise<PaginatedUserDonationsResponseDto>
+  + donar(req: RequestConUsuario, dto: CreateDonationDto): Promise<ResponseDonationDto> 
+  + getMisCuponesCanjeados(req: RequestConUsuario): : Promise<UsuarioBeneficio[]>
+  + usarCupon(id: number): Promise<UsuarioBeneficio>
+  + canjearCupon(req: RequestConUsuario, cuponId: number, cantidad: number)
 
-  + findAll(page, limit, search)
-  + getDonacionesDeUsuario(id, page, limit)
-  + deleteUsuario(id)
-  + restoreUsuario(id)
+  + findAll(page: number, limit: number, search: number): Promise<{ items: ResponseUsuarioDto[]; total: number }>
+  + getDonacionesDeUsuario(id: number, page: number, limit: number): Promise<PaginatedUserDonationsResponseDto>
+  + deleteUsuario(id: number): Promise<void>
+  + restoreUsuario(id: number): Promise<void>
 }
 
 class UsuarioService {
@@ -27,41 +27,41 @@ class UsuarioService {
   - hashService: HashService
   - jwtService: JwtService
 
-  + findByEmail(email)
-  + create(dto)
-  + getDonaciones(id, page, limit)
-  + donar(id, dto)
-  + getMisCuponesCanjeados(id)
-  + usarCupon(id)
-  + canjearCupon(usuarioId, cuponId, cantidad)
-  + updateCredenciales(id, dto)
-  + updateUsuario(id, dto)
-  + updatePuntos(id, dto)
-  + actualizarUltimaConexion(id)
-  + getPoints(id)
-  + findPaginated(page, limit, search)
-  + findOne(id)
-  + delete(id)
-  + restore(id)
-  + mapToResponseDto(usuario)
-  + findByResetToken(token)
-  + setResetToken(id, token, expires)
-  + clearResetToken(id)
-  + resetPassword(id, newHashedPassword)
+  + findByEmail(email: string): Promise<Usuario | null>
+  + create(dto: CreateUsuarioDto): Promise<ResponseUsuarioDto>
+  + getDonaciones(usuarioId: number, page: number, limit: number): Promise<PaginatedUserDonationsResponseDto>
+  + donar(usuarioId: number, dto: CreateDonationDto): Promise<ResponseDonationDto> 
+  + getMisCuponesCanjeados(usuarioId: number): Promise<UsuarioBeneficio[]>
+  + usarCupon(usuarioBeneficioId: number): Promise<UsuarioBeneficio>
+  + canjearCupon(usuarioId: number, cuponId: number, cantidad: number): : Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; 
+  + updateCredenciales(id: number, dto: UpdateCredencialesDto): Promise<{ token: string }>
+  + updateUsuario(id: number, dto: UpdateUsuarioDto): Promise<ResponseUsuarioDto>
+  + updatePuntos(id: number, dto: UpdatePuntosDto): Promise<ResponseUsuarioDto>
+  + actualizarUltimaConexion(id: number): : Promise<void>
+  + getPoints(id: number): Promise<{ id: number; puntos: number }>
+  + findPaginated(page: number, limit: number, search: number): : Promise<{ items: ResponseUsuarioDto[]; total: number }>
+  + findOne(id: number): Promise<ResponseUsuarioDto> 
+  + delete(id: number): Promise<void>
+  + restore(id: number): Promise<void> 
+  + mapToResponseDto(usuario: Usuario): ResponseUsuarioDto
+  + findByResetToken(token: string) : Promise<Usuario | null>
+  + setResetToken(id: number, token: string, expires: Date): Promise<void>
+  + clearResetToken(id: number): Promise<void> 
+  + resetPassword(id: number, newHashedPassword: string): Promise<void>
 }
 
 class EmpresaController {
   - empresasService: EmpresaService
 
-  + findPaginated(page, limit, search, enabled)
-  + getDatosEmpresa()
-  + registrarEmpresa(dto)
-  + updateMiPerfil(req, file, data)
-  + getMisCupones(req, page, limit)
-  + createCupon(req, dto)
-  + updateCupon(cuponId, dto, req)
-  + delete(id)
-  + restore(id)
+  + findPaginated(page: number, limit: number, search: number, enabled: number): Promise<{ items: EmpresaResponseDTO[]; total: number }> 
+  + getDatosEmpresa(req: RequestConUsuario): Promise<EmpresaResponseDTO> 
+  + registrarEmpresa(dto: CreateEmpresaDTO): Promise<EmpresaResponseDTO>
+  + updateMiPerfil(req: RequestConUsuario, : Express.Multer.File, data: string): : Promise<EmpresaResponseDTO> 
+  + getMisCupones(req: RequestConUsuario, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO> 
+  + createCupon(req: RequestConUsuario, dto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO>
+  + updateCupon(cuponId: number, dto: UpdateBeneficiosDTO, req: RequestConUsuario): Promise<BeneficiosResponseDTO>
+  + delete(id: number): Promise<void> 
+  + restore(id: number): Promise<void>
 }
 
 class EmpresaService {
@@ -72,33 +72,34 @@ class EmpresaService {
     - hashService: HashService
     - invitacionesService: InvitacionesService
 
-    + findPaginated(page, limit, search, onlyEnabled)
-    + getEmpresaByUsuario(usuarioId)
-    + getCupones(usuarioId, page, limit)
-    + createCupon(usuarioId, dto)
-    + updateCupon(cuponId, dto, usuarioId)
-    + registrarEmpresa(dto)
-    + update(usuarioId, updateDto)
-    + verify(id)
-    + delete(id)
-    + restore(id)
+    + findPaginated(page: number, limit: number, search: string, onlyEnabled: boolean): Promise<{ items: EmpresaResponseDTO[]; total: number }>
+    + getEmpresaByUsuario(usuarioId: number): Promise<EmpresaResponseDTO>
+    + getCupones(usuarioId: number, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO>
+    + createCupon(usuarioId: number, dto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO>
+    + updateCupon(cuponId: number, dto: UpdateBeneficiosDTO , usuarioId: number): Promise<BeneficiosResponseDTO>
+    + registrarEmpresa(dto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> 
+    + update(usuarioId: number, updateDto: UpdateEmpresaDTO): Promise<EmpresaResponseDTO>
+    + verify(id: number): Promise<EmpresaResponseDTO>
+    + delete(id: number): Promise<void>
+    + restore(id: number): Promise<void>
+    - mapToResponseDto(empresa: Empresa): EmpresaResponseDTO
 }
 
 class OrganizacionController {
     - organizacionService: OrganizacionService
     
-    + getMiPerfil(req)
-    + getMisCampanas(req, page, limit)
-    + registrarOrganizacion(dto)
-    + createMiCampaign(req, createCampaignsDto, files)
-    + updateMiCampaign(campaignId, req, updateCampaignsDto, files)
-    + getMisDonaciones(req, page, limit, search)
-    + actualizarEstadoDonacion(id, dto, req)
-    + updateMiPerfil(req, updateDto)
-    + findPaginated(page, limit, search)
-    + update(id, dto)
-    + delete(id)
-    + restore(id)
+    + getMiPerfil(req: RequestConUsuario): Promise<ResponseOrganizacionDto>
+    + getMisCampanas(req: RequestConUsuario, page: number, limit: number): : Promise<ResponseCampaignsDetailPaginatedDto> 
+    + registrarOrganizacion(dto: CreateOrganizacionDto): Promise<ResponseOrganizacionDto> 
+    + createMiCampaign(req: RequestConUsuario, createCampaignsDto: CreateCampaignsDto, files: Express.Multer.File[]): Promise<ResponseCampaignsDto>
+    + updateMiCampaign(campaignId: number, req: RequestConUsuario, updateCampaignsDto: UpdateCampaignsDto, files: Express.Multer.File[]): : Promise<ResponseCampaignsDto> 
+    + getMisDonaciones(req: RequestConUsuario, page: number, limit: number, search: string): Promise<PaginatedOrganizationDonationsResponseDto>
+    + actualizarEstadoDonacion(id: number, dto: UpdateDonacionEstadoDto, req: RequestConUsuario): : Promise<ResponseDonationDto> 
+    + updateMiPerfil(req: RequestConUsuario, updateDto: UpdateOrganizacionDto): Promise<ResponseOrganizacionDto> 
+    + findPaginated(page: number, limit: number, search: string): Promise<ResponseOrganizationPaginatedDto>
+    + update(id: number, dto: UpdateOrganizacionDto): Promise<ResponseOrganizacionDto> 
+    + delete(id: number): Promise<void> 
+    + restore(id: number): Promise<void> 
 }
 
 class OrganizacionService {
@@ -110,28 +111,29 @@ class OrganizacionService {
     - dataSource: DataSource
     - invitacionesService: InvitacionesService
 
-    + findPaginated(page, limit, search)
-    + getOrganizacionByUsuario(usuarioId)
-    + findById(id)
-    + getCampaigns(id, page, limit)
-    + getDonaciones(organizacionId, page, limit, search)
-    + confirmarDonacion(id, dto, gestorId)
-    + createCampaign(id, dto, imagenes, usuarioId)
-    + updateCampaign(id, campaignId, updateDto, usuarioId, imagenes)
-    + registrarOrganizacion(dto)
-    + update(dto, usuarioId)
-    + verify(id)
-    + delete(id)
-    + restore(id)
+    + findPaginated(page: number, limit: number, search: string): Promise<{ items: ResponseOrganizacionDto[]; total: number }>
+    + getOrganizacionByUsuario(usuarioId: number): Promise<Organizacion>
+    + findById(id: number): Promise<Organizacion>
+    + getCampaigns(id: number, page: number, limit: number): Promise<ResponseCampaignsDetailPaginatedDto>
+    + getDonaciones(organizacionId: number, page: number, limit: number, search: string): Promise<PaginatedOrganizationDonationsResponseDto>
+    + confirmarDonacion(id: number, dto: UpdateDonacionEstadoDto , gestorId: number): Promise<ResponseDonationDto>
+    + createCampaign(id: number, dto: CreateCampaignsDto, imagenes: string[], usuarioId: number): Promise<ResponseCampaignsDto>
+    + updateCampaign(id: number, campaignId: number, updateDto: UpdateCampaignsDto, usuarioId: number, imagenes: string[]): Promise<ResponseCampaignsDto>
+    + registrarOrganizacion(dto: CreateOrganizacionDto): Promise<ResponseOrganizacionDto>
+    + update(dto: UpdateOrganizacionDto, usuarioId: number): Promise<ResponseOrganizacionDto>
+    + verify(id: number): Promise<ResponseOrganizacionDto>
+    + delete(id: number): Promise<void>
+    + restore(id: number): Promise<void>
+    - mapToResponseDto(organizacion: Organizacion): ResponseOrganizacionDto
 }
 
 class AuthController {
     - authService: AuthService
 
-    + register(dto)
-    + login(dto)
-    + forgotPassword(email)
-    + resetPassword(token, newPassword)
+    + register(dto: RegisterDto): Promise<{ token: string }>
+    + login(dto: LoginDto): Promise<{ token: string }>
+    + forgotPassword(email): Promise<{ message: string }> 
+    + resetPassword(token, newPassword): Promise<{ message: string }> 
 }
 
 class AuthService {
@@ -142,36 +144,49 @@ class AuthService {
     - gestionDetector: GestionDetector
     - invitacionesService: InvitacionesService
 
-    - buildToken(payload)
-    - createPayload(id, rol, gestion, gestionId)
-    + register(dto)
-    + login(dto)
-    + forgotPassword(email)
-    + resetPassword(token, newPassword)
+    - buildToken(payload: JwtPayload): { token: string }
+    - createPayload(id: number, rol: Rol, gestion: GestionTipo | null, gestionId: number | null): JwtPayload
+    + register(dto: RegisterDto): Promise<{ token: string }>
+    + login(dto: LoginDto): Promise<{ token: string }>
+    + forgotPassword(email: string): Promise<{ message: string }>
+    + resetPassword(token: string, newPassword: string): Promise<{ message: string }>
 }
 
 class HashService {
-    + hash(value)
-    + compare(value, hash)
+    + hash(value: string): Promise<string>
+    + compare(value: string, hash: string): Promise<boolean>
 }
 
 class GestionDetector {
     - empresaStrategy: EmpresaGestionStrategy,
     - organizacionStrategy: OrganizacionGestionStrategy,
 
-    + detectar(usuarioId)
+    + detectar(usuarioId): Promise<GestionInfo | null>
 }
 
 class EmpresaGestionStrategy {
     - empresaUsuarioRepository: Repository<EmpresaUsuario>
 
-    + detectar(usuarioId)
+    + detectar(usuarioId): Promise<GestionInfo | null>
 }
 
 class OrganizacionGestionStrategy {
     - organizacionUsuarioRepository: Repository<OrganizacionUsuario>
 
-    + detectar(usuarioId)
+    + detectar(usuarioId): Promise<GestionInfo | null>
+}
+
+class InvitacionesController {
+    - InvitacionesService: InvitacionesService
+
+    + crearInvitacionesEmpresa(empresaId: number, dto: CreateInvitacionDto, req: RequestConUsuario): : Promise<{ invitaciones: Invitacion[]; correosExistentes: string[]; correosYaInvitados: string[]>}
+    + getInvitacionesEmpresa(empresaId: number, page: number, limit: number): Promise<{ items: Invitacion[]; total: number;}>
+    + crearInvitacionesOrganizacion(organizacionId: number, dto: CreateInvitacionDto, req: RequestConUsuario,): 
+    + invitarEntidad(dto: CreateInvitacionDto, req: RequestConUsuario): Promise<{ invitaciones: Invitacion[]; correosExistentes: string[] }>
+    + getInvitacionesEntidad(page: number, limit: number): : Promise<{ items: Invitacion[]; total: number; }>
+    + getInvitacionesOrganizacion(organizacionId: number, page: number, limit: number): Promise<{ items: Invitacion[]; total: number; }>
+    + validarToken(token: string): Promise<{ valido: boolean; correo: string; empresaId?: number; organizacionId?: number; rol: RolSecundario; }> 
+
 }
 
 class InvitacionesService {
@@ -181,34 +196,34 @@ class InvitacionesService {
     - organizacionUsuarioRepository: Repository<OrganizacionUsuario>
     - emailService: EmailService
 
-    + crearInvitacionesEmpresa(correos: string[], empresaId: number, usuarioInvitadorId: number)
+    + crearInvitacionesEmpresa(correos: string[], empresaId: number, usuarioInvitadorId: number): Promise<{ invitaciones: Invitacion[]; correosExistentes: string[]; correosYaInvitados: string[];
     + crearInvitacionesOrganizacion(correos: string[], organizacionId: number, usuarioInvitadorId: number)
     + invitarEntidad(correos: string[], usuarioInvitadorId: number)
 
-    + listarInvitacionesEntidad(page: number, limit: number)
-    + listarInvitacionesEmpresa(empresaId: number, page: number, limit: number)
-    + listarInvitacionesOrganizacion(organizacionId: number, page: number, limit: number)
+    + listarInvitacionesEntidad(page: number, limit: number): Promise<{ items: Invitacion[]; total: number; }>
+    + listarInvitacionesEmpresa(empresaId: number, page: number, limit: number): Promise<{ items: Invitacion[]; total: number; }> 
+    + listarInvitacionesOrganizacion(organizacionId: number, page: number, limit: number): Promise<{ items: Invitacion[]; total: number; }>
 
-    + validarToken(token: string)
-    + validarInvitacion(token: string, correo: string)
+    + validarToken(token: string): : Promise<{ correo: string; organizacionId?: number; empresaId?: number; rol: RolSecundario; }>
+    + validarInvitacion(token: string, correo: string): Promise<Invitacion>
 
-    + buscarPorToken(token: string)
+    - buscarPorToken(token: string): Promise<Invitacion | null>
 
-    + agregarUsuarioAOrganizacion(usuarioId: number, organizacionId: number)
-    + agregarUsuarioAEmpresa(usuarioId: number, empresaId: number)
+    + agregarUsuarioAOrganizacion(usuarioId: number, organizacionId: number): Promise<OrganizacionUsuario>
+    + agregarUsuarioAEmpresa(usuarioId: number, empresaId: number): Promise<EmpresaUsuario>
 
-    + marcarAceptada(invitacionId: number, usuarioId: number, manager?: EntityManager)
+    + marcarAceptada(invitacionId: number, usuarioId: number, manager?: EntityManager): Promise<Invitacion>
 
-    - procesarInvitacion(correo: string, datos: Partial<Invitacion>, diasExpiracion: number
+    - procesarInvitacion(correo: string, datos: Partial<Invitacion>, diasExpiracion: number): Promise<ResultadoProcesamiento>
 }
 
 class BeneficioController {
     - beneficiosService: BeneficioService
 
-    + findAllPaginated(page, limit, search, onlyEnabled)
-    + findByEmpresaPaginated(idEmpresa, page, limit)
-    + canjear(id, req, dto)
-    + updateEstado(id, estado, req)
+    + findAllPaginated(page: number, limit: number, search: number, onlyEnabled: boolean): Promise<{ items: BeneficiosResponseDTO[]; total: number; }>
+    + findByEmpresaPaginated(idEmpresa: number, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO> 
+    + canjear(id: number, req: RequestConUsuario, dto: CanjearBeneficioDto): Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; }> 
+    + updateEstado(id: number, estado: BeneficioEstado, req: RequestConUsuario): Promise<BeneficiosResponseDTO> 
 }
 
 class BeneficioService {
@@ -216,29 +231,30 @@ class BeneficioService {
     - empresasRepository: Repository<Empresa>
     - dataSource: DataSource
 
-    + findAllPaginated(page, limit, search, onlyEnabled)
-    + findByEmpresaPaginated(idEmpresa, page, limit)
-    + create(dto, usuarioId)
-    + canjear(beneficioId, userId, cantidad)
-    + update(id, dto, usuarioId)
-    + updateEstado(id, estado, usuarioId, rol)
-    + validateBeneficioData(data)
+    + findAllPaginated(page: number, limit: number, search: string, onlyEnabled: boolean): Promise<PaginatedBeneficiosResponseDTO>
+    + findByEmpresaPaginated(idEmpresa: number, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO>
+    + create(dto: CreateBeneficiosDTO, usuarioId: number): Promise<BeneficiosResponseDTO>
+    + canjear(beneficioId: number, userId: number, cantidad: number): Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; }>
+    + update(id: number, dto:UpdateBeneficiosDTO , usuarioId: number): Promise<BeneficiosResponseDTO>
+    + updateEstado(id: number, estado: BeneficioEstado, usuarioId: number, rol: Rol): Promise<BeneficiosResponseDTO>
+    - validateBeneficioData(data: UpdateBeneficiosDTO): void
+    - mapToResponseDto(beneficio: Beneficios): BeneficiosResponseDTO
 }
 
 class UsuarioBeneficioService {
     - usuarioBeneficioRepo: Repository<UsuarioBeneficio>
 
-    - validarBeneficio(registro)
-    + getByUsuario(usuarioId)
-    + usarBeneficio(id)
+    - validarBeneficio(registro: UsuarioBeneficio | null): asserts registro is UsuarioBeneficio
+    + getByUsuario(usuarioId: number): Promise<UsuarioBeneficio[]>
+    + usarBeneficio(id: number): Promise<UsuarioBeneficio>
 }
 
 class CampaignController {
     - campaignService: CampaignService
 
-    + findPaginated(page, limit, search, onlyEnabled)
-    + findOneDetail(id)
-    + updateEstado(id, estado)
+    + findPaginated(page: number, limit: number, search: string, onlyEnabled: boolean): Promise<{ items: ResponseCampaignDetalleDto[]; total: number; }>
+    + findOneDetail(id: number): Promise<ResponseCampaignDetalleDto>
+    + updateEstado(id: number, estado: CampaignEstado): Promise<Campaigns> 
 }
 
 class CampaignService {
@@ -247,18 +263,18 @@ class CampaignService {
     - campaignsImagesRepository: Repository<imagenes_campania>
 
 
-    + findPaginated(page, limit, search, onlyEnabled)
-    + findCampaignsPaginated(organizacionId, page, limit)
-    + findOneDetail(id)
-    + create(id, dto, imagenes, usuarioId)
-    + update(organizacionId, campaignId, dto, usuarioId, imagenes)
-    + updateEstado(id, estado)
-    + delete(id)
+    + findPaginated(page: number, limit: number, search: number, onlyEnabled: boolean): Promise<{ items: ResponseCampaignDetalleDto[]; total: number; }> 
+    + findCampaignsPaginated(organizacionId: number, page: number, limit: number): Promise<ResponseCampaignsDetailPaginatedDto> 
+    + findOneDetail(id: number): Promise<ResponseCampaignDetalleDto> 
+    + create(id: number, createDto: CreateCampaignsDto, imagenes: string[], usuarioId: number): Promise<ResponseCampaignsDto>
+    + update(organizacionId: number, campaignId: number, updateDto: UpdateCampaignsDto, usuarioId: number, imagenes: string[]): Promise<ResponseCampaignsDto>
+    + updateEstado(id: number, estado: CampaignEstado): Promise<Campaigns>
+    + delete(id: number): : Promise<void>
 
-    - mapToResponseDto(campaign)
-    - mapToDetailDto(campaign)
-    - setEstado(inicio, fin)
-    - validarRangoFechas(inicio, fin)
+    - mapToResponseDto(campaign: Campaigns): ResponseCampaignsDto
+    - mapToDetailDto(campaign: Campaigns): ResponseCampaignDetalleDto
+    - setEstado(inicio: Date, fin: Date): CampaignEstado
+    - validarRangoFechas(inicio: Date, fin: Date): void
 }
 
 class DonacionService {
@@ -267,39 +283,39 @@ class DonacionService {
     - usuarioRepository: Repository<Usuario>
     - rankingService: RankingService
 
-    + findAllPaginatedByOrganizacion(organizacionId, page, limit, search)
-    + findAllPaginatedByUser(userId, page, limit)
-    + create(usuarioId, dto)
-    + confirmarDonacion(id, dto, gestorId)
+    + findAllPaginatedByOrganizacion(organizacionId: number, page: number, limit: number, search: string): Promise<PaginatedOrganizationDonationsResponseDto> 
+    + findAllPaginatedByUser(userId: number, page: number, limit: number): Promise<PaginatedUserDonationsResponseDto>
+    + create(usuarioId: number, createDto: CreateDonationDto): Promise<ResponseDonationDto>
+    + confirmarDonacion(id: number, dto: UpdateDonacionEstadoDto, gestorId: number): Promise<ResponseDonationDto> 
 
-    - validarTransicion(estadoActual, nuevoEstado)
-    - validarVentanaReversion(fechaEstado)
-    - aplicarEfectosDeEstado(manager, donacion, nuevoEstado)
-    - mapToResponseDto(donation)
-    - mapToOrganizationDonationsResponse(donation)
-    - mapToUserDonationResponse(donation)
+    - validarTransicion(estadoActual: DonacionEstado, nuevoEstado: DonacionEstado): void
+    - validarVentanaReversion(fechaEstado: Date): void
+    - aplicarEfectosDeEstado(manager: EntityManager, donacion: Donaciones, nuevoEstado: DonacionEstado): Promise<Campaigns | null>
+    - mapToResponseDto(donation: Donaciones): ResponseDonationDto
+    - mapToOrganizationDonationsResponse(donation: Donaciones): OrganizationDonationItemDto
+    - mapToUserDonationResponse(donation: Donaciones): UserDonationItemDto
 }
 
 class EmailService {
     - transporter: Transporter
     - baseUrl: string
 
-    + sendResetPasswordEmail(to, token)
-    + sendInvitationEmail(to, token)
-    + sendEntidadInvitationEmail(to, token)
+    + sendResetPasswordEmail(to: string, token: string): Promise<void>
+    + sendInvitationEmail(to: string, token: string): Promise<void>
+    + sendEntidadInvitationEmail(to: string, token: string): Promise<void>
 }
 
 class RankingController {
     - rankingService: RankingService
 
-    + getTop10()
+    + getTop10(): Promise<RankingDTO[]>
 }
 
 class RankingService {
     - puntosRepository: Repository<Ranking>
 
-    + getTop10()
-    + ajustarPuntos(userId, puntos, manager)
+    + getTop10(): Promise<RankingDTO[]>
+    + ajustarPuntos(userId: number, puntos: number, manager: EntityManager): : Promise<void>
 }
 
 ' Relaciones

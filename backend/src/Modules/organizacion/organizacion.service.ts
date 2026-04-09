@@ -7,7 +7,6 @@ import { UpdateOrganizacionDto } from './dto/update_organizacion.dto';
 import { ResponseOrganizacionDto } from './dto/response_organizacion.dto';
 import { CampaignsService } from '../campaign/campaign.service';
 import { DonacionService } from '../donation/donacion.service';
-import { UsuarioService } from '../user/usuario.service';
 import { ResponseCampaignsDetailPaginatedDto } from '../campaign/dto/response_campaign_paginated.dto';
 import { CreateCampaignsDto } from '../campaign/dto/create_campaigns.dto';
 import { ResponseCampaignsDto } from '../campaign/dto/response_campaigns.dto';
@@ -19,6 +18,8 @@ import { Rol, RolSecundario } from '../user/enums/enums';
 import { HashService } from '../../common/bcryptService/hashService';
 import { InvitacionesService } from '../invitaciones/invitacion.service';
 import { ErrorManager } from '../../common/errors/error.manager';
+import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
+import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
 
 /**
  * ============================================================
@@ -72,7 +73,11 @@ export class OrganizacionService {
    * @returns {Promise<{ items: ResponseOrganizacionDto[]; total: number }>}
    * Objeto con listado paginado y total de registros.
    */
-  async findPaginated(page: number, limit: number, search: string) {
+  async findPaginated(
+    page: number,
+    limit: number,
+    search: string,
+  ): Promise<{ items: ResponseOrganizacionDto[]; total: number }> {
     try {
       const skip = (page - 1) * limit;
 
@@ -190,7 +195,7 @@ export class OrganizacionService {
     page: number,
     limit: number,
     search?: string,
-  ) {
+  ): Promise<PaginatedOrganizationDonationsResponseDto> {
     return this.donacionService.findAllPaginatedByOrganizacion(
       organizacionId,
       page,
@@ -203,7 +208,7 @@ export class OrganizacionService {
     id: number,
     dto: UpdateDonacionEstadoDto,
     gestorId: number,
-  ) {
+  ): Promise<ResponseDonationDto> {
     return await this.donacionService.confirmarDonacion(id, dto, gestorId);
   }
 

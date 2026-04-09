@@ -22,7 +22,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })
   @ApiResponse({ status: 400, description: 'Datos inválidos para el registro' })
-  async register(@Body() dto: RegisterDto) {
+  async register(@Body() dto: RegisterDto): Promise<{ token: string }> {
     return this.authService.register(dto);
   }
 
@@ -44,7 +44,9 @@ export class AuthController {
 
   @Public()
   @Post('forgot-password')
-  async forgotPassword(@Body('email') email: string) {
+  async forgotPassword(
+    @Body('email') email: string,
+  ): Promise<{ message: string }> {
     return await this.authService.forgotPassword(email);
   }
 
@@ -53,7 +55,7 @@ export class AuthController {
   async resetPassword(
     @Body('token') token: string,
     @Body('newPassword') newPassword: string,
-  ) {
+  ): Promise<{ message: string }> {
     return await this.authService.resetPassword(token, newPassword);
   }
 }

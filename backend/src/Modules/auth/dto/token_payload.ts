@@ -1,4 +1,3 @@
-
 import { Rol } from '../../user/enums/enums';
 import { GestionTipo } from './gestion.enum';
 

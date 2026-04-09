@@ -1,0 +1,264 @@
+@startuml
+
+class UsuarioController {
+  - userService: UsuarioService
+
+  + getMiPerfil(req: RequestConUsuario): Promise<ResponseUsuarioDto>
+  + updateMiPerfil(dto: UpdateUsuarioDto): Promise<ResponseUsuarioDto>
+  + updateMisCredenciales(dto: UpdateCredencialesDto): Promise<{ token: string }>
+  + getMisPuntos(req: RequestConUsuario): Promise<{ id: number; puntos: number }>
+  + getMisDonaciones(req: RequestConUsuario, page: number, limit: number): Promise<PaginatedUserDonationsResponseDto>
+  + donar(req: RequestConUsuario, dto: CreateDonationDto): Promise<ResponseDonationDto> 
+  + getMisCuponesCanjeados(req: RequestConUsuario): : Promise<UsuarioBeneficio[]>
+  + usarCupon(id: number): Promise<UsuarioBeneficio>
+  + canjearCupon(req: RequestConUsuario, cuponId: number, cantidad: number)
+
+  + findAll(page: number, limit: number, search: number): Promise<{ items: ResponseUsuarioDto[]; total: number }>
+  + getDonacionesDeUsuario(id: number, page: number, limit: number): Promise<PaginatedUserDonationsResponseDto>
+  + deleteUsuario(id: number): Promise<void>
+  + restoreUsuario(id: number): Promise<void>
+}
+
+class UsuarioService {
+  - usuarioRepository: Repository<Usuario>
+  - donacionService: DonacionService
+  - beneficioService: BeneficioService
+  - usuarioBeneficioService: UsuarioBeneficioService
+  - hashService: HashService
+  - jwtService: JwtService
+
+  + findByEmail(email: string): Promise<Usuario | null>
+  + create(dto: CreateUsuarioDto): Promise<ResponseUsuarioDto>
+  + getDonaciones(usuarioId: number, page: number, limit: number): Promise<PaginatedUserDonationsResponseDto>
+  + donar(usuarioId: number, dto: CreateDonationDto): Promise<ResponseDonationDto> 
+  + getMisCuponesCanjeados(usuarioId: number): Promise<UsuarioBeneficio[]>
+  + usarCupon(usuarioBeneficioId: number): Promise<UsuarioBeneficio>
+  + canjearCupon(usuarioId: number, cuponId: number, cantidad: number): : Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; 
+  + updateCredenciales(id: number, dto: UpdateCredencialesDto): Promise<{ token: string }>
+  + updateUsuario(id: number, dto: UpdateUsuarioDto): Promise<ResponseUsuarioDto>
+  + updatePuntos(id: number, dto: UpdatePuntosDto): Promise<ResponseUsuarioDto>
+  + actualizarUltimaConexion(id: number): : Promise<void>
+  + getPoints(id: number): Promise<{ id: number; puntos: number }>
+  + findPaginated(page: number, limit: number, search: number): : Promise<{ items: ResponseUsuarioDto[]; total: number }>
+  + findOne(id: number): Promise<ResponseUsuarioDto> 
+  + delete(id: number): Promise<void>
+  + restore(id: number): Promise<void> 
+  + mapToResponseDto(usuario: Usuario): ResponseUsuarioDto
+  + findByResetToken(token: string) : Promise<Usuario | null>
+  + setResetToken(id: number, token: string, expires: Date): Promise<void>
+  + clearResetToken(id: number): Promise<void> 
+  + resetPassword(id: number, newHashedPassword: string): Promise<void>
+}
+
+class CreateUsuarioDto {
+  correo: string
+  clave: string
+  documento: string
+  nombre: string
+  apellido: string
+  puntos: number
+  rol: Rol
+}
+
+enum Rol {
+  USUARIO = 'USUARIO',
+  COLABORADOR = 'COLABORADOR',
+  ADMIN = 'ADMIN',
+}
+
+class UpdatePuntosDto {
+  puntos: number
+}
+
+class ResponseUsuarioDto {
+  id: number
+  documento: string
+  clave: string
+  nombre: string
+  apellido: string
+  rol: Rol
+  puntos: number
+  contacto: ContactoDto
+  direccion: DireccionDto
+  habilitado: boolean
+  verificado: boolean
+  fecha_registro: Date
+  ultimo_cambio: Date
+  ultima_conexion: Date
+  empresaUsuario: EmpresaUsuario 
+  organizacionUsuario: OrganizacionUsuario
+}
+
+class ContactoDto {
+  id: number
+  correo: string
+  prefijo: string
+  telefono: string
+}
+
+class DireccionDto {
+  id: number
+  correo: string
+  prefijo: string
+  telefono: string
+  id: number
+  calle: string
+  numero: string
+  adicional: string
+  codigo_postal: string
+  ciudad: string
+  provincia: string
+}
+
+class CreateDonationDto {
+  detalle: string
+  cantidad: number
+  campaignId: number
+  puntos: number
+}
+
+class UpdateCredencialesDto {
+  correo: string
+  passwordActual: string
+  passwordNueva: string
+}
+
+class UpdateUsuarioDto {
+  documento: string
+  nombre: string
+  apellido: string
+  contacto: UpdateContactoDto
+  direccion: UpdateDireccionDto
+}
+
+class UpdateContactoDto {
+  prefijo: string
+  telefono: string
+}
+
+class UpdateDireccionDto {
+  calle: string
+  numero: string
+  adicional: string
+  codigo_postal: string
+  ciudad: string
+  provincia: string
+}
+
+class PaginatedUserDonationsResponseDto {
+  items: UserDonationItemDto[]
+  total: number
+}
+
+class UserDonationItemDto {
+  id: number
+  detalle: string
+  cantidad: number
+  puntos: number
+  estado: DonacionEstado
+  fecha_registro: Date
+  nombre_organizacion: string
+  titulo_campaña: string
+  fecha_estado: Date
+  motivo_rechazo: string
+  calle: string
+  numero: string
+  organizacionId: number
+  fecha_aprobacion: Date
+  fecha_rechazo: Date
+}
+
+class ResponseDonationDto {
+  id: number
+  titulo: string
+  detalle: string
+  tipo: string
+  cantidad: number
+  estado: DonacionEstado
+  puntos: number
+  campaignId: number
+  userId: number
+  fecha_registro: Date
+  imagen: string
+}
+
+enum DonacionEstado {
+  PENDIENTE = 0
+  RECHAZADA = 1
+  APROBADA = 2
+}
+
+' Otros Services utilizados por usuario Service
+class DonacionService {
+    - donacionRepository: Repository<Donaciones>
+    - campaignsRepository: Repository<Campaigns>
+    - usuarioRepository: Repository<Usuario>
+    - rankingService: RankingService
+
+    + findAllPaginatedByOrganizacion(organizacionId: number, page: number, limit: number, search: string): Promise<PaginatedOrganizationDonationsResponseDto> 
+    + findAllPaginatedByUser(userId: number, page: number, limit: number): Promise<PaginatedUserDonationsResponseDto>
+    + create(usuarioId: number, createDto: CreateDonationDto): Promise<ResponseDonationDto>
+    + confirmarDonacion(id: number, dto: UpdateDonacionEstadoDto, gestorId: number): Promise<ResponseDonationDto> 
+
+    - validarTransicion(estadoActual: DonacionEstado, nuevoEstado: DonacionEstado): void
+    - validarVentanaReversion(fechaEstado: Date): void
+    - aplicarEfectosDeEstado(manager: EntityManager, donacion: Donaciones, nuevoEstado: DonacionEstado): Promise<Campaigns | null>
+    - mapToResponseDto(donation: Donaciones): ResponseDonationDto
+    - mapToOrganizationDonationsResponse(donation: Donaciones): OrganizationDonationItemDto
+    - mapToUserDonationResponse(donation: Donaciones): UserDonationItemDto
+}
+
+class BeneficioService {
+    - beneficiosRepository: Repository<Beneficios>
+    - empresasRepository: Repository<Empresa>
+    - dataSource: DataSource
+
+    + findAllPaginated(page: number, limit: number, search: string, onlyEnabled: boolean): Promise<PaginatedBeneficiosResponseDTO>
+    + findByEmpresaPaginated(idEmpresa: number, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO>
+    + create(dto: CreateBeneficiosDTO, usuarioId: number): Promise<BeneficiosResponseDTO>
+    + canjear(beneficioId: number, userId: number, cantidad: number): Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; }>
+    + update(id: number, dto:UpdateBeneficiosDTO , usuarioId: number): Promise<BeneficiosResponseDTO>
+    + updateEstado(id: number, estado: BeneficioEstado, usuarioId: number, rol: Rol): Promise<BeneficiosResponseDTO>
+    - validateBeneficioData(data: UpdateBeneficiosDTO): void
+    - mapToResponseDto(beneficio: Beneficios): BeneficiosResponseDTO
+}
+
+class UsuarioBeneficioService {
+    - usuarioBeneficioRepo: Repository<UsuarioBeneficio>
+
+    - validarBeneficio(registro: UsuarioBeneficio | null): asserts registro is UsuarioBeneficio
+    + getByUsuario(usuarioId: number): Promise<UsuarioBeneficio[]>
+    + usarBeneficio(id: number): Promise<UsuarioBeneficio>
+}
+
+class HashService {
+  + hash(value: string): Promise<string>
+  + compare(value: string, hash: string): Promise<boolean>
+}
+
+
+UsuarioController -left-> UsuarioService
+
+CreateUsuarioDto <-- UsuarioService
+Rol <-- CreateUsuarioDto
+UpdatePuntosDto <-- UsuarioService
+ResponseUsuarioDto <-- UsuarioService
+ContactoDto <-- ResponseUsuarioDto
+DireccionDto <-- ResponseUsuarioDto
+CreateDonationDto <-- UsuarioService
+UpdateCredencialesDto <-- UsuarioService
+UpdateUsuarioDto <-- UsuarioService
+UpdateContactoDto <-- UpdateUsuarioDto
+UpdateDireccionDto <-- UpdateUsuarioDto
+PaginatedUserDonationsResponseDto <-- UsuarioService
+UserDonationItemDto <-- PaginatedUserDonationsResponseDto
+ResponseDonationDto <-- UsuarioService
+DonacionEstado <-- ResponseDonationDto
+
+UsuarioService --> DonacionService 
+UsuarioService --> BeneficioService
+UsuarioService --> UsuarioBeneficioService
+UsuarioService --> HashService
+UsuarioService --> JwtService
+
+@enduml

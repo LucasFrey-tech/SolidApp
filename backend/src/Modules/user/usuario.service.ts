@@ -15,6 +15,9 @@ import { HashService } from '../../common/bcryptService/hashService';
 import { JwtService } from '@nestjs/jwt';
 import { GestionTipo } from '../auth/dto/gestion.enum';
 import { ErrorManager } from '../../common/errors/error.manager';
+import { PaginatedUserDonationsResponseDto } from '../donation/dto/response_donation_paginatedByUser.dto';
+import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
+import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
 
 @Injectable()
 export class UsuarioService {
@@ -95,29 +98,46 @@ export class UsuarioService {
   /**
    * Obtiene las donaciones del usuario
    */
-  async getDonaciones(usuarioId: number, page: number, limit: number) {
+  async getDonaciones(
+    usuarioId: number,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedUserDonationsResponseDto> {
     return this.donacionService.findAllPaginatedByUser(usuarioId, page, limit);
   }
 
   /**
    * Realiza la donacion
    */
-  async donar(usuarioId: number, dto: CreateDonationDto) {
+  async donar(
+    usuarioId: number,
+    dto: CreateDonationDto,
+  ): Promise<ResponseDonationDto> {
     return this.donacionService.create(usuarioId, dto);
   }
 
-  async getMisCuponesCanjeados(usuarioId: number) {
+  async getMisCuponesCanjeados(usuarioId: number): Promise<UsuarioBeneficio[]> {
     return this.usuarioBeneficioService.getByUsuario(usuarioId);
   }
 
-  async usarCupon(usuarioBeneficioId: number) {
+  async usarCupon(usuarioBeneficioId: number): Promise<UsuarioBeneficio> {
     return this.usuarioBeneficioService.usarBeneficio(usuarioBeneficioId);
   }
 
   /**
    * Canjea un cupon o varios
    */
-  async canjearCupon(usuarioId: number, cuponId: number, cantidad: number) {
+  async canjearCupon(
+    usuarioId: number,
+    cuponId: number,
+    cantidad: number,
+  ): Promise<{
+    success: boolean;
+    cantidadCanjeada: number;
+    puntosGastados: number;
+    puntosRestantes: number;
+    stockRestante: number;
+  }> {
     return this.beneficioService.canjear(cuponId, usuarioId, cantidad);
   }
 

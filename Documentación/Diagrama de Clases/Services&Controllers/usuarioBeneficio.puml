@@ -1,0 +1,19 @@
+@startuml
+
+class UsuarioBeneficioService {
+    - usuarioBeneficioRepo: Repository<UsuarioBeneficio>
+
+    - validarBeneficio(registro: UsuarioBeneficio | null): asserts registro is UsuarioBeneficio
+    + getByUsuario(usuarioId: number): Promise<UsuarioBeneficio[]>
+    + usarBeneficio(id: number): Promise<UsuarioBeneficio>
+}
+
+enum BeneficiosUsuarioEstado {
+  ACTIVO = 'ACTIVO',
+  USADO = 'USADO',
+  VENCIDO = 'VENCIDO',
+}
+
+enum <-- UsuarioBeneficioService
+
+@enduml

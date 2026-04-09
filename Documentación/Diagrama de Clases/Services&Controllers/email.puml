@@ -1,0 +1,14 @@
+@startuml
+
+class EmailService {
+    - transporter: Transporter
+    - baseUrl: string
+
+    + sendResetPasswordEmail(to: string, token: string): Promise<void>
+    + sendInvitationEmail(to: string, token: string): Promise<void>
+    + sendEntidadInvitationEmail(to: string, token: string): Promise<void>
+}
+
+
+
+@enduml

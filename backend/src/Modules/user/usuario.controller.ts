@@ -22,6 +22,10 @@ import { RequestConUsuario } from '../auth/interfaces/authenticated_request.inte
 import { Rol } from '../user/enums/enums';
 import { Auth } from '../auth/decoradores/auth.decorador';
 import { UpdateCredencialesDto } from './dto/panelUsuario.dto';
+import { ResponseUsuarioDto } from './dto/response_usuario.dto';
+import { PaginatedUserDonationsResponseDto } from '../donation/dto/response_donation_paginatedByUser.dto';
+import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
+import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
 
 /**
  * -----------------------------------------------------------------------------
@@ -53,7 +57,9 @@ export class UsuarioController {
   @Auth(Rol.USUARIO, Rol.ADMIN, Rol.COLABORADOR)
   @Get('perfil')
   @ApiOperation({ summary: 'Obtener mi perfil completo' })
-  async getMiPerfil(@Req() req: RequestConUsuario) {
+  async getMiPerfil(
+    @Req() req: RequestConUsuario,
+  ): Promise<ResponseUsuarioDto> {
     return this.userService.findOne(req.user.id);
   }
 
@@ -63,7 +69,7 @@ export class UsuarioController {
   async updateMiPerfil(
     @Req() req: RequestConUsuario,
     @Body() dto: UpdateUsuarioDto,
-  ) {
+  ): Promise<ResponseUsuarioDto> {
     return await this.userService.updateUsuario(req.user.id, dto);
   }
 
@@ -73,14 +79,16 @@ export class UsuarioController {
   async updateMisCredenciales(
     @Req() req: RequestConUsuario,
     @Body() dto: UpdateCredencialesDto,
-  ) {
+  ): Promise<{ token: string }> {
     return this.userService.updateCredenciales(req.user.id, dto);
   }
 
   @Get('puntos')
   @Auth(Rol.USUARIO)
   @ApiOperation({ summary: 'Obtener mis puntos' })
-  async getMisPuntos(@Req() req: RequestConUsuario) {
+  async getMisPuntos(
+    @Req() req: RequestConUsuario,
+  ): Promise<{ id: number; puntos: number }> {
     return this.userService.getPoints(req.user.id);
   }
 
@@ -91,28 +99,35 @@ export class UsuarioController {
     @Req() req: RequestConUsuario,
     @Query('page', ParseIntPipe) page = 1,
     @Query('limit', ParseIntPipe) limit = 10,
-  ) {
+  ): Promise<PaginatedUserDonationsResponseDto> {
     return this.userService.getDonaciones(req.user.id, page, limit);
   }
 
   @Auth(Rol.USUARIO)
   @Post('donaciones')
   @ApiOperation({ summary: 'Realizar una donación' })
-  async donar(@Req() req: RequestConUsuario, @Body() dto: CreateDonationDto) {
+  async donar(
+    @Req() req: RequestConUsuario,
+    @Body() dto: CreateDonationDto,
+  ): Promise<ResponseDonationDto> {
     return this.userService.donar(req.user.id, dto);
   }
 
   @Auth(Rol.USUARIO)
   @Get('cupones')
   @ApiOperation({ summary: 'Obtener mis cupones canjeados' })
-  async getMisCuponesCanjeados(@Req() req: RequestConUsuario) {
+  async getMisCuponesCanjeados(
+    @Req() req: RequestConUsuario,
+  ): Promise<UsuarioBeneficio[]> {
     return this.userService.getMisCuponesCanjeados(req.user.id);
   }
 
   @Auth(Rol.USUARIO)
   @Post('cupones/:id/')
   @ApiOperation({ summary: 'Usar un cupón canjeado' })
-  async usarCupon(@Param('id', ParseIntPipe) id: number) {
+  async usarCupon(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<UsuarioBeneficio> {
     return this.userService.usarCupon(id);
   }
 
@@ -123,7 +138,13 @@ export class UsuarioController {
     @Req() req: RequestConUsuario,
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Query('cantidad', ParseIntPipe) cantidad: number,
-  ) {
+  ): Promise<{
+    success: boolean;
+    cantidadCanjeada: number;
+    puntosGastados: number;
+    puntosRestantes: number;
+    stockRestante: number;
+  }> {
     return this.userService.canjearCupon(req.user.id, cuponId, cantidad);
   }
 
@@ -139,7 +160,7 @@ export class UsuarioController {
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('search') search = '',
-  ) {
+  ): Promise<{ items: ResponseUsuarioDto[]; total: number }> {
     return this.userService.findPaginated(page, limit, search);
   }
 
@@ -150,21 +171,21 @@ export class UsuarioController {
     @Param('id', ParseIntPipe) id: number,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
-  ) {
+  ): Promise<PaginatedUserDonationsResponseDto> {
     return this.userService.getDonaciones(id, page, limit);
   }
 
   @Auth(Rol.ADMIN)
   @Delete(':id')
   @ApiOperation({ summary: 'Deshabilitar usuario (admin)' })
-  async deleteUsuario(@Param('id', ParseIntPipe) id: number) {
+  async deleteUsuario(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.userService.delete(id);
   }
 
   @Auth(Rol.ADMIN)
   @Patch(':id/restaurar')
   @ApiOperation({ summary: 'Restaurar usuario deshabilitado (admin)' })
-  async restoreUsuario(@Param('id', ParseIntPipe) id: number) {
+  async restoreUsuario(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.userService.restore(id);
   }
 }

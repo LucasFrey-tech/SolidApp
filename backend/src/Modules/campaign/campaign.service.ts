@@ -46,7 +46,10 @@ export class CampaignsService {
     limit: number,
     search: string,
     onlyEnabled: boolean = false,
-  ) {
+  ): Promise<{
+    items: ResponseCampaignDetalleDto[];
+    total: number;
+  }> {
     try {
       const query = this.campaignsRepository
         .createQueryBuilder('campaign')
@@ -397,7 +400,7 @@ export class CampaignsService {
     }
   }
 
-  async updateEstado(id: number, estado: CampaignEstado) {
+  async updateEstado(id: number, estado: CampaignEstado): Promise<Campaigns> {
     try {
       const campaign = await this.campaignsRepository.findOne({
         where: { id },
@@ -412,7 +415,7 @@ export class CampaignsService {
 
       campaign.estado = estado;
 
-      await this.campaignsRepository.save(campaign);
+      return await this.campaignsRepository.save(campaign);
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw ErrorManager.createSignatureError(error.message);
@@ -538,7 +541,7 @@ export class CampaignsService {
     return CampaignEstado.ACTIVA;
   }
 
-  private validarRangoFechas(inicio: Date, fin: Date) {
+  private validarRangoFechas(inicio: Date, fin: Date): void {
     if (!inicio || !fin) {
       throw new ErrorManager({
         type: 'BAD_REQUEST',

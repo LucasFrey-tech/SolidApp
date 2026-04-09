@@ -1,0 +1,121 @@
+@startuml
+
+class BeneficioController {
+    - beneficiosService: BeneficioService
+
+    + findAllPaginated(page: number, limit: number, search: number, onlyEnabled: boolean): Promise<{ items: BeneficiosResponseDTO[]; total: number; }>
+    + findByEmpresaPaginated(idEmpresa: number, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO> 
+    + canjear(id: number, req: RequestConUsuario, dto: CanjearBeneficioDto): Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; }> 
+    + updateEstado(id: number, estado: BeneficioEstado, req: RequestConUsuario): Promise<BeneficiosResponseDTO> 
+}
+
+class BeneficioService {
+    - beneficiosRepository: Repository<Beneficios>
+    - empresasRepository: Repository<Empresa>
+    - dataSource: DataSource
+
+    + findAllPaginated(page: number, limit: number, search: string, onlyEnabled: boolean): Promise<PaginatedBeneficiosResponseDTO>
+    + findByEmpresaPaginated(idEmpresa: number, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO>
+    + create(dto: CreateBeneficiosDTO, usuarioId: number): Promise<BeneficiosResponseDTO>
+    + canjear(beneficioId: number, userId: number, cantidad: number): Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; }>
+    + update(id: number, dto:UpdateBeneficiosDTO , usuarioId: number): Promise<BeneficiosResponseDTO>
+    + updateEstado(id: number, estado: BeneficioEstado, usuarioId: number, rol: Rol): Promise<BeneficiosResponseDTO>
+    - validateBeneficioData(data: UpdateBeneficiosDTO): void
+    - mapToResponseDto(beneficio: Beneficios): BeneficiosResponseDTO
+}
+
+class CreateBeneficiosDTO {
+    titulo: string
+    tipo: string
+    detalle: string
+    cantidad: number
+    valor: number
+    id_empresa: number
+    estado: BeneficioEstado
+}
+
+enum BeneficioEstado {
+  PENDIENTE = 'PENDIENTE'
+  APROBADO = 'APROBADO'
+  RECHAZADO = 'RECHAZADO'
+}
+
+class UpdateBeneficiosDTO {
+    cantidad: number
+    valor: number
+    estado: BeneficioEstado
+}
+
+class BeneficiosResponseDTO {
+    id: number
+    titulo: strin
+    tipo: string
+    detalle: string
+    cantidad: number
+    valor: number
+    fecha_registro: Date
+    ultimo_cambio: Date
+    empresa: EmpresaSummaryDTO
+    estado: string
+    creado_por: UsuarioResumenDto
+    actualizado_por: UsuarioResumenDto
+}
+
+class EmpresaSummaryDTO {
+    id: number
+    titulo: strin
+    tipo: string
+    detalle: string
+    cantidad: number
+    valor: number
+    fecha_registro: Date
+    ultimo_cambio: Date
+    empresa: EmpresaSummaryDTO
+    estado: string
+    creado_por: UsuarioResumenDto
+    actualizado_por: UsuarioResumenDto
+}
+
+
+class UsuarioResumenDto {
+  id: number
+  nombre: string
+  apellido: string
+  email: string
+}
+
+class PaginatedBeneficiosResponseDTO {
+    items: BeneficiosResponseDTO[]
+    total: number
+}
+
+enum BeneficiosUsuarioEstado {
+  ACTIVO = 'ACTIVO',
+  USADO = 'USADO',
+  VENCIDO = 'VENCIDO',
+}
+
+enum Rol {
+  USUARIO = 'USUARIO'
+  COLABORADOR = 'COLABORADOR'
+  ADMIN = 'ADMIN'
+}
+
+BeneficioController --> BeneficioService
+
+CreateBeneficiosDTO <-- BeneficioService
+BeneficioEstado <-- CreateBeneficiosDTO
+UpdateBeneficiosDTO <-- BeneficioService
+BeneficioEstado <-- UpdateBeneficiosDTO
+UpdateBeneficiosDTO --|> CreateBeneficiosDTO
+BeneficiosResponseDTO <-- BeneficioService
+EmpresaSummaryDTO <-- BeneficiosResponseDTO
+UsuarioResumenDto <-- BeneficiosResponseDTO
+UsuarioResumenDto <-- EmpresaSummaryDTO
+EmpresaSummaryDTO <-- UsuarioResumenDto
+PaginatedBeneficiosResponseDTO <-- BeneficioService
+BeneficiosResponseDTO <-- PaginatedBeneficiosResponseDTO
+BeneficiosUsuarioEstado <-- BeneficioService
+Rol <-- BeneficioService
+
+@enduml

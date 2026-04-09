@@ -1,0 +1,111 @@
+@startuml
+
+class DonacionService {
+    - donacionRepository: Repository<Donaciones>
+    - campaignsRepository: Repository<Campaigns>
+    - usuarioRepository: Repository<Usuario>
+    - rankingService: RankingService
+
+    + findAllPaginatedByOrganizacion(organizacionId: number, page: number, limit: number, search: string): Promise<PaginatedOrganizationDonationsResponseDto> 
+    + findAllPaginatedByUser(userId: number, page: number, limit: number): Promise<PaginatedUserDonationsResponseDto>
+    + create(usuarioId: number, createDto: CreateDonationDto): Promise<ResponseDonationDto>
+    + confirmarDonacion(id: number, dto: UpdateDonacionEstadoDto, gestorId: number): Promise<ResponseDonationDto> 
+
+    - validarTransicion(estadoActual: DonacionEstado, nuevoEstado: DonacionEstado): void
+    - validarVentanaReversion(fechaEstado: Date): void
+    - aplicarEfectosDeEstado(manager: EntityManager, donacion: Donaciones, nuevoEstado: DonacionEstado): Promise<Campaigns | null>
+    - mapToResponseDto(donation: Donaciones): ResponseDonationDto
+    - mapToOrganizationDonationsResponse(donation: Donaciones): OrganizationDonationItemDto
+    - mapToUserDonationResponse(donation: Donaciones): UserDonationItemDto
+}
+
+class CreateDonationDto { 
+    detalle: string
+    cantidad: number
+    campaignId: number
+    puntos: number
+}
+
+class ResponseDonationDto { 
+    id: number
+    titulo: string
+    detalle: string
+    tipo: string
+    cantidad: number
+    estado: DonacionEstado
+    puntos: number
+    campaignId: number
+    userId: number
+    fecha_registro: Date
+    imagen: string
+}
+
+enum DonacionEstado {
+  PENDIENTE = 0
+  RECHAZADA = 1
+  APROBADA = 2
+}
+
+class PaginatedOrganizationDonationsResponseDto {
+  items: OrganizationDonationItemDto[]
+  total: number
+}
+
+class OrganizationDonationItemDto { 
+    id: number
+    descripcion: string
+    puntos: number
+    estado: DonacionEstado
+    userId: number
+    correo: string
+    campaignId: number
+    campaignTitulo: string
+    fecha_estado: Date
+    cantidad: number
+    creado_por: UsuarioResumenDto
+    aprobado_por: UsuarioResumenDto
+    fecha_aprobacion: Date
+    rechazado_por: UsuarioResumenDto
+    fecha_rechazo: Date
+    motivo_rechazo: string
+}
+
+class UsuarioResumenDto {
+  id: number
+  nombre: string
+  apellido: string
+  email: string
+}
+
+class UserDonationItemDto {
+    id: number
+    detalle: string
+    cantidad: number
+    puntos: number
+    estado: DonacionEstado
+    fecha_registro: Date
+    nombre_organizacion: string
+    titulo_campaña: string
+    fecha_estado: Date
+    motivo_rechazo: string
+    calle: string
+    numero: string
+    organizacionId: number
+    fecha_aprobacion: Date
+    fecha_rechazo: Date
+}
+
+CreateDonationDto <-- DonacionService
+ResponseDonationDto <-- DonacionService
+DonacionEstado <-- ResponseDonationDto
+PaginatedOrganizationDonationsResponseDto <-- DonacionService
+OrganizationDonationItemDto <-- PaginatedOrganizationDonationsResponseDto
+DonacionEstado <-- OrganizationDonationItemDto
+UsuarioResumenDto <-- OrganizationDonationItemDto
+UserDonationItemDto <-- DonacionService
+DonacionEstado <-- UserDonationItemDto
+
+'Relaciones con otros services
+DonacionService --> RankingService
+
+@enduml

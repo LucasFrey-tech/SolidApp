@@ -31,7 +31,11 @@ export class InvitacionesService {
     correos: string[],
     empresaId: number,
     usuarioInvitadorId: number,
-  ) {
+  ): Promise<{
+    invitaciones: Invitacion[];
+    correosExistentes: string[];
+    correosYaInvitados: string[];
+  }> {
     try {
       const invitaciones: Invitacion[] = [];
       const correosExistentes: string[] = [];
@@ -83,7 +87,11 @@ export class InvitacionesService {
     correos: string[],
     organizacionId: number,
     usuarioInvitadorId: number,
-  ) {
+  ): Promise<{
+    invitaciones: Invitacion[];
+    correosExistentes: string[];
+    correosYaInvitados: string[];
+  }> {
     try {
       const pendientes = await this.invitacionRepo.count({
         where: {
@@ -146,7 +154,10 @@ export class InvitacionesService {
     }
   }
 
-  async invitarEntidad(correos: string[], usuarioInvitadorId: number) {
+  async invitarEntidad(
+    correos: string[],
+    usuarioInvitadorId: number,
+  ): Promise<{ invitaciones: Invitacion[]; correosExistentes: string[] }> {
     try {
       const correosExistentes: string[] = [];
       const invitaciones: Invitacion[] = [];
@@ -196,7 +207,13 @@ export class InvitacionesService {
     }
   }
 
-  async listarInvitacionesEntidad(page: number = 1, limit: number = 10) {
+  async listarInvitacionesEntidad(
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
+    items: Invitacion[];
+    total: number;
+  }> {
     try {
       const [items, total] = await this.invitacionRepo.findAndCount({
         where: { empresaId: IsNull(), organizacionId: IsNull() },
@@ -224,7 +241,10 @@ export class InvitacionesService {
     empresaId: number,
     page: number = 1,
     limit: number = 5,
-  ) {
+  ): Promise<{
+    items: Invitacion[];
+    total: number;
+  }> {
     try {
       const [items, total] = await this.invitacionRepo.findAndCount({
         where: { empresaId },
@@ -254,7 +274,10 @@ export class InvitacionesService {
     organizacionId: number,
     page: number = 1,
     limit: number = 5,
-  ) {
+  ): Promise<{
+    items: Invitacion[];
+    total: number;
+  }> {
     try {
       const [items, total] = await this.invitacionRepo.findAndCount({
         where: { organizacionId },
@@ -280,7 +303,12 @@ export class InvitacionesService {
     }
   }
 
-  async validarToken(token: string) {
+  async validarToken(token: string): Promise<{
+    correo: string;
+    organizacionId?: number;
+    empresaId?: number;
+    rol: RolSecundario;
+  }> {
     try {
       const invitacion = await this.invitacionRepo.findOne({
         where: { token },
@@ -327,13 +355,16 @@ export class InvitacionesService {
     }
   }
 
-  async buscarPorToken(token: string) {
+  private async buscarPorToken(token: string): Promise<Invitacion | null> {
     return this.invitacionRepo.findOne({
       where: { token },
     });
   }
 
-  async agregarUsuarioAOrganizacion(usuarioId: number, organizacionId: number) {
+  async agregarUsuarioAOrganizacion(
+    usuarioId: number,
+    organizacionId: number,
+  ): Promise<OrganizacionUsuario> {
     try {
       const relacion = this.organizacionUsuarioRepo.create({
         id_usuario: usuarioId,
@@ -354,7 +385,10 @@ export class InvitacionesService {
     }
   }
 
-  async agregarUsuarioAEmpresa(usuarioId: number, empresaId: number) {
+  async agregarUsuarioAEmpresa(
+    usuarioId: number,
+    empresaId: number,
+  ): Promise<EmpresaUsuario> {
     try {
       const relacion = this.empresaUsuarioRepo.create({
         id_usuario: usuarioId,
@@ -379,7 +413,7 @@ export class InvitacionesService {
     invitacionId: number,
     usuarioId: number,
     manager?: EntityManager,
-  ) {
+  ): Promise<Invitacion> {
     try {
       const repo = manager
         ? manager.getRepository(Invitacion)

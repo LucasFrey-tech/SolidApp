@@ -14,6 +14,7 @@ import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
 import { Rol, RolSecundario } from '../user/enums/enums';
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 import { Auth } from '../auth/decoradores/auth.decorador';
+import { Invitacion } from '../../Entities/invitacion.entity';
 
 @Controller('invitaciones')
 export class InvitacionesController {
@@ -25,7 +26,11 @@ export class InvitacionesController {
     @Param('empresaId', ParseIntPipe) empresaId: number,
     @Body() dto: CreateInvitacionDto,
     @Req() req: RequestConUsuario,
-  ) {
+  ): Promise<{
+    invitaciones: Invitacion[];
+    correosExistentes: string[];
+    correosYaInvitados: string[];
+  }> {
     const usuarioInvitadorId = req.user.id;
     return this.invitacionesService.crearInvitacionesEmpresa(
       dto.correos,
@@ -40,7 +45,10 @@ export class InvitacionesController {
     @Param('empresaId', ParseIntPipe) empresaId: number,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-  ) {
+  ): Promise<{
+    items: Invitacion[];
+    total: number;
+  }> {
     return this.invitacionesService.listarInvitacionesEmpresa(
       empresaId,
       page,
@@ -54,7 +62,11 @@ export class InvitacionesController {
     @Param('organizacionId', ParseIntPipe) organizacionId: number,
     @Body() dto: CreateInvitacionDto,
     @Req() req: RequestConUsuario,
-  ) {
+  ): Promise<{
+    invitaciones: Invitacion[];
+    correosExistentes: string[];
+    correosYaInvitados: string[];
+  }> {
     const usuarioInvitadorId = req.user.id;
     return this.invitacionesService.crearInvitacionesOrganizacion(
       dto.correos,
@@ -68,7 +80,7 @@ export class InvitacionesController {
   invitarEntidad(
     @Body() dto: CreateInvitacionDto,
     @Req() req: RequestConUsuario,
-  ) {
+  ): Promise<{ invitaciones: Invitacion[]; correosExistentes: string[] }> {
     return this.invitacionesService.invitarEntidad(dto.correos, req.user.id);
   }
 
@@ -77,7 +89,10 @@ export class InvitacionesController {
   getInvitacionesEntidad(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-  ) {
+  ): Promise<{
+    items: Invitacion[];
+    total: number;
+  }> {
     return this.invitacionesService.listarInvitacionesEntidad(page, limit);
   }
 
@@ -87,7 +102,10 @@ export class InvitacionesController {
     @Param('organizacionId', ParseIntPipe) organizacionId: number,
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-  ) {
+  ): Promise<{
+    items: Invitacion[];
+    total: number;
+  }> {
     return this.invitacionesService.listarInvitacionesOrganizacion(
       organizacionId,
       page,
@@ -96,7 +114,13 @@ export class InvitacionesController {
   }
 
   @Get('validar/:token')
-  async validarToken(@Param('token') token: string) {
+  async validarToken(@Param('token') token: string): Promise<{
+    valido: boolean;
+    correo: string;
+    empresaId?: number;
+    organizacionId?: number;
+    rol: RolSecundario;
+  }> {
     const invitacion = await this.invitacionesService.validarToken(token);
 
     return {

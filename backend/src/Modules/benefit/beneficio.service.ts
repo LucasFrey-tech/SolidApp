@@ -44,7 +44,10 @@ export class BeneficioService {
     limit = 10,
     search: string = '',
     onlyEnabled: boolean = false,
-  ) {
+  ): Promise<{
+    items: BeneficiosResponseDTO[];
+    total: number;
+  }> {
     try {
       const skip = (page - 1) * limit;
 
@@ -235,7 +238,17 @@ export class BeneficioService {
    * - El usuario no tiene suficientes puntos.
    * - Si alguien que no sea un Usuario quiere realizar el canje.
    */
-  async canjear(beneficioId: number, userId: number, cantidad: number) {
+  async canjear(
+    beneficioId: number,
+    userId: number,
+    cantidad: number,
+  ): Promise<{
+    success: boolean;
+    cantidadCanjeada: number;
+    puntosGastados: number;
+    puntosRestantes: number;
+    stockRestante: number;
+  }> {
     try {
       return this.dataSource.transaction(async (manager) => {
         const beneficioRepo = manager.getRepository(Beneficios);

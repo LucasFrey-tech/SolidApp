@@ -42,6 +42,7 @@ import { UpdateDonacionEstadoDto } from '../donation/dto/update_donation_estado.
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
 import { CreateOrganizacionDto } from './dto/create_organizacion.dto';
 import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
+import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
 
 /**
  * Controlador encargado de gestionar las operaciones HTTP
@@ -339,7 +340,7 @@ export class OrganizacionesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateDonacionEstadoDto,
     @Req() req: RequestConUsuario,
-  ) {
+  ): Promise<ResponseDonationDto> {
     return await this.organizacionService.confirmarDonacion(
       id,
       dto,

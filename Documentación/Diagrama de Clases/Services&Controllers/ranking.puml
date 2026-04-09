@@ -1,0 +1,27 @@
+@startuml
+
+class RankingController {
+    - rankingService: RankingService
+
+    + getTop10(): Promise<RankingDTO[]>
+}
+
+class RankingService {
+    - puntosRepository: Repository<Ranking>
+
+    + getTop10(): Promise<RankingDTO[]>
+    + ajustarPuntos(userId: number, puntos: number, manager: EntityManager): : Promise<void>
+}
+
+class RankingDTO {
+  id_usuario: number
+  puntos: number
+  nombre: string
+  apellido: string
+}
+
+RankingController --> RankingService
+
+RankingDTO <-- RankingService
+
+@enduml

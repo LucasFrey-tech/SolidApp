@@ -1,0 +1,209 @@
+@startuml
+
+class EmpresaController {
+  - empresasService: EmpresaService
+
+  + findPaginated(page: number, limit: number, search: number, enabled: number): Promise<{ items: EmpresaResponseDTO[]; total: number }> 
+  + getDatosEmpresa(req: RequestConUsuario): Promise<EmpresaResponseDTO> 
+  + registrarEmpresa(dto: CreateEmpresaDTO): Promise<EmpresaResponseDTO>
+  + updateMiPerfil(req: RequestConUsuario, : Express.Multer.File, data: string): : Promise<EmpresaResponseDTO> 
+  + getMisCupones(req: RequestConUsuario, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO> 
+  + createCupon(req: RequestConUsuario, dto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO>
+  + updateCupon(cuponId: number, dto: UpdateBeneficiosDTO, req: RequestConUsuario): Promise<BeneficiosResponseDTO>
+  + delete(id: number): Promise<void> 
+  + restore(id: number): Promise<void>
+}
+
+class EmpresaService {
+    - empresaRepository: Repository<Empresa>
+    - empresaUsuarioRepository: Repository<EmpresaUsuario>
+    - beneficioService: BeneficioService
+    - dataSource: DataSource
+    - hashService: HashService
+    - invitacionesService: InvitacionesService
+
+    + findPaginated(page: number, limit: number, search: string, onlyEnabled: boolean): Promise<{ items: EmpresaResponseDTO[]; total: number }>
+    + getEmpresaByUsuario(usuarioId: number): Promise<EmpresaResponseDTO>
+    + getCupones(usuarioId: number, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO>
+    + createCupon(usuarioId: number, dto: CreateBeneficiosDTO): Promise<BeneficiosResponseDTO>
+    + updateCupon(cuponId: number, dto: UpdateBeneficiosDTO , usuarioId: number): Promise<BeneficiosResponseDTO>
+    + registrarEmpresa(dto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> 
+    + update(usuarioId: number, updateDto: UpdateEmpresaDTO): Promise<EmpresaResponseDTO>
+    + verify(id: number): Promise<EmpresaResponseDTO>
+    + delete(id: number): Promise<void>
+    + restore(id: number): Promise<void>
+    - mapToResponseDto(empresa: Empresa): EmpresaResponseDTO
+}
+
+class CreateEmpresaDTO {
+  nombre: string
+  apellido: string
+  documento: string
+  correo: string
+  clave: string
+  prefijo: string
+  telefono: string
+  correo_empresa: string
+  cuit_empresa: string
+  razon_social: string
+  nombre_empresa: string
+  calle: string
+  numero: string
+  web: string
+  token: string
+}
+
+class UpdateEmpresaDTO {
+  descripcion: string
+  rubro: string
+  web: string
+  logo: string
+  contacto: UpdateContactoEmpresaDto
+  direccion: UpdateDireccionEmpresaDto
+}
+
+class UpdateContactoEmpresaDto {
+  prefijo: string
+  telefono: string
+}
+
+class UpdateDireccionEmpresaDto {
+  telefono: string
+  calle: string
+  numero: string
+  provincia: string
+  ciudad: string
+  codigo_postal: string
+}
+
+class EmpresaResponseDTO {
+  id: number
+  cuit: string
+  razon_social: string
+  nombre_empresa: string
+  descripcion: string
+  rubro: string
+  direccion: DireccionDto
+  contacto: ContactoDto
+  web: string
+  verificada: boolean
+  habilitada: boolean
+  fecha_registro: Date
+  creado_por: UsuarioResumenDto
+  ultimo_cambio: Date
+  actualizado_por: UsuarioResumenDto
+  logo: string
+}
+
+class DireccionDto {
+  id: number
+  calle: string
+  numero: string
+  adicional: string
+  codigo_postal: string
+  ciudad: string
+  provincia: string
+}
+
+class ContactoDto {
+  id: number
+  correo: string
+  prefijo: string
+  telefono: string
+}
+
+class UsuarioResumenDto {
+  id: number
+  nombre: string
+  apellido: string
+  email: string
+}
+
+class PaginatedBeneficiosResponseDTO {
+  items: BeneficiosResponseDTO[]
+  total: number
+}
+
+class BeneficiosResponseDTO {
+  id: number
+  titulo: string
+  tipo: string
+  detalle: string
+  cantidad: number
+  valor: number
+  fecha_registro: Date
+  ultimo_cambio: Date
+  empresa: EmpresaSummaryDTO
+  creado_por: UsuarioResumenDto
+  actualizado_por: UsuarioResumenDto
+}
+
+
+class CreateBeneficiosDTO {
+  titulo: string
+  tipo: string
+  detalle: string
+  cantidad: number
+  valor: number
+  id_empresa: number
+  estado: BeneficioEstado
+}
+
+enum BeneficioEstado {
+  PENDIENTE = 'PENDIENTE',
+  APROBADO = 'APROBADO',
+  RECHAZADO = 'RECHAZADO',
+}
+
+class UpdateBeneficiosDTO {
+  cantidad: 
+  numbervalor: number
+  estado: BeneficioEstado
+}
+
+class BeneficiosResponseDTO {
+  id: number
+  titulo: string
+  tipo: string
+  detalle: string
+  cantidad: number
+  valor: number
+  fecha_registro: Date
+  ultimo_cambio: Date
+  empresa: EmpresaSummaryDTO
+  estado: string
+  creado_por: UsuarioResumenDto
+  actualizado_por: UsuarioResumenDto
+}
+
+
+
+EmpresaController --> EmpresaService
+
+CreateEmpresaDTO <-- EmpresaService
+UpdateEmpresaDTO <-- EmpresaService
+UpdateContactoEmpresaDto <-- UpdateEmpresaDTO
+UpdateDireccionEmpresaDto <-- UpdateEmpresaDTO
+EmpresaResponseDTO <-- EmpresaService
+DireccionDto <-- EmpresaResponseDTO
+ContactoDto <-- EmpresaResponseDTO
+UsuarioResumenDto <-- EmpresaResponseDTO
+PaginatedBeneficiosResponseDTO <-- EmpresaService
+BeneficiosResponseDTO <-- PaginatedBeneficiosResponseDTO
+EmpresaSummaryDTO <-- BeneficiosResponseDTO
+UsuarioResumenDto <-- BeneficiosResponseDTO
+CreateBeneficiosDTO <-- EmpresaService
+BeneficioEstado <-- CreateBeneficiosDTO
+BeneficioEstado <-- UpdateBeneficiosDTO
+UpdateBeneficiosDTO --|> CreateBeneficiosDTO
+BeneficiosResponseDTO <-- EmpresaService
+
+
+'Relación con otros service
+EmpresaService --> BeneficioService
+EmpresaService --> DataSource
+EmpresaService --> HashService
+EmpresaService --> InvitacionesService
+
+
+@enduml

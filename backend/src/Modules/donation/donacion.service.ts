@@ -281,7 +281,7 @@ export class DonacionService {
   private validarTransicion(
     estadoActual: DonacionEstado,
     nuevoEstado: DonacionEstado,
-  ) {
+  ): void {
     if (estadoActual === nuevoEstado) {
       throw new ErrorManager({
         type: 'BAD_REQUEST',
@@ -308,7 +308,7 @@ export class DonacionService {
     }
   }
 
-  private validarVentanaReversion(fechaEstado: Date) {
+  private validarVentanaReversion(fechaEstado: Date): void {
     const REVERSAL_WINDOWS_HOURS = 48;
 
     const ahora = new Date();
@@ -327,8 +327,8 @@ export class DonacionService {
     manager: EntityManager,
     donacion: Donaciones,
     nuevoEstado: DonacionEstado,
-  ) {
-    if (nuevoEstado !== DonacionEstado.APROBADA) return;
+  ): Promise<Campaigns | null> {
+    if (nuevoEstado !== DonacionEstado.APROBADA) return null;
 
     const usuario = donacion.usuario;
     usuario.puntos += donacion.puntos;
@@ -358,7 +358,7 @@ export class DonacionService {
       campaign.estado = CampaignEstado.FINALIZADA;
     }
 
-    await manager.save(campaign);
+    return await manager.save(campaign);
   }
 
   private readonly mapToResponseDto = (

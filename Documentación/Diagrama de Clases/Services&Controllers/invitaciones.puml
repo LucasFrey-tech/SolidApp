@@ -1,0 +1,56 @@
+@startuml
+
+class InvitacionesController {
+    - InvitacionesService: InvitacionesService
+
+    + crearInvitacionesEmpresa(empresaId: number, dto: CreateInvitacionDto, req: RequestConUsuario): : Promise<{ invitaciones: Invitacion[]; correosExistentes: string[]; correosYaInvitados: string[]>}
+    + getInvitacionesEmpresa(empresaId: number, page: number, limit: number): Promise<{ items: Invitacion[]; total: number;}>
+    + crearInvitacionesOrganizacion(organizacionId: number, dto: CreateInvitacionDto, req: RequestConUsuario,): 
+    + invitarEntidad(dto: CreateInvitacionDto, req: RequestConUsuario): Promise<{ invitaciones: Invitacion[]; correosExistentes: string[] }>
+    + getInvitacionesEntidad(page: number, limit: number): : Promise<{ items: Invitacion[]; total: number; }>
+    + getInvitacionesOrganizacion(organizacionId: number, page: number, limit: number): Promise<{ items: Invitacion[]; total: number; }>
+    + validarToken(token: string): Promise<{ valido: boolean; correo: string; empresaId?: number; organizacionId?: number; rol: RolSecundario; }> 
+
+}
+
+class InvitacionesService {
+    - invitacionRepository: Repository<Invitacion>
+    - contactoRepository: Repository<Contacto>
+    - empresaUsuarioRepository: Repository<EmpresaUsuario>
+    - organizacionUsuarioRepository: Repository<OrganizacionUsuario>
+    - emailService: EmailService
+
+    + crearInvitacionesEmpresa(correos: string[], empresaId: number, usuarioInvitadorId: number): Promise<{ invitaciones: Invitacion[]; correosExistentes: string[]; correosYaInvitados: string[];
+    + crearInvitacionesOrganizacion(correos: string[], organizacionId: number, usuarioInvitadorId: number)
+    + invitarEntidad(correos: string[], usuarioInvitadorId: number)
+
+    + listarInvitacionesEntidad(page: number, limit: number): Promise<{ items: Invitacion[]; total: number; }>
+    + listarInvitacionesEmpresa(empresaId: number, page: number, limit: number): Promise<{ items: Invitacion[]; total: number; }> 
+    + listarInvitacionesOrganizacion(organizacionId: number, page: number, limit: number): Promise<{ items: Invitacion[]; total: number; }>
+
+    + validarToken(token: string): : Promise<{ correo: string; organizacionId?: number; empresaId?: number; rol: RolSecundario; }>
+    + validarInvitacion(token: string, correo: string): Promise<Invitacion>
+
+    - buscarPorToken(token: string): Promise<Invitacion | null>
+
+    + agregarUsuarioAOrganizacion(usuarioId: number, organizacionId: number): Promise<OrganizacionUsuario>
+    + agregarUsuarioAEmpresa(usuarioId: number, empresaId: number): Promise<EmpresaUsuario>
+
+    + marcarAceptada(invitacionId: number, usuarioId: number, manager?: EntityManager): Promise<Invitacion>
+
+    - procesarInvitacion(correo: string, datos: Partial<Invitacion>, diasExpiracion: number): Promise<ResultadoProcesamiento>
+}
+
+enum RolSecundario {
+    GESTOR = 'GESTOR'
+    MIEMBRO = 'MIEMBRO'
+    ENTIDAD = 'ENTIDAD'
+}
+
+InvitacionesController --> InvitacionesService
+
+
+'Relaciones con otros services
+InvitacionesService --> emailService
+
+@enduml

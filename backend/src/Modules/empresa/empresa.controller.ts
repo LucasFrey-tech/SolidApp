@@ -31,6 +31,7 @@ import { Auth, Public } from '../auth/decoradores/auth.decorador';
 import { CreateEmpresaDTO } from './dto/create_empresa.dto';
 import { Rol, RolSecundario } from '../user/enums/enums';
 import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
+import { BeneficiosResponseDTO } from '../benefit/dto/response_beneficios.dto';
 
 /**
  * ============================================================
@@ -89,7 +90,7 @@ export class EmpresaController {
     @Query('limit') limit = 10,
     @Query('search') search = '',
     @Query('enabled') enabled: boolean,
-  ) {
+  ): Promise<{ items: EmpresaResponseDTO[]; total: number }> {
     return await this.empresasService.findPaginated(
       page,
       limit,
@@ -239,7 +240,7 @@ export class EmpresaController {
   async createCupon(
     @Req() req: RequestConUsuario,
     @Body() dto: CreateBeneficiosDTO,
-  ) {
+  ): Promise<BeneficiosResponseDTO> {
     return await this.empresasService.createCupon(req.user.id, dto);
   }
 
@@ -250,7 +251,7 @@ export class EmpresaController {
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Body() dto: UpdateBeneficiosDTO,
     @Req() req: RequestConUsuario,
-  ) {
+  ): Promise<BeneficiosResponseDTO> {
     return await this.empresasService.updateCupon(cuponId, dto, req.user.id);
   }
 

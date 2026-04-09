@@ -1,0 +1,41 @@
+@startuml
+
+class GestionDetector {
+    - empresaStrategy: EmpresaGestionStrategy,
+    - organizacionStrategy: OrganizacionGestionStrategy,
+
+    + detectar(usuarioId): Promise<GestionInfo | null>
+}
+
+class EmpresaGestionStrategy {
+    - empresaUsuarioRepository: Repository<EmpresaUsuario>
+
+    + detectar(usuarioId): Promise<GestionInfo | null>
+}
+
+class OrganizacionGestionStrategy {
+    - organizacionUsuarioRepository: Repository<OrganizacionUsuario>
+
+    + detectar(usuarioId): Promise<GestionInfo | null>
+}
+
+interface GestionInfo {
+    tipo: GestionTipo;
+    entidadId: number;
+}
+
+enum GestionTipo {
+    EMPRESA = 'EMPRESA',
+    ORGANIZACION = 'ORGANIZACION',
+}
+
+
+
+EmpresaGestionStrategy <-- GestionDetector
+OrganizacionGestionStrategy <-- GestionDetector
+GestionInfo <-- GestionDetector
+GestionTipo <-- GestionInfo
+GestionInfo <-- EmpresaGestionStrategy
+GestionInfo <-- OrganizacionGestionStrategy
+
+@enduml

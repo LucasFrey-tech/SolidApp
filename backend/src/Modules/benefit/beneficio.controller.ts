@@ -18,6 +18,7 @@ import { BeneficioEstado } from './dto/enum/enum';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
 import { CanjearBeneficioDto } from './dto/canjear_beneficio.dto';
 import { Rol } from '../user/enums/enums';
+import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 
 /**
  * Controlador para gestionar las operaciones de los Beneficios.
@@ -43,7 +44,10 @@ export class BeneficioController {
     @Query('limit') limit = 10,
     @Query('search') search = '',
     @Query('onlyEnabled') onlyEnabled: boolean,
-  ) {
+  ): Promise<{
+    items: BeneficiosResponseDTO[];
+    total: number;
+  }> {
     return this.beneficiosService.findAllPaginated(
       Number(page),
       Number(limit),
@@ -89,7 +93,13 @@ export class BeneficioController {
     @Param('id', ParseIntPipe) id: number,
     @Req() req: RequestConUsuario,
     @Body() dto: CanjearBeneficioDto,
-  ) {
+  ): Promise<{
+    success: boolean;
+    cantidadCanjeada: number;
+    puntosGastados: number;
+    puntosRestantes: number;
+    stockRestante: number;
+  }> {
     return this.beneficiosService.canjear(id, req.user.id, dto.cantidad);
   }
 
@@ -106,7 +116,7 @@ export class BeneficioController {
     @Param('id', ParseIntPipe) id: number,
     @Body('estado') estado: BeneficioEstado,
     @Req() req: RequestConUsuario,
-  ) {
+  ): Promise<BeneficiosResponseDTO> {
     return this.beneficiosService.updateEstado(
       id,
       estado,

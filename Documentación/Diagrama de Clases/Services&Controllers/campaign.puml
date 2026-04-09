@@ -1,0 +1,120 @@
+@startuml
+
+class CampaignController {
+    - campaignService: CampaignService
+
+    + findPaginated(page: number, limit: number, search: string, onlyEnabled: boolean): Promise<{ items: ResponseCampaignDetalleDto[]; total: number; }>
+    + findOneDetail(id: number): Promise<ResponseCampaignDetalleDto>
+    + updateEstado(id: number, estado: CampaignEstado): Promise<Campaigns> 
+}
+
+class CampaignService {
+    - campaignsRepository: Repository<Campaigns>
+    - organizacionRepository: Repository<Organizacion>
+    - campaignsImagesRepository: Repository<imagenes_campania>
+
+
+    + findPaginated(page: number, limit: number, search: number, onlyEnabled: boolean): Promise<{ items: ResponseCampaignDetalleDto[]; total: number; }> 
+    + findCampaignsPaginated(organizacionId: number, page: number, limit: number): Promise<ResponseCampaignsDetailPaginatedDto> 
+    + findOneDetail(id: number): Promise<ResponseCampaignDetalleDto> 
+    + create(id: number, createDto: CreateCampaignsDto, imagenes: string[], usuarioId: number): Promise<ResponseCampaignsDto>
+    + update(organizacionId: number, campaignId: number, updateDto: UpdateCampaignsDto, usuarioId: number, imagenes: string[]): Promise<ResponseCampaignsDto>
+    + updateEstado(id: number, estado: CampaignEstado): Promise<Campaigns>
+    + delete(id: number): : Promise<void>
+
+    - mapToResponseDto(campaign: Campaigns): ResponseCampaignsDto
+    - mapToDetailDto(campaign: Campaigns): ResponseCampaignDetalleDto
+    - setEstado(inicio: Date, fin: Date): CampaignEstado
+    - validarRangoFechas(inicio: Date, fin: Date): void
+}
+
+class CreateCampaignsDto {
+    titulo: string
+    estado: string
+    descripcion: string
+    fecha_Inicio: Date
+    fecha_Fin: Date
+    objetivo: number
+    puntos: number
+}
+
+class UpdateCampaignsDto {
+    titulo: string
+    estado: string
+    descripcion: string
+    fecha_Inicio: Date
+    fecha_Fin: Date
+    objetivo: number
+    puntos: number
+    imagenesExistentes: string[]
+}
+
+class ResponseCampaignsDto {
+    id: number
+    imagenPortada: string | null
+    organizacion: OrganizacionSummaryDto
+    titulo: string
+    estado: string
+    descripcion: string
+    fecha_Inicio: Date
+    fecha_Fin: Date
+    fecha_Registro: Date
+    objetivo: number
+    puntos: number
+    creado_por: UsuarioResumenDto
+    actualizado_por: UsuarioResumenDto
+    ultimo_cambio: Date
+}
+
+class OrganizacionSummaryDto {
+    id: number
+    nombre_organizacion: string
+    verificada: boolean
+}
+
+class UsuarioResumenDto {
+  id: number
+  nombre: string
+  apellido: string
+  email: string
+}
+
+enum CampaignEstado {
+  PENDIENTE = 'PENDIENTE',
+  ACTIVA = 'ACTIVA',
+  FINALIZADA = 'FINALIZADA',
+  RECHAZADA = 'RECHAZADA',
+}
+
+class ResponseCampaignDetalleDto {
+    imagenes: CampaignImagenDTO[]
+}
+
+class CampaignImagenDTO { 
+    id: number
+    nombre: string
+    url: string
+}
+
+class ResponseCampaignsDetailPaginatedDto {
+  items: ResponseCampaignDetalleDto[]
+  total: number
+}
+
+CampaignController --> CampaignService
+
+CreateCampaignsDto <-- CampaignService
+UpdateCampaignsDto <-- CampaignService
+UpdateCampaignsDto --|> CreateCampaignsDto
+ResponseCampaignsDto <-- CampaignService
+OrganizacionSummaryDto <-- ResponseCampaignsDto
+UsuarioResumenDto <-- ResponseCampaignsDto
+OrganizacionSummaryDto <-- CampaignService
+CampaignEstado <-- CampaignService
+ResponseCampaignDetalleDto <-- CampaignService
+CampaignImagenDTO <-- ResponseCampaignDetalleDto
+ResponseCampaignDetalleDto --|> ResponseCampaignsDto
+ResponseCampaignsDetailPaginatedDto <-- CampaignService
+ResponseCampaignDetalleDto <-- ResponseCampaignsDetailPaginatedDto
+
+@enduml

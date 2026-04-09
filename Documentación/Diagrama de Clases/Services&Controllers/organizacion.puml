@@ -1,0 +1,275 @@
+@startuml
+
+class OrganizacionController {
+    - organizacionService: OrganizacionService
+    
+    + getMiPerfil(req: RequestConUsuario): Promise<ResponseOrganizacionDto>
+    + getMisCampanas(req: RequestConUsuario, page: number, limit: number): : Promise<ResponseCampaignsDetailPaginatedDto> 
+    + registrarOrganizacion(dto: CreateOrganizacionDto): Promise<ResponseOrganizacionDto> 
+    + createMiCampaign(req: RequestConUsuario, createCampaignsDto: CreateCampaignsDto, files: Express.Multer.File[]): Promise<ResponseCampaignsDto>
+    + updateMiCampaign(campaignId: number, req: RequestConUsuario, updateCampaignsDto: UpdateCampaignsDto, files: Express.Multer.File[]): : Promise<ResponseCampaignsDto> 
+    + getMisDonaciones(req: RequestConUsuario, page: number, limit: number, search: string): Promise<PaginatedOrganizationDonationsResponseDto>
+    + actualizarEstadoDonacion(id: number, dto: UpdateDonacionEstadoDto, req: RequestConUsuario): : Promise<ResponseDonationDto> 
+    + updateMiPerfil(req: RequestConUsuario, updateDto: UpdateOrganizacionDto): Promise<ResponseOrganizacionDto> 
+    + findPaginated(page: number, limit: number, search: string): Promise<ResponseOrganizationPaginatedDto>
+    + update(id: number, dto: UpdateOrganizacionDto): Promise<ResponseOrganizacionDto> 
+    + delete(id: number): Promise<void> 
+    + restore(id: number): Promise<void> 
+}
+
+class OrganizacionService {
+    - organizacionRepository: Repository<Organizacion>
+    - organizacionUsuarioRepository: Repository<OrganizacionUsuario>
+    - campaignService: CampaignService
+    - donacionService: DonacionService
+    - hashService: HashService
+    - dataSource: DataSource
+    - invitacionesService: InvitacionesService
+
+    + findPaginated(page: number, limit: number, search: string): Promise<{ items: ResponseOrganizacionDto[]; total: number }>
+    + getOrganizacionByUsuario(usuarioId: number): Promise<Organizacion>
+    + findById(id: number): Promise<Organizacion>
+    + getCampaigns(id: number, page: number, limit: number): Promise<ResponseCampaignsDetailPaginatedDto>
+    + getDonaciones(organizacionId: number, page: number, limit: number, search: string): Promise<PaginatedOrganizationDonationsResponseDto>
+    + confirmarDonacion(id: number, dto: UpdateDonacionEstadoDto , gestorId: number): Promise<ResponseDonationDto>
+    + createCampaign(id: number, dto: CreateCampaignsDto, imagenes: string[], usuarioId: number): Promise<ResponseCampaignsDto>
+    + updateCampaign(id: number, campaignId: number, updateDto: UpdateCampaignsDto, usuarioId: number, imagenes: string[]): Promise<ResponseCampaignsDto>
+    + registrarOrganizacion(dto: CreateOrganizacionDto): Promise<ResponseOrganizacionDto>
+    + update(dto: UpdateOrganizacionDto, usuarioId: number): Promise<ResponseOrganizacionDto>
+    + verify(id: number): Promise<ResponseOrganizacionDto>
+    + delete(id: number): Promise<void>
+    + restore(id: number): Promise<void>
+    - mapToResponseDto(organizacion: Organizacion): ResponseOrganizacionDto
+}
+
+class CreateOrganizacionDto {
+    nombre: string
+    apellido: string
+    documento: string
+    correo: string
+    clave: string
+    prefijo: string
+    telefono: string
+    correo_organizacion: string
+    cuit_organizacion: string
+    razon_social: string
+    nombre_organizacion: string
+    calle: string
+    numero: string
+    web: string
+    token: string
+}
+
+class UpdateOrganizacionDto {
+    nombre_organizacion: string
+    razon_social: string
+    cuit: string
+    descripcion: string
+    web: string
+    contacto: UpdateContactoOrganizacionDto
+    direccion: UpdateDireccionOrganizacionDto
+}
+
+class UpdateContactoOrganizacionDto {
+    prefijo: string
+    telefono: string   
+}
+
+class UpdateDireccionOrganizacionDto {
+    calle: string
+    numero: string
+    provincia: string
+    ciudad: string
+    codigo_postal: string
+}
+
+class ResponseOrganizacionDto {
+    id: number
+    cuit: string
+    razon_social: string
+    nombre_organizacion: string
+    verificada: boolean
+    habilitada: boolean
+    descripcion: string
+    direccion: DireccionDto
+    contacto: ContactoDto
+    web: string
+    fecha_registro: Date
+    creado_por: UsuarioResumenDto
+    ultimo_cambio: Date
+    actualizado_por: UsuarioResumenDto
+}
+
+class DireccionDto {
+    id: number
+    calle: string
+    numero: string
+    adicional: string
+    codigo_postal: string
+    ciudad: string
+    provincia: string
+}
+
+class ContactoDto {
+    id: number
+    correo: string
+    prefijo: string
+    telefono: string  
+}
+
+class UsuarioResumenDto {
+  id: number
+  nombre: string
+  apellido: string
+  email: string
+}
+
+class ResponseCampaignsDetailPaginatedDto {
+    items: ResponseCampaignDetalleDto[]
+    total: number
+}
+
+class ResponseCampaignDetalleDto {
+    imagenes: CampaignImagenDTO[]
+}
+
+class CampaignImagenDTO {
+    id: number
+    nombre: string
+    url: string
+}
+
+class CreateCampaignsDto {
+    titulo: string
+    estado: string
+    descripcion: string
+    fecha_Inicio: Date
+    fecha_Fin: Date
+    objetivo: number
+    puntos: number
+}
+
+class ResponseCampaignsDto {
+    id: number
+    imagenPortada: string | null
+    organizacion: OrganizacionSummaryDto
+    titulo: string
+    estado: string
+    descripcion: string
+    fecha_Inicio: Date
+    fecha_Fin: Date
+    fecha_Registro: Date
+    objetivo: number
+    puntos: number
+    creado_por: UsuarioResumenDto
+    actualizado_por: UsuarioResumenDto
+    ultimo_cambio: Date
+}
+
+class OrganizacionSummaryDto {
+    id: number
+    nombre_organizacion: string
+    verificada: boolean
+}
+
+class UpdateCampaignsDto {
+    titulo: string
+    estado: string
+    descripcion: string
+    fecha_Inicio: Date
+    fecha_Fin: Date
+    objetivo: number
+    puntos: number
+    imagenesExistentes: string[]
+}
+
+class UpdateDonacionEstadoDto {
+    estado: DonacionEstado
+    motivo: string
+}
+
+enum DonacionEstado {
+    PENDIENTE = 0
+    RECHAZADA = 1
+    APROBADA = 2
+}
+
+class ResponseDonationDto {
+    id: number
+    titulo: string
+    detalle: string
+    tipo: string
+    cantidad: number
+    estado: DonacionEstado
+    puntos: number
+    campaignId: number
+    userId: number
+    fecha_registro: Date
+    imagen: string
+}
+
+class PaginatedOrganizationDonationsResponseDto {
+    items: OrganizationDonationItemDto[]
+    total: number
+}
+
+class OrganizationDonationItemDto {
+    id: number
+    descripcion: string
+    puntos: number
+    estado: DonacionEstado
+    userId: number
+    correo: string
+    campaignId: number
+    campaignTitulo: string
+    fecha_estado: Date
+    cantidad: number
+    creado_por: UsuarioResumenDto
+    aprobado_por: UsuarioResumenDto
+    fecha_aprobacion: Date
+    rechazado_por: UsuarioResumenDto
+    fecha_rechazo: Date
+    motivo_rechazo: string
+}
+
+
+
+OrganizacionController -u-> OrganizacionService
+
+CreateOrganizacionDto <-- OrganizacionService
+UpdateOrganizacionDto <-- OrganizacionService
+UpdateContactoOrganizacionDto <-- UpdateOrganizacionDto
+UpdateDireccionOrganizacionDto <-- UpdateOrganizacionDto
+ResponseOrganizacionDto <-- OrganizacionService
+DireccionDto <-- ResponseOrganizacionDto
+ContactoDto <-- ResponseOrganizacionDto
+UsuarioResumenDto <-- ResponseOrganizacionDto
+ResponseCampaignsDetailPaginatedDto <-- OrganizacionService
+ResponseCampaignDetalleDto <-- ResponseCampaignsDetailPaginatedDto
+ResponseCampaignDetalleDto --|> ResponseCampaignsDto
+CampaignImagenDTO --> ResponseCampaignDetalleDto
+CreateCampaignsDto --> OrganizacionService
+ResponseCampaignsDto --> OrganizacionService
+OrganizacionSummaryDto --> ResponseCampaignsDto
+UsuarioResumenDto --> ResponseCampaignsDto
+UpdateCampaignsDto --> OrganizacionService
+UpdateCampaignsDto --|> CreateCampaignsDto
+UpdateDonacionEstadoDto --> OrganizacionService
+DonacionEstado --> UpdateDonacionEstadoDto
+ResponseDonationDto --> OrganizacionService
+DonacionEstado --> ResponseDonationDto
+PaginatedOrganizationDonationsResponseDto --> organizacionService
+OrganizationDonationItemDto --> PaginatedOrganizationDonationsResponseDto
+DonacionEstado --> OrganizationDonationItemDto
+UsuarioResumenDto --> OrganizationDonationItemDto
+
+
+'Relaciones con otros services
+OrganizacionService --> CampaignService
+OrganizacionService --> DonacionService
+OrganizacionService --> HashService
+OrganizacionService --> DataSource
+OrganizacionService --> InvitacionesService
+
+
+@enduml

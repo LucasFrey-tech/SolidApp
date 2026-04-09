@@ -17,6 +17,7 @@ import { HashService } from '../../common/bcryptService/hashService';
 import { Rol, RolSecundario } from '../user/enums/enums';
 import { InvitacionesService } from '../invitaciones/invitacion.service';
 import { ErrorManager } from '../../common/errors/error.manager';
+import { BeneficiosResponseDTO } from '../benefit/dto/response_beneficios.dto';
 
 /**
  * ============================================================
@@ -167,7 +168,10 @@ export class EmpresaService {
     }
   }
 
-  async createCupon(usuarioId: number, dto: CreateBeneficiosDTO) {
+  async createCupon(
+    usuarioId: number,
+    dto: CreateBeneficiosDTO,
+  ): Promise<BeneficiosResponseDTO> {
     try {
       const empresa = await this.getEmpresaByUsuario(usuarioId);
 
@@ -190,7 +194,7 @@ export class EmpresaService {
     cuponId: number,
     dto: UpdateBeneficiosDTO,
     usuarioId: number,
-  ) {
+  ): Promise<BeneficiosResponseDTO> {
     try {
       return this.beneficioService.update(cuponId, dto, usuarioId);
     } catch (error: unknown) {
@@ -467,7 +471,7 @@ export class EmpresaService {
       if (!empresa) {
         throw new ErrorManager({
           type: 'NOT_FOUND',
-          message: `Empresa con ID ${id} no encontrada`
+          message: `Empresa con ID ${id} no encontrada`,
         });
       }
 
