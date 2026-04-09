@@ -1,0 +1,231 @@
+Table beneficios {
+  id int [pk, increment]
+  titulo varchar(255) [not null]
+  tipo varchar(50) [not null]
+  detalle varchar(255) [not null]
+  cantidad int [not null]
+  fecha_registro datetime2 [not null, default: `getdate()`]
+  ultimo_cambio datetime2 [not null, default: `getdate()`]
+  valor int [not null]
+  estado varchar(20) [not null, default: 'PENDIENTE']
+  creado_por_id int
+  actualizado_por_id int
+  id_empresa int
+}
+
+Table campañas {
+  id int [pk, increment]
+  estado varchar(20) [not null]
+  titulo varchar(255) [not null]
+  descripcion varchar(255) [not null]
+  fecha_inicio date [not null]
+  fecha_fin date [not null]
+  fecha_registro datetime2 [not null, default: `getdate()`]
+  objetivo int [not null, default: 0]
+  puntos int [not null, default: 0]
+  ultimo_cambio datetime2 [not null, default: `getdate()`]
+  creado_por_id int
+  actualizado_por_id int
+  id_organizacion int
+}
+
+Table contacto {
+  id int [pk, increment]
+  correo varchar(255) [not null, unique]
+  prefijo varchar(5)
+  telefono varchar(20)
+}
+
+Table direcciones {
+  id int [pk, increment]
+  calle varchar(80)
+  numero varchar(10)
+  adicional varchar(100)
+  codigo_postal varchar(10)
+  ciudad varchar(50)
+  provincia varchar(50)
+}
+
+Table donaciones {
+  id int [pk, increment]
+  titulo varchar(100) [not null]
+  detalle varchar(255) [not null]
+  tipo varchar(25) [not null, default: 'Articulo']
+  cantidad int [not null]
+  estado int [not null, default: 0]
+  puntos int
+  fecha_registro datetime2 [not null, default: `getdate()`]
+  fecha_aprobacion datetime2
+  fecha_rechazo datetime2
+  motivo_rechazo varchar(255)
+  creado_por_id int
+  aprobado_por_id int
+  rechazado_por_id int
+  id_campaña int
+  usuarioId int
+}
+
+Table empresa {
+  id int [pk, increment]
+  cuit varchar(20) [not null, unique]
+  razon_social varchar(100) [not null]
+  rubro varchar(50) [not null, default: '']
+  nombre_empresa varchar(100) [not null]
+  contacto_id int [not null]
+  direccion_id int
+  verificada bit [not null, default: 0]
+  logo varchar(255)
+  web varchar(255)
+  descripcion varchar(500) [not null, default: '']
+  fecha_registro datetime2 [not null, default: `getdate()`]
+  ultimo_cambio datetime2 [not null, default: `getdate()`]
+  habilitada bit [not null, default: 1]
+  creado_por_id int
+  actualizado_por_id int
+}
+
+Table empresa_usuario {
+  id int [pk, increment]
+  id_usuario int [not null]
+  id_empresa int [not null]
+  fecha_asignacion datetime2 [not null, default: `getdate()`]
+  activo bit [not null, default: 1]
+  rol varchar(20) [not null, default: 'MIEMBRO']
+
+  Indexes {
+    (id_usuario, id_empresa) [unique]
+  }
+}
+
+Table imagenes_campaña {
+  id int [pk, increment]
+  imagen varchar(255) [not null]
+  esPortada bit [not null, default: 0]
+  campañas_id int
+}
+
+Table invitaciones {
+  id int [pk, increment]
+  token varchar(255) [not null, unique]
+  correo varchar(255) [not null]
+  empresaId int
+  organizacionId int
+  invitadorID int [not null]
+  usuarioId int
+  rol varchar(20) [not null, default: 'MIEMBRO']
+  expirada bit [not null, default: 0]
+  fecha_creacion datetime2 [not null, default: `getdate()`]
+  fecha_expiracion datetime2
+}
+
+Table organizacion {
+  id int [pk, increment]
+  cuit varchar(20) [not null, unique]
+  razon_social varchar(100) [not null]
+  nombre_organizacion varchar(100) [not null]
+  descripcion varchar(255) [not null, default: '']
+  verificada bit [not null, default: 0]
+  web varchar(255) [not null, default: '']
+  fecha_registro datetime2 [not null, default: `getdate()`]
+  ultimo_cambio datetime2 [not null, default: `getdate()`]
+  habilitada bit [not null, default: 1]
+  contacto_id int
+  direccion_id int
+  creado_por_id int
+  actualizado_por_id int
+}
+
+Table organizacion_usuario {
+  id int [pk, increment]
+  id_usuario int [not null]
+  id_organizacion int [not null]
+  fecha_asignacion datetime2 [not null, default: `getdate()`]
+  activo bit [not null, default: 1]
+  rol varchar(20) [not null, default: 'MIEMBRO']
+
+  Indexes {
+    (id_usuario, id_organizacion) [unique]
+  }
+}
+
+Table ranking_donador {
+  id_usuario int [pk]
+  puntos int [not null]
+}
+
+Table usuarios {
+  id int [pk, increment]
+  clave varchar(255) [not null]
+  rol varchar(20) [not null, default: 'USUARIO']
+  documento varchar(15) [not null, unique]
+  nombre varchar(50) [not null]
+  apellido varchar(50) [not null]
+  puntos int [default: 0]
+  departamento varchar(10)
+  habilitado bit [not null, default: 1]
+  verificado bit [not null, default: 0]
+  fecha_registro datetime2 [not null, default: `getdate()`]
+  ultimo_cambio datetime2 [not null, default: `getdate()`]
+  ultima_conexion datetime2
+  resetPasswordToken varchar(255)
+  resetPasswordExpires datetime2
+  contacto_id int
+  direccion_id int
+}
+
+Table usuarios_beneficios {
+  id int [pk, increment]
+  cantidad int [not null, default: 1]
+  usados int [not null, default: 0]
+  estado varchar(255) [not null, default: 'ACTIVO']
+  fecha_reclamo datetime2 [not null, default: `getdate()`]
+  fecha_uso datetime2
+  ultimo_cambio datetime2 [not null, default: `getdate()`]
+  id_usuario int
+  id_beneficio int
+}
+
+Ref: beneficios.id_empresa > empresa.id
+Ref: beneficios.creado_por_id > usuarios.id
+Ref: beneficios.actualizado_por_id > usuarios.id
+
+Ref: campañas.creado_por_id > usuarios.id
+Ref: campañas.actualizado_por_id > usuarios.id
+Ref: campañas.id_organizacion > organizacion.id
+
+Ref: donaciones.creado_por_id > usuarios.id
+Ref: donaciones.usuarioId > usuarios.id
+Ref: donaciones.aprobado_por_id > usuarios.id
+Ref: donaciones.rechazado_por_id > usuarios.id
+Ref: donaciones.id_campaña > campañas.id
+
+Ref: empresa.contacto_id > contacto.id
+Ref: empresa.direccion_id > direcciones.id
+Ref: empresa.creado_por_id > usuarios.id
+Ref: empresa.actualizado_por_id > usuarios.id
+
+Ref: empresa_usuario.id_usuario > usuarios.id
+Ref: empresa_usuario.id_empresa > empresa.id
+
+Ref: imagenes_campaña.campañas_id > campañas.id
+
+Ref: invitaciones.usuarioId > usuarios.id
+Ref: invitaciones.invitadorID > usuarios.id
+Ref: invitaciones.organizacionId > organizacion.id
+Ref: invitaciones.empresaId > empresa.id
+
+Ref: organizacion.contacto_id > contacto.id
+Ref: organizacion.direccion_id > direcciones.id
+Ref: organizacion.creado_por_id > usuarios.id
+Ref: organizacion.actualizado_por_id > usuarios.id
+
+Ref: organizacion_usuario.id_usuario > usuarios.id
+Ref: organizacion_usuario.id_organizacion > organizacion.id
+
+Ref: ranking_donador.id_usuario > usuarios.id
+
+Ref: usuarios.contacto_id > contacto.id
+Ref: usuarios.direccion_id > direcciones.id
+
+Ref: usuarios_beneficios.id_usuario > usuarios.id
+Ref: usuarios_beneficios.id_beneficio > beneficios.id
