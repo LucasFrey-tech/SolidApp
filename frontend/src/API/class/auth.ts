@@ -83,7 +83,7 @@ export class AuthService extends Crud<any> {
   }
 
   async forgotPassword(email: string): Promise<{ message: string }> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/forgot-password`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/password/recovery`, {
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ email }),
@@ -95,7 +95,7 @@ export class AuthService extends Crud<any> {
     token: string,
     newPassword: string,
   ): Promise<{ message: string }> {
-    const res = await fetch(`${this.baseUrl}${this.endPoint}/reset-password`, {
+    const res = await fetch(`${this.baseUrl}${this.endPoint}/password/reset`, {
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({ token, newPassword }),

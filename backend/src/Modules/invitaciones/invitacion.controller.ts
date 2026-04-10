@@ -113,7 +113,7 @@ export class InvitacionesController {
     );
   }
 
-  @Get('validar/:token')
+  @Get(':token/validacion')
   async validarToken(@Param('token') token: string): Promise<{
     valido: boolean;
     correo: string;

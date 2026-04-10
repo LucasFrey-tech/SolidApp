@@ -37,7 +37,7 @@ export class CampaignsController {
    * @returns
    */
   @Public()
-  @Get('/list/paginated/')
+  @Get('campaigns')
   @ApiOperation({ summary: 'Listar campañas solidarias de la organizacion' })
   @ApiResponse({
     status: 200,
@@ -54,7 +54,7 @@ export class CampaignsController {
   }
 
   @Public()
-  @Get(':id/detalle')
+  @Get('campaigns/:id')
   @ApiOperation({ summary: 'Obtener campaña por ID con detalle completo' })
   @ApiResponse({
     status: 200,

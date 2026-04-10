@@ -65,7 +65,7 @@ export class InvitacionesEmpresaService {
 
   async validarToken(token: string) {
   const res = await fetch(
-    `${API_URL}/invitaciones/validar/${token}`,
+    `${API_URL}/invitaciones/${token}/validacion`,
     {
       method: "GET",
     }

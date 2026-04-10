@@ -77,7 +77,7 @@ export class EmpresaController {
    * - items: lista de empresas
    * - total: cantidad total de registros
    */
-  @Get('list')
+  @Get('empresas')
   @Public()
   @ApiOperation({ summary: 'Listar empresas paginadas' })
   @ApiResponse({
@@ -133,7 +133,7 @@ export class EmpresaController {
     return this.empresasService.getEmpresaByUsuario(req.user.id);
   }
 
-  @Post('registro')
+  @Post('empresas')
   @Public()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Registrar nueva empresa con su colaborador' })
@@ -270,7 +270,7 @@ export class EmpresaController {
    * @throws NotFoundException
    * Si la empresa no existe.
    */
-  @Delete(':id/borrar')
+  @Delete('empresas/:id')
   @Auth(Rol.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deshabilitar una empresa' })
@@ -293,7 +293,7 @@ export class EmpresaController {
    * @throws BadRequestException
    * Si la empresa ya está activa.
    */
-  @Patch(':id/restaurar')
+  @Patch('empresas/:id')
   @Auth(Rol.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Restaurar una empresa deshabilitada' })

@@ -86,7 +86,7 @@ export class BeneficioController {
    * @returns Resultado del canje con información del estado final
    */
   @Auth(Rol.USUARIO)
-  @Post(':id/canjear')
+  @Post(':id/canjes')
   @ApiOperation({ summary: 'Canjear beneficio por puntos' })
   @ApiParam({ name: 'id', type: Number })
   canjear(

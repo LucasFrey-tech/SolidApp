@@ -144,7 +144,7 @@ export class EmpresasService extends Crud<Empresa> {
     search?: string,
     onlyEnabled?: boolean,
   ): Promise<PaginatedResponse<Empresa>> {
-    let url = `${this.baseUrl}/${this.endPoint}/list?page=${page}&limit=${limit}`;
+    let url = `${this.baseUrl}/${this.endPoint}/empresas?page=${page}&limit=${limit}`;
 
     if (search) {
       url += `&search=${encodeURIComponent(search)}`;
@@ -167,7 +167,7 @@ export class EmpresasService extends Crud<Empresa> {
   }
 
   async delete(id: number): Promise<void> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/${id}/borrar`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/empresas/${id}`, {
       method: "DELETE",
       headers: this.getHeaders(),
     });
@@ -179,7 +179,7 @@ export class EmpresasService extends Crud<Empresa> {
 
   async restore(id: number): Promise<void> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/${id}/restaurar`,
+      `${this.baseUrl}/${this.endPoint}/empresas/${id}`,
       {
         method: "PATCH",
         headers: this.getHeaders(),

@@ -43,7 +43,7 @@ export class AuthController {
   }
 
   @Public()
-  @Post('forgot-password')
+  @Post('password/recovery')
   async forgotPassword(
     @Body('email') email: string,
   ): Promise<{ message: string }> {
@@ -51,7 +51,7 @@ export class AuthController {
   }
 
   @Public()
-  @Post('reset-password')
+  @Post('password/reset')
   async resetPassword(
     @Body('token') token: string,
     @Body('newPassword') newPassword: string,

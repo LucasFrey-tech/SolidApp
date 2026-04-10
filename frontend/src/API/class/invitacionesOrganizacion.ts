@@ -65,7 +65,7 @@ export class InvitacionesOrganizacionService {
 
   async validarToken(token: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/invitaciones/validar/${token}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/invitaciones/${token}/validacion`,
     {
       method: "GET",
     }
