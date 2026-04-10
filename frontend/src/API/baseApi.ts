@@ -1,5 +1,4 @@
 import { Usuario } from "./class/user";
-import { RegisterService } from "./class/registro";
 import { EmpresasService } from "./class/empresas";
 import { OrganizacionesService } from "./class/organizaciones";
 import { BeneficiosService } from "./class/beneficios";
@@ -15,7 +14,6 @@ export class BaseApi {
     public readonly usuario: Usuario;
     public readonly empresa: EmpresasService;
     public readonly organizacion: OrganizacionesService
-    public readonly register: RegisterService;
     public readonly beneficio: BeneficiosService;
     public readonly ranking: RankingService;
     public readonly campaign: campaignService;
@@ -24,7 +22,6 @@ export class BaseApi {
     public readonly invitacionesEnt: InvitacionesEntidadService;
 
     constructor(){
-        this.register = new RegisterService();
         this.auth = new AuthService();
         this.usuario = new Usuario();
         this.empresa = new EmpresasService();

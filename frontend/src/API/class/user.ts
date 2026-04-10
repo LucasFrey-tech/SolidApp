@@ -100,7 +100,7 @@ export class Usuario extends Crud<User> {
 
   async canjearCupon(cuponId: number, cantidad = 1): Promise<Beneficio> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/cupones/${cuponId}/canjear?cantidad=${cantidad}`,
+      `${this.baseUrl}/${this.endPoint}/cupones/${cuponId}/canjes?cantidad=${cantidad}`,
       { method: "POST", headers: this.getHeaders() },
     );
     if (!res.ok) throw new Error(`Error al canjear cupón (${res.status})`);

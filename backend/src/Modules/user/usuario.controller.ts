@@ -132,7 +132,7 @@ export class UsuarioController {
   }
 
   @Auth(Rol.USUARIO)
-  @Post('cupones/:cuponId/canjear')
+  @Post('cupones/:id/canjes')
   @ApiOperation({ summary: 'Canjear un cupón' })
   async canjearCupon(
     @Req() req: RequestConUsuario,

@@ -58,7 +58,7 @@ export class BeneficiosService extends Crud<Beneficio> {
     data: { userId: number; cantidad: number },
   ) {
     const res = await fetch(
-      `${this.baseUrl}/${this.endpoint}/${beneficioId}/canjear`,
+      `${this.baseUrl}/${this.endpoint}/${beneficioId}/canjes`,
       {
         method: "POST",
         headers: {

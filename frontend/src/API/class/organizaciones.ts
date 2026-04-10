@@ -28,7 +28,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
   async registrarOrganizacion(
     data: OrganizacionRegistroRequest,
   ): Promise<Organizacion> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/registro`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/organizaciones`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -67,7 +67,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     limit = 10,
   ): Promise<PaginatedResponse<CampaignDetalle>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/campanas/?page=${page}&limit=${limit}`,
+      `${this.baseUrl}/${this.endPoint}/campaigns/?page=${page}&limit=${limit}`,
       { method: "GET", headers: this.getHeaders() },
     );
     if (!res.ok) {
@@ -93,7 +93,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     const headers = this.getHeaders();
     delete headers["Content-Type"];
 
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/campana`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/campaigns`, {
       method: "POST",
       headers,
       body: formData,
@@ -147,7 +147,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     const headers = this.getHeaders();
     delete headers["Content-Type"];
 
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/campana`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/campaigns/${id}`, {
       method: "PATCH",
       headers,
       body: formData,
@@ -162,7 +162,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     limit = 10,
     search?: string,
   ): Promise<PaginatedResponse<DonacionResponsePanel>> {
-    let url = `${this.baseUrl}/${this.endPoint}/mis-donaciones?page=${page}&limit=${limit}`;
+    let url = `${this.baseUrl}/${this.endPoint}/donaciones?page=${page}&limit=${limit}`;
 
     if (search) {
       url += `&search=${encodeURIComponent(search)}`;
@@ -205,7 +205,7 @@ export class OrganizacionesService extends Crud<Organizacion> {
     search = "",
   ): Promise<PaginatedResponse<Organizacion>> {
     const res = await fetch(
-      `${this.baseUrl}/${this.endPoint}/list?page=${page}&limit=${limit}&search=${search}`,
+      `${this.baseUrl}/${this.endPoint}/organizaciones?page=${page}&limit=${limit}&search=${search}`,
       { method: "GET", headers: this.getHeaders() },
     );
     if (!res.ok)

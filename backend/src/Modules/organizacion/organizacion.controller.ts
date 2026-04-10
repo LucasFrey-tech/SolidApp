@@ -95,7 +95,7 @@ export class OrganizacionesController {
     return this.organizacionService.getOrganizacionByUsuario(req.user.id);
   }
 
-  @Get('campanas')
+  @Get('campaigns')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener campañas de la organizacion' })
@@ -124,7 +124,7 @@ export class OrganizacionesController {
   }
 
   @Public()
-  @Post('registro')
+  @Post('organizaciones')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Registrar nueva organización con su colaborador' })
   @ApiBody({ type: CreateOrganizacionDto })
@@ -147,7 +147,7 @@ export class OrganizacionesController {
    * @param {Express.Multer.File} files - Imagenes de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña creada
    */
-  @Post('campana')
+  @Post('campaigns')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR)
   @HttpCode(HttpStatus.CREATED)
@@ -209,7 +209,7 @@ export class OrganizacionesController {
    * @param {UpdateCampaignsDto} updateCampaignsDto - Datos actualizados de la Campaña
    * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
    */
-  @Patch('campana/:campaignId')
+  @Patch('campaigns/:campaignId')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR)
   @ApiOperation({ summary: 'Actualizar Campaña Solidaria existente' })
@@ -268,7 +268,7 @@ export class OrganizacionesController {
     );
   }
 
-  @Get('mis-donaciones')
+  @Get('donaciones')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
   @ApiOperation({ summary: 'Obtener donaciones de la organizacion' })
@@ -389,7 +389,7 @@ export class OrganizacionesController {
    * @returns Objeto con items y total de registros
    */
   @Auth(Rol.ADMIN)
-  @Get('list')
+  @Get('organizaciones')
   @ApiOperation({ summary: 'Listar organizaciones paginadas' })
   @ApiResponse({
     status: 200,
