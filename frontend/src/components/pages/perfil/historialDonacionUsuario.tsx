@@ -30,7 +30,7 @@ export default function HistorialDonacionUsuario() {
       try {
         const res = await baseApi.usuario.getDonaciones(page, 6);
         setDonaciones(res.items);
-        setTotalPages(Math.ceil(res.total / 6));
+        setTotalPages(Math.max(1, Math.ceil(res.total / 6)));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error desconocido");
       } finally {
@@ -115,7 +115,7 @@ export default function HistorialDonacionUsuario() {
         ))}
       </div>
 
-      {/* Modal de ENVÍO (tu componente original) */}
+      {/* Modal de ENVÍO */}
       <EnviosInfo
         isOpen={isEnvioModalOpen}
         onClose={() => setIsEnvioModalOpen(false)}

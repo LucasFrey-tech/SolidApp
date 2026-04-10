@@ -34,7 +34,7 @@ export default function MyAccount({ onChangeSection }: MyAccountProps) {
 
   const puedeVerDonaciones = () => {
     if (!user) return false;
-    return (user.rol === Rol.COLABORADOR && user.gestion === GestionTipo.ORGANIZACION) || user.rol === Rol.USUARIO;
+    return user.rol === Rol.USUARIO;
   };
 
   const puedeVerData = () => {
