@@ -22,7 +22,7 @@ export class EmpresasService extends Crud<Empresa> {
    * POST /empresas/registro
    */
   async registrarEmpresa(data: EmpresaRegistroRequest): Promise<Empresa> {
-    const res = await fetch(`${this.baseUrl}/${this.endPoint}/registro`, {
+    const res = await fetch(`${this.baseUrl}/${this.endPoint}/empresas`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
