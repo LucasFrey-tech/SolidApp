@@ -18,6 +18,7 @@ import { Rol, RolSecundario } from '../user/enums/enums';
 import { InvitacionesService } from '../invitaciones/invitacion.service';
 import { ErrorManager } from '../../common/errors/error.manager';
 import { BeneficiosResponseDTO } from '../benefit/dto/response_beneficios.dto';
+import { Contacto } from '../../Entities/contacto.entity';
 
 /**
  * ============================================================
@@ -214,6 +215,7 @@ export class EmpresaService {
         const usuarioRepo = manager.getRepository(Usuario);
         const empresaRepo = manager.getRepository(Empresa);
         const empresaUsuarioRepo = manager.getRepository(EmpresaUsuario);
+        const contactoRepo = manager.getRepository(Contacto);
 
         const cuitExistente = await empresaRepo.findOne({
           where: { cuit: dto.cuit_empresa },
@@ -235,16 +237,25 @@ export class EmpresaService {
           });
         }
 
-        const correoExistente = await usuarioRepo.findOne({
-          relations: ['contacto'],
-          where: { contacto: { correo: dto.correo } },
+        const correosExistentes = await contactoRepo.find({
+          where: [{ correo: dto.correo }, { correo: dto.correo_empresa }],
         });
-        if (correoExistente) {
-          throw new ErrorManager({
-            type: 'CONFLICT',
-            message: 'Ya existe un usuario con ese correo',
-          });
-        }
+
+        correosExistentes.forEach((c) => {
+          if (c.correo === dto.correo) {
+            throw new ErrorManager({
+              type: 'CONFLICT',
+              message: 'Ya existe un usuario con ese correo',
+            });
+          }
+
+          if (c.correo === dto.correo_empresa) {
+            throw new ErrorManager({
+              type: 'CONFLICT',
+              message: 'Ya existe una empresa con ese correo',
+            });
+          }
+        });
 
         const claveHash = await this.hashService.hash(dto.clave);
 

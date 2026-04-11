@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Organizacion } from '../../Entities/organizacion.entity';
@@ -20,6 +20,7 @@ import { InvitacionesService } from '../invitaciones/invitacion.service';
 import { ErrorManager } from '../../common/errors/error.manager';
 import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
 import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
+import { Contacto } from '../../Entities/contacto.entity';
 
 /**
  * ============================================================
@@ -250,6 +251,7 @@ export class OrganizacionService {
         const usuarioRepo = manager.getRepository(Usuario);
         const organizacionRepo = manager.getRepository(Organizacion);
         const orgUsuarioRepo = manager.getRepository(OrganizacionUsuario);
+        const contactoRepo = manager.getRepository(Contacto);
 
         const cuitExistente = await organizacionRepo.findOne({
           where: { cuit: dto.cuit_organizacion },
@@ -273,17 +275,25 @@ export class OrganizacionService {
           });
         }
 
-        const correoExistente = await usuarioRepo.findOne({
-          relations: ['contacto'],
-          where: { contacto: { correo: dto.correo } },
+        const correosExistentes = await contactoRepo.find({
+          where: [{ correo: dto.correo }, { correo: dto.correo_organizacion }],
         });
 
-        if (correoExistente) {
-          throw new ErrorManager({
-            type: 'CONFLICT',
-            message: 'Ya existe un usuario con ese correo',
-          });
-        }
+        correosExistentes.forEach((c) => {
+          if (c.correo === dto.correo) {
+            throw new ErrorManager({
+              type: 'CONFLICT',
+              message: 'Ya existe un usuario con ese correo',
+            });
+          }
+
+          if (c.correo === dto.correo_organizacion) {
+            throw new ErrorManager({
+              type: 'CONFLICT',
+              message: 'Ya existe una organización con ese correo',
+            });
+          }
+        });
 
         const claveHash = await this.hashService.hash(dto.clave);
 
