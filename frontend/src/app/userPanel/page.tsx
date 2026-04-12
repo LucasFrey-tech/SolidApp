@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import styles from "@/styles/UserPanel/userPanel.module.css";
 import MyAccount from "@/components/pages/perfil/MyAccount";
 import UserAndPass from "@/components/pages/perfil/User&Pass";
@@ -13,7 +13,7 @@ import { useSearchParams } from "next/navigation";
 
 type Section = "data" | "user&pass" | "cupons" | "donations";
 
-export default function Panel() {
+export function PanelContent() {
   const searchParams = useSearchParams();
   const sectionParam = searchParams.get("section");
 
@@ -41,5 +41,13 @@ export default function Panel() {
         <MyAccount onChangeSection={setActiveSection} />
       </main>
     </div>
+  );
+}
+
+export default function Panel() {
+  return (
+    <Suspense fallback={<p>Cargando...</p>}>
+      <PanelContent />
+    </Suspense>
   );
 }

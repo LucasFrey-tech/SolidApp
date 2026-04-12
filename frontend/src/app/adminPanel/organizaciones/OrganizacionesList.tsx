@@ -32,7 +32,7 @@ export default function OrganizacionesList() {
         search,
       );
 
-      const formatted: Organizacion[] = res.items.map((u: any) => ({
+      const formatted: Organizacion[] = res.items.map((u) => ({
         id: u.id,
         name: u.nombre_organizacion,
         habilitado: u.habilitada,
@@ -98,11 +98,12 @@ export default function OrganizacionesList() {
         timer: 1500,
         showConfirmButton: false,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error toggle organización:", error);
+      const message = error instanceof Error ? error.message : "No se pudo cambiar el estado";
       Swal.fire(
         "Error",
-        error.message || "No se pudo cambiar el estado",
+        message,
         "error",
       );
     }

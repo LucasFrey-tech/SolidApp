@@ -8,12 +8,12 @@ import styles from "@/styles/Paneles/empresaInfo.module.css";
 import { useUser } from "@/app/context/UserContext";
 import Image from "next/image";
 
-function cleanObject(obj: any) {
+function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
   return Object.fromEntries(
     Object.entries(obj).filter(
       ([_, v]) => v !== "" && v !== null && v !== undefined,
     ),
-  );
+  ) as Partial<T>;
 }
 
 export default function EmpresaInfo() {
@@ -133,7 +133,7 @@ export default function EmpresaInfo() {
           ciudad: form.ciudad,
           codigo_postal: form.codigo_postal,
         }),
-      });
+      }) as EmpresaUpdateRequest;
 
       await baseApi.empresa.updatePerfil(payload, logoFile);
 

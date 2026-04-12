@@ -10,10 +10,10 @@ import {
 import styles from "@/styles/Paneles/organizacionInfo.module.css";
 import { useUser } from "@/app/context/UserContext";
 
-function cleanObject(obj: any) {
+function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
     return Object.fromEntries(
         Object.entries(obj).filter(([_, v]) => v !== "" && v !== null && v !== undefined)
-    );
+    ) as Partial<T>;
 }
 
 export default function OrganizationInfo() {
@@ -101,7 +101,7 @@ export default function OrganizationInfo() {
                     ciudad: form.ciudad,
                     codigo_postal: form.codigo_postal,
                 }),
-            });
+            }) as OrganizacionUpdateRequest;
 
             await baseApi.organizacion.updatePerfil(payload);
 

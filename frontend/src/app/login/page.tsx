@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -10,7 +10,7 @@ import RegistroUsuario from "@/components/RegistroUsuario/page";
 import styles from "@/styles/login-registro/login.module.css";
 import { useSearchParams } from "next/navigation";
 
-export default function LogInPage() {
+export function LoginContent() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,5 +81,13 @@ export default function LogInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LogInPage() {
+  return (
+    <Suspense fallback={<p>Cargando...</p>}>
+      <LoginContent />
+    </Suspense>
   );
 }

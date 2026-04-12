@@ -96,10 +96,11 @@ export default function InvitacionesPanel({ entidadId, service }: Props) {
       }
       setOpenModal(false);
       fetchInvitaciones();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "No se pudo enviar la invitación";
       Swal.fire(
         "Error",
-        error.message || "No se pudo enviar la invitación",
+        message,
         "error"
       );
     }

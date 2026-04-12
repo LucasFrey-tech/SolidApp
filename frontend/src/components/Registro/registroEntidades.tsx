@@ -524,11 +524,12 @@ export default function RegistroEntidades() {
 
       Swal.fire({ icon: "success", title: "Registro exitoso" });
       setStep("select");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Error al registrar";
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: error?.message || "Error al registrar",
+        text: message,
       });
     }
   };

@@ -3,7 +3,7 @@ import { AuthResponse, LoginRequestBody } from "../types/auth";
 import { RegistroUsuarioDto } from "../types/auth";
 import { UpdateCredencialesPayload } from "../types/panelUsuario/updateCredenciales";
 
-export class AuthService extends Crud<any> {
+export class AuthService extends Crud<unknown> {
   protected endPoint = "/auth";
 
   async login(credentials: LoginRequestBody): Promise<AuthResponse> {
@@ -103,7 +103,7 @@ export class AuthService extends Crud<any> {
     return res.json();
   }
 
-  getAll(): Promise<any[]> {
+  getAll(): Promise<never[]> {
     throw new Error("Method not implemented.");
   }
   getAllPaginated(
@@ -111,19 +111,19 @@ export class AuthService extends Crud<any> {
     limit?: number,
     serach?: string,
     onlyEnabled?: boolean,
-  ): Promise<PaginatedResponse<any>> {
+  ): Promise<PaginatedResponse<never>> {
     throw new Error("Method not implemented.");
   }
-  getOne(_id: number): Promise<any> {
+  getOne(_id: number): Promise<never> {
     throw new Error("Method not implemented.");
   }
-  create(_data: Partial<any>): Promise<any> {
+  create(_data: Partial<never>): Promise<never> {
     throw new Error("Method not implemented.");
   }
-  update(_id: number, data: Partial<any>): Promise<any> {
+  update(_id: number, data: Partial<never>): Promise<never> {
     throw new Error("Method not implemented.");
   }
-  delete(_id: number): Promise<void> {
+  delete(_id: number): Promise<never> {
     throw new Error("Method not implemented.");
   }
 }

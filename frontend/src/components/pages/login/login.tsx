@@ -112,11 +112,12 @@ export default function Login() {
 
       router.replace("/inicio");
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Error desconocido";
       await Swal.fire({
         icon: "error",
         title: "Error al iniciar sesión",
-        text: error?.message || "Error desconocido",
+        text: message,
       });
     } finally {
       setIsLoading(false);

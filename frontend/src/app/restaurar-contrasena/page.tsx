@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { baseApi } from "@/API/baseApi";
 import styles from "@/styles/login-registro/registro.module.css";
 
-export default function ResetPasswordPage() {
+export function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -56,7 +56,9 @@ export default function ResetPasswordPage() {
         router.push("/login");
       }, 3000);
     } catch (err) {
-      setError("Error al restablecer la contraseña. El token puede haber expirado.");
+      setError(
+        "Error al restablecer la contraseña. El token puede haber expirado.",
+      );
     } finally {
       setLoading(false);
     }
@@ -69,7 +71,9 @@ export default function ResetPasswordPage() {
           <h2 className={styles.recoveryTitle}>¡Contraseña actualizada!</h2>
           <div className={styles.successMessage}>
             <p>Tu contraseña se actualizó correctamente.</p>
-            <p className={styles.redirectCountdown}>Serás redirigido al login en unos segundos...</p>
+            <p className={styles.redirectCountdown}>
+              Serás redirigido al login en unos segundos...
+            </p>
             <Link href="/login" className={styles.backLink}>
               Ir al login ahora
             </Link>
@@ -112,11 +116,7 @@ export default function ResetPasswordPage() {
 
           {error && <p className={styles.errorText}>{error}</p>}
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            className={styles.btn}
-          >
+          <button type="submit" disabled={loading} className={styles.btn}>
             {loading ? "Actualizando..." : "Actualizar contraseña"}
           </button>
 
@@ -128,5 +128,13 @@ export default function ResetPasswordPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<p>Cargando...</p>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

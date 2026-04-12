@@ -6,6 +6,7 @@ import Image from "next/image";
 import RegistroEntidades from "@/components/Registro/registroEntidades";
 
 import styles from "@/styles/login-registro/login.module.css";
+import { Suspense } from "react";
 
 export default function RegistroEntidadesPage() {
   const router = useRouter();
@@ -38,7 +39,9 @@ export default function RegistroEntidadesPage() {
         </button>
 
         <div className={styles.formBox}>
-          <RegistroEntidades />
+          <Suspense fallback={<p>Cargando...</p>}>
+            <RegistroEntidades />
+          </Suspense>
         </div>
 
       </div>

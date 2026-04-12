@@ -4,20 +4,13 @@ import { useState, useEffect, useRef } from 'react';
 import Swal from 'sweetalert2';
 import styles from '@/styles/Paneles/adminUsersPanel.module.css';
 import { baseApi } from '@/API/baseApi';
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  enabled: boolean;
-  rol: string;
-};
+import { UserAdminPanel } from '@/API/types/user';
 
 const PAGE_SIZE = 10;
 
 export default function UsuariosAdminPanel() {
   const [page, setPage] = useState(1);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserAdminPanel[]>([]);
   const [usersCount, setUsersCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [updatingUserId, setUpdatingUserId] = useState<number | null>(null);
@@ -36,11 +29,11 @@ export default function UsuariosAdminPanel() {
           search
         );
 
-        const formatted = res.items.map((u: any) => ({
+        const formatted = res.items.map((u) => ({
           id: u.id,
           name: `${u.nombre || ''} ${u.apellido || ''}`.trim() || 'Sin nombre',
-          email: u.correo,
-          enabled: !u.deshabilitado,
+          email: u.email,
+          enabled: u.habilitado,
           rol: u.rol || 'user',
         }));
 
@@ -76,7 +69,7 @@ export default function UsuariosAdminPanel() {
     }, 300);
   };
 
-  const toggleUserStatus = async (user: User, enable: boolean) => {
+  const toggleUserStatus = async (user: UserAdminPanel, enable: boolean) => {
     const confirm = await Swal.fire({
       title: '¿Estás seguro?',
       text: `¿Quieres ${enable ? 'habilitar' : 'deshabilitar'} este usuario?`,

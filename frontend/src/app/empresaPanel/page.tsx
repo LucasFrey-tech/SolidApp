@@ -13,6 +13,7 @@ import { useUser } from "@/app/context/UserContext";
 import { baseApi } from "@/API/baseApi";
 import EmpresaInfo from "@/components/panelEmpresa/EmpresaInfo";
 import InvitacionesPanel from "@/components/invitaciones/InvitacionesPanel";
+import { BeneficiosEstado } from "@/API/types/beneficios";
 
 type Coupon = {
   id: number;
@@ -20,7 +21,7 @@ type Coupon = {
   detalle: string;
   cantidad: number;
   valor: number;
-  estado: "pendiente" | "aprobado" | "rechazado";
+  estado: BeneficiosEstado;
 };
 
 type ViewMode = "coupons" | "info" | "invitaciones";
@@ -50,7 +51,7 @@ export default function OrganizationCouponsPage() {
         10
       );
 
-      const couponsWithEstado: Coupon[] = items.map((b: any) => ({
+      const couponsWithEstado: Coupon[] = items.map((b) => ({
         id: b.id,
         titulo: b.titulo,
         detalle: b.detalle,
@@ -188,9 +189,9 @@ export default function OrganizationCouponsPage() {
                   <span
                     style={{
                       color:
-                        c.estado === "pendiente"
+                        c.estado === BeneficiosEstado.PENDIENTE
                           ? "blue"
-                          : c.estado === "rechazado"
+                          : c.estado === BeneficiosEstado.RECHAZADO
                           ? "red"
                           : "green",
                     }}

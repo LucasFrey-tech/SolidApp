@@ -41,3 +41,11 @@ export interface UserPoints {
   id: number;
   puntos: number;
 }
+
+export interface UserAdminPanel {
+  id: number;
+  name: string;
+  email: string;
+  enabled: boolean;
+  rol: string;
+}

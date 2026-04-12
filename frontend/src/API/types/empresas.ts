@@ -62,6 +62,7 @@ export interface EmpresaRegistroRequest {
 
 export interface EmpresaSummary {
   nombre_empresa: string;
+  razon_social: string;
   logo: string;
   habilitada: boolean;
 }

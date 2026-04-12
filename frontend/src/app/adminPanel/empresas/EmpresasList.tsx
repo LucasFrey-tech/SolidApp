@@ -35,7 +35,7 @@ export default function EmpresasList() {
         search,
         false,
       );
-      const empresasFormated = res.items.map((u: any) => ({
+      const empresasFormated = res.items.map((u) => ({
         id: u.id,
         name: u.razon_social,
         enabled: u.habilitada,

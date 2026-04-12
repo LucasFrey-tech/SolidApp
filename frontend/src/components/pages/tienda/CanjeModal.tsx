@@ -80,8 +80,9 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
 
       Swal.fire('Canje realizado', 'Beneficio canjeado correctamente', 'success');
       onClose();
-    } catch (error: any) {
-      Swal.fire('Error', error.message, 'error');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Error";
+      Swal.fire('Error', message, 'error');
     }
   };
 

@@ -1,5 +1,4 @@
-interface NumericInputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+type NumericInputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 export function NumericInput(props: NumericInputProps) {
   return (

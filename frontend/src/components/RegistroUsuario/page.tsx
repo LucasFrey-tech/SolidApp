@@ -76,10 +76,7 @@ export default function RegistroUsuario({
 
     const validarInvitacion = async () => {
       try {
-
-        const invitacion =
-          await baseApi.invitacionesOrg.validarToken(token);
-
+        const invitacion = await baseApi.invitacionesOrg.validarToken(token);
 
         setData((prev) => ({
           ...prev,
@@ -132,22 +129,33 @@ export default function RegistroUsuario({
       });
 
       setErrors({});
-    } catch (error: any) {
-
-      if (error.errors) {
+    } catch (error: unknown) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "errors" in error &&
+        Array.isArray((error as { errors: unknown }).errors)
+      ) {
         const newErrors: Record<string, string> = {};
 
-        error.errors.forEach((err: any) => {
-          newErrors[err.path[0]] = err.message;
+        (
+          error as {
+            errors: { path: (string | number)[]; message: string }[];
+          }
+        ).errors.forEach((err) => {
+          newErrors[String(err.path[0])] = err.message;
         });
 
         setErrors(newErrors);
       }
 
+      const message =
+        error instanceof Error ? error.message : "Error desconocido";
+
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: error.message || "Error desconocido",
+        text: message,
       });
     }
   };
@@ -167,14 +175,10 @@ export default function RegistroUsuario({
               }`}
               placeholder="Documento"
               value={data.documento}
-              onChange={(e) =>
-                handleChange("documento", e.target.value)
-              }
+              onChange={(e) => handleChange("documento", e.target.value)}
             />
             {errors.documento && (
-              <span className={styles.errorText}>
-                {errors.documento}
-              </span>
+              <span className={styles.errorText}>{errors.documento}</span>
             )}
           </div>
 
@@ -188,9 +192,7 @@ export default function RegistroUsuario({
               placeholder="Correo electrónico"
               value={data.correo}
               readOnly={correoBloqueado}
-              onChange={(e) =>
-                handleChange("correo", e.target.value)
-              }
+              onChange={(e) => handleChange("correo", e.target.value)}
             />
             {correoBloqueado && (
               <div className={styles.inviteInfo}>
@@ -198,9 +200,7 @@ export default function RegistroUsuario({
               </div>
             )}
             {errors.correo && (
-              <span className={styles.errorText}>
-                {errors.correo}
-              </span>
+              <span className={styles.errorText}>{errors.correo}</span>
             )}
           </div>
 
@@ -214,22 +214,16 @@ export default function RegistroUsuario({
               }`}
               placeholder="Contraseña"
               value={data.clave}
-              onChange={(e) =>
-                handleChange("clave", e.target.value)
-              }
+              onChange={(e) => handleChange("clave", e.target.value)}
             />
             {errors.clave && (
-              <span className={styles.errorText}>
-                {errors.clave}
-              </span>
+              <span className={styles.errorText}>{errors.clave}</span>
             )}
           </div>
 
           {/* CONFIRMAR CONTRASEÑA */}
           <div className={styles.fieldGroup}>
-            <label className={styles.label}>
-              Repetir contraseña
-            </label>
+            <label className={styles.label}>Repetir contraseña</label>
             <input
               type="password"
               className={`${styles.input} ${
@@ -237,17 +231,10 @@ export default function RegistroUsuario({
               }`}
               placeholder="Repetir contraseña"
               value={data.confirmarClave}
-              onChange={(e) =>
-                handleChange(
-                  "confirmarClave",
-                  e.target.value
-                )
-              }
+              onChange={(e) => handleChange("confirmarClave", e.target.value)}
             />
             {errors.confirmarClave && (
-              <span className={styles.errorText}>
-                {errors.confirmarClave}
-              </span>
+              <span className={styles.errorText}>{errors.confirmarClave}</span>
             )}
           </div>
 
@@ -260,14 +247,10 @@ export default function RegistroUsuario({
               }`}
               placeholder="Nombre"
               value={data.nombre}
-              onChange={(e) =>
-                handleChange("nombre", e.target.value)
-              }
+              onChange={(e) => handleChange("nombre", e.target.value)}
             />
             {errors.nombre && (
-              <span className={styles.errorText}>
-                {errors.nombre}
-              </span>
+              <span className={styles.errorText}>{errors.nombre}</span>
             )}
           </div>
 
@@ -280,14 +263,10 @@ export default function RegistroUsuario({
               }`}
               placeholder="Apellido"
               value={data.apellido}
-              onChange={(e) =>
-                handleChange("apellido", e.target.value)
-              }
+              onChange={(e) => handleChange("apellido", e.target.value)}
             />
             {errors.apellido && (
-              <span className={styles.errorText}>
-                {errors.apellido}
-              </span>
+              <span className={styles.errorText}>{errors.apellido}</span>
             )}
           </div>
         </div>
@@ -296,18 +275,12 @@ export default function RegistroUsuario({
         <button
           type="submit"
           className={styles.btn}
-          disabled={
-            loadingInvitacion || (!!token && !data.correo)
-          }
+          disabled={loadingInvitacion || (!!token && !data.correo)}
         >
-          {loadingInvitacion
-            ? "Cargando invitación..."
-            : "Registrarme"}
+          {loadingInvitacion ? "Cargando invitación..." : "Registrarme"}
         </button>
 
-        <p className={styles.requiredHint}>
-          Los campos con * son obligatorios
-        </p>
+        <p className={styles.requiredHint}>Los campos con * son obligatorios</p>
       </form>
     </div>
   );

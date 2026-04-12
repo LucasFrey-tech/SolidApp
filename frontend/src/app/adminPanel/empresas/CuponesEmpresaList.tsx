@@ -35,7 +35,7 @@ export default function CuponesEmpresaList() {
     try {
       const res = await baseApi.beneficio.getAllPaginated(page, PAGE_SIZE, search, false);
 
-      const cuponesFormated: Cupon[] = res.items.map((u: any) => ({
+      const cuponesFormated: Cupon[] = res.items.map((u) => ({
         id: u.id,
         empresa: u.empresa?.razon_social ?? '—',
         nombre: u.titulo,
