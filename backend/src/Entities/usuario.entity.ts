@@ -19,11 +19,6 @@ import { Contacto } from './contacto.entity';
 import { Direccion } from './direccion.entity';
 import { Rol } from '../Modules/user/enums/enums';
 
-/**
- * Entidad Usuario
- * Fusión de las antiguas tablas: cuenta + perfil_usuario
- * Representa a TODAS las personas físicas del sistema (donadores, gestores, admins)
- */
 @Entity('usuarios')
 export class Usuario {
   @ApiProperty({

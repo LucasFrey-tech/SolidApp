@@ -1,259 +1,406 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
-
-import { OrganizacionesController } from '../../src/Modules/organization/organizacion.controller';
-import { PerfilOrganizacionService } from '../../src/Modules/organization/organizacion.service';
+import { OrganizacionesController } from '../../src/Modules/organizacion/organizacion.controller';
+import { OrganizacionService } from '../../src/Modules/organizacion/organizacion.service';
+import { mock } from 'jest-mock-extended';
 import { RequestConUsuario } from '../../src/Modules/auth/interfaces/authenticated_request.interface';
-
-import { ResponseOrganizacionDto } from '../../src/Modules/organization/dto/response_organizacion.dto';
-import { ResponseCampaignsDetailPaginatedDto } from '../../src/Modules/campaign/dto/response_campaign_paginated.dto';
-import { ResponseCampaignsDto } from '../../src/Modules/campaign/dto/response_campaigns.dto';
-import { ResponseOrganizationPaginatedDto } from '../../src/Modules/organization/dto/response_organizacion_paginated.dto';
-import { PaginatedOrganizationDonationsResponseDto } from '../../src/Modules/donation/dto/response_donation_paginatedByOrganizacion.dto';
-import { UpdateDonacionEstadoDto } from '../../src/Modules/donation/dto/update_donation_estado.dto';
-import { UpdateOrganizacionDto } from '../../src/Modules/organization/dto/update_organizacion.dto';
-import { UpdateCredencialesDto } from '../../src/Modules/user/dto/panelUsuario.dto';
+import { Rol } from '../../src/Modules/user/enums/enums';
+import { UpdateOrganizacionDto } from '../../src/Modules/organizacion/dto/update_organizacion.dto';
+import { CreateOrganizacionDto } from '../../src/Modules/organizacion/dto/create_organizacion.dto';
+import { ResponseOrganizacionDto } from '../../src/Modules/organizacion/dto/response_organizacion.dto';
 import { CreateCampaignsDto } from '../../src/Modules/campaign/dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from '../../src/Modules/campaign/dto/update_campaigns.dto';
-import { ResponseDonationDto } from '../../src/Modules/donation/dto/response_donation.dto';
+import { UpdateDonacionEstadoDto } from '../../src/Modules/donation/dto/update_donation_estado.dto';
 import { DonacionEstado } from '../../src/Modules/donation/enum';
+import { ResponseCampaignsDto } from '../../src/Modules/campaign/dto/response_campaigns.dto';
+import { ResponseDonationDto } from '../../src/Modules/donation/dto/response_donation.dto';
+import { PaginatedOrganizationDonationsResponseDto } from '../../src/Modules/donation/dto/response_donation_paginatedByOrganizacion.dto';
+import { ResponseCampaignsDetailPaginatedDto } from '../../src/Modules/campaign/dto/response_campaign_paginated.dto';
+import { Organizacion } from '../../src/Entities/organizacion.entity';
+import { Contacto } from '../../src/Entities/contacto.entity';
+import { Direccion } from '../../src/Entities/direccion.entity';
+
+const mockContacto: Contacto = {
+  id: 1,
+  correo: 'contacto@fundaciontest.org',
+  prefijo: '11',
+  telefono: '12345678',
+};
+
+const mockDireccion: Direccion = {
+  id: 1,
+  calle: 'Av. Siempre Viva',
+  numero: '742',
+  codigo_postal: '1638',
+  ciudad: 'Springfield',
+  provincia: 'Buenos Aires',
+};
+
+const mockOrganizacionEntity: Organizacion = {
+  id: 1,
+  cuit: '30-12345678-9',
+  razon_social: 'Fundación Test S.A.',
+  nombre_organizacion: 'Fundación Test',
+  contacto: mockContacto,
+  direccion: mockDireccion,
+  descripcion: 'Descripción de la fundación',
+  verificada: true,
+  web: 'https://fundaciontest.org',
+  fecha_registro: new Date(),
+  ultimo_cambio: new Date(),
+  habilitada: true,
+  organizacionUsuarios: [],
+  campaign: [],
+};
+
+const mockOrganizacionResponse: ResponseOrganizacionDto = {
+  id: 1,
+  cuit: '30-12345678-9',
+  razon_social: 'Fundación Test S.A.',
+  nombre_organizacion: 'Fundación Test',
+  verificada: true,
+  habilitada: true,
+  descripcion: 'Descripción de la fundación',
+  web: 'https://fundaciontest.org',
+  fecha_registro: mockOrganizacionEntity.fecha_registro,
+  ultimo_cambio: mockOrganizacionEntity.ultimo_cambio,
+  contacto: {
+    id: mockContacto.id,
+    correo: mockContacto.correo,
+    telefono: mockContacto.telefono,
+    prefijo: mockContacto.prefijo,
+  },
+  direccion: {
+    id: mockDireccion.id,
+    calle: mockDireccion.calle,
+    numero: mockDireccion.numero,
+    provincia: mockDireccion.provincia,
+    ciudad: mockDireccion.ciudad,
+    codigo_postal: mockDireccion.codigo_postal,
+  },
+};
+
+const mockCampaignResponse: ResponseCampaignsDto = {
+  id: 1,
+  titulo: 'Campaña Solidaria',
+  descripcion: 'Descripción de la campaña',
+  fecha_Inicio: new Date(),
+  fecha_Fin: new Date(),
+  fecha_Registro: new Date(),
+  objetivo: 100000,
+  puntos: 50,
+  organizacion: {
+    id: 1,
+    nombre_organizacion: 'Fundación Test',
+    verificada: true,
+  },
+};
+
+const mockDonacionResponse: ResponseDonationDto = {
+  id: 1,
+  titulo: 'Donación de alimentos',
+  detalle: 'Arroz, fideos y enlatados',
+  tipo: 'ALIMENTO',
+  cantidad: 10,
+  estado: DonacionEstado.APROBADA,
+  puntos: 500,
+  campaignId: 1,
+  userId: 1,
+  fecha_registro: new Date(),
+  imagen: 'imagen.jpg',
+};
 
 describe('OrganizacionesController', () => {
   let controller: OrganizacionesController;
-  let service: DeepMockProxy<PerfilOrganizacionService>;
+  let organizacionService: jest.Mocked<OrganizacionService>;
+
+  const mockReq = {
+    user: { id: 1, rol: Rol.COLABORADOR },
+  } as RequestConUsuario;
 
   beforeEach(async () => {
-    service = mockDeep<PerfilOrganizacionService>();
+    const mockOrganizacionService = mock<OrganizacionService>();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OrganizacionesController],
       providers: [
         {
-          provide: PerfilOrganizacionService,
-          useValue: service,
+          provide: OrganizacionService,
+          useValue: mockOrganizacionService,
         },
       ],
     }).compile();
 
     controller = module.get<OrganizacionesController>(OrganizacionesController);
+    organizacionService = module.get(OrganizacionService);
   });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  const mockRequest = (
-    perfilId: number,
-    cuentaId?: number,
-  ): RequestConUsuario =>
-    ({
-      user: {
-        perfil: { id: perfilId },
-        cuenta: { id: cuentaId ?? 1 },
-      },
-    }) as RequestConUsuario;
-
-  const mockDonationResponse: ResponseDonationDto = {
-    id: 1,
-    titulo: 'Donación test',
-    detalle: 'Detalle',
-    cantidad: 1,
-    puntos: 10,
-    campaignId: 1,
-    userId: 1,
-    fecha_registro: new Date(),
-    imagen: 'img.jpg',
-    estado: DonacionEstado.APROBADA,
-  };
 
   describe('getMiPerfil', () => {
-    it('debe retornar el perfil', async () => {
-      const req = mockRequest(10);
-      const response = {} as ResponseOrganizacionDto;
+    it('debe obtener el perfil de la organización del usuario autenticado', async () => {
+      organizacionService.getOrganizacionByUsuario.mockResolvedValue(
+        mockOrganizacionEntity,
+      );
 
-      service.findOne.mockResolvedValue(response);
+      const result = await controller.getMiPerfil(mockReq);
 
-      const result = await controller.getMiPerfil(req);
+      expect(result).toEqual(mockOrganizacionEntity);
+      expect(organizacionService.getOrganizacionByUsuario).toHaveBeenCalledWith(
+        1,
+      );
+    });
 
-      expect(service.findOne).toHaveBeenCalledWith(10);
-      expect(result).toBe(response);
+    it('debe manejar error cuando el usuario no tiene organización asociada', async () => {
+      const error = new Error('Usuario no asociado a ninguna organización');
+
+      organizacionService.getOrganizacionByUsuario.mockRejectedValue(error);
+
+      await expect(controller.getMiPerfil(mockReq)).rejects.toThrow(
+        'Usuario no asociado a ninguna organización',
+      );
     });
   });
 
   describe('getMisCampañas', () => {
-    it('debe retornar campañas paginadas', async () => {
-      const req = mockRequest(5);
-      const response = {} as ResponseCampaignsDetailPaginatedDto;
+    const mockCampañasResponse: ResponseCampaignsDetailPaginatedDto = {
+      items: [],
+      total: 0,
+    };
 
-      service.getCampaigns.mockResolvedValue(response);
+    it('debe obtener las campañas de la organización paginadas', async () => {
+      organizacionService.getOrganizacionByUsuario.mockResolvedValue(
+        mockOrganizacionEntity,
+      );
+      organizacionService.getCampaigns.mockResolvedValue(mockCampañasResponse);
 
-      const result = await controller.getMisCampañas(req, 2, 20);
+      const result = await controller.getMisCampañas(mockReq, 1, 10);
 
-      expect(service.getCampaigns).toHaveBeenCalledWith(5, 2, 20);
-      expect(result).toBe(response);
+      expect(result).toEqual(mockCampañasResponse);
+      expect(organizacionService.getOrganizacionByUsuario).toHaveBeenCalledWith(
+        1,
+      );
+      expect(organizacionService.getCampaigns).toHaveBeenCalledWith(1, 1, 10);
+    });
+  });
+
+  describe('registrarOrganizacion', () => {
+    const createDto: CreateOrganizacionDto = {
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      documento: '12345678',
+      correo: 'juan@organizacion.com',
+      clave: 'Password123',
+      prefijo: '11',
+      telefono: '1123456789',
+      correo_organizacion: 'contacto@organizacion.com',
+      cuit_organizacion: '30123456789',
+      razon_social: 'Fundación Test S.A.',
+      nombre_organizacion: 'Fundación Test',
+      calle: 'Av. Siempre Viva',
+      numero: '742',
+    };
+
+    it('debe registrar una nueva organización exitosamente', async () => {
+      organizacionService.registrarOrganizacion.mockResolvedValue(
+        mockOrganizacionResponse,
+      );
+
+      const result = await controller.registrarOrganizacion(createDto);
+
+      expect(result).toEqual(mockOrganizacionResponse);
+      expect(organizacionService.registrarOrganizacion).toHaveBeenCalledWith(
+        createDto,
+      );
     });
   });
 
   describe('createMiCampaign', () => {
-    it('debe crear campaña con imágenes', async () => {
-      const req = mockRequest(7);
-      const dto = {} as CreateCampaignsDto;
+    const createDto: CreateCampaignsDto = {
+      titulo: 'Campaña Solidaria',
+      descripcion: 'Descripción de la campaña',
+      fecha_Inicio: new Date('2025-06-01'),
+      fecha_Fin: new Date('2025-08-31'),
+      objetivo: 100000,
+      puntos: 50,
+    };
 
-      const files = [
-        { filename: 'img1.jpg' },
-        { filename: 'img2.jpg' },
-      ] as Express.Multer.File[];
+    it('debe crear una campaña exitosamente sin imágenes', async () => {
+      organizacionService.getOrganizacionByUsuario.mockResolvedValue(
+        mockOrganizacionEntity,
+      );
+      organizacionService.createCampaign.mockResolvedValue(
+        mockCampaignResponse,
+      );
 
-      const urls = [
-        'http://localhost:3001/resources/campaigns/img1.jpg',
-        'http://localhost:3001/resources/campaigns/img2.jpg',
-      ];
+      const result = await controller.createMiCampaign(mockReq, createDto, []);
 
-      const response = {} as ResponseCampaignsDto;
-
-      service.createCampaign.mockResolvedValue(response);
-
-      const result = await controller.createMiCampaign(req, dto, files);
-
-      expect(service.createCampaign).toHaveBeenCalledWith(7, dto, urls);
-      expect(result).toBe(response);
+      expect(result).toEqual(mockCampaignResponse);
+      expect(organizacionService.createCampaign).toHaveBeenCalledWith(
+        1,
+        createDto,
+        [],
+        1,
+      );
     });
   });
 
   describe('updateMiCampaign', () => {
-    it('debe actualizar campaña con imágenes', async () => {
-      const req = mockRequest(8);
-      const dto = {} as UpdateCampaignsDto;
+    const campaignId = 1;
+    const updateDto: UpdateCampaignsDto = {
+      titulo: 'Nuevo título',
+    };
 
-      const files = [{ filename: 'img.jpg' }] as Express.Multer.File[];
+    it('debe actualizar una campaña exitosamente', async () => {
+      organizacionService.getOrganizacionByUsuario.mockResolvedValue(
+        mockOrganizacionEntity,
+      );
+      organizacionService.updateCampaign.mockResolvedValue(
+        mockCampaignResponse,
+      );
 
-      const urls = ['http://localhost:3001/resources/campaigns/img.jpg'];
+      const result = await controller.updateMiCampaign(
+        campaignId,
+        mockReq,
+        updateDto,
+        undefined,
+      );
 
-      const response = {} as ResponseCampaignsDto;
-
-      service.updateCampaign.mockResolvedValue(response);
-
-      const result = await controller.updateMiCampaign(req, dto, files);
-
-      expect(service.updateCampaign).toHaveBeenCalledWith(8, dto, urls);
-      expect(result).toBe(response);
-    });
-
-    it('debe actualizar campaña sin imágenes', async () => {
-      const req = mockRequest(8);
-      const dto = {} as UpdateCampaignsDto;
-
-      const response = {} as ResponseCampaignsDto;
-
-      service.updateCampaign.mockResolvedValue(response);
-
-      const result = await controller.updateMiCampaign(req, dto);
-
-      expect(service.updateCampaign).toHaveBeenCalledWith(8, dto, undefined);
-      expect(result).toBe(response);
+      expect(result).toEqual(mockCampaignResponse);
+      expect(organizacionService.updateCampaign).toHaveBeenCalledWith(
+        1,
+        campaignId,
+        updateDto,
+        1,
+        undefined,
+      );
     });
   });
 
   describe('getMisDonaciones', () => {
-    it('debe retornar donaciones paginadas', async () => {
-      const req = mockRequest(3);
-      const response = {} as PaginatedOrganizationDonationsResponseDto;
+    const mockDonacionesResponse: PaginatedOrganizationDonationsResponseDto = {
+      items: [],
+      total: 0,
+    };
 
-      service.getDonaciones.mockResolvedValue(response);
+    it('debe obtener las donaciones de la organización paginadas', async () => {
+      organizacionService.getOrganizacionByUsuario.mockResolvedValue(
+        mockOrganizacionEntity,
+      );
+      organizacionService.getDonaciones.mockResolvedValue(
+        mockDonacionesResponse,
+      );
 
-      const result = await controller.getMisDonaciones(req, 1, 10);
+      const result = await controller.getMisDonaciones(mockReq, 1, 10, '');
 
-      expect(service.getDonaciones).toHaveBeenCalledWith(3, 1, 10);
-      expect(result).toBe(response);
+      expect(result).toEqual(mockDonacionesResponse);
+      expect(organizacionService.getDonaciones).toHaveBeenCalledWith(
+        1,
+        1,
+        10,
+        '',
+      );
     });
   });
 
   describe('actualizarEstadoDonación', () => {
-    it('debe confirmar donación', async () => {
-      const dto = {} as UpdateDonacionEstadoDto;
+    const donationId = 1;
+    const dto: UpdateDonacionEstadoDto = {
+      estado: DonacionEstado.APROBADA,
+    };
 
-      service.confirmarDonacion.mockResolvedValue(mockDonationResponse);
+    it('debe actualizar el estado de una donación a APROBADA', async () => {
+      organizacionService.confirmarDonacion.mockResolvedValue(
+        mockDonacionResponse,
+      );
 
-      await controller.actualizarEstadoDonación(4, dto);
+      const result = await controller.actualizarEstadoDonación(
+        donationId,
+        dto,
+        mockReq,
+      );
 
-      expect(service.confirmarDonacion).toHaveBeenCalledWith(4, dto);
+      expect(result).toEqual(mockDonacionResponse);
+      expect(organizacionService.confirmarDonacion).toHaveBeenCalledWith(
+        1,
+        dto,
+        1,
+      );
     });
   });
 
   describe('updateMiPerfil', () => {
-    it('debe actualizar perfil', async () => {
-      const req = mockRequest(6);
-      const dto = {} as UpdateOrganizacionDto;
+    const updateDto: UpdateOrganizacionDto = {
+      descripcion: 'Nueva descripción',
+    };
 
-      const response = {} as ResponseOrganizacionDto;
+    it('debe actualizar el perfil de la organización exitosamente', async () => {
+      const expectedResponse = {
+        ...mockOrganizacionResponse,
+        descripcion: 'Nueva descripción',
+      };
 
-      service.update.mockResolvedValue(response);
+      organizacionService.update.mockResolvedValue(expectedResponse);
 
-      const result = await controller.updateMiPerfil(req, dto);
+      const result = await controller.updateMiPerfil(mockReq, updateDto);
 
-      expect(service.update).toHaveBeenCalledWith(6, dto);
-      expect(result).toBe(response);
+      expect(result).toEqual(expectedResponse);
+      expect(organizacionService.update).toHaveBeenCalledWith(updateDto, 1);
     });
   });
 
-  describe('updateMisCredenciales', () => {
-    it('debe actualizar credenciales', async () => {
-      const req = mockRequest(6, 20);
-      const dto = {} as UpdateCredencialesDto;
+  describe('findPaginated (Admin)', () => {
+    const mockPaginatedResponse = {
+      items: [mockOrganizacionResponse],
+      total: 1,
+    };
 
-      service.updateCredenciales.mockResolvedValue();
+    it('debe obtener organizaciones paginadas', async () => {
+      organizacionService.findPaginated.mockResolvedValue(
+        mockPaginatedResponse,
+      );
 
-      await controller.updateMisCredenciales(req, dto);
+      const result = await controller.findPaginated(1, 10, '');
 
-      expect(service.updateCredenciales).toHaveBeenCalledWith(20, dto);
+      expect(result).toEqual(mockPaginatedResponse);
+      expect(organizacionService.findPaginated).toHaveBeenCalledWith(1, 10, '');
     });
   });
 
-  describe('findPaginated', () => {
-    it('debe retornar listado paginado', async () => {
-      const response = {} as ResponseOrganizationPaginatedDto;
+  describe('update (Admin)', () => {
+    const updateDto: UpdateOrganizacionDto = {
+      descripcion: 'Nueva descripción admin',
+    };
 
-      service.findPaginated.mockResolvedValue(response);
+    it('debe actualizar una organización como admin', async () => {
+      const expectedResponse = {
+        ...mockOrganizacionResponse,
+        descripcion: 'Nueva descripción admin',
+      };
 
-      const result = await controller.findPaginated(2, 15, 'search');
+      organizacionService.update.mockResolvedValue(expectedResponse);
 
-      expect(service.findPaginated).toHaveBeenCalledWith(2, 15, 'search');
-      expect(result).toBe(response);
+      const result = await controller.update(1, updateDto);
+
+      expect(result).toEqual(expectedResponse);
+      expect(organizacionService.update).toHaveBeenCalledWith(updateDto, 1);
     });
   });
 
-  describe('update (admin)', () => {
-    it('debe actualizar organización', async () => {
-      const dto = {} as UpdateOrganizacionDto;
+  describe('delete (Admin)', () => {
+    it('debe deshabilitar una organización exitosamente', async () => {
+      organizacionService.delete.mockResolvedValue(undefined);
 
-      const response = {} as ResponseOrganizacionDto;
+      await controller.delete(1);
 
-      service.update.mockResolvedValue(response);
-
-      const result = await controller.update(9, dto);
-
-      expect(service.update).toHaveBeenCalledWith(9, dto);
-      expect(result).toBe(response);
+      expect(organizacionService.delete).toHaveBeenCalledWith(1);
     });
   });
 
-  describe('delete', () => {
-    it('debe eliminar organización', async () => {
-      service.delete.mockResolvedValue();
+  describe('restore (Admin)', () => {
+    it('debe restaurar una organización exitosamente', async () => {
+      organizacionService.restore.mockResolvedValue(undefined);
 
-      await controller.delete(11);
+      await controller.restore(1);
 
-      expect(service.delete).toHaveBeenCalledWith(11);
-    });
-  });
-
-  describe('restore', () => {
-    it('debe restaurar organización', async () => {
-      service.restore.mockResolvedValue();
-
-      await controller.restore(12);
-
-      expect(service.restore).toHaveBeenCalledWith(12);
+      expect(organizacionService.restore).toHaveBeenCalledWith(1);
     });
   });
 });

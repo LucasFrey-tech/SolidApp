@@ -35,9 +35,6 @@ export class Invitacion {
   @Column({ type: 'varchar', length: 255 })
   correo: string;
 
-  // ================================
-  // RELACIÓN: EMPRESA (opcional)
-  // ================================
   @ManyToOne(() => Empresa, { nullable: true })
   @JoinColumn({ name: 'empresaId' })
   empresa?: Empresa;
@@ -45,9 +42,6 @@ export class Invitacion {
   @Column({ nullable: true })
   empresaId?: number;
 
-  // ================================
-  // RELACIÓN: ORGANIZACIÓN (opcional)
-  // ================================
   @ManyToOne(() => Organizacion, { nullable: true })
   @JoinColumn({ name: 'organizacionId' })
   organizacion?: Organizacion;
@@ -55,9 +49,6 @@ export class Invitacion {
   @Column({ nullable: true })
   organizacionId?: number;
 
-  // ================================
-  // RELACIÓN: USUARIO QUE INVITA
-  // ================================
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'invitadorID' })
   invitador: Usuario;
@@ -65,9 +56,6 @@ export class Invitacion {
   @Column()
   invitadorID: number;
 
-  // ================================
-  // RELACIÓN: USUARIO QUE ACEPTA 
-  // ================================
   @ManyToOne(() => Usuario, { nullable: true })
   @JoinColumn({ name: 'usuarioId' })
   usuario?: Usuario;

@@ -15,11 +15,6 @@ import { Contacto } from './contacto.entity';
 import { Direccion } from './direccion.entity';
 import { Usuario } from './usuario.entity';
 
-/**
- * Entidad Organizacion
- * Antes: perfil_organizacion
- * Representa ONGs/Fundaciones que crean campañas de recaudación
- */
 @Entity('organizacion')
 export class Organizacion {
   @ApiProperty({

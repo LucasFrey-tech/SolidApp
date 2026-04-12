@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from '../../src/Modules/auth/auth.controller';
 import { AuthService } from '../../src/Modules/auth/auth.service';
-import { mock, DeepMockProxy } from 'jest-mock-extended';
-import { RolCuenta } from '../../src/Entities/cuenta.entity';
-import { LoginDto, RegisterDto } from '../../src/Modules/auth/dto/auth.dto';
+import { mock } from 'jest-mock-extended';
+import {
+  RegisterDto,
+  LoginDto,
+  AuthResponse,
+} from '../../src/Modules/auth/dto/auth.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
-  let mockAuthService: DeepMockProxy<AuthService>;
-  let registerDto: RegisterDto;
-  let loginDto: LoginDto;
+  let authService: jest.Mocked<AuthService>;
 
   beforeEach(async () => {
-    mockAuthService = mock<AuthService>();
+    const mockAuthService = mock<AuthService>();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
@@ -25,186 +26,334 @@ describe('AuthController', () => {
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
-
-    registerDto = {
-      correo: 'empresa@example.com',
-      clave: 'password123',
-      role: RolCuenta.EMPRESA,
-      perfilEmpresa: {
-        cuit_empresa: '20123456789',
-        razon_social: 'Mi Empresa SA',
-        nombre_empresa: 'Mi Empresa',
-        telefono: '1234567890',
-        calle: 'Avenida Siempreviva',
-        numero: '742',
-      },
-    };
-
-    loginDto = {
-      correo: 'test@example.com',
-      clave: 'password123',
-      rol: RolCuenta.USUARIO,
-    };
+    authService = module.get(AuthService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  // ========== TESTS DE REGISTER ==========
   describe('register', () => {
-    it('debe registrar una Empresa correctamente', async () => {
-      const tokenResponse = { token: 'jwt-token-123' };
+    it('debe registrar un usuario exitosamente y retornar token', async () => {
+      const registerDto: RegisterDto = {
+        correo: 'test@test.com',
+        clave: 'password123',
+        nombre: 'Lucas',
+        apellido: 'Frey',
+        documento: '11888858',
+      };
+      const expectedResponse: AuthResponse = { token: 'jwt-token-123' };
 
-      mockAuthService.register.mockResolvedValue(tokenResponse);
+      authService.register.mockResolvedValue(expectedResponse);
 
-      const resultado = await controller.register(registerDto);
+      const result = await controller.register(registerDto);
 
-      expect(resultado).toEqual(tokenResponse);
-      expect(mockAuthService.register).toHaveBeenCalledWith(registerDto);
-      expect(mockAuthService.register).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(expectedResponse);
+      expect(authService.register).toHaveBeenCalledWith(registerDto);
+      expect(authService.register).toHaveBeenCalledTimes(1);
     });
 
-    it('debe pasar los datos correctamente al servicio', async () => {
-      mockAuthService.register.mockResolvedValue({ token: 'token' });
+    it('debe registrar un usuario con token opcional', async () => {
+      const registerDto: RegisterDto = {
+        correo: 'test@test.com',
+        clave: 'password123',
+        nombre: 'Lucas',
+        apellido: 'Frey',
+        documento: '11888858',
+        token: 'a8sd7a98sd7as9d87',
+      };
+      const expectedResponse: AuthResponse = { token: 'jwt-token-123' };
 
-      await controller.register(registerDto);
+      authService.register.mockResolvedValue(expectedResponse);
 
-      expect(mockAuthService.register).toHaveBeenCalledWith(registerDto);
+      const result = await controller.register(registerDto);
+
+      expect(result).toEqual(expectedResponse);
+      expect(authService.register).toHaveBeenCalledWith(registerDto);
+    });
+
+    it('debe manejar error cuando el correo ya está registrado', async () => {
+      const registerDto: RegisterDto = {
+        correo: 'existente@test.com',
+        clave: 'password123',
+        nombre: 'Lucas',
+        apellido: 'Frey',
+        documento: '11888858',
+      };
+      const error = new Error('El correo electrónico ya está registrado');
+
+      authService.register.mockRejectedValue(error);
+
+      await expect(controller.register(registerDto)).rejects.toThrow(
+        'El correo electrónico ya está registrado',
+      );
+      expect(authService.register).toHaveBeenCalledWith(registerDto);
+    });
+
+    it('debe manejar error cuando el documento ya está registrado', async () => {
+      const registerDto: RegisterDto = {
+        correo: 'test@test.com',
+        clave: 'password123',
+        nombre: 'Lucas',
+        apellido: 'Frey',
+        documento: '11888858',
+      };
+      const error = new Error('El documento ya está registrado');
+
+      authService.register.mockRejectedValue(error);
+
+      await expect(controller.register(registerDto)).rejects.toThrow(
+        'El documento ya está registrado',
+      );
+    });
+
+    it('debe manejar error cuando la contraseña es muy débil', async () => {
+      const registerDto: RegisterDto = {
+        correo: 'test@test.com',
+        clave: '123',
+        nombre: 'Lucas',
+        apellido: 'Frey',
+        documento: '11888858',
+      };
+      const error = new Error('La contraseña debe tener al menos 6 caracteres');
+
+      authService.register.mockRejectedValue(error);
+
+      await expect(controller.register(registerDto)).rejects.toThrow(
+        'La contraseña debe tener al menos 6 caracteres',
+      );
+    });
+
+    it('debe manejar error cuando el email es inválido', async () => {
+      const registerDto: RegisterDto = {
+        correo: 'email-invalido',
+        clave: 'password123',
+        nombre: 'Lucas',
+        apellido: 'Frey',
+        documento: '11888858',
+      };
+      const error = new Error('El formato del correo electrónico es inválido');
+
+      authService.register.mockRejectedValue(error);
+
+      await expect(controller.register(registerDto)).rejects.toThrow(
+        'El formato del correo electrónico es inválido',
+      );
     });
   });
 
-  // ========== TESTS DE LOGIN ==========
   describe('login', () => {
-    it('debe retornar un token cuando las credenciales son válidas', async () => {
-      const tokenResponse = { token: 'jwt-token-valido-123' };
+    it('debe iniciar sesión exitosamente con credenciales correctas', async () => {
+      const loginDto: LoginDto = {
+        correo: 'test@test.com',
+        clave: 'password123',
+      };
+      const expectedResponse: AuthResponse = { token: 'jwt-token-456' };
 
-      mockAuthService.login.mockResolvedValue(tokenResponse);
+      authService.login.mockResolvedValue(expectedResponse);
 
-      const resultado = await controller.login(loginDto);
+      const result = await controller.login(loginDto);
 
-      expect(resultado).toEqual(tokenResponse);
-      expect(mockAuthService.login).toHaveBeenCalledWith(loginDto);
-      expect(mockAuthService.login).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(expectedResponse);
+      expect(authService.login).toHaveBeenCalledWith(loginDto);
+      expect(authService.login).toHaveBeenCalledTimes(1);
     });
 
-    it('debe delegar al servicio cuando se llama login', async () => {
-
-      mockAuthService.login.mockResolvedValue({ token: 'token' });
-
-      await controller.login(loginDto);
-
-      expect(mockAuthService.login).toHaveBeenCalledWith(loginDto);
-    });
-
-    it('debe propagar excepciones del servicio', async () => {
+    it('debe manejar error cuando el correo no existe', async () => {
+      const loginDto: LoginDto = {
+        correo: 'noexiste@test.com',
+        clave: 'password123',
+      };
       const error = new Error('Credenciales inválidas');
-      mockAuthService.login.mockRejectedValue(error);
+
+      authService.login.mockRejectedValue(error);
+
+      await expect(controller.login(loginDto)).rejects.toThrow(
+        'Credenciales inválidas',
+      );
+      expect(authService.login).toHaveBeenCalledWith(loginDto);
+    });
+
+    it('debe manejar error cuando la contraseña es incorrecta', async () => {
+      const loginDto: LoginDto = {
+        correo: 'test@test.com',
+        clave: 'wrongpassword',
+      };
+      const error = new Error('Credenciales inválidas');
+
+      authService.login.mockRejectedValue(error);
 
       await expect(controller.login(loginDto)).rejects.toThrow(
         'Credenciales inválidas',
       );
     });
-  });
 
-  // ========== TESTS DE FORGOT PASSWORD ==========
-  describe('forgotPassword', () => {
-    it('debe enviar email de reset cuando el email existe', async () => {
-      const email = 'usuario@example.com';
-      const response = { message: 'Email enviado' };
+    it('debe manejar error cuando el usuario está deshabilitado', async () => {
+      const loginDto: LoginDto = {
+        correo: 'disabled@test.com',
+        clave: 'password123',
+      };
+      const error = new Error('La cuenta está deshabilitada');
 
-      mockAuthService.forgotPassword.mockResolvedValue(response);
+      authService.login.mockRejectedValue(error);
 
-      const resultado = await controller.forgotPassword(email);
-
-      expect(resultado).toEqual(response);
-      expect(mockAuthService.forgotPassword).toHaveBeenCalledWith(email);
-      expect(mockAuthService.forgotPassword).toHaveBeenCalledTimes(1);
+      await expect(controller.login(loginDto)).rejects.toThrow(
+        'La cuenta está deshabilitada',
+      );
     });
 
-    it('debe retornar mensaje genérico por seguridad', async () => {
-      const email = 'noexiste@example.com';
-      const response = { message: 'Si el email existe, recibirás un enlace' };
+    it('debe manejar error cuando el email tiene formato inválido', async () => {
+      const loginDto: LoginDto = {
+        correo: 'email-invalido',
+        clave: 'password123',
+      };
+      const error = new Error('El formato del correo electrónico es inválido');
 
-      mockAuthService.forgotPassword.mockResolvedValue(response);
+      authService.login.mockRejectedValue(error);
 
-      const resultado = await controller.forgotPassword(email);
-
-      expect(resultado).toEqual(response);
-      expect(mockAuthService.forgotPassword).toHaveBeenCalledWith(email);
-    });
-
-    it('debe pasar el email correctamente al servicio', async () => {
-      const email = 'reset@example.com';
-      mockAuthService.forgotPassword.mockResolvedValue({
-        message: 'Email enviado',
-      });
-
-      await controller.forgotPassword(email);
-
-      expect(mockAuthService.forgotPassword).toHaveBeenCalledWith(
-        'reset@example.com',
+      await expect(controller.login(loginDto)).rejects.toThrow(
+        'El formato del correo electrónico es inválido',
       );
     });
   });
 
-  // ========== TESTS DE RESET PASSWORD ==========
+  describe('forgotPassword', () => {
+    it('debe enviar correo de recuperación exitosamente', async () => {
+      const email = 'test@test.com';
+      const expectedResponse = { message: 'Correo de recuperación enviado' };
+
+      authService.forgotPassword.mockResolvedValue(expectedResponse);
+
+      const result = await controller.forgotPassword(email);
+
+      expect(result).toEqual(expectedResponse);
+      expect(authService.forgotPassword).toHaveBeenCalledWith(email);
+      expect(authService.forgotPassword).toHaveBeenCalledTimes(1);
+    });
+
+    it('debe manejar error cuando el email no existe', async () => {
+      const email = 'noexiste@test.com';
+      const error = new Error(
+        'No existe una cuenta con ese correo electrónico',
+      );
+
+      authService.forgotPassword.mockRejectedValue(error);
+
+      await expect(controller.forgotPassword(email)).rejects.toThrow(
+        'No existe una cuenta con ese correo electrónico',
+      );
+      expect(authService.forgotPassword).toHaveBeenCalledWith(email);
+    });
+
+    it('debe manejar error cuando el email tiene formato inválido', async () => {
+      const email = 'email-invalido';
+      const error = new Error('El formato del correo electrónico es inválido');
+
+      authService.forgotPassword.mockRejectedValue(error);
+
+      await expect(controller.forgotPassword(email)).rejects.toThrow(
+        'El formato del correo electrónico es inválido',
+      );
+    });
+
+    it('debe manejar error cuando el usuario está deshabilitado', async () => {
+      const email = 'disabled@test.com';
+      const error = new Error(
+        'La cuenta está deshabilitada, contacte al administrador',
+      );
+
+      authService.forgotPassword.mockRejectedValue(error);
+
+      await expect(controller.forgotPassword(email)).rejects.toThrow(
+        'La cuenta está deshabilitada, contacte al administrador',
+      );
+    });
+  });
+
   describe('resetPassword', () => {
-    it('debe resetear la contraseña correctamente', async () => {
-      const token = 'valid-reset-token-123';
-      const newPassword = 'new-secure-password';
-      const response = { message: 'Contraseña actualizada correctamente' };
+    it('debe resetear la contraseña exitosamente', async () => {
+      const token = 'reset-token-123';
+      const newPassword = 'newPassword456';
+      const expectedResponse = {
+        message: 'Contraseña actualizada exitosamente',
+      };
 
-      mockAuthService.resetPassword.mockResolvedValue(response);
+      authService.resetPassword.mockResolvedValue(expectedResponse);
 
-      const resultado = await controller.resetPassword(token, newPassword);
+      const result = await controller.resetPassword(token, newPassword);
 
-      expect(resultado).toEqual(response);
-      expect(mockAuthService.resetPassword).toHaveBeenCalledWith(
+      expect(result).toEqual(expectedResponse);
+      expect(authService.resetPassword).toHaveBeenCalledWith(
         token,
         newPassword,
       );
-      expect(mockAuthService.resetPassword).toHaveBeenCalledTimes(1);
+      expect(authService.resetPassword).toHaveBeenCalledTimes(1);
     });
 
-    it('debe pasar token y contraseña correctamente al servicio', async () => {
-      const token = 'token-abc-123';
-      const newPassword = 'password-xyz-789';
-
-      mockAuthService.resetPassword.mockResolvedValue({
-        message: 'Contraseña actualizada correctamente',
-      });
-
-      await controller.resetPassword(token, newPassword);
-
-      expect(mockAuthService.resetPassword).toHaveBeenCalledWith(
-        'token-abc-123',
-        'password-xyz-789',
-      );
-    });
-
-    it('debe lanzar error si el token es inválido', async () => {
+    it('debe manejar error cuando el token es inválido', async () => {
       const token = 'invalid-token';
-      const newPassword = 'new-password';
-
+      const newPassword = 'newPassword456';
       const error = new Error('Token inválido o expirado');
-      mockAuthService.resetPassword.mockRejectedValue(error);
+
+      authService.resetPassword.mockRejectedValue(error);
 
       await expect(
         controller.resetPassword(token, newPassword),
       ).rejects.toThrow('Token inválido o expirado');
+      expect(authService.resetPassword).toHaveBeenCalledWith(
+        token,
+        newPassword,
+      );
     });
 
-    it('debe propagar excepciones del servicio', async () => {
-      const token = 'token';
-      const newPassword = 'password';
+    it('debe manejar error cuando el token ha expirado', async () => {
+      const token = 'expired-token';
+      const newPassword = 'newPassword456';
+      const error = new Error(
+        'El token ha expirado, solicite un nuevo restablecimiento',
+      );
 
-      const error = new Error('Error en la base de datos');
-      mockAuthService.resetPassword.mockRejectedValue(error);
+      authService.resetPassword.mockRejectedValue(error);
 
       await expect(
         controller.resetPassword(token, newPassword),
-      ).rejects.toThrow('Error en la base de datos');
+      ).rejects.toThrow(
+        'El token ha expirado, solicite un nuevo restablecimiento',
+      );
+    });
+
+    it('debe manejar error cuando la nueva contraseña es demasiado corta', async () => {
+      const token = 'reset-token-123';
+      const newPassword = '123';
+      const error = new Error('La contraseña debe tener al menos 6 caracteres');
+
+      authService.resetPassword.mockRejectedValue(error);
+
+      await expect(
+        controller.resetPassword(token, newPassword),
+      ).rejects.toThrow('La contraseña debe tener al menos 6 caracteres');
+    });
+
+    it('debe manejar error cuando la nueva contraseña es igual a la anterior', async () => {
+      const token = 'reset-token-123';
+      const newPassword = 'samePassword123';
+      const error = new Error(
+        'La nueva contraseña debe ser diferente a la anterior',
+      );
+
+      authService.resetPassword.mockRejectedValue(error);
+
+      await expect(
+        controller.resetPassword(token, newPassword),
+      ).rejects.toThrow('La nueva contraseña debe ser diferente a la anterior');
+    });
+
+    it('debe manejar error cuando no se encuentra el usuario asociado al token', async () => {
+      const token = 'orphan-token';
+      const newPassword = 'newPassword456';
+      const error = new Error('Usuario no encontrado');
+
+      authService.resetPassword.mockRejectedValue(error);
+
+      await expect(
+        controller.resetPassword(token, newPassword),
+      ).rejects.toThrow('Usuario no encontrado');
     });
   });
 });

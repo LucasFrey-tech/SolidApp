@@ -10,10 +10,6 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-/**
- * Data Transfer Object (DTO) para la creacion de Campañas.
- * Contiene validaciones para los campos del cuerpo de la petición.
- */
 export class CreateCampaignsDto {
   @ApiProperty({
     example: 'Campaña Solidaria Invierno 2025',

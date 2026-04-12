@@ -11,9 +11,6 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
-/**
- * DTO para la actualización de datos de las Campañas.
- */
 export class UpdateCampaignsDto extends PartialType(CreateCampaignsDto) {
   @ApiPropertyOptional({
     example: 'Campaña Solidaria Invierno 2025 (extendida)',

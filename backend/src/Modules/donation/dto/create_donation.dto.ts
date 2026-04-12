@@ -2,10 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsInt, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
-/**
- * DTO para la creación de Donaciones.
- * Contiene las validaciones para los campos del cuerpo de la petición.
- */
 export class CreateDonationDto {
   @ApiProperty({
     example: 'Arroz, fideos y enlatados',

@@ -1,217 +1,318 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { mock, MockProxy } from 'jest-mock-extended';
-
 import { UsuarioController } from '../../src/Modules/user/usuario.controller';
-import { PerfilUsuarioService } from '../../src/Modules/user/usuario.service';
-
-import { Cuenta, RolCuenta } from '../../src/Entities/cuenta.entity';
+import { UsuarioService } from '../../src/Modules/user/usuario.service';
+import { mock } from 'jest-mock-extended';
 import { RequestConUsuario } from '../../src/Modules/auth/interfaces/authenticated_request.interface';
-import { ResponseUsuarioDto } from '../../src/Modules/user/dto/response_usuario.dto';
-import { PaginatedUserDonationsResponseDto } from '../../src/Modules/donation/dto/response_donation_paginatedByUser.dto';
+import { Rol } from '../../src/Modules/user/enums/enums';
 import { UpdateUsuarioDto } from '../../src/Modules/user/dto/update_usuario.dto';
 import { UpdateCredencialesDto } from '../../src/Modules/user/dto/panelUsuario.dto';
-import { ResponseDonationDto } from '../../src/Modules/donation/dto/response_donation.dto';
 import { CreateDonationDto } from '../../src/Modules/donation/dto/create_donation.dto';
+import { ResponseUsuarioDto } from '../../src/Modules/user/dto/response_usuario.dto';
+import { PaginatedUserDonationsResponseDto } from '../../src/Modules/donation/dto/response_donation_paginatedByUser.dto';
+import { ResponseDonationDto } from '../../src/Modules/donation/dto/response_donation.dto';
 import { UsuarioBeneficio } from '../../src/Entities/usuario-beneficio.entity';
+import { UserDonationItemDto } from '../../src/Modules/donation/dto/usuario_donation_item.dto';
+import { DonacionEstado } from '../../src/Modules/donation/enum';
+import { BeneficiosUsuarioEstado } from '../../src/Modules/benefit/dto/enum/enum';
+import { Usuario } from '../../src/Entities/usuario.entity';
+import { Beneficios } from '../../src/Entities/beneficio.entity';
+
+const mockContactoDto = {
+  id: 1,
+  correo: 'juan@test.com',
+  prefijo: '11',
+  telefono: '12345678',
+};
+
+const mockUsuarioResponse: ResponseUsuarioDto = {
+  id: 1,
+  documento: '12345678',
+  clave: 'hashed_password',
+  nombre: 'Juan',
+  apellido: 'Pérez',
+  rol: Rol.USUARIO,
+  puntos: 1000,
+  contacto: mockContactoDto,
+  habilitado: true,
+  verificado: true,
+  fecha_registro: new Date(),
+  ultimo_cambio: new Date(),
+  ultima_conexion: new Date(),
+};
+
+const mockDonationItem: UserDonationItemDto = {
+  id: 1,
+  detalle: 'Arroz y fideos',
+  cantidad: 10,
+  puntos: 100,
+  estado: DonacionEstado.APROBADA,
+  fecha_registro: new Date(),
+  nombre_organizacion: 'Fundación Test',
+  titulo_campaña: 'Campaña Solidaria',
+  motivo_rechazo: '',
+  organizacionId: 1,
+};
+
+const mockDonacionesResponse: PaginatedUserDonationsResponseDto = {
+  items: [mockDonationItem],
+  total: 1,
+};
+
+const mockDonacionResponse: ResponseDonationDto = {
+  id: 1,
+  titulo: 'Donación de alimentos',
+  detalle: 'Arroz y fideos',
+  tipo: 'ALIMENTO',
+  cantidad: 10,
+  estado: DonacionEstado.APROBADA,
+  puntos: 100,
+  campaignId: 1,
+  userId: 1,
+  fecha_registro: new Date(),
+  imagen: 'imagen.jpg',
+};
+
+const mockUsuario: Usuario = {
+  id: 1,
+} as Usuario;
+
+const mockBeneficio: Beneficios = {
+  id: 1,
+} as Beneficios;
+
+const mockUsuarioBeneficio: UsuarioBeneficio = {
+  id: 1,
+  usuario: mockUsuario,
+  beneficio: mockBeneficio,
+  cantidad: 2,
+  usados: 0,
+  estado: BeneficiosUsuarioEstado.ACTIVO,
+  fecha_reclamo: new Date(),
+  ultimo_cambio: new Date(),
+};
 
 describe('UsuarioController', () => {
   let controller: UsuarioController;
-  let service: MockProxy<PerfilUsuarioService>;
+  let usuarioService: jest.Mocked<UsuarioService>;
 
-  const mockCuenta = {
-    id: 10,
-    correo: 'test@mail.com',
-    clave: 'hashed',
-    role: RolCuenta.USUARIO,
-    deshabilitado: false,
-    verificada: true,
-  } as Cuenta;
-
-  const mockRequest = {
-    user: {
-      cuenta: mockCuenta,
-      perfil: {
-        id: 1,
-      },
-    },
-  } as RequestConUsuario;
+  const mockReq = { user: { id: 1, rol: Rol.USUARIO } } as RequestConUsuario;
 
   beforeEach(async () => {
+    const mockUsuarioService = mock<UsuarioService>();
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsuarioController],
       providers: [
         {
-          provide: PerfilUsuarioService,
-          useValue: mock<PerfilUsuarioService>(),
+          provide: UsuarioService,
+          useValue: mockUsuarioService,
         },
       ],
     }).compile();
 
     controller = module.get<UsuarioController>(UsuarioController);
-    service = module.get(PerfilUsuarioService);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
+    usuarioService = module.get(UsuarioService);
   });
 
   describe('getMiPerfil', () => {
-    it('getMiPerfil', async () => {
-      service.findOne.mockResolvedValue({} as ResponseUsuarioDto);
+    it('debe obtener el perfil del usuario autenticado', async () => {
+      usuarioService.findOne.mockResolvedValue(mockUsuarioResponse);
 
-      await controller.getMiPerfil(mockRequest);
+      const result = await controller.getMiPerfil(mockReq);
 
-      expect(service.findOne).toHaveBeenCalledWith(1);
+      expect(result).toEqual(mockUsuarioResponse);
+      expect(usuarioService.findOne).toHaveBeenCalledWith(1);
     });
   });
 
   describe('updateMiPerfil', () => {
-    it('updateMiPerfil', async () => {
-      const dto = { nombre: 'Test' };
+    const updateDto: UpdateUsuarioDto = {
+      nombre: 'Juan Carlos',
+      apellido: 'Pérez García',
+    };
 
-      service.updateUsuario.mockResolvedValue({} as ResponseUsuarioDto);
+    it('debe actualizar los datos personales del usuario', async () => {
+      const expectedResponse = {
+        ...mockUsuarioResponse,
+        nombre: 'Juan Carlos',
+      };
 
-      await controller.updateMiPerfil(mockRequest, dto as UpdateUsuarioDto);
+      usuarioService.updateUsuario.mockResolvedValue(expectedResponse);
 
-      expect(service.updateUsuario).toHaveBeenCalledWith(1, dto);
+      const result = await controller.updateMiPerfil(mockReq, updateDto);
+
+      expect(result).toEqual(expectedResponse);
+      expect(usuarioService.updateUsuario).toHaveBeenCalledWith(1, updateDto);
     });
   });
 
   describe('updateMisCredenciales', () => {
-    it('updateMisCredenciales', async () => {
-      const dto = { correo: 'nuevo@mail.com', clave: '123456' };
+    const credencialesDto: UpdateCredencialesDto = {
+      correo: 'nuevo@test.com',
+      passwordActual: 'OldPass123',
+      passwordNueva: 'NuevaPass123',
+    };
 
-      service.updateCredenciales.mockResolvedValue();
+    it('debe actualizar email y/o contraseña del usuario', async () => {
+      const expectedResponse = { token: 'nuevo-jwt-token' };
 
-      await controller.updateMisCredenciales(
-        mockRequest,
-        dto as UpdateCredencialesDto,
+      usuarioService.updateCredenciales.mockResolvedValue(expectedResponse);
+
+      const result = await controller.updateMisCredenciales(
+        mockReq,
+        credencialesDto,
       );
 
-      expect(service.updateCredenciales).toHaveBeenCalledWith(10, dto);
+      expect(result).toEqual(expectedResponse);
+      expect(usuarioService.updateCredenciales).toHaveBeenCalledWith(
+        1,
+        credencialesDto,
+      );
     });
   });
 
   describe('getMisPuntos', () => {
-    it('getMisPuntos', async () => {
-      service.getPoints.mockResolvedValue({ id: 1, puntos: 100 });
+    it('debe obtener los puntos del usuario', async () => {
+      const expectedResponse = { id: 1, puntos: 1000 };
 
-      const result = await controller.getMisPuntos(mockRequest);
+      usuarioService.getPoints.mockResolvedValue(expectedResponse);
 
-      expect(service.getPoints).toHaveBeenCalledWith(1);
-      expect(result).toEqual({ id: 1, puntos: 100 });
+      const result = await controller.getMisPuntos(mockReq);
+
+      expect(result).toEqual(expectedResponse);
+      expect(usuarioService.getPoints).toHaveBeenCalledWith(1);
     });
   });
 
   describe('getMisDonaciones', () => {
-    it('getMisDonaciones', async () => {
-      service.getDonaciones.mockResolvedValue(
-        {} as PaginatedUserDonationsResponseDto,
-      );
+    it('debe obtener las donaciones del usuario paginadas', async () => {
+      usuarioService.getDonaciones.mockResolvedValue(mockDonacionesResponse);
 
-      await controller.getMisDonaciones(mockRequest, 2, 5);
+      const result = await controller.getMisDonaciones(mockReq, 1, 10);
 
-      expect(service.getDonaciones).toHaveBeenCalledWith(1, 2, 5);
+      expect(result).toEqual(mockDonacionesResponse);
+      expect(usuarioService.getDonaciones).toHaveBeenCalledWith(1, 1, 10);
     });
   });
 
   describe('donar', () => {
-    it('donar', async () => {
-      const dto = {
-        detalle: 'Donación test',
-        cantidad: 1,
-        campaignId: 3,
-        puntos: 5,
-      };
+    const donacionDto: CreateDonationDto = {
+      detalle: 'Arroz y fideos',
+      cantidad: 5,
+      campaignId: 1,
+      puntos: 50,
+    };
 
-      service.donar.mockResolvedValue({} as ResponseDonationDto);
+    it('debe realizar una donación exitosamente', async () => {
+      usuarioService.donar.mockResolvedValue(mockDonacionResponse);
 
-      await controller.donar(mockRequest, dto as CreateDonationDto);
+      const result = await controller.donar(mockReq, donacionDto);
 
-      expect(service.donar).toHaveBeenCalledWith(1, dto);
+      expect(result).toEqual(mockDonacionResponse);
+      expect(usuarioService.donar).toHaveBeenCalledWith(1, donacionDto);
     });
   });
 
   describe('getMisCuponesCanjeados', () => {
-    it('getMisCuponesCanjeados', async () => {
-      service.getMisCuponesCanjeados.mockResolvedValue(
-        [] as UsuarioBeneficio[],
-      );
+    it('debe obtener los cupones canjeados por el usuario', async () => {
+      usuarioService.getMisCuponesCanjeados.mockResolvedValue([
+        mockUsuarioBeneficio,
+      ]);
 
-      await controller.getMisCuponesCanjeados(mockRequest);
+      const result = await controller.getMisCuponesCanjeados(mockReq);
 
-      expect(service.getMisCuponesCanjeados).toHaveBeenCalledWith(1);
+      expect(result).toEqual([mockUsuarioBeneficio]);
+      expect(usuarioService.getMisCuponesCanjeados).toHaveBeenCalledWith(1);
     });
   });
 
   describe('usarCupon', () => {
-    it('usarCupon', async () => {
-      service.usarCupon.mockResolvedValue({} as UsuarioBeneficio);
+    const cuponId = 1;
 
-      await controller.usarCupon(5);
+    it('debe marcar un cupón como usado', async () => {
+      const expectedResponse = { ...mockUsuarioBeneficio, usados: 1 };
 
-      expect(service.usarCupon).toHaveBeenCalledWith(5);
+      usuarioService.usarCupon.mockResolvedValue(expectedResponse);
+
+      const result = await controller.usarCupon(cuponId);
+
+      expect(result).toEqual(expectedResponse);
+      expect(usuarioService.usarCupon).toHaveBeenCalledWith(1);
     });
   });
 
   describe('canjearCupon', () => {
-    it('canjearCupon', async () => {
-      service.canjearCupon.mockResolvedValue({
+    const cuponId = 1;
+    const cantidad = 2;
+
+    it('debe canjear un cupón exitosamente', async () => {
+      const expectedResponse = {
         success: true,
-        cantidadCanjeada: 1,
-        puntosGastados: 10,
-        puntosRestantes: 90,
-        stockRestante: 4,
-      });
+        cantidadCanjeada: 2,
+        puntosGastados: 100,
+        puntosRestantes: 900,
+        stockRestante: 98,
+      };
 
-      await controller.canjearCupon(mockRequest, 3, 2);
+      usuarioService.canjearCupon.mockResolvedValue(expectedResponse);
 
-      expect(service.canjearCupon).toHaveBeenCalledWith(1, 3, 2);
-    });
-  });
+      const result = await controller.canjearCupon(mockReq, cuponId, cantidad);
 
-  describe('findAll', () => {
-    it('findAll', async () => {
-      service.findPaginated.mockResolvedValue({
-        items: [] as ResponseUsuarioDto[],
-        total: 0,
-      });
-
-      await controller.findAll(1, 10, 'test');
-
-      expect(service.findPaginated).toHaveBeenCalledWith(1, 10, 'test');
-    });
-  });
-
-  describe('getDonacionesDeUsuario', () => {
-    it('getDonacionesDeUsuario', async () => {
-      service.getDonaciones.mockResolvedValue(
-        {} as PaginatedUserDonationsResponseDto,
+      expect(result).toEqual(expectedResponse);
+      expect(usuarioService.canjearCupon).toHaveBeenCalledWith(
+        1,
+        cuponId,
+        cantidad,
       );
-
-      await controller.getDonacionesDeUsuario(7, 1, 10);
-
-      expect(service.getDonaciones).toHaveBeenCalledWith(7, 1, 10);
     });
   });
 
-  describe('deleteUsuario', () => {
-    it('deleteUsuario', async () => {
-      service.delete.mockResolvedValue();
+  describe('findAll (Admin)', () => {
+    const mockPaginatedResponse = {
+      items: [mockUsuarioResponse],
+      total: 1,
+    };
 
-      await controller.deleteUsuario(4);
+    it('debe listar todos los usuarios paginados', async () => {
+      usuarioService.findPaginated.mockResolvedValue(mockPaginatedResponse);
 
-      expect(service.delete).toHaveBeenCalledWith(4);
+      const result = await controller.findAll(1, 10, '');
+
+      expect(result).toEqual(mockPaginatedResponse);
+      expect(usuarioService.findPaginated).toHaveBeenCalledWith(1, 10, '');
     });
   });
 
-  describe('restoreUsuario', () => {
-    it('restoreUsuario', async () => {
-      service.restore.mockResolvedValue();
+  describe('getDonacionesDeUsuario (Admin)', () => {
+    const userId = 2;
 
-      await controller.restoreUsuario(4);
+    it('debe obtener las donaciones de un usuario específico', async () => {
+      usuarioService.getDonaciones.mockResolvedValue(mockDonacionesResponse);
 
-      expect(service.restore).toHaveBeenCalledWith(4);
+      const result = await controller.getDonacionesDeUsuario(userId, 1, 10);
+
+      expect(result).toEqual(mockDonacionesResponse);
+      expect(usuarioService.getDonaciones).toHaveBeenCalledWith(userId, 1, 10);
+    });
+  });
+
+  describe('deleteUsuario (Admin)', () => {
+    it('debe deshabilitar un usuario exitosamente', async () => {
+      usuarioService.delete.mockResolvedValue(undefined);
+
+      await controller.deleteUsuario(1);
+
+      expect(usuarioService.delete).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('restoreUsuario (Admin)', () => {
+    it('debe restaurar un usuario deshabilitado exitosamente', async () => {
+      usuarioService.restore.mockResolvedValue(undefined);
+
+      await controller.restoreUsuario(1);
+
+      expect(usuarioService.restore).toHaveBeenCalledWith(1);
     });
   });
 });

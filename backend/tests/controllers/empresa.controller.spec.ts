@@ -1,390 +1,456 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { mock, MockProxy } from 'jest-mock-extended';
 import { EmpresaController } from '../../src/Modules/empresa/empresa.controller';
-import { PerfilEmpresaService } from '../../src/Modules/empresa/empresa.service';
+import { EmpresaService } from '../../src/Modules/empresa/empresa.service';
+import { mock } from 'jest-mock-extended';
 import { RequestConUsuario } from '../../src/Modules/auth/interfaces/authenticated_request.interface';
-import { EmpresaResponseDTO } from '../../src/Modules/empresa/dto/response_empresa.dto';
+import { Rol } from '../../src/Modules/user/enums/enums';
 import { UpdateEmpresaDTO } from '../../src/Modules/empresa/dto/update_empresa.dto';
-import { UpdateCredencialesDto } from '../../src/Modules/user/dto/panelUsuario.dto';
 import { CreateBeneficiosDTO } from '../../src/Modules/benefit/dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from '../../src/Modules/benefit/dto/update_beneficios.dto';
+import { CreateEmpresaDTO } from '../../src/Modules/empresa/dto/create_empresa.dto';
+import { EmpresaResponseDTO } from '../../src/Modules/empresa/dto/response_empresa.dto';
 import { PaginatedBeneficiosResponseDTO } from '../../src/Modules/benefit/dto/response_paginated_beneficios';
 import { BeneficiosResponseDTO } from '../../src/Modules/benefit/dto/response_beneficios.dto';
-import { RolCuenta, Cuenta } from '../../src/Entities/cuenta.entity';
-import { PerfilEmpresa } from '../../src/Entities/perfil_empresa.entity';
 
 describe('EmpresaController', () => {
   let controller: EmpresaController;
-  let empresaService: MockProxy<PerfilEmpresaService>;
+  let empresaService: jest.Mocked<EmpresaService>;
 
-  let cuenta: Cuenta;
-  let perfil: PerfilEmpresa;
-  let requestConUsuario: RequestConUsuario;
-  let empresaResponseDto: EmpresaResponseDTO;
-  let beneficio: BeneficiosResponseDTO;
-  let updateEmpresaDto: UpdateEmpresaDTO;
-  let updateCredencialesDto: UpdateCredencialesDto;
-  let createBeneficioDto: CreateBeneficiosDTO;
-  let updateBeneficioDto: UpdateBeneficiosDTO;
-  let paginatedBeneficios: PaginatedBeneficiosResponseDTO;
+  const mockReq = {
+    user: { id: 1, rol: Rol.COLABORADOR },
+  } as RequestConUsuario;
+
+  const mockEmpresaResponse: EmpresaResponseDTO = {
+    id: 1,
+    cuit: '30-12345678-9',
+    razon_social: 'Empresa Test S.A.',
+    nombre_empresa: 'Test Empresa',
+    descripcion: 'Descripción de la empresa',
+    rubro: 'Tecnología',
+    verificada: true,
+    habilitada: true,
+    fecha_registro: new Date(),
+    ultimo_cambio: new Date(),
+  };
 
   beforeEach(async () => {
-    empresaService = mock<PerfilEmpresaService>();
+    const mockEmpresaService = mock<EmpresaService>();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EmpresaController],
       providers: [
         {
-          provide: PerfilEmpresaService,
-          useValue: empresaService,
+          provide: EmpresaService,
+          useValue: mockEmpresaService,
         },
       ],
     }).compile();
 
     controller = module.get<EmpresaController>(EmpresaController);
-
-    // ========== Cuenta ==========
-    cuenta = {
-      id: 1,
-      correo: 'empresa@example.com',
-      clave: 'hashedPassword',
-      role: RolCuenta.EMPRESA,
-      deshabilitado: false,
-      fecha_registro: new Date(),
-      ultima_conexion: new Date(),
-      calle: 'Av. Test',
-      numero: '123',
-      codigo_postal: 'B1638',
-      ciudad: 'Villa Ballester',
-      provincia: 'Buenos Aires',
-      prefijo: '+54',
-      telefono: '11-4444-5555',
-      verificada: false,
-      ultimo_cambio: new Date(),
-      resetPasswordToken: null,
-      resetPasswordExpires: null,
-    } as unknown as Cuenta;
-
-    // ========== Perfil ==========
-    perfil = {
-      id: 1,
-      cuit: '30123456789',
-      razon_social: 'Mi Empresa SA',
-      nombre_empresa: 'Mi Empresa',
-      descripcion: 'Descripción',
-      rubro: 'Comercio',
-      web: 'https://miempresa.com',
-      logo: 'logo.jpg',
-      verificada: false,
-      cuenta,
-    } as unknown as PerfilEmpresa;
-
-    // ========== RequestConUsuario ==========
-    requestConUsuario = {
-      user: {
-        cuenta,
-        perfil,
-      },
-    } as unknown as RequestConUsuario;
-
-    // ========== EmpresaResponseDTO ==========
-    empresaResponseDto = {
-      id: 1,
-      cuit_empresa: '30123456789',
-      razon_social: 'Mi Empresa SA',
-      nombre_empresa: 'Mi Empresa',
-      descripcion: 'Descripción',
-      rubro: 'Comercio',
-      web: 'https://miempresa.com',
-      logo: 'logo.jpg',
-      verificada: false,
-      correo: 'empresa@example.com',
-      deshabilitado: false,
-      calle: 'Av. Test',
-      numero: '123',
-      codigo_postal: 'B1638',
-      ciudad: 'Villa Ballester',
-      provincia: 'Buenos Aires',
-      prefijo: '+54',
-      telefono: '11-4444-5555',
-      fecha_registro: new Date(),
-      ultimo_cambio: new Date(),
-      ultima_conexion: new Date(),
-    };
-
-    // ========== Beneficio ==========
-    beneficio = {
-      id: 1,
-      titulo: 'Descuento 20%',
-      tipo: 'Descuento',
-      detalle: 'Descuento en compras',
-      cantidad: 100,
-      valor: 500,
-      fecha_registro: new Date(),
-      ultimo_cambio: new Date(),
-      empresa: {
-        id: 1,
-        razon_social: 'Mi Empresa SA',
-        nombre_empresa: 'Mi Empresa',
-        rubro: 'Comercio',
-        verificada: false,
-        deshabilitado: false,
-        logo: 'logo.jpg',
-      },
-      estado: 'APROBADO',
-    };
-
-    // ========== DTOs ==========
-    updateEmpresaDto = {
-      descripcion: 'Nueva descripción',
-      rubro: 'Servicios',
-    };
-
-    updateCredencialesDto = {
-      passwordActual: 'currentPassword',
-      passwordNueva: 'newPassword',
-    };
-
-    createBeneficioDto = {
-      titulo: 'Descuento 15%',
-      tipo: 'Descuento',
-      detalle: 'Descuento en compras',
-      cantidad: 50,
-      valor: 100,
-      id_empresa: 1,
-    };
-
-    updateBeneficioDto = {
-      cantidad: 80,
-      valor: 150,
-    };
-
-    paginatedBeneficios = {
-      items: [beneficio],
-      total: 1,
-    };
+    empresaService = module.get(EmpresaService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  // ========== TESTS DE FIND PAGINATED ==========
   describe('findPaginated', () => {
-    it('debe retornar empresas paginadas', async () => {
-      const resultado = { items: [empresaResponseDto], total: 1 };
-      empresaService.findPaginated.mockResolvedValue(resultado);
+    it('debe obtener empresas paginadas con valores por defecto', async () => {
+      const expectedResponse = { items: [mockEmpresaResponse], total: 1 };
 
-      const response = await controller.findPaginated(1, 10, '', false);
+      empresaService.findPaginated.mockResolvedValue(expectedResponse);
 
-      expect(response.items).toHaveLength(1);
-      expect(response.total).toBe(1);
-      expect(empresaService.findPaginated).toHaveBeenCalledWith(
-        1,
-        10,
-        '',
-        false,
-      );
-    });
+      const result = await controller.findPaginated(1, 10, '', true);
 
-    it('debe aplicar filtro de búsqueda', async () => {
-      const resultado = { items: [empresaResponseDto], total: 1 };
-      empresaService.findPaginated.mockResolvedValue(resultado);
-
-      await controller.findPaginated(1, 10, 'Mi Empresa', false);
-
-      expect(empresaService.findPaginated).toHaveBeenCalledWith(
-        1,
-        10,
-        'Mi Empresa',
-        false,
-      );
-    });
-
-    it('debe filtrar solo empresas habilitadas', async () => {
-      const resultado = { items: [empresaResponseDto], total: 1 };
-      empresaService.findPaginated.mockResolvedValue(resultado);
-
-      await controller.findPaginated(1, 10, '', true);
-
+      expect(result).toEqual(expectedResponse);
       expect(empresaService.findPaginated).toHaveBeenCalledWith(
         1,
         10,
         '',
         true,
       );
+      expect(empresaService.findPaginated).toHaveBeenCalledTimes(1);
+    });
+
+    it('debe obtener empresas paginadas con parámetros personalizados', async () => {
+      const expectedResponse = { items: [], total: 0 };
+
+      empresaService.findPaginated.mockResolvedValue(expectedResponse);
+
+      const result = await controller.findPaginated(2, 20, 'test', false);
+
+      expect(result).toEqual(expectedResponse);
+      expect(empresaService.findPaginated).toHaveBeenCalledWith(
+        2,
+        20,
+        'test',
+        false,
+      );
+    });
+
+    it('debe manejar error del servicio', async () => {
+      const error = new Error('Error al obtener empresas');
+
+      empresaService.findPaginated.mockRejectedValue(error);
+
+      await expect(controller.findPaginated(1, 10, '', true)).rejects.toThrow(
+        'Error al obtener empresas',
+      );
     });
   });
 
-  // ========== TESTS DE GET MI PERFIL ==========
-  describe('getMiPerfil', () => {
-    it('debe retornar el perfil de la empresa autenticada', async () => {
-      empresaService.findOne.mockResolvedValue(empresaResponseDto);
+  describe('getDatosEmpresa', () => {
+    it('debe obtener los datos de la empresa del usuario autenticado', async () => {
+      empresaService.getEmpresaByUsuario.mockResolvedValue(mockEmpresaResponse);
 
-      const resultado = await controller.getMiPerfil(requestConUsuario);
+      const result = await controller.getDatosEmpresa(mockReq);
 
-      expect(resultado).toEqual(empresaResponseDto);
-      expect(empresaService.findOne).toHaveBeenCalledWith(perfil.id);
+      expect(result).toEqual(mockEmpresaResponse);
+      expect(empresaService.getEmpresaByUsuario).toHaveBeenCalledWith(1);
+      expect(empresaService.getEmpresaByUsuario).toHaveBeenCalledTimes(1);
+    });
+
+    it('debe manejar error cuando el usuario no tiene empresa asociada', async () => {
+      const error = new Error('Usuario no asociado a ninguna empresa');
+
+      empresaService.getEmpresaByUsuario.mockRejectedValue(error);
+
+      await expect(controller.getDatosEmpresa(mockReq)).rejects.toThrow(
+        'Usuario no asociado a ninguna empresa',
+      );
     });
   });
 
-  // ========== TESTS DE UPDATE MI PERFIL ==========
+  describe('registrarEmpresa', () => {
+    const createDto: CreateEmpresaDTO = {
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      documento: '12345678',
+      correo: 'juan@empresa.com',
+      clave: 'Password123',
+      prefijo: '11',
+      telefono: '1123456789',
+      correo_empresa: 'contacto@empresa.com',
+      cuit_empresa: '30123456789',
+      razon_social: 'Empresa Test S.A.',
+      nombre_empresa: 'Test Empresa',
+      calle: 'Av. Siempre Viva',
+      numero: '742',
+    };
+
+    it('debe registrar una nueva empresa exitosamente', async () => {
+      empresaService.registrarEmpresa.mockResolvedValue(mockEmpresaResponse);
+
+      const result = await controller.registrarEmpresa(createDto);
+
+      expect(result).toEqual(mockEmpresaResponse);
+      expect(empresaService.registrarEmpresa).toHaveBeenCalledWith(createDto);
+      expect(empresaService.registrarEmpresa).toHaveBeenCalledTimes(1);
+    });
+
+    it('debe registrar una empresa con token opcional', async () => {
+      const createDtoWithToken = { ...createDto, token: 'a8sd7a98sd7as9d87' };
+
+      empresaService.registrarEmpresa.mockResolvedValue(mockEmpresaResponse);
+
+      const result = await controller.registrarEmpresa(createDtoWithToken);
+
+      expect(result).toEqual(mockEmpresaResponse);
+      expect(empresaService.registrarEmpresa).toHaveBeenCalledWith(
+        createDtoWithToken,
+      );
+    });
+
+    it('debe manejar error cuando el CUIT ya está registrado', async () => {
+      const error = new Error('CUIT ya registrado');
+
+      empresaService.registrarEmpresa.mockRejectedValue(error);
+
+      await expect(controller.registrarEmpresa(createDto)).rejects.toThrow(
+        'CUIT ya registrado',
+      );
+    });
+
+    it('debe manejar error cuando el correo ya está registrado', async () => {
+      const error = new Error('El correo electrónico ya está registrado');
+
+      empresaService.registrarEmpresa.mockRejectedValue(error);
+
+      await expect(controller.registrarEmpresa(createDto)).rejects.toThrow(
+        'El correo electrónico ya está registrado',
+      );
+    });
+  });
+
   describe('updateMiPerfil', () => {
-    it('debe actualizar perfil sin archivo', async () => {
-      empresaService.update.mockResolvedValue(empresaResponseDto);
+    const updateDto: UpdateEmpresaDTO = {
+      descripcion: 'Nueva descripción',
+      rubro: 'Nuevo rubro',
+      web: 'https://nueva-web.com',
+    };
 
-      const resultado = await controller.updateMiPerfil(
-        requestConUsuario,
+    it('debe actualizar el perfil de la empresa exitosamente', async () => {
+      const expectedResponse = {
+        ...mockEmpresaResponse,
+        descripcion: 'Nueva descripción',
+      };
+      const dataString = JSON.stringify(updateDto);
+
+      empresaService.update.mockResolvedValue(expectedResponse);
+
+      const result = await controller.updateMiPerfil(
+        mockReq,
         undefined,
-        JSON.stringify(updateEmpresaDto),
+        dataString,
       );
 
-      expect(resultado).toEqual(empresaResponseDto);
-      expect(empresaService.update).toHaveBeenCalledWith(
-        perfil.id,
-        updateEmpresaDto,
-      );
+      expect(result).toEqual(expectedResponse);
+      expect(empresaService.update).toHaveBeenCalledWith(1, updateDto);
+      expect(empresaService.update).toHaveBeenCalledTimes(1);
     });
 
-    it('debe actualizar perfil con archivo logo', async () => {
-      const mockFile = {
-        fieldname: 'logo',
-        originalname: 'logo.jpg',
-        encoding: '7bit',
-        mimetype: 'image/jpeg',
-        size: 1024,
-        destination: 'C:/StaticResources/Solid/empresas/',
-        filename: 'logo.jpg',
-        path: 'C:/StaticResources/Solid/empresas/logo.jpg',
-        buffer: Buffer.from(''),
-      } as Express.Multer.File;
-
-      const dtoConLogo = {
-        ...updateEmpresaDto,
-        logo: 'logo.jpg',
+    it('debe actualizar con archivo de logo', async () => {
+      const mockFile = { filename: 'nuevo-logo.png' } as Express.Multer.File;
+      const expectedResponse = {
+        ...mockEmpresaResponse,
+        logo: 'nuevo-logo.png',
       };
 
-      empresaService.update.mockResolvedValue(empresaResponseDto);
+      empresaService.update.mockResolvedValue(expectedResponse);
 
-      const resultado = await controller.updateMiPerfil(
-        requestConUsuario,
+      const result = await controller.updateMiPerfil(
+        mockReq,
         mockFile,
-        JSON.stringify(updateEmpresaDto),
+        undefined,
       );
 
-      expect(resultado).toEqual(empresaResponseDto);
-      expect(empresaService.update).toHaveBeenCalledWith(perfil.id, dtoConLogo);
-    });
-
-    it('debe actualizar perfil solo con archivo sin datos', async () => {
-      const mockFile = {
-        fieldname: 'logo',
-        originalname: 'logo.jpg',
-        encoding: '7bit',
-        mimetype: 'image/jpeg',
-        size: 1024,
-        destination: 'C:/StaticResources/Solid/empresas/',
-        filename: 'logo.jpg',
-        path: 'C:/StaticResources/Solid/empresas/logo.jpg',
-        buffer: Buffer.from(''),
-      } as Express.Multer.File;
-
-      empresaService.update.mockResolvedValue(empresaResponseDto);
-
-      await controller.updateMiPerfil(requestConUsuario, mockFile);
-
-      expect(empresaService.update).toHaveBeenCalledWith(perfil.id, {
-        logo: 'logo.jpg',
+      expect(result).toEqual(expectedResponse);
+      expect(empresaService.update).toHaveBeenCalledWith(1, {
+        logo: 'nuevo-logo.png',
       });
     });
+
+    it('debe actualizar con logo y datos simultáneamente', async () => {
+      const mockFile = { filename: 'nuevo-logo.png' } as Express.Multer.File;
+      const dataString = JSON.stringify(updateDto);
+      const expectedResponse = {
+        ...mockEmpresaResponse,
+        logo: 'nuevo-logo.png',
+        descripcion: 'Nueva descripción',
+      };
+
+      empresaService.update.mockResolvedValue(expectedResponse);
+
+      const result = await controller.updateMiPerfil(
+        mockReq,
+        mockFile,
+        dataString,
+      );
+
+      expect(result).toEqual(expectedResponse);
+      expect(empresaService.update).toHaveBeenCalledWith(1, {
+        ...updateDto,
+        logo: 'nuevo-logo.png',
+      });
+    });
+
+    it('debe manejar error cuando la empresa no existe', async () => {
+      const error = new Error('Empresa no encontrada');
+
+      empresaService.update.mockRejectedValue(error);
+
+      await expect(
+        controller.updateMiPerfil(
+          mockReq,
+          undefined,
+          JSON.stringify(updateDto),
+        ),
+      ).rejects.toThrow('Empresa no encontrada');
+    });
   });
 
-  // ========== TESTS DE GET MIS CUPONES ==========
   describe('getMisCupones', () => {
-    it('debe retornar cupones paginados de la empresa', async () => {
-      empresaService.getCupones.mockResolvedValue(paginatedBeneficios);
+    const mockCuponesResponse: PaginatedBeneficiosResponseDTO = {
+      items: [],
+      total: 0,
+    };
 
-      const resultado = await controller.getMisCupones(
-        requestConUsuario,
-        1,
-        10,
+    it('debe obtener los cupones de la empresa paginados', async () => {
+      empresaService.getCupones.mockResolvedValue(mockCuponesResponse);
+
+      const result = await controller.getMisCupones(mockReq, 1, 10);
+
+      expect(result).toEqual(mockCuponesResponse);
+      expect(empresaService.getCupones).toHaveBeenCalledWith(1, 1, 10);
+    });
+
+    it('debe usar valores por defecto para page y limit', async () => {
+      empresaService.getCupones.mockResolvedValue(mockCuponesResponse);
+
+      await controller.getMisCupones(mockReq, 1, 10);
+
+      expect(empresaService.getCupones).toHaveBeenCalledWith(1, 1, 10);
+    });
+
+    it('debe manejar error cuando la empresa no tiene cupones', async () => {
+      const error = new Error('Cupones no encontrados');
+
+      empresaService.getCupones.mockRejectedValue(error);
+
+      await expect(controller.getMisCupones(mockReq, 1, 10)).rejects.toThrow(
+        'Cupones no encontrados',
       );
-
-      expect(resultado.items).toHaveLength(1);
-      expect(resultado.total).toBe(1);
-      expect(empresaService.getCupones).toHaveBeenCalledWith(perfil.id, 1, 10);
     });
   });
 
-  // ========== TESTS DE CREATE CUPON ==========
   describe('createCupon', () => {
-    it('debe crear un cupón para la empresa', async () => {
-      empresaService.createCupon.mockResolvedValue(beneficio);
+    const createDto: CreateBeneficiosDTO = {
+      titulo: 'Descuento 20%',
+      cantidad: 100,
+      valor: 50,
+    } as CreateBeneficiosDTO;
 
-      const resultado = await controller.createCupon(
-        requestConUsuario,
-        createBeneficioDto,
-      );
+    const mockBeneficioResponse: BeneficiosResponseDTO = {
+      id: 1,
+      titulo: 'Descuento 20%',
+      tipo: 'Descuento',
+      detalle: '20% de descuento',
+      cantidad: 100,
+      valor: 50,
+      fecha_registro: new Date(),
+      ultimo_cambio: new Date(),
+      empresa: {
+        id: 1,
+        razon_social: 'Empresa Test S.A.',
+        nombre_empresa: 'Test Empresa',
+        rubro: 'Tecnología',
+        verificada: true,
+        habilitada: true,
+        logo: null,
+      },
+      estado: 'APROBADO',
+    };
 
-      expect(resultado).toEqual(beneficio);
-      expect(empresaService.createCupon).toHaveBeenCalledWith(
-        perfil.id,
-        createBeneficioDto,
+    it('debe crear un cupón exitosamente', async () => {
+      empresaService.createCupon.mockResolvedValue(mockBeneficioResponse);
+
+      const result = await controller.createCupon(mockReq, createDto);
+
+      expect(result).toEqual(mockBeneficioResponse);
+      expect(empresaService.createCupon).toHaveBeenCalledWith(1, createDto);
+    });
+
+    it('debe manejar error cuando la empresa no existe', async () => {
+      const error = new Error('Empresa no encontrada');
+
+      empresaService.createCupon.mockRejectedValue(error);
+
+      await expect(controller.createCupon(mockReq, createDto)).rejects.toThrow(
+        'Empresa no encontrada',
       );
     });
   });
 
-  // ========== TESTS DE UPDATE CUPON ==========
   describe('updateCupon', () => {
-    it('debe actualizar un cupón', async () => {
-      empresaService.updateCupon.mockResolvedValue(beneficio);
+    const cuponId = 1;
+    const updateDto: UpdateBeneficiosDTO = {
+      titulo: 'Nuevo título',
+    } as UpdateBeneficiosDTO;
 
-      const resultado = await controller.updateCupon(1, updateBeneficioDto);
+    const mockBeneficioResponse: BeneficiosResponseDTO = {
+      id: 1,
+      titulo: 'Nuevo título',
+      tipo: 'Descuento',
+      detalle: '20% de descuento',
+      cantidad: 100,
+      valor: 50,
+      fecha_registro: new Date(),
+      ultimo_cambio: new Date(),
+      empresa: {
+        id: 1,
+        razon_social: 'Empresa Test S.A.',
+        nombre_empresa: 'Test Empresa',
+        rubro: 'Tecnología',
+        verificada: true,
+        habilitada: true,
+        logo: null,
+      },
+      estado: 'APROBADO',
+    };
 
-      expect(resultado).toEqual(beneficio);
-      expect(empresaService.updateCupon).toHaveBeenCalledWith(
-        1,
-        updateBeneficioDto,
-      );
+    it('debe actualizar un cupón exitosamente', async () => {
+      empresaService.updateCupon.mockResolvedValue(mockBeneficioResponse);
+
+      const result = await controller.updateCupon(cuponId, updateDto, mockReq);
+
+      expect(result).toEqual(mockBeneficioResponse);
+      expect(empresaService.updateCupon).toHaveBeenCalledWith(1, updateDto, 1);
+    });
+
+    it('debe manejar error cuando el cupón no existe', async () => {
+      const error = new Error('Cupón no encontrado');
+
+      empresaService.updateCupon.mockRejectedValue(error);
+
+      await expect(
+        controller.updateCupon(999, updateDto, mockReq),
+      ).rejects.toThrow('Cupón no encontrado');
+    });
+
+    it('debe manejar error cuando el usuario no tiene permisos', async () => {
+      const error = new Error('No tiene permisos para modificar este cupón');
+
+      empresaService.updateCupon.mockRejectedValue(error);
+
+      await expect(
+        controller.updateCupon(cuponId, updateDto, mockReq),
+      ).rejects.toThrow('No tiene permisos para modificar este cupón');
     });
   });
 
-  // ========== TESTS DE UPDATE CREDENCIALES ==========
-  describe('updateCredentials', () => {
-    it('debe actualizar credenciales de la empresa', async () => {
-      empresaService.updateCredenciales.mockResolvedValue(undefined);
-
-      await controller.updateCredentials(
-        requestConUsuario,
-        updateCredencialesDto,
-      );
-
-      expect(empresaService.updateCredenciales).toHaveBeenCalledWith(
-        cuenta.id,
-        updateCredencialesDto,
-      );
-    });
-  });
-
-  // ========== TESTS DE DELETE ==========
   describe('delete', () => {
-    it('debe deshabilitar una empresa', async () => {
+    it('debe deshabilitar una empresa exitosamente', async () => {
       empresaService.delete.mockResolvedValue(undefined);
 
       await controller.delete(1);
 
       expect(empresaService.delete).toHaveBeenCalledWith(1);
     });
+
+    it('debe manejar error cuando la empresa no existe', async () => {
+      const error = new Error('Empresa no encontrada');
+
+      empresaService.delete.mockRejectedValue(error);
+
+      await expect(controller.delete(999)).rejects.toThrow(
+        'Empresa no encontrada',
+      );
+    });
   });
 
-  // ========== TESTS DE RESTORE ==========
   describe('restore', () => {
-    it('debe restaurar una empresa', async () => {
+    it('debe restaurar una empresa exitosamente', async () => {
       empresaService.restore.mockResolvedValue(undefined);
 
       await controller.restore(1);
 
       expect(empresaService.restore).toHaveBeenCalledWith(1);
+    });
+
+    it('debe manejar error cuando la empresa no existe', async () => {
+      const error = new Error('Empresa no encontrada');
+
+      empresaService.restore.mockRejectedValue(error);
+
+      await expect(controller.restore(999)).rejects.toThrow(
+        'Empresa no encontrada',
+      );
+    });
+
+    it('debe manejar error cuando la empresa ya está activa', async () => {
+      const error = new Error('La empresa ya está activa');
+
+      empresaService.restore.mockRejectedValue(error);
+
+      await expect(controller.restore(1)).rejects.toThrow(
+        'La empresa ya está activa',
+      );
     });
   });
 });

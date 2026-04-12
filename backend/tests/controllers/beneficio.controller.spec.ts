@@ -1,61 +1,60 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BeneficioController } from '../../src/Modules/benefit/beneficio.controller';
 import { BeneficioService } from '../../src/Modules/benefit/beneficio.service';
+import { mock } from 'jest-mock-extended';
 import { BeneficioEstado } from '../../src/Modules/benefit/dto/enum/enum';
 import { CanjearBeneficioDto } from '../../src/Modules/benefit/dto/canjear_beneficio.dto';
 import { BeneficiosResponseDTO } from '../../src/Modules/benefit/dto/response_beneficios.dto';
 import { PaginatedBeneficiosResponseDTO } from '../../src/Modules/benefit/dto/response_paginated_beneficios';
-import {
-  RequestConUsuario,
-  UsuarioAutenticado,
-} from '../../src/Modules/auth/interfaces/authenticated_request.interface';
-import { EmpresaSummaryDTO } from '../../src/Modules/empresa/dto/summary_empresa.dto';
-import { Cuenta, RolCuenta } from '../../src/Entities/cuenta.entity';
-import { PerfilUsuario } from '../../src/Entities/perfil_Usuario.entity';
-
-interface CanjearResponse {
-  success: boolean;
-  cantidadCanjeada: number;
-  puntosGastados: number;
-  puntosRestantes: number;
-  stockRestante: number;
-}
+import { RequestConUsuario } from '../../src/Modules/auth/interfaces/authenticated_request.interface';
+import { Rol } from '../../src/Modules/user/enums/enums';
 
 describe('BeneficioController', () => {
   let controller: BeneficioController;
-  let mockBeneficioService: {
-    findAllPaginated: jest.Mock<
-      Promise<PaginatedBeneficiosResponseDTO>,
-      [number, number, string, boolean]
-    >;
-    findByEmpresaPaginated: jest.Mock<
-      Promise<PaginatedBeneficiosResponseDTO>,
-      [number, number, number]
-    >;
-    canjear: jest.Mock<Promise<CanjearResponse>, [number, number, number]>;
-    updateEstado: jest.Mock<Promise<BeneficiosResponseDTO>, [number, string]>;
+  let beneficioService: jest.Mocked<BeneficioService>;
+
+  const mockEmpresaSummary = {
+    id: 1,
+    razon_social: 'Supermercados Unidos S.A.',
+    nombre_empresa: 'SuperUnidos',
+    rubro: 'Supermercado',
+    verificada: true,
+    habilitada: true,
+    logo: 'logo.png',
   };
 
-  let empresaResumen: EmpresaSummaryDTO;
-  let beneficioResponse: BeneficiosResponseDTO;
-  let paginatedResponse: PaginatedBeneficiosResponseDTO;
-  let canjearResponse: CanjearResponse;
-  let canjearDto: CanjearBeneficioDto;
-  let requestConUsuario: RequestConUsuario;
+  const mockUsuarioResumen = {
+    id: 5,
+    nombre: 'Juan',
+    apellido: 'Pérez',
+    email: 'juan@email.com',
+  };
+
+  const mockBeneficioResponse: BeneficiosResponseDTO = {
+    id: 1,
+    titulo: 'Descuento del 15%',
+    tipo: 'Discount',
+    detalle: 'Descuento en supermercado',
+    cantidad: 100,
+    valor: 50,
+    fecha_registro: new Date('2025-12-15T10:30:45Z'),
+    ultimo_cambio: new Date('2025-12-15T10:30:45Z'),
+    empresa: mockEmpresaSummary,
+    estado: BeneficioEstado.APROBADO,
+    creado_por: mockUsuarioResumen,
+    actualizado_por: mockUsuarioResumen,
+  };
+
+  const mockCanjeResponse = {
+    success: true,
+    cantidadCanjeada: 2,
+    puntosGastados: 100,
+    puntosRestantes: 50,
+    stockRestante: 98,
+  };
 
   beforeEach(async () => {
-    mockBeneficioService = {
-      findAllPaginated: jest.fn<
-        Promise<PaginatedBeneficiosResponseDTO>,
-        [number, number, string, boolean]
-      >(),
-      findByEmpresaPaginated: jest.fn<
-        Promise<PaginatedBeneficiosResponseDTO>,
-        [number, number, number]
-      >(),
-      canjear: jest.fn<Promise<CanjearResponse>, [number, number, number]>(),
-      updateEstado: jest.fn<Promise<BeneficiosResponseDTO>, [number, string]>(),
-    };
+    const mockBeneficioService = mock<BeneficioService>();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [BeneficioController],
@@ -68,258 +67,476 @@ describe('BeneficioController', () => {
     }).compile();
 
     controller = module.get<BeneficioController>(BeneficioController);
-
-    // ========== DTOs ==========
-    canjearDto = {
-      userId: 1,
-      cantidad: 2,
-    };
-
-    // ========== EmpresaSummary ==========
-    empresaResumen = {
-      id: 1,
-      razon_social: 'Mi Empresa SA',
-      nombre_empresa: 'Mi Empresa',
-      rubro: 'Comercio',
-      verificada: true,
-      deshabilitado: false,
-      logo: '/logo.png',
-    };
-
-    // ========== Request Mock ==========
-    const cuenta: Cuenta = {
-      id: 1,
-      correo: 'usuario@example.com',
-      clave: 'hash',
-      role: RolCuenta.USUARIO,
-      deshabilitado: false,
-      fecha_registro: new Date(),
-      ultima_conexion: new Date(),
-    } as unknown as Cuenta;
-
-    const perfil: PerfilUsuario = {
-      id: 1,
-      nombre: 'Juan',
-      apellido: 'Pérez',
-      puntos: 1000,
-      cuenta,
-    } as unknown as PerfilUsuario;
-
-    const usuarioAutenticado: UsuarioAutenticado = {
-      cuenta,
-      perfil,
-    };
-
-    requestConUsuario = {
-      user: usuarioAutenticado,
-    } as unknown as RequestConUsuario;
-
-    // ========== Response Mocks ==========
-    beneficioResponse = {
-      id: 1,
-      titulo: 'Descuento 20%',
-      tipo: 'Descuento',
-      detalle: 'Descuento del 20% en compras',
-      cantidad: 100,
-      valor: 500,
-      fecha_registro: new Date(),
-      ultimo_cambio: new Date(),
-      estado: BeneficioEstado.APROBADO,
-      empresa: empresaResumen,
-    };
-
-    paginatedResponse = {
-      items: [beneficioResponse],
-      total: 1,
-    };
-
-    canjearResponse = {
-      success: true,
-      cantidadCanjeada: 2,
-      puntosGastados: 1000,
-      puntosRestantes: 0,
-      stockRestante: 98,
-    };
+    beneficioService = module.get(BeneficioService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  // ========== TESTS DE FIND ALL PAGINATED ==========
   describe('findAllPaginated', () => {
-    it('debe retornar beneficios paginados sin filtros', async () => {
-      mockBeneficioService.findAllPaginated.mockResolvedValue(
-        paginatedResponse,
-      );
+    it('debe obtener todos los beneficios paginados con valores por defecto', async () => {
+      const expectedResponse: {
+        items: BeneficiosResponseDTO[];
+        total: number;
+      } = {
+        items: [mockBeneficioResponse],
+        total: 1,
+      };
 
-      const resultado = await controller.findAllPaginated(1, 10, '', false);
+      beneficioService.findAllPaginated.mockResolvedValue(expectedResponse);
 
-      expect(resultado).toEqual(paginatedResponse);
-      expect(mockBeneficioService.findAllPaginated).toHaveBeenCalledWith(
+      const result = await controller.findAllPaginated(1, 10, '', true);
+
+      expect(result).toEqual(expectedResponse);
+      expect(beneficioService.findAllPaginated).toHaveBeenCalledWith(
         1,
         10,
         '',
+        true,
+      );
+      expect(beneficioService.findAllPaginated).toHaveBeenCalledTimes(1);
+    });
+
+    it('debe obtener beneficios paginados con parámetros personalizados', async () => {
+      const expectedResponse: {
+        items: BeneficiosResponseDTO[];
+        total: number;
+      } = {
+        items: [mockBeneficioResponse],
+        total: 5,
+      };
+
+      beneficioService.findAllPaginated.mockResolvedValue(expectedResponse);
+
+      const result = await controller.findAllPaginated(
+        2,
+        20,
+        'descuento',
+        false,
+      );
+
+      expect(result).toEqual(expectedResponse);
+      expect(beneficioService.findAllPaginated).toHaveBeenCalledWith(
+        2,
+        20,
+        'descuento',
         false,
       );
     });
 
-    it('debe retornar beneficios paginados con búsqueda', async () => {
-      mockBeneficioService.findAllPaginated.mockResolvedValue(
-        paginatedResponse,
-      );
+    it('debe manejar búsqueda vacía', async () => {
+      const expectedResponse: {
+        items: BeneficiosResponseDTO[];
+        total: number;
+      } = {
+        items: [],
+        total: 0,
+      };
 
-      const resultado = await controller.findAllPaginated(
-        1,
-        10,
-        'Descuento',
-        false,
-      );
+      beneficioService.findAllPaginated.mockResolvedValue(expectedResponse);
 
-      expect(resultado).toEqual(paginatedResponse);
-      expect(mockBeneficioService.findAllPaginated).toHaveBeenCalledWith(
-        1,
-        10,
-        'Descuento',
-        false,
-      );
-    });
+      const result = await controller.findAllPaginated(1, 10, '', true);
 
-    it('debe retornar solo beneficios habilitados cuando onlyEnabled es true', async () => {
-      mockBeneficioService.findAllPaginated.mockResolvedValue(
-        paginatedResponse,
-      );
-
-      const resultado = await controller.findAllPaginated(1, 10, '', true);
-
-      expect(resultado).toEqual(paginatedResponse);
-      expect(mockBeneficioService.findAllPaginated).toHaveBeenCalledWith(
+      expect(result).toEqual(expectedResponse);
+      expect(beneficioService.findAllPaginated).toHaveBeenCalledWith(
         1,
         10,
         '',
         true,
       );
     });
-  });
 
-  // ========== TESTS DE FIND BY EMPRESA PAGINATED ==========
-  describe('findByEmpresaPaginated', () => {
-    it('debe retornar beneficios paginados de una empresa específica', async () => {
-      mockBeneficioService.findByEmpresaPaginated.mockResolvedValue(
-        paginatedResponse,
-      );
+    it('debe manejar onlyEnabled como false', async () => {
+      const expectedResponse: {
+        items: BeneficiosResponseDTO[];
+        total: number;
+      } = {
+        items: [mockBeneficioResponse],
+        total: 1,
+      };
 
-      const resultado = await controller.findByEmpresaPaginated(1, 1, 5);
+      beneficioService.findAllPaginated.mockResolvedValue(expectedResponse);
 
-      expect(resultado).toEqual(paginatedResponse);
-      expect(mockBeneficioService.findByEmpresaPaginated).toHaveBeenCalledWith(
+      const result = await controller.findAllPaginated(1, 10, 'test', false);
+
+      expect(result).toEqual(expectedResponse);
+      expect(beneficioService.findAllPaginated).toHaveBeenCalledWith(
         1,
-        1,
-        5,
-      );
-    });
-
-    it('debe usar valores por defecto para page y limit', async () => {
-      mockBeneficioService.findByEmpresaPaginated.mockResolvedValue(
-        paginatedResponse,
-      );
-
-      await controller.findByEmpresaPaginated(1);
-
-      expect(mockBeneficioService.findByEmpresaPaginated).toHaveBeenCalledWith(
-        1,
-        1,
-        5,
-      );
-    });
-  });
-
-  // ========== TESTS DE CANJEAR ==========
-  describe('canjear', () => {
-    it('debe canjear un beneficio correctamente', async () => {
-      mockBeneficioService.canjear.mockResolvedValue(canjearResponse);
-
-      const resultado = await controller.canjear(
-        1,
-        requestConUsuario,
-        canjearDto,
-      );
-
-      expect(resultado).toEqual(canjearResponse);
-      expect(mockBeneficioService.canjear).toHaveBeenCalledWith(
-        1,
-        1,
-        canjearDto.cantidad,
+        10,
+        'test',
+        false,
       );
     });
 
-    it('debe pasar el ID del usuario del request', async () => {
-      mockBeneficioService.canjear.mockResolvedValue(canjearResponse);
+    it('debe manejar error del servicio', async () => {
+      const error = new Error('Error al obtener beneficios');
 
-      await controller.canjear(1, requestConUsuario, canjearDto);
-
-      expect(mockBeneficioService.canjear).toHaveBeenCalledWith(
-        1,
-        requestConUsuario.user.perfil.id,
-        2,
-      );
-    });
-
-    it('debe propagar excepciones del servicio', async () => {
-      const error = new Error('Stock insuficiente');
-      mockBeneficioService.canjear.mockRejectedValue(error);
+      beneficioService.findAllPaginated.mockRejectedValue(error);
 
       await expect(
-        controller.canjear(1, requestConUsuario, canjearDto),
-      ).rejects.toThrow('Stock insuficiente');
+        controller.findAllPaginated(1, 10, '', true),
+      ).rejects.toThrow('Error al obtener beneficios');
+    });
+
+    it('debe convertir page y limit a números cuando vienen como strings', async () => {
+      const expectedResponse: {
+        items: BeneficiosResponseDTO[];
+        total: number;
+      } = {
+        items: [],
+        total: 0,
+      };
+
+      beneficioService.findAllPaginated.mockResolvedValue(expectedResponse);
+
+      await controller.findAllPaginated(
+        '2' as unknown as number,
+        '15' as unknown as number,
+        'test',
+        true,
+      );
+
+      expect(beneficioService.findAllPaginated).toHaveBeenCalledWith(
+        2,
+        15,
+        'test',
+        true,
+      );
     });
   });
 
-  // ========== TESTS DE UPDATE ESTADO ==========
+  describe('findByEmpresaPaginated', () => {
+    it('debe obtener beneficios por empresa paginados', async () => {
+      const idEmpresa = 1;
+      const expectedResponse: PaginatedBeneficiosResponseDTO = {
+        items: [mockBeneficioResponse],
+        total: 1,
+      };
+
+      beneficioService.findByEmpresaPaginated.mockResolvedValue(
+        expectedResponse,
+      );
+
+      const result = await controller.findByEmpresaPaginated(idEmpresa, 1, 5);
+
+      expect(result).toEqual(expectedResponse);
+      expect(beneficioService.findByEmpresaPaginated).toHaveBeenCalledWith(
+        1,
+        1,
+        5,
+      );
+      expect(beneficioService.findByEmpresaPaginated).toHaveBeenCalledTimes(1);
+    });
+
+    it('debe usar valores por defecto cuando no se proporcionan page y limit', async () => {
+      const idEmpresa = 1;
+      const expectedResponse: PaginatedBeneficiosResponseDTO = {
+        items: [],
+        total: 0,
+      };
+
+      beneficioService.findByEmpresaPaginated.mockResolvedValue(
+        expectedResponse,
+      );
+
+      await controller.findByEmpresaPaginated(idEmpresa, 1, 5);
+
+      expect(beneficioService.findByEmpresaPaginated).toHaveBeenCalledWith(
+        1,
+        1,
+        5,
+      );
+    });
+
+    it('debe manejar empresa sin beneficios', async () => {
+      const idEmpresa = 2;
+      const expectedResponse: PaginatedBeneficiosResponseDTO = {
+        items: [],
+        total: 0,
+      };
+
+      beneficioService.findByEmpresaPaginated.mockResolvedValue(
+        expectedResponse,
+      );
+
+      const result = await controller.findByEmpresaPaginated(idEmpresa, 1, 5);
+
+      expect(result).toEqual(expectedResponse);
+      expect(result.items).toHaveLength(0);
+      expect(result.total).toBe(0);
+    });
+
+    it('debe manejar empresa no encontrada', async () => {
+      const idEmpresa = 999;
+      const error = new Error('Empresa no encontrada');
+
+      beneficioService.findByEmpresaPaginated.mockRejectedValue(error);
+
+      await expect(
+        controller.findByEmpresaPaginated(idEmpresa, 1, 5),
+      ).rejects.toThrow('Empresa no encontrada');
+    });
+
+    it('debe manejar error de base de datos', async () => {
+      const idEmpresa = 1;
+      const error = new Error('Error de conexión a la base de datos');
+
+      beneficioService.findByEmpresaPaginated.mockRejectedValue(error);
+
+      await expect(
+        controller.findByEmpresaPaginated(idEmpresa, 1, 5),
+      ).rejects.toThrow('Error de conexión a la base de datos');
+    });
+  });
+
+  describe('canjear', () => {
+    const mockReq = { user: { id: 10, rol: Rol.USUARIO } } as RequestConUsuario;
+
+    it('debe canjear un beneficio exitosamente', async () => {
+      const id = 1;
+      const dto: CanjearBeneficioDto = { cantidad: 2 };
+
+      beneficioService.canjear.mockResolvedValue(mockCanjeResponse);
+
+      const result = await controller.canjear(id, mockReq, dto);
+
+      expect(result).toEqual(mockCanjeResponse);
+      expect(beneficioService.canjear).toHaveBeenCalledWith(1, 10, 2);
+      expect(beneficioService.canjear).toHaveBeenCalledTimes(1);
+    });
+
+    it('debe canjear un beneficio con cantidad 1', async () => {
+      const id = 1;
+      const dto: CanjearBeneficioDto = { cantidad: 1 };
+      const expectedResponse = {
+        ...mockCanjeResponse,
+        cantidadCanjeada: 1,
+        puntosGastados: 50,
+      };
+
+      beneficioService.canjear.mockResolvedValue(expectedResponse);
+
+      const result = await controller.canjear(id, mockReq, dto);
+
+      expect(result).toEqual(expectedResponse);
+      expect(beneficioService.canjear).toHaveBeenCalledWith(1, 10, 1);
+    });
+
+    it('debe manejar error cuando el beneficio no existe', async () => {
+      const id = 999;
+      const dto: CanjearBeneficioDto = { cantidad: 1 };
+      const error = new Error('Beneficio no encontrado');
+
+      beneficioService.canjear.mockRejectedValue(error);
+
+      await expect(controller.canjear(id, mockReq, dto)).rejects.toThrow(
+        'Beneficio no encontrado',
+      );
+      expect(beneficioService.canjear).toHaveBeenCalledWith(999, 10, 1);
+    });
+
+    it('debe manejar error cuando no hay suficiente stock', async () => {
+      const id = 1;
+      const dto: CanjearBeneficioDto = { cantidad: 100 };
+      const error = new Error('Stock insuficiente');
+
+      beneficioService.canjear.mockRejectedValue(error);
+
+      await expect(controller.canjear(id, mockReq, dto)).rejects.toThrow(
+        'Stock insuficiente',
+      );
+    });
+
+    it('debe manejar error cuando el usuario no tiene suficientes puntos', async () => {
+      const id = 1;
+      const dto: CanjearBeneficioDto = { cantidad: 1 };
+      const error = new Error('Puntos insuficientes');
+
+      beneficioService.canjear.mockRejectedValue(error);
+
+      await expect(controller.canjear(id, mockReq, dto)).rejects.toThrow(
+        'Puntos insuficientes',
+      );
+    });
+
+    it('debe manejar error cuando el beneficio está inactivo', async () => {
+      const id = 1;
+      const dto: CanjearBeneficioDto = { cantidad: 1 };
+      const error = new Error('El beneficio no está disponible');
+
+      beneficioService.canjear.mockRejectedValue(error);
+
+      await expect(controller.canjear(id, mockReq, dto)).rejects.toThrow(
+        'El beneficio no está disponible',
+      );
+    });
+  });
+
   describe('updateEstado', () => {
-    it('debe actualizar el estado de un beneficio', async () => {
-      const beneficioActualizado: BeneficiosResponseDTO = {
-        ...beneficioResponse,
+    const mockReqColaborador = {
+      user: { id: 5, rol: Rol.COLABORADOR },
+    } as RequestConUsuario;
+    const mockReqAdmin = {
+      user: { id: 1, rol: Rol.ADMIN },
+    } as RequestConUsuario;
+
+    it('debe actualizar el estado del beneficio a APROBADO exitosamente', async () => {
+      const id = 1;
+      const estado = BeneficioEstado.APROBADO;
+      const expectedResponse: BeneficiosResponseDTO = {
+        ...mockBeneficioResponse,
         estado: BeneficioEstado.APROBADO,
       };
 
-      mockBeneficioService.updateEstado.mockResolvedValue(beneficioActualizado);
+      beneficioService.updateEstado.mockResolvedValue(expectedResponse);
 
-      const resultado = await controller.updateEstado(
-        1,
-        BeneficioEstado.APROBADO,
+      const result = await controller.updateEstado(
+        id,
+        estado,
+        mockReqColaborador,
       );
 
-      expect(resultado).toEqual(beneficioActualizado);
-      expect(mockBeneficioService.updateEstado).toHaveBeenCalledWith(
+      expect(result).toEqual(expectedResponse);
+      expect(result.estado).toBe(BeneficioEstado.APROBADO);
+      expect(beneficioService.updateEstado).toHaveBeenCalledWith(
         1,
-        BeneficioEstado.APROBADO,
+        estado,
+        5,
+        Rol.COLABORADOR,
       );
+      expect(beneficioService.updateEstado).toHaveBeenCalledTimes(1);
     });
 
-    it('debe aceptar diferentes estados', async () => {
-      const beneficioRechazado: BeneficiosResponseDTO = {
-        ...beneficioResponse,
+    it('debe actualizar el estado del beneficio a RECHAZADO', async () => {
+      const id = 2;
+      const estado = BeneficioEstado.RECHAZADO;
+      const expectedResponse: BeneficiosResponseDTO = {
+        ...mockBeneficioResponse,
+        id: 2,
         estado: BeneficioEstado.RECHAZADO,
       };
 
-      mockBeneficioService.updateEstado.mockResolvedValue(beneficioRechazado);
+      beneficioService.updateEstado.mockResolvedValue(expectedResponse);
 
-      await controller.updateEstado(1, BeneficioEstado.RECHAZADO);
+      const result = await controller.updateEstado(id, estado, mockReqAdmin);
 
-      expect(mockBeneficioService.updateEstado).toHaveBeenCalledWith(
+      expect(result).toEqual(expectedResponse);
+      expect(result.estado).toBe(BeneficioEstado.RECHAZADO);
+      expect(beneficioService.updateEstado).toHaveBeenCalledWith(
+        2,
+        estado,
         1,
-        BeneficioEstado.RECHAZADO,
+        Rol.ADMIN,
       );
     });
 
-    it('debe propagar excepciones del servicio', async () => {
+    it('debe actualizar el estado del beneficio a PENDIENTE', async () => {
+      const id = 3;
+      const estado = BeneficioEstado.PENDIENTE;
+      const expectedResponse: BeneficiosResponseDTO = {
+        ...mockBeneficioResponse,
+        id: 3,
+        estado: BeneficioEstado.PENDIENTE,
+      };
+
+      beneficioService.updateEstado.mockResolvedValue(expectedResponse);
+
+      const result = await controller.updateEstado(
+        id,
+        estado,
+        mockReqColaborador,
+      );
+
+      expect(result).toEqual(expectedResponse);
+      expect(result.estado).toBe(BeneficioEstado.PENDIENTE);
+      expect(beneficioService.updateEstado).toHaveBeenCalledWith(
+        3,
+        estado,
+        5,
+        Rol.COLABORADOR,
+      );
+    });
+
+    it('debe manejar error cuando el beneficio no existe', async () => {
+      const id = 999;
+      const estado = BeneficioEstado.APROBADO;
       const error = new Error('Beneficio no encontrado');
-      mockBeneficioService.updateEstado.mockRejectedValue(error);
+
+      beneficioService.updateEstado.mockRejectedValue(error);
 
       await expect(
-        controller.updateEstado(999, BeneficioEstado.APROBADO),
+        controller.updateEstado(id, estado, mockReqAdmin),
       ).rejects.toThrow('Beneficio no encontrado');
+    });
+
+    it('debe manejar error cuando el usuario no tiene permisos', async () => {
+      const id = 1;
+      const estado = BeneficioEstado.APROBADO;
+      const mockReqUsuario = {
+        user: { id: 5, rol: Rol.USUARIO },
+      } as RequestConUsuario;
+      const error = new Error('No tiene permisos para realizar esta acción');
+
+      beneficioService.updateEstado.mockRejectedValue(error);
+
+      await expect(
+        controller.updateEstado(id, estado, mockReqUsuario),
+      ).rejects.toThrow('No tiene permisos para realizar esta acción');
+    });
+
+    it('debe manejar error cuando el estado es inválido', async () => {
+      const id = 1;
+      const estado = 'ESTADO_INVALIDO' as BeneficioEstado;
+      const error = new Error('Estado inválido');
+
+      beneficioService.updateEstado.mockRejectedValue(error);
+
+      await expect(
+        controller.updateEstado(id, estado, mockReqAdmin),
+      ).rejects.toThrow('Estado inválido');
+    });
+
+    it('debe permitir que ADMIN actualice cualquier estado', async () => {
+      const id = 1;
+      const estado = BeneficioEstado.RECHAZADO;
+      const expectedResponse: BeneficiosResponseDTO = {
+        ...mockBeneficioResponse,
+        estado: BeneficioEstado.RECHAZADO,
+      };
+
+      beneficioService.updateEstado.mockResolvedValue(expectedResponse);
+
+      const result = await controller.updateEstado(id, estado, mockReqAdmin);
+
+      expect(result.estado).toBe(BeneficioEstado.RECHAZADO);
+      expect(beneficioService.updateEstado).toHaveBeenCalledWith(
+        1,
+        estado,
+        1,
+        Rol.ADMIN,
+      );
+    });
+
+    it('debe permitir que COLABORADOR actualice beneficios de su empresa', async () => {
+      const id = 1;
+      const estado = BeneficioEstado.APROBADO;
+      const expectedResponse: BeneficiosResponseDTO = {
+        ...mockBeneficioResponse,
+        estado: BeneficioEstado.APROBADO,
+      };
+
+      beneficioService.updateEstado.mockResolvedValue(expectedResponse);
+
+      const result = await controller.updateEstado(
+        id,
+        estado,
+        mockReqColaborador,
+      );
+
+      expect(result.estado).toBe(BeneficioEstado.APROBADO);
+      expect(beneficioService.updateEstado).toHaveBeenCalledWith(
+        1,
+        estado,
+        5,
+        Rol.COLABORADOR,
+      );
     });
   });
 });

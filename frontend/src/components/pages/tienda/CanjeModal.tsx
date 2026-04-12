@@ -74,7 +74,6 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
 
     try {
       await baseApi.beneficio.canjear(beneficio.id, {
-        userId: user.sub,
         cantidad,
       });
 

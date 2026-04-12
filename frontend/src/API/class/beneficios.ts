@@ -55,7 +55,7 @@ export class BeneficiosService extends Crud<Beneficio> {
 
   async canjear(
     beneficioId: number,
-    data: { userId: number; cantidad: number },
+    data: { cantidad: number },
   ) {
     const res = await fetch(
       `${this.baseUrl}/${this.endpoint}/${beneficioId}/canjes`,
