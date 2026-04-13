@@ -103,7 +103,7 @@ export class OrganizacionService {
       const organizacionUsuario =
         await this.organizacionUsuarioRepository.findOne({
           where: {
-            id_usuario: usuarioId,
+            usuario: { id: usuarioId },
             activo: true,
           },
           relations: [

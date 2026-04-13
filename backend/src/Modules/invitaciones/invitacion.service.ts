@@ -368,8 +368,8 @@ export class InvitacionesService {
   ): Promise<OrganizacionUsuario> {
     try {
       const relacion = this.organizacionUsuarioRepo.create({
-        id_usuario: usuarioId,
-        id_organizacion: organizacionId,
+        usuario: { id: usuarioId },
+        organizacion: { id: organizacionId },
         rol: RolSecundario.MIEMBRO,
         activo: true,
       });
@@ -392,8 +392,8 @@ export class InvitacionesService {
   ): Promise<EmpresaUsuario> {
     try {
       const relacion = this.empresaUsuarioRepo.create({
-        id_usuario: usuarioId,
-        id_empresa: empresaId,
+        usuario: { id: usuarioId },
+        empresa: { id: empresaId },
         rol: RolSecundario.MIEMBRO,
         activo: true,
       });

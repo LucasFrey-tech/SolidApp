@@ -224,7 +224,7 @@ describe('OrganizacionService', () => {
 
       expect(result.id).toBe(1);
       expect(organizacionUsuarioRepository.findOne).toHaveBeenCalledWith({
-        where: { id_usuario: usuarioId, activo: true },
+        where: { usuario: { id: usuarioId }, activo: true },
         relations: [
           'organizacion',
           'organizacion.contacto',

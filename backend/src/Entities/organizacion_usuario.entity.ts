@@ -28,20 +28,6 @@ export class OrganizacionUsuario {
   id: number;
 
   @ApiProperty({
-    example: 5,
-    description: 'ID del usuario que gestiona la organización',
-  })
-  @Column({ type: 'int', nullable: false })
-  id_usuario: number;
-
-  @ApiProperty({
-    example: 2,
-    description: 'ID de la organización gestionada',
-  })
-  @Column({ type: 'int', nullable: false })
-  id_organizacion: number;
-
-  @ApiProperty({
     example: '2024-01-15T10:30:00Z',
     description: 'Fecha en que el usuario fue asignado a la organización',
   })
