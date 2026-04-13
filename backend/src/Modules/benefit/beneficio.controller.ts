@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Param,
   Body,
@@ -9,14 +8,13 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { BeneficioService } from './beneficio.service';
 import { PaginatedBeneficiosResponseDTO } from './dto/response_paginated_beneficios';
 
 import { RequestConUsuario } from '../auth/interfaces/authenticated_request.interface';
 import { BeneficioEstado } from './dto/enum/enum';
 import { Auth, Public } from '../auth/decoradores/auth.decorador';
-import { CanjearBeneficioDto } from './dto/canjear_beneficio.dto';
 import { Rol } from '../user/enums/enums';
 import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 
