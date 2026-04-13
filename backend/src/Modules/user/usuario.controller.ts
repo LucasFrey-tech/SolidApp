@@ -117,10 +117,10 @@ export class UsuarioController {
   @ApiOperation({ summary: 'Canjear un cupón' })
   async canjearCupon(
     @Req() req: RequestConUsuario,
-    @Param('cuponId', ParseIntPipe) cuponId: number,
+    @Param('id', ParseIntPipe) id: number,
     @Query('cantidad', ParseIntPipe) cantidad: number,
   ): Promise<CanjearResponseDto> {
-    return this.userService.canjearCupon(req.user.id, cuponId, cantidad);
+    return this.userService.canjearCupon(req.user.id, id, cantidad);
   }
 
   // Panel Admin
