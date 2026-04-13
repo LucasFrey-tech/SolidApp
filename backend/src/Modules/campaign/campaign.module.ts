@@ -7,12 +7,6 @@ import { Organizacion } from '../../Entities/organizacion.entity';
 import { imagenes_campania } from '../../Entities/imagenes_campania.entity';
 import { CommonMulterModule } from '../../common/multer/multer.module';
 
-/**
- * Módulo de NestJS que agrupa los componentes realcionados a Campañas:
- * - Controlador
- * - Servicio
- * - Repositorios TypeORM
- */
 @Module({
   imports: [
     TypeOrmModule.forFeature([Campaigns, Organizacion, imagenes_campania]),

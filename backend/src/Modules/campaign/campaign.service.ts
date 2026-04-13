@@ -30,14 +30,6 @@ export class CampaignsService {
     private readonly campaignsImagesRepository: Repository<imagenes_campania>,
   ) {}
 
-  /**
-   * Obtiene todas las Campañas paginadas activas, incluyendo imagenes.
-   *
-   * @param {number} page - Página solicitada
-   * @param {number} limit - Cantidad de Campañas por página
-   * @param {string} search - Término de busqueda
-   * @returns Lista de Campañas paginadas
-   */
   async findPaginated(
     page: number,
     limit: number,
@@ -95,14 +87,6 @@ export class CampaignsService {
     }
   }
 
-  /**
-   * Obtiene todas las Campañas paginadas de una Organizacion específica.
-   *
-   * @param {number} organizacionId - ID de la Organización
-   * @param {number} page - Página solicitada
-   * @param {number} limit - Cantidad de Campañas por página
-   * @returns  Lista de Campañas paginadas
-   */
   async findCampaignsPaginated(
     organizacionId: number,
     page: number,
@@ -131,13 +115,6 @@ export class CampaignsService {
     }
   }
 
-  /**
-   * Obtiene una Campaña específica, incluyendo imagenes.
-   *
-   * @param {number} id - ID de la Campaña a buscar
-   * @returns {Promise<ResponseCampaignDetalleDto>} DTO de la Campaña encontrada, incluyendo las imagenes.
-   * @throws {NotFoundException} Si no encuentra ninguna campaña con el ID especificado
-   */
   async findOneDetail(id: number): Promise<ResponseCampaignDetalleDto> {
     try {
       const campaign = await this.campaignsRepository.findOne({
@@ -164,15 +141,6 @@ export class CampaignsService {
     }
   }
 
-  /**
-   * Crea una nueva Campaña en el sistema.
-   *
-   * @param {CreateCampaignsDto} createDto - DTO con los datos de la campaña
-   * @param {string} imagenes - Imagenes de la Campaña
-   * @returns {Promise<CreateCampaignsDto>} Promesa que resuelve con la entidad de la campaña recién creada.
-   * @throws {NotFoundException} Cuando la Organizacion no se encuentra o esta deshabilitada
-   * @throws {BadRequestException} Cuando el objetivo es menor a 0 (cero)
-   */
   async create(
     id: number,
     createDto: CreateCampaignsDto,
@@ -258,19 +226,6 @@ export class CampaignsService {
     }
   }
 
-  /**
-   * Actualiza los datos de una Campaña del sistema.
-   *
-   * @param {number} id - ID de la Campaña a actualizar
-   * @param {UpdateCampaignsDto} updateDto - DTO con la informacion actualizada de la Campaña
-   * @returns {Promise<ResponseCampaignsDto>} Promesa que resuelve con el DTO actualizado
-   *
-   * @throws {NotFoundException} cuando:
-   * - No se encuentra el ID de la Campaña solicitada
-   * - No se encuentra el ID de la Organización solicitada
-   *
-   * @throws {BadRequestException} cuando el objetivo de la Campaña es menor a 0
-   */
   async update(
     organizacionId: number,
     campaignId: number,
@@ -424,13 +379,6 @@ export class CampaignsService {
     }
   }
 
-  /**
-   * Elimina una Campaña específica del sistema (hard delete).
-   *
-   * @param {number} id - ID de la campaña a eliminar
-   *
-   * @throws {NotFoundException} cuando no se encuentra el ID de la campaña solicitada
-   */
   async delete(id: number): Promise<void> {
     try {
       const campaign = await this.campaignsRepository.findOne({
@@ -457,12 +405,6 @@ export class CampaignsService {
     }
   }
 
-  /**
-   * Mapea una entidad Campaña a su DTO de respuesta.
-   *
-   * @param {Campaigns} campaign - Entidad Campaña con la relación organización cargada
-   * @returns {ResponseCampaignsDto} DTO listo para ser enviado como respuesta de la API
-   */
   private readonly mapToResponseDto = (
     campaign: Campaigns,
   ): ResponseCampaignsDto => {

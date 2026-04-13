@@ -34,15 +34,6 @@ export class EmpresaService {
     private readonly invitacionesService: InvitacionesService,
   ) {}
 
-  /**
-   * Obtiene empresas paginadas con búsqueda opcional.
-   *
-   * @param page Número de página.
-   * @param limit Cantidad de registros por página.
-   * @param search Texto opcional para filtrar por razón social o nombre fantasía.
-   *
-   * @returns { items: Empresa[], total: number }
-   */
   async findPaginated(
     page: number,
     limit: number,
@@ -84,14 +75,6 @@ export class EmpresaService {
     }
   }
 
-  /**
-   * Obtiene una empresa por ID.
-   *
-   * @param id Identificador de la empresa.
-   * @throws NotFoundException si no existe o está deshabilitada.
-   *
-   * @returns {Promise<EmpresaResponseDTO>}
-   */
   async getEmpresaByUsuario(usuarioId: number): Promise<EmpresaResponseDTO> {
     try {
       const empresaUsuario = await this.empresaUsuarioRepository.findOne({
@@ -311,16 +294,6 @@ export class EmpresaService {
     }
   }
 
-  /**
-   * Actualiza los datos generales de una empresa.
-   *
-   * @param id ID de la empresa.
-   * @param updateDto Datos a modificar.
-   *
-   * @throws NotFoundException si no existe.
-   *
-   * @returns {Promise<EmpresaResponseDTO>}-> Actualiza a la empresa
-   */
   async update(
     usuarioId: number,
     updateDto: UpdateEmpresaDTO,
@@ -385,9 +358,6 @@ export class EmpresaService {
     }
   }
 
-  /**
-   * Marca una empresa como verificada.
-   */
   async verify(id: number): Promise<EmpresaResponseDTO> {
     try {
       const empresa = await this.empresaRepository.findOne({
@@ -416,9 +386,6 @@ export class EmpresaService {
     }
   }
 
-  /**
-   * Deshabilita un empresa (soft delete sobre la Empresa).
-   */
   async delete(id: number): Promise<void> {
     try {
       const empresa = await this.empresaRepository.findOne({
@@ -445,9 +412,6 @@ export class EmpresaService {
     }
   }
 
-  /**
-   * Restaura un empresa deshabilitado.
-   */
   async restore(id: number): Promise<void> {
     try {
       const empresa = await this.empresaRepository.findOne({
@@ -474,13 +438,6 @@ export class EmpresaService {
     }
   }
 
-  /**
-   * Transforma la entidad Empresa en un DTO de respuesta.
-   * Oculta datos sensibles como la contraseña.
-   *
-   * @param empresa Entidad Empresa.
-   * @returns {EmpresaResponseDTO}
-   */
   private mapToResponseDto(empresa: Empresa): EmpresaResponseDTO {
     const dto = new EmpresaResponseDTO();
 

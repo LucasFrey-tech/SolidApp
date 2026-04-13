@@ -38,16 +38,6 @@ export class OrganizacionService {
     private readonly invitacionesService: InvitacionesService,
   ) {}
 
-  /**
-   * Obtiene organizaciones paginadas con búsqueda opcional.
-   *
-   * @param page - Número de página.
-   * @param limit - Cantidad de registros por página.
-   * @param search - Texto para búsqueda por razón social o nombre fantasía.
-   *
-   * @returns {Promise<{ items: ResponseOrganizacionDto[]; total: number }>}
-   * Objeto con listado paginado y total de registros.
-   */
   async findPaginated(
     page: number,
     limit: number,
@@ -86,17 +76,6 @@ export class OrganizacionService {
       });
     }
   }
-
-  /**
-   * Obtiene una organización por ID.
-   *
-   * @param id ID de la organización.
-   *
-   * @returns {Promise<ResponseOrganizacionDto>}
-   *
-   * @throws NotFoundException
-   * Si la organización no existe.
-   */
 
   async getOrganizacionByUsuario(usuarioId: number): Promise<Organizacion> {
     try {
@@ -349,17 +328,6 @@ export class OrganizacionService {
     }
   }
 
-  /**
-   * Actualiza una organización existente.
-   *
-   * @param id ID de la organización.
-   * @param updateDto Datos a modificar.
-   *
-   * @returns {Promise<ResponseOrganizacionDto>}
-   *
-   * @throws NotFoundException
-   * Si la organización no existe.
-   */
   async update(
     updateDto: UpdateOrganizacionDto,
     usuarioId: number,
@@ -426,9 +394,6 @@ export class OrganizacionService {
     }
   }
 
-  /**
-   * Marca una organización como verificada.
-   */
   async verify(id: number): Promise<ResponseOrganizacionDto> {
     try {
       const organizacion = await this.organizacionRepository.findOne({
@@ -457,9 +422,6 @@ export class OrganizacionService {
     }
   }
 
-  /**
-   * Deshabilita un organizacion (soft delete sobre la Cuenta).
-   */
   async delete(id: number): Promise<void> {
     try {
       const organizacion = await this.organizacionRepository.findOne({
@@ -515,13 +477,6 @@ export class OrganizacionService {
     }
   }
 
-  /**
-   * Mapea la entidad Organizations a ResponseOrganizacionDto.
-   *
-   * @param organization Entidad Organization.
-   *
-   * @returns {ResponseOrganizacionDto}
-   */
   private mapToResponseDto(
     organizacion: Organizacion,
   ): ResponseOrganizacionDto {

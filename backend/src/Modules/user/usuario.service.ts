@@ -432,9 +432,6 @@ export class UsuarioService {
     }
   }
 
-  /**
-   * Mapea la entidad PerfilUsuario al DTO de respuesta.
-   */
   private mapToResponseDto(usuario: Usuario): ResponseUsuarioDto {
     const dto = new ResponseUsuarioDto();
 

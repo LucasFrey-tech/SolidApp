@@ -19,14 +19,8 @@ import { EmailModule } from '../email/email.module';
     ]),
     EmailModule,
   ],
-  controllers: [
-    InvitacionesController
-  ],
-  providers: [
-    InvitacionesService
-  ],
-  exports: [
-    InvitacionesService
-  ]
+  controllers: [InvitacionesController],
+  providers: [InvitacionesService],
+  exports: [InvitacionesService],
 })
 export class InvitacionesModule {}

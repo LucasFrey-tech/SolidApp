@@ -30,13 +30,6 @@ import { BeneficiosResponseDTO } from './dto/response_beneficios.dto';
 export class BeneficioController {
   constructor(private readonly beneficiosService: BeneficioService) {}
 
-  /**
-   * Obtiene todos los Beneficios disponibles con paginación.
-   *
-   * @param {number} page - Página solicitada (basada en 1)
-   * @param {number} limit - Cantidad de Beneficios por página
-   * @returns Lista de Beneficios paginados.
-   */
   @Public()
   @Get('cupones')
   async findAllPaginated(
@@ -56,14 +49,6 @@ export class BeneficioController {
     );
   }
 
-  /**
-   * Obtiene todos los beneficios paginados pertenecientes a una misma empresa
-   *
-   * @param {number} idEmpresa - ID de la empresa a filtrar
-   * @param {number} page - Página solicitada (basada en 1)
-   * @param {number} limit - Cantidad de Beneficios por página
-   * @returns {Promise<PaginatedBeneficiosResponseDTO>} Lista de Beneficios paginados.
-   */
   @Public()
   @Get('empresa/:idEmpresa/cupones')
   async findByEmpresaPaginated(
@@ -78,13 +63,6 @@ export class BeneficioController {
     );
   }
 
-  /**
-   * Actualiza el estado del Beneficio.
-   *
-   * @param {number} id - ID del Beneficio a actualizar
-   * @param {BeneficioEstado} estado - Estado actualizado del Beneficio
-   * @returns Beneficio actualizado
-   */
   @Auth(Rol.COLABORADOR, Rol.ADMIN)
   @Patch(':id/estado')
   updateEstado(

@@ -14,11 +14,6 @@ export class RankingService {
     private readonly puntosRepository: Repository<RankingDonador>,
   ) {}
 
-  /**
-   * Obtiene los diez Usuarios con mayor puntaje acumulado
-   *
-   * @returns {Promise<RankingDTO[]>} Lista de los Usuarios ordenada descendentemente.
-   */
   async getTop10(): Promise<RankingDTO[]> {
     const ranking = await this.puntosRepository
       .createQueryBuilder('ranking')
@@ -42,12 +37,6 @@ export class RankingService {
     }));
   }
 
-  /**
-   * Funcion para Sumar y acumular los puntos obtenidos a los Usuarios
-   *
-   * @param {number} userID - ID del usuario
-   * @param {number} puntos - cantidad de puntos a sumar
-   */
   async ajustarPuntos(
     userID: number,
     puntos: number,

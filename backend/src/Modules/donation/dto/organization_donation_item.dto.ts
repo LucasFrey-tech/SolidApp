@@ -2,9 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DonacionEstado } from '../enum';
 import { UsuarioResumenDto } from '../../user/dto/response_usuario.dto';
 
-/**
- * DTO de la Donación.
- */
 export class OrganizationDonationItemDto {
   @ApiProperty({ example: 15 })
   id: number;
