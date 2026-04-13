@@ -383,6 +383,7 @@ export class OrganizacionService {
             invitacion.id,
             savedGestor.id,
             manager,
+            { organizacion: savedOrganizacion },
           );
         }
 

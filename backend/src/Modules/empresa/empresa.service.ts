@@ -321,6 +321,7 @@ export class EmpresaService {
             invitacion.id,
             savedGestor.id,
             manager,
+            { empresa: savedEmpresa },
           );
         }
 

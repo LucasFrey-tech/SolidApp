@@ -508,6 +508,7 @@ export class InvitacionesService {
     invitacionId: number,
     usuarioId: number,
     manager?: EntityManager,
+    entidad?: { empresa?: Empresa; organizacion?: Organizacion },
   ): Promise<Invitacion> {
     try {
       const repo = manager
@@ -527,7 +528,8 @@ export class InvitacionesService {
 
       invitacion.usuarioId = usuarioId;
       invitacion.expirada = true;
-
+      if (entidad?.empresa) invitacion.empresa = entidad.empresa;
+      if (entidad?.organizacion) invitacion.organizacion = entidad.organizacion;
       return repo.save(invitacion);
     } catch (error: unknown) {
       if (error instanceof Error) {
