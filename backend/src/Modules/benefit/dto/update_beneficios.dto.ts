@@ -25,7 +25,7 @@ export class UpdateBeneficiosDTO extends PartialType(CreateBeneficiosDTO) {
   @ApiProperty({
     example: 'pendiente',
     description: 'Estado del beneficio',
-    enum: ['pendiente', 'aprobado', 'rechazado'],
+    enum: BeneficioEstado,
     required: false,
   })
   @IsOptional()
