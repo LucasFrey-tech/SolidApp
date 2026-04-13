@@ -55,7 +55,7 @@ export default function OrganizationCampaignsPage() {
     useState<CampaignDetalle | null>(null);
 
   /* ===============================
-     DEBOUNCE SEARCH (🔥 CLAVE)
+     DEBOUNCE SEARCH 
   ================================ */
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -124,7 +124,7 @@ export default function OrganizationCampaignsPage() {
     const response = await baseApi.organizacion.getAllPaginatedByOrganizacion(
       donationsPage,
       limit,
-      debouncedSearch, // ✅ usamos debounce
+      debouncedSearch, 
     );
 
     setDonations(
@@ -235,6 +235,9 @@ export default function OrganizationCampaignsPage() {
   ================================ */
 
   const handleSubmitCampaign = async (data: CampaignFormValues) => {
+  console.log("USER:", user);
+  console.log("ORGANIZACION ID:", organizacionId);
+  console.log("DATA DEL FORM:", data);
     if (!organizacionId) return;
 
     try {

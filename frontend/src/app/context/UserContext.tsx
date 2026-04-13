@@ -52,6 +52,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const decoded = jwtDecode<User>(token);
 
       const perfil = await baseApi.usuario.getPerfil();
+
       
       setUser({
         sub: decoded.sub,
@@ -61,10 +62,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         gestionId: decoded.gestionId,
         email: perfil.contacto?.correo,
         id_organizacion: Array.isArray(perfil.organizacionUsuario) 
-          ? perfil.organizacionUsuario[0]?.id_organizacion 
+          ? perfil.organizacionUsuario[0]?.organizacion?.id
           : undefined,
         id_empresa: Array.isArray(perfil.empresaUsuario) 
-          ? perfil.empresaUsuario[0]?.id_empresa 
+          ? perfil.empresaUsuario[0]?.empresa?.id
           : undefined,
       });
 

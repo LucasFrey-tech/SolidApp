@@ -465,7 +465,9 @@ export class UsuarioService {
           'contacto',
           'direccion',
           'empresaUsuario',
+          'empresaUsuario.empresa',
           'organizacionUsuario',
+          'organizacionUsuario.organizacion',
         ],
         where: { id },
       });
