@@ -52,12 +52,11 @@ export default function CampaignDetallePage() {
     if (!campaign) return [];
 
     const imagenesValidas =
-      campaign.imagenes?.filter((img) => img.url && img.url.trim() !== "") ||
-      [];
+      campaign.imagenes?.filter((img) => img.url && img.url.trim() !== "") || [];
 
     if (campaign.imagenPortada) {
       const existePortada = imagenesValidas.some(
-        (img) => img.url === campaign.imagenPortada,
+        (img) => img.url === campaign.imagenPortada
       );
 
       if (!existePortada) {
@@ -109,16 +108,21 @@ export default function CampaignDetallePage() {
           )}
 
           <h1 className={styles.title}>{campaign.titulo}</h1>
+
           <p className={styles.description}>{campaign.descripcion}</p>
 
           <div className={styles.meta}>
-            <p>
-              <strong>Objetivo:</strong> {campaign.objetivo}
-            </p>
-            <p>
-              <strong>Organización:</strong>{" "}
-              {campaign.organizacion.nombre_organizacion}
-            </p>
+            <div className={styles.metaCard}>
+              <span className={styles.metaLabel}>Objetivo</span>
+              <span className={styles.metaValue}>{campaign.objetivo}</span>
+            </div>
+
+            <div className={styles.metaCard}>
+              <span className={styles.metaLabel}>Organización</span>
+              <span className={styles.metaValue}>
+                {campaign.organizacion.nombre_organizacion}
+              </span>
+            </div>
           </div>
 
           {galeriaCompleta.length > 0 && (

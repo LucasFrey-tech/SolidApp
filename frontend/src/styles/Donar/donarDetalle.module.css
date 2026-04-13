@@ -3,59 +3,240 @@
 ================================ */
 .page {
   min-height: 100vh;
-  background: #2c2b2b;
-  padding: 50px 16px;
+  background: linear-gradient(180deg, #f8fafc 0%, #edf4f2 100%);
+  padding: 48px 16px 64px;
   display: flex;
   justify-content: center;
+  color: #0f172a;
 }
 
 /* ===============================
-   CARD
+   CARD / CONTAINER
 ================================ */
 .container {
   width: 100%;
-  max-width: 720px;
-  background: #171717;
-  padding: 28px;
-  border-radius: 16px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-  color: #f3f3f3;
-  text-align: center;
+  max-width: 760px;
+  max-height: 860px;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 28px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
 }
 
 /* ===============================
    IMAGE PRINCIPAL
 ================================ */
 .imageWrapper {
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto 24px auto;
-  border-radius: 16px;
+  width: 40%;
+  height: 350px; 
+  margin: 0 auto 28px auto;
+  border-radius: 24px;
   overflow: hidden;
   cursor: pointer;
-  display: flex;
-  justify-content: center;
+  position: relative;
+  background: #e2e8f0;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+
 }
 
-.image {
+.image{
   width: 100%;
-  height: auto;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover; 
   object-position: center;
-  transition: transform 0.3s ease;
-}
+  transition: transform 0.35s ease;
 
+}
 .imageWrapper:hover .image {
-  transform: scale(1.02);
+  transform: scale(1.03);
 }
 
 /* ===============================
-  LIGHTBOX
+   TEXT
+================================ */
+.title {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.description {
+  font-size: 16px;
+  color: #475569;
+  line-height: 1.8;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* ===============================
+   META
+================================ */
+.meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.meta p {
+  margin: 0;
+}
+
+.metaCard {
+  background: #f8fafc;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 16px 18px;
+}
+
+.metaLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+
+.metaValue {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f766e;
+  line-height: 1.4;
+}
+
+/* ===============================
+   GALLERY
+================================ */
+.gallery {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  margin-bottom: 28px;
+  scroll-behavior: smooth;
+ 
+}
+
+.gallery::-webkit-scrollbar {
+  height: 8px;
+}
+
+.gallery::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+.gallery::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.galleryItem {
+  position: relative;
+  min-width: 96px;
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  border: 2px solid transparent;
+  background: #f8fafc;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.galleryItem:hover {
+  transform: translateY(-3px);
+  border-color: rgba(15, 118, 110, 0.25);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
+.activeThumb {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+.galleryImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ===============================
+   BUTTON / CTA
+================================ */
+.donateButton {
+  width: 100%;
+  max-width: 280px;
+  margin: 8px auto 8px auto;
+  display: block;
+  background: linear-gradient(135deg, #0f766e, #115e59);
+  color: #ffffff;
+  padding: 15px 18px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 12px 24px rgba(15, 118, 110, 0.22);
+}
+
+.donateButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(15, 118, 110, 0.28);
+}
+
+/* ===============================
+   NO DONATION / BACK
+================================ */
+.noDonation {
+  margin-top: 10px;
+  text-align: center;
+  padding: 20px;
+  border-radius: 18px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.noDonation p {
+  margin: 0 0 10px;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.backButton {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f766e;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  color: #115e59;
+  transform: translateX(-2px);
+}
+
+/* ===============================
+   LIGHTBOX
 ================================ */
 .lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(2, 6, 23, 0.92);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -78,122 +259,8 @@
   width: auto;
   height: auto;
   object-fit: contain;
-  border-radius: 12px;
-}
-
-/* ===============================
-   TEXT
-================================ */
-.title {
-  font-size: 26px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.description {
-  font-size: 15px;
-  opacity: 0.85;
-  line-height: 1.6;
-  margin-bottom: 18px;
-}
-
-.meta {
-  background: #111;
-  padding: 14px;
-  border-radius: 10px;
-  margin-bottom: 24px;
-  font-size: 14px;
-}
-
-.meta p {
-  margin: 4px 0;
-}
-
-/* ===============================
-   GALLERY
-================================ */
-.gallery {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding: 5px 0 6px 15px;
-  margin-bottom: 24px;
-  scroll-behavior: smooth;
-}
-
-.gallery::-webkit-scrollbar {
-  height: 6px;
-}
-
-.gallery::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 10px;
-}
-
-.galleryItem {
-  position: relative;
-  min-width: 100px;
-  height: 100px;
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.galleryItem:hover {
-  transform: scale(1.05);
-}
-
-.activeThumb {
-  outline: 2px solid #22c55e;
-}
-
-.galleryImage {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-}
-
-/* ===============================
-   BUTTON
-================================ */
-.donateButton {
-  width: 100%;
-  max-width: 260px;
-  margin: 30px auto 10px auto;
-  display: block;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: #000;
-  padding: 14px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.donateButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4);
-}
-
-/* ===============================
-   BACK
-================================ */
-.backButton {
-  display: block;
-  margin-top: 6px;
-  font-size: 13px;
-  color: #9ca3af;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.backButton:hover {
-  color: white;
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
 }
 
 /* ===============================
@@ -202,19 +269,84 @@
 .loading,
 .error {
   text-align: center;
-  color: #ccc;
+  color: #475569;
   padding: 80px 20px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.error button {
+  margin-top: 14px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #0f766e;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.error button:hover {
+  background: #115e59;
+  transform: translateY(-1px);
 }
 
 /* ===============================
    RESPONSIVE
 ================================ */
 @media (max-width: 768px) {
+  .page {
+    padding: 32px 14px 48px;
+  }
+
   .container {
     padding: 22px;
+    border-radius: 22px;
   }
 
   .title {
-    font-size: 22px;
+    font-size: 28px;
+  }
+
+  .description {
+    font-size: 15px;
+  }
+
+  .meta {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .galleryItem {
+    min-width: 84px;
+    width: 84px;
+    height: 84px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 18px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .donateButton {
+    max-width: 100%;
+  }
+
+  .galleryItem {
+    min-width: 76px;
+    width: 76px;
+    height: 76px;
+    border-radius: 14px;
   }
 }
