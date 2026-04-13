@@ -99,16 +99,16 @@ export class AuthService {
         });
 
         await Promise.all([
-          invitacion.organizacionId
+          invitacion.organizacion?.id
             ? this.invitacionesService.agregarUsuarioAOrganizacion(
                 usuario.id,
-                invitacion.organizacionId,
+                invitacion.organizacion.id,
               )
             : Promise.resolve(),
-          invitacion.empresaId
+          invitacion.empresa?.id
             ? this.invitacionesService.agregarUsuarioAEmpresa(
                 usuario.id,
-                invitacion.empresaId,
+                invitacion.empresa.id,
               )
             : Promise.resolve(),
         ]);

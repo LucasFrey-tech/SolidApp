@@ -39,15 +39,9 @@ export class Invitacion {
   @JoinColumn({ name: 'empresaId' })
   empresa?: Empresa;
 
-  @Column({ nullable: true })
-  empresaId?: number;
-
   @ManyToOne(() => Organizacion, { nullable: true })
   @JoinColumn({ name: 'organizacionId' })
   organizacion?: Organizacion;
-
-  @Column({ nullable: true })
-  organizacionId?: number;
 
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'invitadorID' })

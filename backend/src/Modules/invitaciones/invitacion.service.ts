@@ -10,6 +10,8 @@ import { EmailService } from '../email/email.service';
 import { RolSecundario } from '../user/enums/enums';
 import { ErrorManager } from '../../common/errors/error.manager';
 import { ResultadoProcesamiento } from './type/resultadoProcesamiento';
+import { Empresa } from '../../Entities/empresa.entity';
+import { Organizacion } from '../../Entities/organizacion.entity';
 
 /**
  * Servicio para gestionar las invitaciones a usuarios y entidades
@@ -57,7 +59,7 @@ export class InvitacionesService {
         const resultado = await this.procesarInvitacion(
           correo,
           {
-            empresaId,
+            empresa: { id: empresaId } as Empresa,
             invitadorID: usuarioInvitadorId,
             rol: RolSecundario.MIEMBRO,
           },
@@ -117,7 +119,7 @@ export class InvitacionesService {
     try {
       const pendientes = await this.invitacionRepo.count({
         where: {
-          organizacionId,
+          organizacion: { id: organizacionId },
           fecha_expiracion: MoreThan(new Date()),
           expirada: false,
         },
@@ -138,7 +140,7 @@ export class InvitacionesService {
         const resultado = await this.procesarInvitacion(
           correo,
           {
-            organizacionId,
+            organizacion: { id: organizacionId } as Organizacion,
             invitadorID: usuarioInvitadorId,
             rol: RolSecundario.MIEMBRO,
           },
@@ -252,7 +254,7 @@ export class InvitacionesService {
   }> {
     try {
       const [items, total] = await this.invitacionRepo.findAndCount({
-        where: { empresaId: IsNull(), organizacionId: IsNull() },
+        where: { empresa: IsNull(), organizacion: IsNull() },
         order: { fecha_creacion: 'DESC' },
         skip: (page - 1) * limit,
         take: limit,
@@ -291,7 +293,7 @@ export class InvitacionesService {
   }> {
     try {
       const [items, total] = await this.invitacionRepo.findAndCount({
-        where: { empresaId },
+        where: { empresa: { id: empresaId } },
         order: { fecha_creacion: 'DESC' },
         skip: (page - 1) * limit,
         take: limit,
@@ -332,7 +334,7 @@ export class InvitacionesService {
   }> {
     try {
       const [items, total] = await this.invitacionRepo.findAndCount({
-        where: { organizacionId },
+        where: { organizacion: { id: organizacionId } },
         order: { fecha_creacion: 'DESC' },
         skip: (page - 1) * limit,
         take: limit,
@@ -402,8 +404,8 @@ export class InvitacionesService {
 
       return {
         correo: invitacion.correo,
-        organizacionId: invitacion.organizacionId,
-        empresaId: invitacion.empresaId,
+        organizacionId: invitacion.organizacion?.id,
+        empresaId: invitacion.empresa?.id,
         rol: invitacion.rol,
       };
     } catch (error: unknown) {
