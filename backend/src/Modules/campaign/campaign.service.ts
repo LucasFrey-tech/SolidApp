@@ -284,7 +284,7 @@ export class CampaignsService {
     try {
       const campaign = await this.campaignsRepository.findOne({
         where: { id: campaignId },
-        relations: ['organizacion', 'creador_por', 'actualizado_por'],
+        relations: ['organizacion', 'creado_por', 'actualizado_por'],
       });
 
       if (!campaign) {
