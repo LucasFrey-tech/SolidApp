@@ -79,12 +79,33 @@ export default function Home() {
 
       </section>
 
- {/* ========== SECCIÓN DE RANKING ========== */}
+      {/* ========== SECCIÓN DE RANKING ========== */}
       <section id="ranking" className={styles.rankingSection}>
-        
+
         <h2 className={styles.rankingTitle}>Top 10 Donadores</h2>
-         <RankingCard />
+        <RankingCard />
       </section>
-    </div>
+
+{/* ========== SECCIÓN COLABORAR ========== */ }
+  <section className={styles.colaborarSection}>
+    <h2 className={styles.colaborarTitle}>
+      ¿Sos una organización o empresa?
+    </h2>
+
+    <p className={styles.colaborarText}>
+      Sumate a SolidApp y ayudanos a generar un impacto real en la comunidad.
+    </p>
+
+    <Link href="/colaborar" className={styles.colaborarButton}>
+      Sumate al proyecto
+    </Link>
+
+    {/* Opcional directo al mail */}
+    <p className={styles.colaborarMail}>
+      o escribinos a{" "}
+      <a href="mailto:solidapp@gmail.com">solidapp@gmail.com</a>
+    </p>
+  </section>
+      </div>
   )
 }

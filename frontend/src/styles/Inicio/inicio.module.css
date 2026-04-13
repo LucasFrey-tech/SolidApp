@@ -94,6 +94,69 @@
   line-height: 1.2;
   text-transform: uppercase;               
 }
+
+
+/* ============== SECCIÓN COLABORAR ============== */
+
+.colaborarSection {
+  margin: 100px 0 60px;
+  padding: 60px 5%;
+  text-align: center;
+  background: linear-gradient(135deg, #f9fafb, #ffffff);
+  border-top: 1px solid #e5e7eb;
+}
+
+.colaborarTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: clamp(24px, 3vw, 36px);
+  color: #1a1a1a;
+  margin-bottom: 16px;
+}
+
+.colaborarText {
+  font-size: clamp(15px, 1.2vw, 18px);
+  color: #4b5563;
+  max-width: 600px;
+  margin: 0 auto 30px;
+}
+
+/* BOTÓN PRINCIPAL */
+.colaborarButton {
+  display: inline-block;
+  background: #111827;
+  color: #ffffff;
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+.colaborarButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 18px 4px rgba(0, 255, 115, 0.7);
+  background: #000000;
+}
+
+/* MAIL */
+.colaborarMail {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.colaborarMail a {
+  color: #111827;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border 0.2s ease;
+}
+
+.colaborarMail a:hover {
+  border-bottom: 1px solid #111827;
+}
 /* ============== TABLET ============== */
 @media (max-width: 1024px) {
   .pasosDonar {
