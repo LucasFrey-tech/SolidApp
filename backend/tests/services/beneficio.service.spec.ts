@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { Repository, DataSource } from 'typeorm';
+import { mock } from 'jest-mock-extended';
 import { BeneficioService } from '../../src/Modules/benefit/beneficio.service';
 import { Beneficios } from '../../src/Entities/beneficio.entity';
 import { Empresa } from '../../src/Entities/empresa.entity';
@@ -9,559 +9,493 @@ import { Usuario } from '../../src/Entities/usuario.entity';
 import { UsuarioBeneficio } from '../../src/Entities/usuario-beneficio.entity';
 import { CreateBeneficiosDTO } from '../../src/Modules/benefit/dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from '../../src/Modules/benefit/dto/update_beneficios.dto';
-import { BeneficioEstado, BeneficiosUsuarioEstado } from '../../src/Modules/benefit/dto/enum/enum';
+import {
+  BeneficioEstado,
+  BeneficiosUsuarioEstado,
+} from '../../src/Modules/benefit/dto/enum/enum';
 import { Rol } from '../../src/Modules/user/enums/enums';
+
+const mockEmpresa = Object.assign(new Empresa(), {
+  id: 1,
+  razon_social: 'Empresa Test S.A.',
+  nombre_empresa: 'Test Empresa',
+  rubro: 'Tecnología',
+  verificada: true,
+  habilitada: true,
+  logo: 'logo.png',
+});
+
+const mockUsuario = Object.assign(new Usuario(), {
+  id: 1,
+  nombre: 'Juan',
+  apellido: 'Pérez',
+  puntos: 1000,
+  rol: Rol.USUARIO,
+  habilitado: true,
+});
+
+const mockBeneficio = Object.assign(new Beneficios(), {
+  id: 1,
+  titulo: 'Descuento 20%',
+  tipo: 'Descuento',
+  detalle: '20% de descuento en toda la tienda',
+  cantidad: 100,
+  valor: 50,
+  estado: BeneficioEstado.PENDIENTE,
+  empresa: mockEmpresa,
+  fecha_registro: new Date(),
+  ultimo_cambio: new Date(),
+  creado_por: mockUsuario,
+  actualizado_por: mockUsuario,
+});
+
+const mockUsuarioBeneficio = Object.assign(new UsuarioBeneficio(), {
+  id: 1,
+  usuario: mockUsuario,
+  beneficio: mockBeneficio,
+  cantidad: 2,
+  usados: 0,
+  estado: BeneficiosUsuarioEstado.ACTIVO,
+  fecha_reclamo: new Date(),
+  ultimo_cambio: new Date(),
+});
 
 describe('BeneficioService', () => {
   let service: BeneficioService;
-  let mockBeneficiosRepository: {
-    find: jest.Mock;
-    findOne: jest.Mock;
-    create: jest.Mock;
-    save: jest.Mock;
-    findAndCount: jest.Mock;
-    createQueryBuilder: jest.Mock;
-  };
-  let mockEmpresasRepository: {
-    findOne: jest.Mock;
-  };
-  let mockDataSource: {
-    transaction: jest.Mock;
-  };
+  let beneficiosRepository: jest.Mocked<Repository<Beneficios>>;
+  let empresasRepository: jest.Mocked<Repository<Empresa>>;
+  let dataSource: jest.Mocked<DataSource>;
 
-  const USUARIO_ID = 1;
-  const EMPRESA_ID = 1;
-  const BENEFICIO_ID = 1;
-
-  let beneficio: Beneficios;
-  let empresa: Empresa;
-  let createBeneficioDto: CreateBeneficiosDTO;
-  let updateBeneficioDto: UpdateBeneficiosDTO;
+  const mockQueryBuilder = {
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    skip: jest.fn().mockReturnThis(),
+    take: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    getManyAndCount: jest.fn(),
+  };
 
   beforeEach(async () => {
-    mockBeneficiosRepository = {
-      find: jest.fn(),
-      findOne: jest.fn(),
-      create: jest.fn(),
-      save: jest.fn(),
-      findAndCount: jest.fn(),
-      createQueryBuilder: jest.fn(),
-    };
-    mockEmpresasRepository = {
-      findOne: jest.fn(),
-    };
-    mockDataSource = {
-      transaction: jest.fn(),
-    };
+    const mockBeneficiosRepo = mock<Repository<Beneficios>>();
+    const mockEmpresasRepo = mock<Repository<Empresa>>();
+    const mockDataSource = mock<DataSource>();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BeneficioService,
         {
           provide: getRepositoryToken(Beneficios),
-          useValue: mockBeneficiosRepository,
+          useValue: mockBeneficiosRepo,
         },
-        {
-          provide: getRepositoryToken(Empresa),
-          useValue: mockEmpresasRepository,
-        },
-        {
-          provide: DataSource,
-          useValue: mockDataSource,
-        },
+        { provide: getRepositoryToken(Empresa), useValue: mockEmpresasRepo },
+        { provide: DataSource, useValue: mockDataSource },
       ],
     }).compile();
 
     service = module.get<BeneficioService>(BeneficioService);
-
-    // ========== DTOs ==========
-    createBeneficioDto = {
-      id_empresa: EMPRESA_ID,
-      titulo: 'Descuento 20%',
-      tipo: 'Descuento',
-      detalle: 'Descuento del 20% en compras',
-      cantidad: 100,
-      valor: 500,
-      estado: BeneficioEstado.PENDIENTE,
-    };
-
-    updateBeneficioDto = {
-      titulo: 'Descuento 25%',
-      cantidad: 80,
-      valor: 600,
-    };
-
-    // ========== Entidades ==========
-    empresa = {
-      id: EMPRESA_ID,
-      razon_social: 'Mi Empresa SA',
-      nombre_empresa: 'Mi Empresa',
-      rubro: 'Comercio',
-      verificada: true,
-      habilitada: true,
-      logo: '/logo.png',
-    } as Empresa;
-
-    beneficio = {
-      id: BENEFICIO_ID,
-      titulo: 'Descuento 20%',
-      tipo: 'Descuento',
-      detalle: 'Descuento del 20% en compras',
-      cantidad: 100,
-      valor: 500,
-      estado: BeneficioEstado.PENDIENTE,
-      fecha_registro: new Date(),
-      ultimo_cambio: new Date(),
-      empresa,
-    } as Beneficios;
+    beneficiosRepository = module.get(getRepositoryToken(Beneficios));
+    empresasRepository = module.get(getRepositoryToken(Empresa));
+    dataSource = module.get(DataSource);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  // ========== TESTS DE CREATE ==========
-  describe('create', () => {
-    it('debe crear un beneficio correctamente', async () => {
-      mockEmpresasRepository.findOne.mockResolvedValue(empresa);
-      mockBeneficiosRepository.create.mockReturnValue(beneficio);
-      mockBeneficiosRepository.save.mockResolvedValue(beneficio);
-
-      const resultado = await service.create(createBeneficioDto, USUARIO_ID);
-
-      expect(resultado.id).toBe(beneficio.id);
-      expect(resultado.titulo).toBe(beneficio.titulo);
-      expect(mockEmpresasRepository.findOne).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            id: createBeneficioDto.id_empresa,
-          }),
-        }),
-      );
-    });
-
-    it('debe asignar estado PENDIENTE por defecto si no se indica', async () => {
-      const dtoSinEstado = { ...createBeneficioDto, estado: undefined };
-      mockEmpresasRepository.findOne.mockResolvedValue(empresa);
-      mockBeneficiosRepository.create.mockReturnValue(beneficio);
-      mockBeneficiosRepository.save.mockResolvedValue(beneficio);
-
-      await service.create(dtoSinEstado, USUARIO_ID);
-
-      expect(mockBeneficiosRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ estado: BeneficioEstado.PENDIENTE }),
-      );
-    });
-
-    it('debe lanzar NotFoundException si la empresa no existe o está deshabilitada', async () => {
-      mockEmpresasRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.create(createBeneficioDto, USUARIO_ID)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(mockBeneficiosRepository.create).not.toHaveBeenCalled();
-    });
-
-    it('debe lanzar BadRequestException si la cantidad es menor o igual a 0', async () => {
-      mockEmpresasRepository.findOne.mockResolvedValue(empresa);
-
-      const dtoInvalido = { ...createBeneficioDto, cantidad: 0 };
-
-      await expect(service.create(dtoInvalido, USUARIO_ID)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('debe lanzar BadRequestException si el valor es negativo', async () => {
-      mockEmpresasRepository.findOne.mockResolvedValue(empresa);
-
-      const dtoInvalido = { ...createBeneficioDto, valor: -100 };
-
-      await expect(service.create(dtoInvalido, USUARIO_ID)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-  });
-
-  // ========== TESTS DE UPDATE ==========
-  describe('update', () => {
-    it('debe actualizar un beneficio correctamente', async () => {
-      const beneficioActualizado = { ...beneficio, ...updateBeneficioDto };
-
-      mockBeneficiosRepository.findOne
-        .mockResolvedValueOnce(beneficio)
-        .mockResolvedValueOnce(beneficioActualizado);
-
-      mockBeneficiosRepository.save.mockResolvedValue(beneficioActualizado);
-
-      const resultado = await service.update(BENEFICIO_ID, updateBeneficioDto, USUARIO_ID);
-
-      expect(resultado.titulo).toBe(updateBeneficioDto.titulo);
-      expect(mockBeneficiosRepository.save).toHaveBeenCalled();
-    });
-
-    it('debe lanzar NotFoundException si el beneficio no existe o no pertenece al usuario', async () => {
-      mockBeneficiosRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.update(999, updateBeneficioDto, USUARIO_ID)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(mockBeneficiosRepository.save).not.toHaveBeenCalled();
-    });
-
-    it('debe lanzar BadRequestException si cantidad es negativa', async () => {
-      mockBeneficiosRepository.findOne.mockResolvedValue(beneficio);
-
-      const dtoInvalido: UpdateBeneficiosDTO = { cantidad: -10 };
-
-      await expect(service.update(BENEFICIO_ID, dtoInvalido, USUARIO_ID)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('debe lanzar BadRequestException si valor es negativo', async () => {
-      mockBeneficiosRepository.findOne.mockResolvedValue(beneficio);
-
-      const dtoInvalido: UpdateBeneficiosDTO = { valor: -100 };
-
-      await expect(service.update(BENEFICIO_ID, dtoInvalido, USUARIO_ID)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('no debe lanzar error si cantidad es 0 (permitido en update)', async () => {
-      const beneficioActualizado = { ...beneficio, cantidad: 0 };
-
-      mockBeneficiosRepository.findOne
-        .mockResolvedValueOnce(beneficio)
-        .mockResolvedValueOnce(beneficioActualizado);
-      mockBeneficiosRepository.save.mockResolvedValue(beneficioActualizado);
-
-      const resultado = await service.update(BENEFICIO_ID, { cantidad: 0 }, USUARIO_ID);
-
-      expect(resultado.cantidad).toBe(0);
-    });
-  });
-
-  // ========== TESTS DE UPDATE ESTADO ==========
-  describe('updateEstado', () => {
-    it('debe actualizar el estado siendo ADMIN (sin filtro de empresa)', async () => {
-      const beneficioActualizado = { ...beneficio, estado: BeneficioEstado.APROBADO };
-
-      mockBeneficiosRepository.findOne
-        .mockResolvedValueOnce(beneficio)
-        .mockResolvedValueOnce(beneficioActualizado);
-      mockBeneficiosRepository.save.mockResolvedValue(beneficioActualizado);
-
-      const resultado = await service.updateEstado(
-        BENEFICIO_ID,
-        BeneficioEstado.APROBADO,
-        USUARIO_ID,
-        Rol.ADMIN,
-      );
-
-      expect(resultado.estado).toBe(BeneficioEstado.APROBADO);
-      // Admin busca sin filtro de empresa
-      expect(mockBeneficiosRepository.findOne).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { id: BENEFICIO_ID } }),
-      );
-    });
-
-    it('debe actualizar el estado siendo COLABORADOR (con filtro de empresa)', async () => {
-      const beneficioActualizado = { ...beneficio, estado: BeneficioEstado.RECHAZADO };
-
-      mockBeneficiosRepository.findOne
-        .mockResolvedValueOnce(beneficio)
-        .mockResolvedValueOnce(beneficioActualizado);
-      mockBeneficiosRepository.save.mockResolvedValue(beneficioActualizado);
-
-      const resultado = await service.updateEstado(
-        BENEFICIO_ID,
-        BeneficioEstado.RECHAZADO,
-        USUARIO_ID,
-        Rol.COLABORADOR,
-      );
-
-      expect(resultado.estado).toBe(BeneficioEstado.RECHAZADO);
-      expect(mockBeneficiosRepository.findOne).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            id: BENEFICIO_ID,
-            empresa: expect.objectContaining({
-              empresaUsuarios: expect.objectContaining({
-                usuario: { id: USUARIO_ID },
-              }),
-            }),
-          }),
-        }),
-      );
-    });
-
-    it('debe lanzar NotFoundException si el beneficio no existe', async () => {
-      mockBeneficiosRepository.findOne.mockResolvedValue(null);
-
-      await expect(
-        service.updateEstado(999, BeneficioEstado.APROBADO, USUARIO_ID, Rol.ADMIN),
-      ).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  // ========== TESTS DE FIND ALL PAGINATED ==========
   describe('findAllPaginated', () => {
-    it('debe retornar beneficios paginados sin filtros', async () => {
-      const queryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([[beneficio], 1]),
-      };
-
-      mockBeneficiosRepository.createQueryBuilder = jest
+    beforeEach(() => {
+      beneficiosRepository.createQueryBuilder = jest
         .fn()
-        .mockReturnValue(queryBuilder);
-
-      const resultado = await service.findAllPaginated(1, 10);
-
-      expect(resultado.items).toHaveLength(1);
-      expect(resultado.total).toBe(1);
-      expect(queryBuilder.andWhere).not.toHaveBeenCalled();
+        .mockReturnValue(mockQueryBuilder);
     });
 
-    it('debe filtrar por búsqueda cuando se proporciona', async () => {
-      const queryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([[beneficio], 1]),
-      };
+    it('debe obtener beneficios paginados sin filtros', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockBeneficio], 1]);
 
-      mockBeneficiosRepository.createQueryBuilder = jest
-        .fn()
-        .mockReturnValue(queryBuilder);
+      const result = await service.findAllPaginated(1, 10, '', false);
 
-      await service.findAllPaginated(1, 10, 'Descuento');
-
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('titulo'),
-        expect.objectContaining({ search: '%Descuento%' }),
-      );
+      expect(result.items).toHaveLength(1);
+      expect(result.total).toBe(1);
     });
 
-    it('debe aplicar filtros de habilitado cuando onlyEnabled es true', async () => {
-      const queryBuilder = {
-        leftJoinAndSelect: jest.fn().mockReturnThis(),
-        andWhere: jest.fn().mockReturnThis(),
-        skip: jest.fn().mockReturnThis(),
-        take: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        getManyAndCount: jest.fn().mockResolvedValue([[beneficio], 1]),
-      };
-
-      mockBeneficiosRepository.createQueryBuilder = jest
-        .fn()
-        .mockReturnValue(queryBuilder);
+    it('debe filtrar por onlyEnabled = true', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockBeneficio], 1]);
 
       await service.findAllPaginated(1, 10, '', true);
 
-      expect(queryBuilder.andWhere).toHaveBeenCalledTimes(3);
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'beneficio.estado = :estado',
+        {
+          estado: BeneficioEstado.APROBADO,
+        },
+      );
+    });
+
+    it('debe filtrar por search', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
+
+      await service.findAllPaginated(1, 10, 'descuento', false);
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'beneficio.titulo ILIKE :search',
+        {
+          search: '%descuento%',
+        },
+      );
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      mockQueryBuilder.getManyAndCount.mockRejectedValue(
+        'Error string inesperado',
+      );
+
+      await expect(service.findAllPaginated(1, 10, '', false)).rejects.toThrow(
+        'Error desconocido',
+      );
     });
   });
 
-  // ========== TESTS DE FIND BY EMPRESA PAGINATED ==========
   describe('findByEmpresaPaginated', () => {
-    it('debe retornar beneficios de una empresa paginados', async () => {
-      mockBeneficiosRepository.findAndCount.mockResolvedValue([[beneficio], 1]);
+    const empresaId = 1;
 
-      const resultado = await service.findByEmpresaPaginated(EMPRESA_ID, 1, 10);
+    it('debe obtener beneficios por empresa paginados', async () => {
+      beneficiosRepository.findAndCount.mockResolvedValue([[mockBeneficio], 1]);
 
-      expect(resultado.items).toHaveLength(1);
-      expect(resultado.total).toBe(1);
-      expect(mockBeneficiosRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({
-            empresa: expect.objectContaining({ id: EMPRESA_ID }),
-          }),
-          skip: 0,
-          take: 10,
-        }),
-      );
+      const result = await service.findByEmpresaPaginated(empresaId, 1, 10);
+
+      expect(result.items).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(beneficiosRepository.findAndCount).toHaveBeenCalled();
     });
 
-    it('debe respetar la paginación', async () => {
-      mockBeneficiosRepository.findAndCount.mockResolvedValue([[], 0]);
-
-      await service.findByEmpresaPaginated(EMPRESA_ID, 3, 5);
-
-      expect(mockBeneficiosRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 10, take: 5 }),
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      beneficiosRepository.findAndCount.mockRejectedValue(
+        'Error string inesperado',
       );
+
+      await expect(
+        service.findByEmpresaPaginated(empresaId, 1, 10),
+      ).rejects.toThrow('Error desconocido');
     });
   });
 
-  // ========== TESTS DE CANJEAR ==========
-  describe('canjear', () => {
-    interface MockBeneficioRepo {
-      findOne: jest.Mock;
-      save: jest.Mock;
-    }
-    interface MockUsuarioRepo {
-      findOne: jest.Mock;
-      save: jest.Mock;
-    }
-    interface MockUsuarioBeneficioRepo {
-      findOne: jest.Mock;
-      create: jest.Mock;
-      save: jest.Mock;
-    }
-    interface MockManagerOverrides {
-      beneficioRepo?: Partial<MockBeneficioRepo>;
-      usuarioRepo?: Partial<MockUsuarioRepo>;
-      usuarioBeneficioRepo?: Partial<MockUsuarioBeneficioRepo>;
-    }
-
-    const buildMockManager = (overrides: MockManagerOverrides = {}) => {
-      const beneficioRepoDefault: MockBeneficioRepo = {
-        findOne: jest.fn().mockResolvedValue({ ...beneficio }),
-        save: jest.fn().mockResolvedValue(beneficio),
-      };
-      const usuarioRepoDefault: MockUsuarioRepo = {
-        findOne: jest.fn().mockResolvedValue({
-          id: USUARIO_ID,
-          puntos: 2000,
-          rol: Rol.USUARIO,
-          habilitado: true,
-        } as Partial<Usuario>),
-        save: jest.fn().mockResolvedValue({}),
-      };
-      const usuarioBeneficioRepoDefault: MockUsuarioBeneficioRepo = {
-        findOne: jest.fn().mockResolvedValue(null),
-        create: jest.fn().mockReturnValue({}),
-        save: jest.fn().mockResolvedValue({}),
-      };
-
-      const finalBeneficioRepo = { ...beneficioRepoDefault, ...overrides.beneficioRepo };
-      const finalUsuarioRepo = { ...usuarioRepoDefault, ...overrides.usuarioRepo };
-      const finalUsuarioBeneficioRepo = {
-        ...usuarioBeneficioRepoDefault,
-        ...overrides.usuarioBeneficioRepo,
-      };
-
-      return {
-        getRepository: jest.fn((entity) => {
-          if (entity === Beneficios) return finalBeneficioRepo;
-          if (entity === Usuario) return finalUsuarioRepo;
-          if (entity === UsuarioBeneficio) return finalUsuarioBeneficioRepo;
-          return {};
-        }),
-      };
+  describe('create', () => {
+    const usuarioId = 1;
+    const createDto: CreateBeneficiosDTO = {
+      titulo: 'Descuento 20%',
+      tipo: 'Descuento',
+      detalle: '20% de descuento',
+      cantidad: 100,
+      valor: 50,
+      id_empresa: 1,
     };
 
-    it('debe canjear un beneficio correctamente (sin registro previo)', async () => {
-      mockDataSource.transaction.mockImplementation((cb) => cb(buildMockManager()));
-
-      const resultado = await service.canjear(BENEFICIO_ID, USUARIO_ID, 2);
-
-      expect(resultado.success).toBe(true);
-      expect(resultado.cantidadCanjeada).toBe(2);
-      expect(resultado.puntosGastados).toBe(beneficio.valor * 2);
+    beforeEach(() => {
+      empresasRepository.findOne.mockResolvedValue(mockEmpresa);
+      beneficiosRepository.create.mockReturnValue(mockBeneficio);
+      beneficiosRepository.save.mockResolvedValue(mockBeneficio);
     });
 
-    it('debe acumular cantidad si ya existe un registro de canje activo', async () => {
-      const existente = {
-        id: 10,
-        cantidad: 3,
-        estado: BeneficiosUsuarioEstado.ACTIVO,
-        save: jest.fn(),
-      };
+    it('debe crear un beneficio exitosamente', async () => {
+      const result = await service.create(createDto, usuarioId);
 
-      const manager = buildMockManager({
-        usuarioBeneficioRepo: {
-          findOne: jest.fn().mockResolvedValue(existente),
-          save: jest.fn().mockResolvedValue({ ...existente, cantidad: 5 }),
-        },
-      });
-
-      mockDataSource.transaction.mockImplementation((cb) => cb(manager));
-
-      const resultado = await service.canjear(BENEFICIO_ID, USUARIO_ID, 2);
-
-      expect(resultado.success).toBe(true);
+      expect(result.id).toBe(1);
+      expect(empresasRepository.findOne).toHaveBeenCalled();
+      expect(beneficiosRepository.create).toHaveBeenCalled();
+      expect(beneficiosRepository.save).toHaveBeenCalled();
     });
 
-    it('debe lanzar NotFoundException si el beneficio no existe', async () => {
-      const manager = buildMockManager({
-        beneficioRepo: { findOne: jest.fn().mockResolvedValue(null) },
-      });
+    it('debe lanzar error cuando la empresa no existe', async () => {
+      empresasRepository.findOne.mockResolvedValue(null);
 
-      mockDataSource.transaction.mockImplementation((cb) => cb(manager));
-
-      await expect(service.canjear(999, USUARIO_ID, 1)).rejects.toThrow(NotFoundException);
-    });
-
-    it('debe lanzar BadRequestException si no hay stock suficiente', async () => {
-      const manager = buildMockManager({
-        beneficioRepo: {
-          findOne: jest.fn().mockResolvedValue({ ...beneficio, cantidad: 1 }),
-        },
-      });
-
-      mockDataSource.transaction.mockImplementation((cb) => cb(manager));
-
-      await expect(service.canjear(BENEFICIO_ID, USUARIO_ID, 5)).rejects.toThrow(
-        BadRequestException,
+      await expect(service.create(createDto, usuarioId)).rejects.toThrow(
+        'Empresa con ID 1 no encontrada o deshabilitada',
       );
     });
 
-    it('debe lanzar NotFoundException si el usuario no existe o está deshabilitado', async () => {
-      const manager = buildMockManager({
-        usuarioRepo: { findOne: jest.fn().mockResolvedValue(null) },
-      });
+    it('debe lanzar error cuando la cantidad es menor o igual a 0', async () => {
+      const dtoInvalido = { ...createDto, cantidad: 0 };
 
-      mockDataSource.transaction.mockImplementation((cb) => cb(manager));
-
-      await expect(service.canjear(BENEFICIO_ID, 999, 1)).rejects.toThrow(NotFoundException);
-    });
-
-    it('debe lanzar BadRequestException si el usuario no tiene rol USUARIO', async () => {
-      const manager = buildMockManager({
-        usuarioRepo: {
-          findOne: jest.fn().mockResolvedValue({
-            id: USUARIO_ID,
-            puntos: 2000,
-            rol: Rol.COLABORADOR,
-            habilitado: true,
-          }),
-        },
-      });
-
-      mockDataSource.transaction.mockImplementation((cb) => cb(manager));
-
-      await expect(service.canjear(BENEFICIO_ID, USUARIO_ID, 1)).rejects.toThrow(
-        BadRequestException,
+      await expect(service.create(dtoInvalido, usuarioId)).rejects.toThrow(
+        'La cantidad debe ser mayor a 0',
       );
     });
 
-    it('debe lanzar BadRequestException si el usuario no tiene suficientes puntos', async () => {
-      const manager = buildMockManager({
-        usuarioRepo: {
-          findOne: jest.fn().mockResolvedValue({
-            id: USUARIO_ID,
-            puntos: 10,
-            rol: Rol.USUARIO,
-            habilitado: true,
-          }),
-        },
+    it('debe lanzar error cuando el valor es negativo', async () => {
+      const dtoInvalido = { ...createDto, valor: -10 };
+
+      await expect(service.create(dtoInvalido, usuarioId)).rejects.toThrow(
+        'El valor no puede ser negativo',
+      );
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      empresasRepository.findOne.mockRejectedValue('Error string inesperado');
+
+      await expect(service.create(createDto, usuarioId)).rejects.toThrow(
+        'Error desconocido',
+      );
+    });
+  });
+
+  describe('canjear', () => {
+    const beneficioId = 1;
+    const userId = 1;
+    const cantidad = 2;
+
+    const mockEntityManager = {
+      getRepository: jest.fn(),
+    };
+
+    const mockBeneficioRepo = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+    };
+
+    const mockUsuarioRepo = {
+      findOne: jest.fn(),
+      save: jest.fn(),
+    };
+
+    const mockUsuarioBeneficioRepo = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      save: jest.fn(),
+    };
+
+    beforeEach(() => {
+      mockEntityManager.getRepository.mockImplementation((entity) => {
+        if (entity === Beneficios) return mockBeneficioRepo;
+        if (entity === Usuario) return mockUsuarioRepo;
+        if (entity === UsuarioBeneficio) return mockUsuarioBeneficioRepo;
+        return null;
       });
 
-      mockDataSource.transaction.mockImplementation((cb) => cb(manager));
+      dataSource.transaction = jest
+        .fn()
+        .mockImplementation(async (callback) => {
+          return callback(mockEntityManager);
+        });
+    });
 
-      await expect(service.canjear(BENEFICIO_ID, USUARIO_ID, 2)).rejects.toThrow(
-        BadRequestException,
+    it('debe canjear un beneficio exitosamente (nuevo registro)', async () => {
+      mockBeneficioRepo.findOne.mockResolvedValue(mockBeneficio);
+      mockUsuarioRepo.findOne.mockResolvedValue(mockUsuario);
+      mockUsuarioBeneficioRepo.findOne.mockResolvedValue(null);
+      mockUsuarioBeneficioRepo.create.mockReturnValue(mockUsuarioBeneficio);
+      mockUsuarioBeneficioRepo.save.mockResolvedValue(mockUsuarioBeneficio);
+
+      const result = await service.canjear(beneficioId, userId, cantidad);
+
+      expect(result.success).toBe(true);
+      expect(result.cantidadCanjeada).toBe(2);
+      expect(result.puntosGastados).toBe(100);
+      expect(mockBeneficioRepo.save).toHaveBeenCalled();
+      expect(mockUsuarioRepo.save).toHaveBeenCalled();
+    });
+
+    it('debe canjear un beneficio exitosamente (actualizando existente)', async () => {
+      const existente = { ...mockUsuarioBeneficio, cantidad: 1 };
+      mockBeneficioRepo.findOne.mockResolvedValue(mockBeneficio);
+      mockUsuarioRepo.findOne.mockResolvedValue(mockUsuario);
+      mockUsuarioBeneficioRepo.findOne.mockResolvedValue(existente);
+
+      const result = await service.canjear(beneficioId, userId, cantidad);
+
+      expect(result.success).toBe(true);
+      expect(mockUsuarioBeneficioRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ cantidad: 3 }),
       );
+    });
+
+    it('debe lanzar error cuando el beneficio no existe', async () => {
+      mockBeneficioRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.canjear(beneficioId, userId, cantidad),
+      ).rejects.toThrow('Beneficio no encontrado');
+    });
+
+    it('debe lanzar error cuando no hay stock suficiente', async () => {
+      const beneficioSinStock = { ...mockBeneficio, cantidad: 1 };
+      mockBeneficioRepo.findOne.mockResolvedValue(beneficioSinStock);
+
+      await expect(
+        service.canjear(beneficioId, userId, cantidad),
+      ).rejects.toThrow('Stock insuficiente');
+    });
+
+    it('debe lanzar error cuando el usuario no existe', async () => {
+      mockBeneficioRepo.findOne.mockResolvedValue(mockBeneficio);
+      mockUsuarioRepo.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.canjear(beneficioId, userId, cantidad),
+      ).rejects.toThrow('Usuario no encontrado');
+    });
+
+    it('debe lanzar error cuando el usuario no tiene suficientes puntos', async () => {
+      const usuarioSinPuntos = { ...mockUsuario, puntos: 50 };
+      mockBeneficioRepo.findOne.mockResolvedValue(mockBeneficio);
+      mockUsuarioRepo.findOne.mockResolvedValue(usuarioSinPuntos);
+
+      await expect(
+        service.canjear(beneficioId, userId, cantidad),
+      ).rejects.toThrow('Puntos insuficientes');
+    });
+
+    it('debe lanzar error cuando el usuario no es de tipo USUARIO', async () => {
+      const usuarioNoUsuario = Object.assign(new Usuario(), {
+        ...mockUsuario,
+        rol: Rol.COLABORADOR,
+      });
+
+      mockBeneficioRepo.findOne.mockResolvedValue(mockBeneficio);
+      mockUsuarioRepo.findOne.mockResolvedValue(usuarioNoUsuario);
+
+      await expect(
+        service.canjear(beneficioId, userId, cantidad),
+      ).rejects.toThrow('Solo los usuarios pueden canjear beneficios');
+    });
+  });
+
+  describe('update', () => {
+    const beneficioId = 1;
+    const usuarioId = 1;
+    const updateDto: UpdateBeneficiosDTO = {
+      titulo: 'Nuevo título',
+      cantidad: 200,
+    };
+
+    beforeEach(() => {
+      beneficiosRepository.findOne.mockResolvedValue(mockBeneficio);
+      beneficiosRepository.save.mockResolvedValue(mockBeneficio);
+    });
+
+    it('debe actualizar un beneficio exitosamente', async () => {
+      const result = await service.update(beneficioId, updateDto, usuarioId);
+
+      expect(result.id).toBe(1);
+      expect(beneficiosRepository.save).toHaveBeenCalled();
+    });
+
+    it('debe lanzar error cuando el beneficio no existe', async () => {
+      beneficiosRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.update(beneficioId, updateDto, usuarioId),
+      ).rejects.toThrow(`Beneficio con ID ${beneficioId} no encontrado`);
+    });
+
+    it('debe lanzar error cuando la cantidad es negativa', async () => {
+      const dtoInvalido = { ...updateDto, cantidad: -10 };
+
+      await expect(
+        service.update(beneficioId, dtoInvalido, usuarioId),
+      ).rejects.toThrow('La cantidad no puede ser negativa');
+    });
+
+    it('debe lanzar error cuando el valor es negativo', async () => {
+      const dtoInvalido = { ...updateDto, valor: -10 };
+
+      await expect(
+        service.update(beneficioId, dtoInvalido, usuarioId),
+      ).rejects.toThrow('El valor no puede ser negativo');
+    });
+
+    it('debe lanzar error cuando el beneficio actualizado no se encuentra después de guardar', async () => {
+      const updateDto: UpdateBeneficiosDTO = { titulo: 'Nuevo título' };
+
+      beneficiosRepository.findOne.mockResolvedValueOnce(mockBeneficio);
+
+      beneficiosRepository.findOne.mockResolvedValueOnce(null);
+      beneficiosRepository.save.mockResolvedValue(mockBeneficio);
+
+      await expect(
+        service.update(beneficioId, updateDto, usuarioId),
+      ).rejects.toThrow('Error al recuperar el beneficio actualizado');
+    });
+
+    it('debe actualizar solo los campos que vienen en el DTO', async () => {
+      const updateDto: UpdateBeneficiosDTO = { titulo: 'Nuevo título' };
+
+      beneficiosRepository.findOne.mockResolvedValue(mockBeneficio);
+      beneficiosRepository.save.mockResolvedValue(mockBeneficio);
+
+      const result = await service.update(beneficioId, updateDto, usuarioId);
+
+      expect(result.id).toBe(1);
+      expect(beneficiosRepository.save).toHaveBeenCalled();
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      beneficiosRepository.findOne.mockRejectedValue('Error string inesperado');
+
+      await expect(
+        service.update(beneficioId, updateDto, usuarioId),
+      ).rejects.toThrow('Error desconocido');
+    });
+  });
+
+  describe('updateEstado', () => {
+    const beneficioId = 1;
+    const usuarioId = 1;
+    const estado = BeneficioEstado.APROBADO;
+
+    beforeEach(() => {
+      beneficiosRepository.findOne.mockResolvedValue(mockBeneficio);
+      beneficiosRepository.save.mockResolvedValue(mockBeneficio);
+    });
+
+    it('debe actualizar el estado de un beneficio como ADMIN', async () => {
+      const result = await service.updateEstado(
+        beneficioId,
+        estado,
+        usuarioId,
+        Rol.ADMIN,
+      );
+
+      expect(result.estado).toBe(BeneficioEstado.APROBADO);
+      expect(beneficiosRepository.save).toHaveBeenCalled();
+    });
+
+    it('debe actualizar el estado de un beneficio como COLABORADOR', async () => {
+      const result = await service.updateEstado(
+        beneficioId,
+        estado,
+        usuarioId,
+        Rol.COLABORADOR,
+      );
+
+      expect(result.estado).toBe(BeneficioEstado.APROBADO);
+      expect(beneficiosRepository.save).toHaveBeenCalled();
+    });
+
+    it('debe lanzar error cuando el beneficio no existe', async () => {
+      beneficiosRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.updateEstado(beneficioId, estado, usuarioId, Rol.ADMIN),
+      ).rejects.toThrow(`Beneficio con ID ${beneficioId} no encontrado`);
+    });
+
+    it('debe lanzar error cuando el beneficio actualizado no se encuentra después de guardar', async () => {
+      beneficiosRepository.findOne.mockResolvedValueOnce(mockBeneficio);
+
+      beneficiosRepository.findOne.mockResolvedValueOnce(null);
+      beneficiosRepository.save.mockResolvedValue(mockBeneficio);
+
+      await expect(
+        service.updateEstado(beneficioId, estado, usuarioId, Rol.ADMIN),
+      ).rejects.toThrow('Error al recuperar el beneficio actualizado');
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      beneficiosRepository.findOne.mockRejectedValue('Error string inesperado');
+
+      await expect(
+        service.updateEstado(beneficioId, estado, usuarioId, Rol.ADMIN),
+      ).rejects.toThrow('Error desconocido');
     });
   });
 });

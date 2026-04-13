@@ -15,11 +15,6 @@ import { Contacto } from './contacto.entity';
 import { Direccion } from './direccion.entity';
 import { Usuario } from './usuario.entity';
 
-/**
- * Entidad Empresa
- * Antes: perfil_empresa
- * Representa empresas que ofrecen beneficios/cupones
- */
 @Entity('empresa')
 export class Empresa {
   @ApiProperty({

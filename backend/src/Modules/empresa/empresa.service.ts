@@ -12,7 +12,6 @@ import { CreateBeneficiosDTO } from '../benefit/dto/create_beneficios.dto';
 import { UpdateBeneficiosDTO } from '../benefit/dto/update_beneficios.dto';
 import { EmpresaUsuario } from '../../Entities/empresa_usuario.entity';
 import { Usuario } from '../../Entities/usuario.entity';
-
 import { HashService } from '../../common/bcryptService/hashService';
 import { Rol, RolSecundario } from '../user/enums/enums';
 import { InvitacionesService } from '../invitaciones/invitacion.service';
@@ -20,30 +19,6 @@ import { ErrorManager } from '../../common/errors/error.manager';
 import { BeneficiosResponseDTO } from '../benefit/dto/response_beneficios.dto';
 import { Contacto } from '../../Entities/contacto.entity';
 
-/**
- * ============================================================
- * EmpresasService
- * ============================================================
- * Servicio encargado de la lógica de negocio relacionada
- * a las Empresas dentro del sistema.
- *
- * Responsabilidades principales:
- * - CRUD de empresas
- * - Soft delete (deshabilitar / restaurar)
- * - Paginación y búsqueda
- * - Manejo de imágenes asociadas
- * - Generación de JWT tras cambios sensibles
- *
- * Seguridad implementada:
- * - Hash de contraseñas con bcrypt
- * - Validación de contraseña actual antes de modificarla
- *
- * Arquitectura:
- * - Patrón Service + Repository (TypeORM)
- * - Uso de DTOs para estandarizar respuestas
- * - Manejo explícito de excepciones HTTP
- * ============================================================
- */
 @Injectable()
 export class EmpresaService {
   private readonly logger = new Logger(EmpresaService.name);

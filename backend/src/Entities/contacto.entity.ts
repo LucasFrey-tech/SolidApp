@@ -1,10 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-/**
- * Entidad Contacto
- * Almacena información de contacto reutilizable para Usuarios, Empresas y Organizaciones
- */
 @Entity('contacto')
 export class Contacto {
   @ApiProperty({

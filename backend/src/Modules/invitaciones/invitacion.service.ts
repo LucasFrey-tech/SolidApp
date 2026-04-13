@@ -10,6 +10,7 @@ import { EmailService } from '../email/email.service';
 import { RolSecundario } from '../user/enums/enums';
 import { ErrorManager } from '../../common/errors/error.manager';
 import { ResultadoProcesamiento } from './type/resultadoProcesamiento';
+
 @Injectable()
 export class InvitacionesService {
   constructor(

@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Organizacion } from '../../Entities/organizacion.entity';
@@ -22,32 +22,6 @@ import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
 import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
 import { Contacto } from '../../Entities/contacto.entity';
 
-/**
- * ============================================================
- * OrganizationsService
- * ============================================================
- *
- * Servicio encargado de la lógica de negocio relacionada
- * con las Organizaciones del sistema.
- *
- * Responsabilidades:
- * - Gestión CRUD de organizaciones
- * - Paginación y búsqueda
- * - Soft delete y restauración
- * - Gestión de credenciales (email y contraseña)
- * - Generación de JWT actualizado
- * - Obtención de campañas asociadas
- *
- * Arquitectura:
- * Controller → Service → Repository (TypeORM)
- *
- * Dependencias:
- * - organizationRepository (TypeORM)
- * - CampaignsService (relación con campañas)
- * - JwtService (emisión de tokens)
- *
- * ============================================================
- */
 @Injectable()
 export class OrganizacionService {
   private readonly logger = new Logger(OrganizacionService.name);

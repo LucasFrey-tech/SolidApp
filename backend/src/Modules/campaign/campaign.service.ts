@@ -15,9 +15,6 @@ import { ResponseCampaignsDetailPaginatedDto } from './dto/response_campaign_pag
 import { Usuario } from '../../Entities/usuario.entity';
 import { ErrorManager } from '../../common/errors/error.manager';
 
-/**
- * Servicio que maneja la lógica de negocio de las Campañas Solidarias
- */
 @Injectable()
 export class CampaignsService {
   private readonly logger = new Logger(CampaignsService.name);

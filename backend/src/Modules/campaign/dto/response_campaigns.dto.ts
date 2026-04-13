@@ -2,9 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { OrganizacionSummaryDto } from '../../organizacion/dto/summary_organizacion.dto';
 import { UsuarioResumenDto } from '../../user/dto/response_usuario.dto';
 
-/**
- * DTO para la respuesta de las Campañas.
- */
 export class ResponseCampaignsDto {
   @ApiProperty({
     example: 1,

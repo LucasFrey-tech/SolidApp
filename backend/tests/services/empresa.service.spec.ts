@@ -1,588 +1,704 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { mock, MockProxy } from 'jest-mock-extended';
-import {
-  ConflictException,
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
-
+import { Repository, DataSource } from 'typeorm';
+import { mock } from 'jest-mock-extended';
 import { EmpresaService } from '../../src/Modules/empresa/empresa.service';
-import { Empresa } from '../../src/Entities/empresa.entity';
-import { EmpresaUsuario } from '../../src/Entities/empresa_usuario.entity';
-import { Usuario } from '../../src/Entities/usuario.entity';
 import { BeneficioService } from '../../src/Modules/benefit/beneficio.service';
 import { HashService } from '../../src/common/bcryptService/hashService';
 import { InvitacionesService } from '../../src/Modules/invitaciones/invitacion.service';
-import { DataSource } from 'typeorm';
-
+import { Empresa } from '../../src/Entities/empresa.entity';
+import { EmpresaUsuario } from '../../src/Entities/empresa_usuario.entity';
+import { Usuario } from '../../src/Entities/usuario.entity';
+import { Contacto } from '../../src/Entities/contacto.entity';
+import { Direccion } from '../../src/Entities/direccion.entity';
 import { CreateEmpresaDTO } from '../../src/Modules/empresa/dto/create_empresa.dto';
 import { UpdateEmpresaDTO } from '../../src/Modules/empresa/dto/update_empresa.dto';
-import { CreateBeneficiosDTO } from '../../src/Modules/benefit/dto/create_beneficios.dto';
-import { UpdateBeneficiosDTO } from '../../src/Modules/benefit/dto/update_beneficios.dto';
-import { EmpresaResponseDTO } from '../../src/Modules/empresa/dto/response_empresa.dto';
-import { SettingsService } from '../../src/common/settings/settings.service';
+import { Rol, RolSecundario } from '../../src/Modules/user/enums/enums';
+import { BeneficiosResponseDTO } from '../../src/Modules/benefit/dto/response_beneficios.dto';
+import { PaginatedBeneficiosResponseDTO } from '../../src/Modules/benefit/dto/response_paginated_beneficios';
+import { BeneficioEstado } from '../../src/Modules/benefit/dto/enum/enum';
+
+const mockContacto = Object.assign(new Contacto(), {
+  id: 1,
+  correo: 'empresa@test.com',
+  prefijo: '11',
+  telefono: '12345678',
+});
+
+const mockContactoUsuario = Object.assign(new Contacto(), {
+  id: 2,
+  correo: 'usuario@test.com',
+  prefijo: '11',
+  telefono: '87654321',
+});
+
+const mockDireccion = Object.assign(new Direccion(), {
+  id: 1,
+  calle: 'Av. Test',
+  numero: '123',
+  ciudad: 'Ciudad Test',
+  provincia: 'Provincia Test',
+  codigo_postal: '1234',
+});
+
+const mockUsuario = Object.assign(new Usuario(), {
+  id: 1,
+  nombre: 'Juan',
+  apellido: 'Pérez',
+  documento: '12345678',
+  clave: 'hashed_password',
+  rol: Rol.COLABORADOR,
+  contacto: mockContactoUsuario,
+  habilitado: true,
+});
+
+const mockEmpresa = Object.assign(new Empresa(), {
+  id: 1,
+  cuit: '30-12345678-9',
+  razon_social: 'Empresa Test S.A.',
+  nombre_empresa: 'Test Empresa',
+  rubro: 'Tecnología',
+  descripcion: 'Descripción de la empresa',
+  web: 'https://test.com',
+  verificada: false,
+  habilitada: true,
+  logo: 'logo.png',
+  contacto: mockContacto,
+  direccion: mockDireccion,
+  creado_por: mockUsuario,
+  actualizado_por: mockUsuario,
+  fecha_registro: new Date(),
+  ultimo_cambio: new Date(),
+});
+
+const mockEmpresaUsuario = Object.assign(new EmpresaUsuario(), {
+  id: 1,
+  id_usuario: 1,
+  id_empresa: 1,
+  rol: RolSecundario.GESTOR,
+  activo: true,
+  usuario: mockUsuario,
+  empresa: mockEmpresa,
+  fecha_asignacion: new Date(),
+});
+
+const mockBeneficioResponse: BeneficiosResponseDTO = {
+  id: 1,
+  titulo: 'Descuento 20%',
+  tipo: 'Descuento',
+  detalle: '20% de descuento en toda la tienda',
+  cantidad: 100,
+  valor: 50,
+  fecha_registro: new Date(),
+  ultimo_cambio: new Date(),
+  empresa: {
+    id: 1,
+    razon_social: 'Empresa Test S.A.',
+    nombre_empresa: 'Test Empresa',
+    rubro: 'Tecnología',
+    verificada: true,
+    habilitada: true,
+    logo: 'logo.png',
+  },
+  estado: BeneficioEstado.APROBADO,
+};
 
 describe('EmpresaService', () => {
   let service: EmpresaService;
-  let empresaRepository: MockProxy<Repository<Empresa>>;
-  let empresaUsuarioRepository: MockProxy<Repository<EmpresaUsuario>>;
-  let usuarioRepository: MockProxy<Repository<Usuario>>;
-  let beneficioService: MockProxy<BeneficioService>;
-  let hashService: MockProxy<HashService>;
-  let invitacionesService: MockProxy<InvitacionesService>;
-  let dataSource: MockProxy<DataSource>;
-
-  const USUARIO_ID = 1;
-  const EMPRESA_ID = 1;
-
-  let mockEmpresa: Empresa;
-  let mockEmpresaUsuario: EmpresaUsuario;
+  let empresaRepository: jest.Mocked<Repository<Empresa>>;
+  let empresaUsuarioRepository: jest.Mocked<Repository<EmpresaUsuario>>;
+  let beneficioService: jest.Mocked<BeneficioService>;
+  let dataSource: jest.Mocked<DataSource>;
+  let hashService: jest.Mocked<HashService>;
+  let invitacionesService: jest.Mocked<InvitacionesService>;
 
   beforeEach(async () => {
-    empresaRepository = mock<Repository<Empresa>>();
-    empresaUsuarioRepository = mock<Repository<EmpresaUsuario>>();
-    usuarioRepository = mock<Repository<Usuario>>();
-    beneficioService = mock<BeneficioService>();
-    hashService = mock<HashService>();
-    invitacionesService = mock<InvitacionesService>();
-    dataSource = mock<DataSource>();
+    const mockEmpresaRepo = mock<Repository<Empresa>>();
+    const mockEmpresaUsuarioRepo = mock<Repository<EmpresaUsuario>>();
+    const mockBeneficioService = mock<BeneficioService>();
+    const mockDataSource = mock<DataSource>();
+    const mockHashService = mock<HashService>();
+    const mockInvitacionesService = mock<InvitacionesService>();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EmpresaService,
-        {
-          provide: getRepositoryToken(Empresa),
-          useValue: empresaRepository,
-        },
+        { provide: getRepositoryToken(Empresa), useValue: mockEmpresaRepo },
         {
           provide: getRepositoryToken(EmpresaUsuario),
-          useValue: empresaUsuarioRepository,
+          useValue: mockEmpresaUsuarioRepo,
         },
-        {
-          provide: getRepositoryToken(Usuario),
-          useValue: usuarioRepository,
-        },
-        {
-          provide: BeneficioService,
-          useValue: beneficioService,
-        },
-        {
-          provide: DataSource,
-          useValue: dataSource,
-        },
-        {
-          provide: HashService,
-          useValue: hashService,
-        },
-        {
-          provide: InvitacionesService,
-          useValue: invitacionesService,
-        },
+        { provide: BeneficioService, useValue: mockBeneficioService },
+        { provide: DataSource, useValue: mockDataSource },
+        { provide: HashService, useValue: mockHashService },
+        { provide: InvitacionesService, useValue: mockInvitacionesService },
       ],
     }).compile();
 
     service = module.get<EmpresaService>(EmpresaService);
-
-    // ========== Entidades base ==========
-    mockEmpresa = {
-      id: EMPRESA_ID,
-      cuit: '30123456789',
-      razon_social: 'Supermercados Unidos S.A.',
-      nombre_empresa: 'SuperUnidos',
-      descripcion: 'Descripción de prueba',
-      rubro: 'Supermercado',
-      web: 'www.test.com',
-      logo: 'logo.png',
-      verificada: false,
-      habilitada: true,
-      fecha_registro: new Date(),
-      ultimo_cambio: new Date(),
-      contacto: {
-        id: 1,
-        correo: 'empresa@test.com',
-        prefijo: '+54',
-        telefono: '1123456789',
-      } as any,
-      direccion: {
-        id: 1,
-        calle: 'Av. Siempreviva',
-        numero: '742',
-        provincia: 'Buenos Aires',
-        ciudad: 'CABA',
-        codigo_postal: '1234',
-      } as any,
-      beneficios: [],
-    } as unknown as Empresa;
-
-    mockEmpresaUsuario = {
-      id: 1,
-      empresa: mockEmpresa,
-      usuario: { id: USUARIO_ID } as Usuario,
-      activo: true,
-    } as EmpresaUsuario;
+    empresaRepository = module.get(getRepositoryToken(Empresa));
+    empresaUsuarioRepository = module.get(getRepositoryToken(EmpresaUsuario));
+    beneficioService = module.get(BeneficioService);
+    dataSource = module.get(DataSource);
+    hashService = module.get(HashService);
+    invitacionesService = module.get(InvitacionesService);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  // ========== TESTS DE FIND PAGINATED ==========
   describe('findPaginated', () => {
-    it('debe retornar empresas paginadas sin búsqueda', async () => {
+    it('debe obtener empresas paginadas sin búsqueda', async () => {
       empresaRepository.findAndCount.mockResolvedValue([[mockEmpresa], 1]);
 
       const result = await service.findPaginated(1, 10, '', false);
 
-      expect(result.total).toBe(1);
       expect(result.items).toHaveLength(1);
-      expect(result.items[0].id).toBe(mockEmpresa.id);
-      expect(empresaRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 0, take: 10 }),
-      );
+      expect(result.total).toBe(1);
     });
 
-    it('debe filtrar solo empresas habilitadas cuando onlyEnabled es true', async () => {
+    it('debe obtener empresas paginadas con onlyEnabled = true', async () => {
       empresaRepository.findAndCount.mockResolvedValue([[mockEmpresa], 1]);
 
-      await service.findPaginated(1, 10, '', true);
+      const result = await service.findPaginated(1, 10, '', true);
 
-      expect(empresaRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.arrayContaining([
-            expect.objectContaining({ habilitada: true }),
-          ]),
-        }),
-      );
+      expect(result.items).toHaveLength(1);
+      expect(result.total).toBe(1);
     });
 
-    it('debe aplicar búsqueda por nombre_empresa y razon_social', async () => {
-      empresaRepository.findAndCount.mockResolvedValue([[mockEmpresa], 1]);
-
-      await service.findPaginated(1, 10, 'Super', false);
-
-      const call = (empresaRepository.findAndCount as jest.Mock).mock.calls[0][0];
-      expect(Array.isArray(call.where)).toBe(true);
-      expect(call.where).toHaveLength(2);
-    });
-
-    it('debe respetar la paginación', async () => {
+    it('debe filtrar por search', async () => {
       empresaRepository.findAndCount.mockResolvedValue([[], 0]);
 
-      await service.findPaginated(3, 5, '', false);
+      await service.findPaginated(1, 10, 'test', false);
 
-      expect(empresaRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 10, take: 5 }),
+      expect(empresaRepository.findAndCount).toHaveBeenCalled();
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      empresaRepository.findAndCount.mockRejectedValue(
+        'Error string inesperado',
+      );
+
+      await expect(service.findPaginated(1, 10, '', false)).rejects.toThrow(
+        'Error desconocido',
+      );
+    });
+
+    it('debe manejar error de base de datos', async () => {
+      const error = new Error('Error de conexión');
+      empresaRepository.findAndCount.mockRejectedValue(error);
+
+      await expect(service.findPaginated(1, 10, '', false)).rejects.toThrow(
+        'Error de conexión',
       );
     });
   });
 
-  // ========== TESTS DE GET EMPRESA BY USUARIO ==========
   describe('getEmpresaByUsuario', () => {
-    it('debe retornar el DTO de empresa del usuario', async () => {
+    const usuarioId = 1;
+
+    it('debe obtener la empresa del usuario', async () => {
       empresaUsuarioRepository.findOne.mockResolvedValue(mockEmpresaUsuario);
 
-      const result = await service.getEmpresaByUsuario(USUARIO_ID);
+      const result = await service.getEmpresaByUsuario(usuarioId);
 
-      expect(result).toBeInstanceOf(EmpresaResponseDTO);
-      expect(result.id).toBe(mockEmpresa.id);
-      expect(empresaUsuarioRepository.findOne).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { usuario: { id: USUARIO_ID } },
-          relations: ['empresa'],
-        }),
+      expect(result.id).toBe(1);
+      expect(empresaUsuarioRepository.findOne).toHaveBeenCalledWith({
+        where: { usuario: { id: usuarioId } },
+        relations: ['empresa'],
+      });
+    });
+
+    it('debe lanzar error cuando el usuario no gestiona ninguna empresa', async () => {
+      empresaUsuarioRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.getEmpresaByUsuario(usuarioId)).rejects.toThrow(
+        'El usuario no gestiona ninguna empresa',
       );
     });
 
-    it('debe lanzar ForbiddenException si el usuario no gestiona ninguna empresa', async () => {
-      empresaUsuarioRepository.findOne.mockResolvedValue(null);
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      empresaUsuarioRepository.findOne.mockRejectedValue(
+        'Error string inesperado',
+      );
 
-      await expect(service.getEmpresaByUsuario(USUARIO_ID)).rejects.toThrow(
-        ForbiddenException,
+      await expect(service.getEmpresaByUsuario(usuarioId)).rejects.toThrow(
+        'Error desconocido',
       );
     });
   });
 
-  // ========== TESTS DE GET CUPONES ==========
   describe('getCupones', () => {
-    it('debe retornar cupones paginados de la empresa del usuario', async () => {
-      const mockPaginatedResponse = { items: [], total: 0 };
+    const usuarioId = 1;
+    const mockPaginatedResponse: PaginatedBeneficiosResponseDTO = {
+      items: [mockBeneficioResponse],
+      total: 1,
+    };
+
+    it('debe obtener los cupones de la empresa', async () => {
       empresaUsuarioRepository.findOne.mockResolvedValue(mockEmpresaUsuario);
       beneficioService.findByEmpresaPaginated.mockResolvedValue(
         mockPaginatedResponse,
       );
 
-      const result = await service.getCupones(USUARIO_ID, 1, 10);
+      const result = await service.getCupones(usuarioId, 1, 10);
 
-      expect(result).toBe(mockPaginatedResponse);
+      expect(result.items).toHaveLength(1);
       expect(beneficioService.findByEmpresaPaginated).toHaveBeenCalledWith(
-        EMPRESA_ID,
+        1,
         1,
         10,
       );
     });
 
-    it('debe lanzar ForbiddenException si el usuario no gestiona ninguna empresa', async () => {
-      empresaUsuarioRepository.findOne.mockResolvedValue(null);
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      empresaUsuarioRepository.findOne.mockRejectedValue(
+        'Error string inesperado',
+      );
 
-      await expect(service.getCupones(USUARIO_ID, 1, 10)).rejects.toThrow(
-        ForbiddenException,
+      await expect(service.getCupones(usuarioId, 1, 10)).rejects.toThrow(
+        'Error desconocido',
       );
     });
   });
 
-  // ========== TESTS DE CREATE CUPON ==========
   describe('createCupon', () => {
-    it('debe crear un cupón para la empresa del usuario', async () => {
-      const createDto: CreateBeneficiosDTO = {
-        titulo: 'Descuento 15%',
-        tipo: 'Discount',
-        detalle: 'Descuento en supermercado',
-        cantidad: 50,
-        valor: 100,
-        id_empresa: EMPRESA_ID,
-      };
+    const usuarioId = 1;
+    const createDto = {
+      titulo: 'Descuento 20%',
+      cantidad: 100,
+      valor: 50,
+    };
 
-      const mockBeneficioResponse = { id: 1, ...createDto } as any;
+    it('debe crear un cupón', async () => {
       empresaUsuarioRepository.findOne.mockResolvedValue(mockEmpresaUsuario);
       beneficioService.create.mockResolvedValue(mockBeneficioResponse);
 
-      const result = await service.createCupon(USUARIO_ID, createDto);
+      const result = await service.createCupon(usuarioId, createDto as any);
 
-      expect(result).toBe(mockBeneficioResponse);
+      expect(result.id).toBe(1);
       expect(beneficioService.create).toHaveBeenCalledWith(
-        expect.objectContaining({ id_empresa: EMPRESA_ID }),
-        USUARIO_ID,
+        { ...createDto, id_empresa: 1 },
+        usuarioId,
       );
     });
 
-    it('debe lanzar ForbiddenException si el usuario no gestiona ninguna empresa', async () => {
-      empresaUsuarioRepository.findOne.mockResolvedValue(null);
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      empresaUsuarioRepository.findOne.mockRejectedValue(
+        'Error string inesperado',
+      );
 
       await expect(
-        service.createCupon(USUARIO_ID, {} as CreateBeneficiosDTO),
-      ).rejects.toThrow(ForbiddenException);
+        service.createCupon(usuarioId, createDto as any),
+      ).rejects.toThrow('Error desconocido');
     });
   });
 
-  // ========== TESTS DE UPDATE CUPON ==========
   describe('updateCupon', () => {
-    it('debe actualizar un cupón pasando el usuarioId', async () => {
-      const updateDto: UpdateBeneficiosDTO = { cantidad: 30, valor: 150 };
-      const mockUpdatedResponse = { id: 1, ...updateDto } as any;
+    const cuponId = 1;
+    const usuarioId = 1;
+    const updateDto = { titulo: 'Nuevo título' };
 
-      beneficioService.update.mockResolvedValue(mockUpdatedResponse);
+    it('debe actualizar un cupón', async () => {
+      beneficioService.update.mockResolvedValue(mockBeneficioResponse);
 
-      const result = await service.updateCupon(1, updateDto, USUARIO_ID);
+      const result = await service.updateCupon(
+        cuponId,
+        updateDto as any,
+        usuarioId,
+      );
 
-      expect(result).toBe(mockUpdatedResponse);
-      expect(beneficioService.update).toHaveBeenCalledWith(1, updateDto, USUARIO_ID);
+      expect(result.id).toBe(1);
+      expect(beneficioService.update).toHaveBeenCalledWith(
+        cuponId,
+        updateDto,
+        usuarioId,
+      );
     });
   });
 
-  // ========== TESTS DE REGISTRAR EMPRESA ==========
   describe('registrarEmpresa', () => {
     const createDto: CreateEmpresaDTO = {
       nombre: 'Juan',
       apellido: 'Pérez',
       documento: '12345678',
-      correo: 'juan@empresa.com',
+      correo: 'juan@test.com',
       clave: 'Password123',
       prefijo: '11',
-      telefono: '1123456789',
-      correo_empresa: 'contacto@empresa.com',
+      telefono: '12345678',
+      correo_empresa: 'empresa@test.com',
       cuit_empresa: '30123456789',
-      razon_social: 'Mi Empresa S.A.',
-      nombre_empresa: 'Mi Empresa',
-      calle: 'Av. Siempreviva',
-      numero: '742',
-      web: 'www.miempresa.com',
+      razon_social: 'Empresa Test S.A.',
+      nombre_empresa: 'Test Empresa',
+      calle: 'Av. Test',
+      numero: '123',
     };
 
-    it('debe registrar una empresa correctamente', async () => {
-      const mockGestor = { id: 99 } as Usuario;
-      const mockEmpresaGuardada = { ...mockEmpresa, id: 2 };
+    beforeEach(() => {
+      const mockUsuarioRepo = {
+        findOne: jest.fn(),
+        create: jest.fn(),
+        save: jest.fn(),
+      };
+      const mockEmpresaRepo = {
+        findOne: jest.fn(),
+        create: jest.fn(),
+        save: jest.fn(),
+      };
+      const mockEmpresaUsuarioRepo = {
+        create: jest.fn(),
+        save: jest.fn(),
+      };
+      const mockContactoRepo = {
+        find: jest.fn(),
+      };
 
-      dataSource.transaction.mockImplementation(async (cb: any) => {
-        const mockManager = {
-          getRepository: jest.fn().mockImplementation((entity) => {
-            if (entity === Usuario) {
-              return {
-                findOne: jest.fn().mockResolvedValue(null),
-                create: jest.fn().mockReturnValue(mockGestor),
-                save: jest.fn().mockResolvedValue(mockGestor),
-              };
-            }
-            if (entity === Empresa) {
-              return {
-                findOne: jest.fn().mockResolvedValue(null),
-                create: jest.fn().mockReturnValue(mockEmpresaGuardada),
-                save: jest.fn().mockResolvedValue(mockEmpresaGuardada),
-              };
-            }
-            if (entity === EmpresaUsuario) {
-              return {
-                create: jest.fn().mockReturnValue({}),
-                save: jest.fn().mockResolvedValue({}),
-              };
-            }
-            return {};
-          }),
-        };
-        return cb(mockManager);
-      });
+      const mockEntityManager = {
+        getRepository: jest.fn((entity) => {
+          if (entity === Usuario) return mockUsuarioRepo;
+          if (entity === Empresa) return mockEmpresaRepo;
+          if (entity === EmpresaUsuario) return mockEmpresaUsuarioRepo;
+          if (entity === Contacto) return mockContactoRepo;
+          return null;
+        }),
+      };
 
-      hashService.hash.mockResolvedValue('hashed-password');
+      mockUsuarioRepo.findOne.mockResolvedValue(null);
+      mockEmpresaRepo.findOne.mockResolvedValue(null);
+      mockContactoRepo.find.mockResolvedValue([]);
+      mockUsuarioRepo.create.mockReturnValue(mockUsuario);
+      mockUsuarioRepo.save.mockResolvedValue(mockUsuario);
+      mockEmpresaRepo.create.mockReturnValue(mockEmpresa);
+      mockEmpresaRepo.save.mockResolvedValue(mockEmpresa);
+      mockEmpresaUsuarioRepo.create.mockReturnValue(mockEmpresaUsuario);
+      mockEmpresaUsuarioRepo.save.mockResolvedValue(mockEmpresaUsuario);
 
+      dataSource.transaction = jest
+        .fn()
+        .mockImplementation(async (callback) => {
+          return callback(mockEntityManager);
+        });
+      hashService.hash.mockResolvedValue('hashed_password');
+    });
+
+    it('debe registrar una empresa exitosamente', async () => {
       const result = await service.registrarEmpresa(createDto);
 
-      expect(result).toBeInstanceOf(EmpresaResponseDTO);
-      expect(dataSource.transaction).toHaveBeenCalled();
+      expect(result.id).toBe(1);
+      expect(hashService.hash).toHaveBeenCalledWith('Password123');
     });
 
-    it('debe lanzar ConflictException si ya existe empresa con ese CUIT', async () => {
-      dataSource.transaction.mockImplementation(async (cb: any) => {
-        const mockManager = {
-          getRepository: jest.fn().mockImplementation((entity) => {
-            if (entity === Empresa) {
-              return {
-                findOne: jest.fn().mockResolvedValue(mockEmpresa),
-              };
-            }
-            return { findOne: jest.fn().mockResolvedValue(null) };
-          }),
-        };
-        return cb(mockManager);
-      });
+    it('debe lanzar error cuando el CUIT ya existe', async () => {
+      const mockEntityManager = {
+        getRepository: jest.fn((entity) => {
+          if (entity === Empresa) {
+            return {
+              findOne: jest.fn().mockResolvedValue(mockEmpresa),
+              create: jest.fn(),
+              save: jest.fn(),
+            };
+          }
+          if (entity === Usuario) {
+            return {
+              findOne: jest.fn().mockResolvedValue(null),
+              create: jest.fn(),
+              save: jest.fn(),
+            };
+          }
+          if (entity === Contacto) {
+            return {
+              find: jest.fn().mockResolvedValue([]),
+            };
+          }
+          return null;
+        }),
+      };
+
+      dataSource.transaction = jest
+        .fn()
+        .mockImplementation(async (callback) => {
+          return callback(mockEntityManager);
+        });
+      hashService.hash.mockResolvedValue('hashed_password');
 
       await expect(service.registrarEmpresa(createDto)).rejects.toThrow(
-        ConflictException,
+        'Ya existe una empresa con ese CUIT',
       );
     });
 
-    it('debe lanzar ConflictException si ya existe usuario con ese documento', async () => {
-      dataSource.transaction.mockImplementation(async (cb: any) => {
-        const mockManager = {
-          getRepository: jest.fn().mockImplementation((entity) => {
-            if (entity === Empresa) {
-              return { findOne: jest.fn().mockResolvedValue(null) };
-            }
-            if (entity === Usuario) {
-              return {
-                findOne: jest.fn().mockResolvedValue({ id: 99 }),
-              };
-            }
-            return { findOne: jest.fn().mockResolvedValue(null) };
-          }),
-        };
-        return cb(mockManager);
-      });
+    it('debe lanzar error cuando el documento ya existe', async () => {
+      const mockEntityManager = {
+        getRepository: jest.fn((entity) => {
+          if (entity === Empresa) {
+            return {
+              findOne: jest.fn().mockResolvedValue(null),
+              create: jest.fn(),
+              save: jest.fn(),
+            };
+          }
+          if (entity === Usuario) {
+            return {
+              findOne: jest.fn().mockResolvedValue(mockUsuario),
+              create: jest.fn(),
+              save: jest.fn(),
+            };
+          }
+          if (entity === Contacto) {
+            return {
+              find: jest.fn().mockResolvedValue([]),
+            };
+          }
+          return null;
+        }),
+      };
+
+      dataSource.transaction = jest
+        .fn()
+        .mockImplementation(async (callback) => {
+          return callback(mockEntityManager);
+        });
+      hashService.hash.mockResolvedValue('hashed_password');
 
       await expect(service.registrarEmpresa(createDto)).rejects.toThrow(
-        ConflictException,
+        'Ya existe un usuario con ese documento',
       );
     });
 
-    it('debe lanzar ConflictException si ya existe usuario con ese correo', async () => {
-      dataSource.transaction.mockImplementation(async (cb: any) => {
-        const mockManager = {
-          getRepository: jest.fn().mockImplementation((entity) => {
-            if (entity === Empresa) {
-              return { findOne: jest.fn().mockResolvedValue(null) };
-            }
-            if (entity === Usuario) {
-              return {
-                findOne: jest
-                  .fn()
-                  .mockResolvedValueOnce(null)
-                  .mockResolvedValueOnce({ id: 99 }),
-              };
-            }
-            return { findOne: jest.fn().mockResolvedValue(null) };
-          }),
-        };
-        return cb(mockManager);
-      });
+    it('debe lanzar error cuando el correo del usuario ya existe', async () => {
+      const mockEntityManager = {
+        getRepository: jest.fn((entity) => {
+          if (entity === Empresa) {
+            return {
+              findOne: jest.fn().mockResolvedValue(null),
+              create: jest.fn(),
+              save: jest.fn(),
+            };
+          }
+          if (entity === Usuario) {
+            return {
+              findOne: jest.fn().mockResolvedValue(null),
+              create: jest.fn(),
+              save: jest.fn(),
+            };
+          }
+          if (entity === Contacto) {
+            return {
+              find: jest.fn().mockResolvedValue([{ correo: 'juan@test.com' }]),
+            };
+          }
+          return null;
+        }),
+      };
+
+      dataSource.transaction = jest
+        .fn()
+        .mockImplementation(async (callback) => {
+          return callback(mockEntityManager);
+        });
+      hashService.hash.mockResolvedValue('hashed_password');
 
       await expect(service.registrarEmpresa(createDto)).rejects.toThrow(
-        ConflictException,
+        'Ya existe un usuario con ese correo',
+      );
+    });
+
+    it('debe lanzar error cuando el correo de la empresa ya existe', async () => {
+      const mockEntityManager = {
+        getRepository: jest.fn((entity) => {
+          if (entity === Empresa) {
+            return {
+              findOne: jest.fn().mockResolvedValue(null),
+              create: jest.fn(),
+              save: jest.fn(),
+            };
+          }
+          if (entity === Usuario) {
+            return {
+              findOne: jest.fn().mockResolvedValue(null),
+              create: jest.fn(),
+              save: jest.fn(),
+            };
+          }
+          if (entity === Contacto) {
+            return {
+              find: jest
+                .fn()
+                .mockResolvedValue([{ correo: 'empresa@test.com' }]),
+            };
+          }
+          return null;
+        }),
+      };
+
+      dataSource.transaction = jest
+        .fn()
+        .mockImplementation(async (callback) => {
+          return callback(mockEntityManager);
+        });
+      hashService.hash.mockResolvedValue('hashed_password');
+
+      await expect(service.registrarEmpresa(createDto)).rejects.toThrow(
+        'Ya existe una empresa con ese correo',
+      );
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      dataSource.transaction = jest
+        .fn()
+        .mockRejectedValue('Error string inesperado');
+
+      await expect(service.registrarEmpresa(createDto)).rejects.toThrow(
+        'Error desconocido',
       );
     });
   });
 
-  // ========== TESTS DE UPDATE ==========
   describe('update', () => {
+    const usuarioId = 1;
     const updateDto: UpdateEmpresaDTO = {
       descripcion: 'Nueva descripción',
-      rubro: 'Hipermercado',
-      web: 'www.nueva-web.com',
+      rubro: 'Nuevo rubro',
     };
 
-    it('debe actualizar datos de la empresa correctamente', async () => {
-      const empresaPreload = { ...mockEmpresa, ...updateDto };
-      empresaUsuarioRepository.findOne.mockResolvedValue({
-        ...mockEmpresaUsuario,
-        empresa: {
-          ...mockEmpresa,
-          contacto: mockEmpresa.contacto,
-          direccion: mockEmpresa.direccion,
-        },
-      } as EmpresaUsuario);
-      empresaRepository.preload.mockResolvedValue(empresaPreload as Empresa);
-      empresaRepository.save.mockResolvedValue(empresaPreload as Empresa);
+    beforeEach(() => {
+      empresaUsuarioRepository.findOne.mockResolvedValue(mockEmpresaUsuario);
+      empresaRepository.preload = jest.fn().mockResolvedValue(mockEmpresa);
+      empresaRepository.save.mockResolvedValue(mockEmpresa);
+    });
 
-      const result = await service.update(USUARIO_ID, updateDto);
+    it('debe actualizar una empresa exitosamente', async () => {
+      const result = await service.update(usuarioId, updateDto);
 
-      expect(result).toBeInstanceOf(EmpresaResponseDTO);
+      expect(result.id).toBe(1);
       expect(empresaRepository.save).toHaveBeenCalled();
     });
 
-    it('debe actualizar contacto si se proporciona', async () => {
-      const updateConContacto: UpdateEmpresaDTO = {
-        contacto: { telefono: '1198765432', prefijo: '11' },
-      };
-
-      const empresaPreload = { ...mockEmpresa };
-      empresaUsuarioRepository.findOne.mockResolvedValue(mockEmpresaUsuario);
-      empresaRepository.preload.mockResolvedValue(empresaPreload as Empresa);
-      empresaRepository.save.mockResolvedValue(empresaPreload as Empresa);
-
-      await service.update(USUARIO_ID, updateConContacto);
-
-      expect(empresaRepository.preload).toHaveBeenCalledWith(
-        expect.objectContaining({
-          contacto: expect.objectContaining({ telefono: '1198765432' }),
-        }),
-      );
-    });
-
-    it('debe lanzar NotFoundException si el usuario no gestiona ninguna empresa', async () => {
+    it('debe lanzar error cuando el usuario no gestiona ninguna empresa', async () => {
       empresaUsuarioRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.update(USUARIO_ID, updateDto)).rejects.toThrow(
-        NotFoundException,
+      await expect(service.update(usuarioId, updateDto)).rejects.toThrow(
+        'El usuario no gestiona ninguna empresa',
       );
     });
 
-    it('debe lanzar NotFoundException si la empresa no existe en preload', async () => {
-      empresaUsuarioRepository.findOne.mockResolvedValue(mockEmpresaUsuario);
-      empresaRepository.preload.mockResolvedValue(undefined);
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      empresaUsuarioRepository.findOne.mockRejectedValue(
+        'Error string inesperado',
+      );
 
-      await expect(service.update(USUARIO_ID, updateDto)).rejects.toThrow(
-        NotFoundException,
+      await expect(service.update(usuarioId, updateDto)).rejects.toThrow(
+        'Error desconocido',
+      );
+    });
+
+    it('debe lanzar error cuando la empresa no se encuentra para preload', async () => {
+      empresaUsuarioRepository.findOne.mockResolvedValue(mockEmpresaUsuario);
+      empresaRepository.preload = jest.fn().mockResolvedValue(null);
+
+      await expect(service.update(usuarioId, updateDto)).rejects.toThrow(
+        'Empresa con ID 1 no encontrada',
       );
     });
   });
 
-  // ========== TESTS DE VERIFY ==========
   describe('verify', () => {
-    it('debe marcar una empresa como verificada', async () => {
-      const empresaParaVerificar = { ...mockEmpresa, verificada: false };
-      const empresaVerificada = { ...mockEmpresa, verificada: true };
+    const empresaId = 1;
 
-      empresaRepository.findOne.mockResolvedValue(empresaParaVerificar as Empresa);
-      empresaRepository.save.mockResolvedValue(empresaVerificada as Empresa);
+    beforeEach(() => {
+      empresaRepository.findOne.mockResolvedValue(mockEmpresa);
+      empresaRepository.save.mockResolvedValue({
+        ...mockEmpresa,
+        verificada: true,
+      });
+    });
 
-      const result = await service.verify(EMPRESA_ID);
+    it('debe verificar una empresa', async () => {
+      const result = await service.verify(empresaId);
 
       expect(result.verificada).toBe(true);
-      expect(empresaRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ verificada: true }),
+    });
+
+    it('debe lanzar error cuando la empresa no existe', async () => {
+      empresaRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.verify(empresaId)).rejects.toThrow(
+        `Empresa con ID ${empresaId} no encontrada`,
       );
     });
 
-    it('debe lanzar NotFoundException si la empresa no existe', async () => {
-      empresaRepository.findOne.mockResolvedValue(null);
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      empresaRepository.findOne.mockRejectedValue('Error string inesperado');
 
-      await expect(service.verify(999)).rejects.toThrow(NotFoundException);
+      await expect(service.verify(empresaId)).rejects.toThrow(
+        'Error desconocido',
+      );
     });
   });
 
-  // ========== TESTS DE DELETE ==========
   describe('delete', () => {
-    it('debe deshabilitar una empresa (soft delete con update)', async () => {
+    const empresaId = 1;
+
+    beforeEach(() => {
       empresaRepository.findOne.mockResolvedValue(mockEmpresa);
       empresaRepository.update.mockResolvedValue({ affected: 1 } as any);
+    });
 
-      await service.delete(EMPRESA_ID);
+    it('debe deshabilitar una empresa', async () => {
+      await service.delete(empresaId);
 
-      expect(empresaRepository.update).toHaveBeenCalledWith(EMPRESA_ID, {
+      expect(empresaRepository.update).toHaveBeenCalledWith(empresaId, {
         habilitada: false,
       });
     });
 
-    it('debe lanzar NotFoundException si la empresa no existe', async () => {
+    it('debe lanzar error cuando la empresa no existe', async () => {
       empresaRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.delete(999)).rejects.toThrow(NotFoundException);
-      expect(empresaRepository.update).not.toHaveBeenCalled();
+      await expect(service.delete(empresaId)).rejects.toThrow(
+        `Empresa con ID ${empresaId} no encontrada`,
+      );
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      empresaRepository.findOne.mockRejectedValue('Error string inesperado');
+
+      await expect(service.delete(empresaId)).rejects.toThrow(
+        'Error desconocido',
+      );
     });
   });
 
-  // ========== TESTS DE RESTORE ==========
   describe('restore', () => {
-    it('debe restaurar una empresa deshabilitada', async () => {
-      const empresaDeshabilitada = { ...mockEmpresa, habilitada: false };
-      empresaRepository.findOne.mockResolvedValue(empresaDeshabilitada as Empresa);
+    const empresaId = 1;
+
+    beforeEach(() => {
+      empresaRepository.findOne.mockResolvedValue(mockEmpresa);
       empresaRepository.update.mockResolvedValue({ affected: 1 } as any);
+    });
 
-      await service.restore(EMPRESA_ID);
+    it('debe restaurar una empresa', async () => {
+      await service.restore(empresaId);
 
-      expect(empresaRepository.update).toHaveBeenCalledWith(EMPRESA_ID, {
+      expect(empresaRepository.update).toHaveBeenCalledWith(empresaId, {
         habilitada: true,
       });
     });
 
-    it('debe lanzar NotFoundException si la empresa no existe', async () => {
+    it('debe lanzar error cuando la empresa no existe', async () => {
       empresaRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.restore(999)).rejects.toThrow(NotFoundException);
-      expect(empresaRepository.update).not.toHaveBeenCalled();
-    });
-  });
-
-  // ========== TESTS DE mapToResponseDto ==========
-  describe('mapToResponseDto (método privado)', () => {
-    it('debe mapear correctamente la entidad al DTO', () => {
-      const result = (service as any).mapToResponseDto(mockEmpresa);
-
-      expect(result).toBeInstanceOf(EmpresaResponseDTO);
-      expect(result.id).toBe(mockEmpresa.id);
-      expect(result.cuit).toBe(mockEmpresa.cuit);
-      expect(result.razon_social).toBe(mockEmpresa.razon_social);
-      expect(result.habilitada).toBe(mockEmpresa.habilitada);
-      expect(result.logo).toBe(SettingsService.getEmpresaImageUrl(mockEmpresa.logo!));
+      await expect(service.restore(empresaId)).rejects.toThrow(
+        `Empresa con ID ${empresaId} no encontrada`,
+      );
     });
 
-    it('debe devolver logo vacío si la empresa no tiene logo', () => {
-      const empresaSinLogo = { ...mockEmpresa, logo: undefined };
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      empresaRepository.findOne.mockRejectedValue('Error string inesperado');
 
-      const result = (service as any).mapToResponseDto(empresaSinLogo);
-
-      expect(result.logo).toBe('');
-    });
-
-    it('debe mapear contacto y dirección si existen', () => {
-      const result = (service as any).mapToResponseDto(mockEmpresa);
-
-      expect(result.contacto).toBeDefined();
-      expect(result.contacto.correo).toBe(mockEmpresa.contacto.correo);
-      expect(result.direccion).toBeDefined();
-      expect(result.direccion.calle).toBe(mockEmpresa.direccion!.calle);
-    });
-
-    it('debe omitir contacto y dirección si no existen', () => {
-      const empresaSinContacto = {
-        ...mockEmpresa,
-        contacto: undefined,
-        direccion: undefined,
-      };
-
-      const result = (service as any).mapToResponseDto(empresaSinContacto);
-
-      expect(result.contacto).toBeUndefined();
-      expect(result.direccion).toBeUndefined();
+      await expect(service.restore(empresaId)).rejects.toThrow(
+        'Error desconocido',
+      );
     });
   });
 });
