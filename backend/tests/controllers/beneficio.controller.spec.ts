@@ -3,7 +3,6 @@ import { BeneficioController } from '../../src/Modules/benefit/beneficio.control
 import { BeneficioService } from '../../src/Modules/benefit/beneficio.service';
 import { mock } from 'jest-mock-extended';
 import { BeneficioEstado } from '../../src/Modules/benefit/dto/enum/enum';
-import { CanjearBeneficioDto } from '../../src/Modules/benefit/dto/canjear_beneficio.dto';
 import { BeneficiosResponseDTO } from '../../src/Modules/benefit/dto/response_beneficios.dto';
 import { PaginatedBeneficiosResponseDTO } from '../../src/Modules/benefit/dto/response_paginated_beneficios';
 import { RequestConUsuario } from '../../src/Modules/auth/interfaces/authenticated_request.interface';
@@ -43,14 +42,6 @@ describe('BeneficioController', () => {
     estado: BeneficioEstado.APROBADO,
     creado_por: mockUsuarioResumen,
     actualizado_por: mockUsuarioResumen,
-  };
-
-  const mockCanjeResponse = {
-    success: true,
-    cantidadCanjeada: 2,
-    puntosGastados: 100,
-    puntosRestantes: 50,
-    stockRestante: 98,
   };
 
   beforeEach(async () => {
@@ -283,89 +274,6 @@ describe('BeneficioController', () => {
       await expect(
         controller.findByEmpresaPaginated(idEmpresa, 1, 5),
       ).rejects.toThrow('Error de conexión a la base de datos');
-    });
-  });
-
-  describe('canjear', () => {
-    const mockReq = { user: { id: 10, rol: Rol.USUARIO } } as RequestConUsuario;
-
-    it('debe canjear un beneficio exitosamente', async () => {
-      const id = 1;
-      const dto: CanjearBeneficioDto = { cantidad: 2 };
-
-      beneficioService.canjear.mockResolvedValue(mockCanjeResponse);
-
-      const result = await controller.canjear(id, mockReq, dto);
-
-      expect(result).toEqual(mockCanjeResponse);
-      expect(beneficioService.canjear).toHaveBeenCalledWith(1, 10, 2);
-      expect(beneficioService.canjear).toHaveBeenCalledTimes(1);
-    });
-
-    it('debe canjear un beneficio con cantidad 1', async () => {
-      const id = 1;
-      const dto: CanjearBeneficioDto = { cantidad: 1 };
-      const expectedResponse = {
-        ...mockCanjeResponse,
-        cantidadCanjeada: 1,
-        puntosGastados: 50,
-      };
-
-      beneficioService.canjear.mockResolvedValue(expectedResponse);
-
-      const result = await controller.canjear(id, mockReq, dto);
-
-      expect(result).toEqual(expectedResponse);
-      expect(beneficioService.canjear).toHaveBeenCalledWith(1, 10, 1);
-    });
-
-    it('debe manejar error cuando el beneficio no existe', async () => {
-      const id = 999;
-      const dto: CanjearBeneficioDto = { cantidad: 1 };
-      const error = new Error('Beneficio no encontrado');
-
-      beneficioService.canjear.mockRejectedValue(error);
-
-      await expect(controller.canjear(id, mockReq, dto)).rejects.toThrow(
-        'Beneficio no encontrado',
-      );
-      expect(beneficioService.canjear).toHaveBeenCalledWith(999, 10, 1);
-    });
-
-    it('debe manejar error cuando no hay suficiente stock', async () => {
-      const id = 1;
-      const dto: CanjearBeneficioDto = { cantidad: 100 };
-      const error = new Error('Stock insuficiente');
-
-      beneficioService.canjear.mockRejectedValue(error);
-
-      await expect(controller.canjear(id, mockReq, dto)).rejects.toThrow(
-        'Stock insuficiente',
-      );
-    });
-
-    it('debe manejar error cuando el usuario no tiene suficientes puntos', async () => {
-      const id = 1;
-      const dto: CanjearBeneficioDto = { cantidad: 1 };
-      const error = new Error('Puntos insuficientes');
-
-      beneficioService.canjear.mockRejectedValue(error);
-
-      await expect(controller.canjear(id, mockReq, dto)).rejects.toThrow(
-        'Puntos insuficientes',
-      );
-    });
-
-    it('debe manejar error cuando el beneficio está inactivo', async () => {
-      const id = 1;
-      const dto: CanjearBeneficioDto = { cantidad: 1 };
-      const error = new Error('El beneficio no está disponible');
-
-      beneficioService.canjear.mockRejectedValue(error);
-
-      await expect(controller.canjear(id, mockReq, dto)).rejects.toThrow(
-        'El beneficio no está disponible',
-      );
     });
   });
 

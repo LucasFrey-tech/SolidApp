@@ -5,7 +5,6 @@ class BeneficioController {
 
     + findAllPaginated(page: number, limit: number, search: number, onlyEnabled: boolean): Promise<{ items: BeneficiosResponseDTO[]; total: number; }>
     + findByEmpresaPaginated(idEmpresa: number, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO> 
-    + canjear(id: number, req: RequestConUsuario, dto: CanjearBeneficioDto): Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; }> 
     + updateEstado(id: number, estado: BeneficioEstado, req: RequestConUsuario): Promise<BeneficiosResponseDTO> 
 }
 

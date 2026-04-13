@@ -73,9 +73,7 @@ export default function CanjeModal({ beneficio, onClose }: Props) {
     if (!result.isConfirmed) return;
 
     try {
-      await baseApi.beneficio.canjear(beneficio.id, {
-        cantidad,
-      });
+      await baseApi.usuario.canjearCupon(beneficio.id, cantidad);
 
       Swal.fire('Canje realizado', 'Beneficio canjeado correctamente', 'success');
       onClose();

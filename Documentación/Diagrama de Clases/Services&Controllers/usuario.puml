@@ -33,7 +33,7 @@ class UsuarioService {
   + donar(usuarioId: number, dto: CreateDonationDto): Promise<ResponseDonationDto> 
   + getMisCuponesCanjeados(usuarioId: number): Promise<UsuarioBeneficio[]>
   + usarCupon(usuarioBeneficioId: number): Promise<UsuarioBeneficio>
-  + canjearCupon(usuarioId: number, cuponId: number, cantidad: number): : Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; 
+  + canjearCupon(usuarioId: number, cuponId: number, cantidad: number): Promise<CanjearResponseDto>; 
   + updateCredenciales(id: number, dto: UpdateCredencialesDto): Promise<{ token: string }>
   + updateUsuario(id: number, dto: UpdateUsuarioDto): Promise<ResponseUsuarioDto>
   + updatePuntos(id: number, dto: UpdatePuntosDto): Promise<ResponseUsuarioDto>
@@ -46,7 +46,6 @@ class UsuarioService {
   + mapToResponseDto(usuario: Usuario): ResponseUsuarioDto
   + findByResetToken(token: string) : Promise<Usuario | null>
   + setResetToken(id: number, token: string, expires: Date): Promise<void>
-  + clearResetToken(id: number): Promise<void> 
   + resetPassword(id: number, newHashedPassword: string): Promise<void>
 }
 
@@ -182,6 +181,14 @@ class ResponseDonationDto {
   imagen: string
 }
 
+class CanjearResponseDto {
+  success: boolean
+  cantidadCanjeada: number
+  puntosGastados: number
+  puntosRestantes: number
+  stockRestante: number
+}
+
 enum DonacionEstado {
   PENDIENTE = 0
   RECHAZADA = 1
@@ -216,7 +223,7 @@ class BeneficioService {
     + findAllPaginated(page: number, limit: number, search: string, onlyEnabled: boolean): Promise<PaginatedBeneficiosResponseDTO>
     + findByEmpresaPaginated(idEmpresa: number, page: number, limit: number): Promise<PaginatedBeneficiosResponseDTO>
     + create(dto: CreateBeneficiosDTO, usuarioId: number): Promise<BeneficiosResponseDTO>
-    + canjear(beneficioId: number, userId: number, cantidad: number): Promise<{ success: boolean; cantidadCanjeada: number; puntosGastados: number; puntosRestantes: number; stockRestante: number; }>
+    + canjear(beneficioId: number, userId: number, cantidad: number): Promise<CanjearResponseDto>
     + update(id: number, dto:UpdateBeneficiosDTO , usuarioId: number): Promise<BeneficiosResponseDTO>
     + updateEstado(id: number, estado: BeneficioEstado, usuarioId: number, rol: Rol): Promise<BeneficiosResponseDTO>
     - validateBeneficioData(data: UpdateBeneficiosDTO): void
@@ -253,6 +260,7 @@ UpdateDireccionDto <-- UpdateUsuarioDto
 PaginatedUserDonationsResponseDto <-- UsuarioService
 UserDonationItemDto <-- PaginatedUserDonationsResponseDto
 ResponseDonationDto <-- UsuarioService
+CanjearResponseDto <-- UsuarioService
 DonacionEstado <-- ResponseDonationDto
 
 UsuarioService --> DonacionService 

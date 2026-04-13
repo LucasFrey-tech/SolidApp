@@ -98,7 +98,7 @@ export class Usuario extends Crud<User> {
     return res.json();
   }
 
-  async canjearCupon(cuponId: number, cantidad = 1): Promise<Beneficio> {
+  async canjearCupon(cuponId: number, cantidad: number): Promise<Beneficio> {
     const res = await fetch(
       `${this.baseUrl}/${this.endPoint}/cupones/${cuponId}/canjes?cantidad=${cantidad}`,
       { method: "POST", headers: this.getHeaders() },

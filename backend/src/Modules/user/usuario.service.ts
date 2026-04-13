@@ -18,6 +18,7 @@ import { ErrorManager } from '../../common/errors/error.manager';
 import { PaginatedUserDonationsResponseDto } from '../donation/dto/response_donation_paginatedByUser.dto';
 import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
 import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
+import { CanjearResponseDto } from '../benefit/dto/canjear_response.dto';
 
 @Injectable()
 export class UsuarioService {
@@ -33,9 +34,6 @@ export class UsuarioService {
     private readonly jwtService: JwtService,
   ) {}
 
-  /**
-   * Encuentra un usuario por correo
-   */
   async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuarioRepository.findOne({
       relations: [
@@ -48,9 +46,6 @@ export class UsuarioService {
     });
   }
 
-  /**
-   * Crea un nuevo usuario.
-   */
   async create(createDto: CreateUsuarioDto): Promise<ResponseUsuarioDto> {
     try {
       const existente = await this.usuarioRepository.findOne({
@@ -95,9 +90,6 @@ export class UsuarioService {
 
   // ================ Panel Usuario ===================
 
-  /**
-   * Obtiene las donaciones del usuario
-   */
   async getDonaciones(
     usuarioId: number,
     page: number,
@@ -106,9 +98,6 @@ export class UsuarioService {
     return this.donacionService.findAllPaginatedByUser(usuarioId, page, limit);
   }
 
-  /**
-   * Realiza la donacion
-   */
   async donar(
     usuarioId: number,
     dto: CreateDonationDto,
@@ -124,26 +113,14 @@ export class UsuarioService {
     return this.usuarioBeneficioService.usarBeneficio(usuarioBeneficioId);
   }
 
-  /**
-   * Canjea un cupon o varios
-   */
   async canjearCupon(
     usuarioId: number,
     cuponId: number,
     cantidad: number,
-  ): Promise<{
-    success: boolean;
-    cantidadCanjeada: number;
-    puntosGastados: number;
-    puntosRestantes: number;
-    stockRestante: number;
-  }> {
+  ): Promise<CanjearResponseDto> {
     return this.beneficioService.canjear(cuponId, usuarioId, cantidad);
   }
 
-  /**
-   * Actualiza las credenciales del usuario
-   */
   async updateCredenciales(
     id: number,
     dto: UpdateCredencialesDto,
@@ -223,9 +200,6 @@ export class UsuarioService {
     }
   }
 
-  /**
-   * Actualiza los datos del usuario
-   */
   async updateUsuario(
     id: number,
     dto: UpdateUsuarioDto,
@@ -262,9 +236,6 @@ export class UsuarioService {
     }
   }
 
-  /**
-   * Actualiza los puntos del usuario
-   */
   async updatePuntos(
     id: number,
     updateDto: UpdatePuntosDto,
@@ -304,9 +275,6 @@ export class UsuarioService {
     });
   }
 
-  /**
-   * Obtiene los puntos de un usuario específico.
-   */
   async getPoints(id: number): Promise<{ id: number; puntos: number }> {
     try {
       const usuario = await this.usuarioRepository.findOne({
@@ -335,9 +303,6 @@ export class UsuarioService {
 
   // ================ Panel Admin ================
 
-  /**
-   * Obtiene usuarios de forma paginada.
-   */
   async findPaginated(
     page: number,
     limit: number,
@@ -384,9 +349,6 @@ export class UsuarioService {
     }
   }
 
-  /**
-   * Obtiene un usuario por su ID.
-   */
   async findOne(id: number): Promise<ResponseUsuarioDto> {
     try {
       const usuario = await this.usuarioRepository.findOne({
@@ -418,9 +380,6 @@ export class UsuarioService {
     }
   }
 
-  /**
-   * Deshabilita un usuario (soft delete sobre la Cuenta).
-   */
   async delete(id: number): Promise<void> {
     try {
       const usuario = await this.usuarioRepository.findOne({
@@ -447,9 +406,6 @@ export class UsuarioService {
     }
   }
 
-  /**
-   * Restaura un usuario deshabilitado.
-   */
   async restore(id: number): Promise<void> {
     try {
       const usuario = await this.usuarioRepository.findOne({
@@ -515,13 +471,6 @@ export class UsuarioService {
     await this.usuarioRepository.update(id, {
       resetPasswordToken: token,
       resetPasswordExpires: expires,
-    });
-  }
-
-  async clearResetToken(id: number): Promise<void> {
-    await this.usuarioRepository.update(id, {
-      resetPasswordToken: undefined,
-      resetPasswordExpires: undefined,
     });
   }
 

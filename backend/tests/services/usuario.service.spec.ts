@@ -20,6 +20,7 @@ import { DonacionEstado } from '../../src/Modules/donation/enum';
 import { UsuarioBeneficio } from '../../src/Entities/usuario-beneficio.entity';
 import { BeneficiosUsuarioEstado } from '../../src/Modules/benefit/dto/enum/enum';
 import { Beneficios } from '../../src/Entities/beneficio.entity';
+import { CanjearResponseDto } from '../../src/Modules/benefit/dto/canjear_response.dto';
 
 const mockContacto = Object.assign(new Contacto(), {
   id: 1,
@@ -261,7 +262,7 @@ describe('UsuarioService', () => {
     const usuarioId = 1;
     const cuponId = 1;
     const cantidad = 2;
-    const mockResponse = {
+    const mockResponse: CanjearResponseDto = {
       success: true,
       cantidadCanjeada: 2,
       puntosGastados: 100,

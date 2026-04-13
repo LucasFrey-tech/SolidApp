@@ -79,31 +79,6 @@ export class BeneficioController {
   }
 
   /**
-   * Canjea un Beneficio por puntos para un usuario.
-   *
-   * @param {number} id - ID del beneficio
-   * @param {CanjearBeneficioDto} dto - Datos del canje (ID del usuario y cantidad a canjear)
-   * @returns Resultado del canje con información del estado final
-   */
-  @Auth(Rol.USUARIO)
-  @Post(':id/canjes')
-  @ApiOperation({ summary: 'Canjear beneficio por puntos' })
-  @ApiParam({ name: 'id', type: Number })
-  canjear(
-    @Param('id', ParseIntPipe) id: number,
-    @Req() req: RequestConUsuario,
-    @Body() dto: CanjearBeneficioDto,
-  ): Promise<{
-    success: boolean;
-    cantidadCanjeada: number;
-    puntosGastados: number;
-    puntosRestantes: number;
-    stockRestante: number;
-  }> {
-    return this.beneficiosService.canjear(id, req.user.id, dto.cantidad);
-  }
-
-  /**
    * Actualiza el estado del Beneficio.
    *
    * @param {number} id - ID del Beneficio a actualizar

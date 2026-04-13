@@ -15,6 +15,7 @@ import { SettingsService } from '../../common/settings/settings.service';
 import { BeneficioEstado, BeneficiosUsuarioEstado } from './dto/enum/enum';
 import { Rol } from '../user/enums/enums';
 import { ErrorManager } from '../../common/errors/error.manager';
+import { CanjearResponseDto } from './dto/canjear_response.dto';
 
 @Injectable()
 export class BeneficioService {
@@ -30,12 +31,6 @@ export class BeneficioService {
     private readonly dataSource: DataSource,
   ) {}
 
-  /**
-   *
-   * @param page
-   * @param limit
-   * @returns
-   */
   async findAllPaginated(
     page = 1,
     limit = 10,
@@ -93,14 +88,6 @@ export class BeneficioService {
     }
   }
 
-  /**
-   * Obtiene todos los Beneficios disponibles con paginación.
-   *
-   * @param {number} idEmpresa - ID de la empresa
-   * @param {number} page Página solicitada
-   * @param {number} limit Cantidad de Beneficios por página
-   * @returns {Promise<PaginatedBeneficiosResponseDTO>} Lista de Beneficios paginados y total de registros
-   */
   async findByEmpresaPaginated(
     idEmpresa: number,
     page: number,
@@ -145,14 +132,6 @@ export class BeneficioService {
     }
   }
 
-  /**
-   * Crea un nuevo Beneficio en el sistema
-   *
-   * @param {CreateBeneficiosDTO} createDto - Objeto de transferencia de datos con la información del beneficio a crear.
-   * @returns {Promise<BeneficiosResponseDTO>} Promesa que resuelve con la entidad del beneficio recién creado.
-   * @throws {NotFoundException}  Cuando alguna de las Empresas no se encuenta o esta deshabilitada.
-   * @throws {BadRequestException} Cuando la cantidad o valor del beneficio es menor a 0 (cero)
-   */
   async create(
     createDto: CreateBeneficiosDTO,
     usuarioId: number,
@@ -218,34 +197,11 @@ export class BeneficioService {
     }
   }
 
-  /**
-   * Canje de un Beneficio por puntos para un Usuario
-   *
-   * @param {number} beneficioId - ID del Beneficio canjeado
-   * @param {number} userId - ID del Usuario que canjeó el Beneficio
-   * @param {number} cantidad - Cantidad canjeada de un mismo Beneficio
-   * @returns Resultado del canje con información del estado final
-   *
-   * @throws {NotFoundException} cuando:
-   * - No se encontró el Beneficio deseado.
-   * - No se encontró el Usuario.
-   *
-   * @throws {BadRequestException} cuando:
-   * - No hay stock suficiente del beneficio.
-   * - El usuario no tiene suficientes puntos.
-   * - Si alguien que no sea un Usuario quiere realizar el canje.
-   */
   async canjear(
     beneficioId: number,
     userId: number,
     cantidad: number,
-  ): Promise<{
-    success: boolean;
-    cantidadCanjeada: number;
-    puntosGastados: number;
-    puntosRestantes: number;
-    stockRestante: number;
-  }> {
+  ): Promise<CanjearResponseDto> {
     try {
       return this.dataSource.transaction(async (manager) => {
         const beneficioRepo = manager.getRepository(Beneficios);
@@ -348,19 +304,6 @@ export class BeneficioService {
     }
   }
 
-  /**
-   * Actualiza un Beneficio en el sistema.
-   *
-   * @param {number} id - ID del Beneficio a actualizar
-   * @param {UpdateBeneficiosDTO} updateDto - DTO con los nuevos datos para el Beneficio
-   * @returns {Promise<BeneficiosResponseDTO>} Promesa que resuelve con el DTO de Beneficios actualizado
-   *
-   * @throws {NotFoundException} cuando no se encuentra el ID del beneficio deseado.
-   *
-   * @throws {BadRequestException} cuando:
-   * - La cantidad del Beneficio es menor a 0 (cero).
-   * - El valor del Beneficio es menor a 0 (cero).
-   */
   async update(
     id: number,
     updateDto: UpdateBeneficiosDTO,
@@ -432,15 +375,6 @@ export class BeneficioService {
     }
   }
 
-  /**
-   * Actualiza el estado de un Beneficio
-   *
-   * @param {number} id - ID del Beneficio a actualizar
-   * @param {string} estado - Nuevo Estado del Beneficio
-   * @returns {Promise<BeneficiosResponseDTO>} Promesa que resuelve con el estado actualizado del Beneficio seleccionado.
-   *
-   * @throws {NotFoundException} cuando el Beneficio seleccionado no es encontrado.
-   */
   async updateEstado(
     id: number,
     estado: BeneficioEstado,
@@ -524,12 +458,6 @@ export class BeneficioService {
     }
   }
 
-  /**
-   * Mapea una entidad Beneficios a su DTO de respuesta.
-   *
-   * @param {Beneficios} beneficio - Entidad Beneficios con la relación empresa cargada.
-   * @returns {BeneficiosResponseDTO} DTO listo para ser enviado como respuesta de la API
-   */
   private readonly mapToResponseDto = (
     beneficio: Beneficios,
   ): BeneficiosResponseDTO => {

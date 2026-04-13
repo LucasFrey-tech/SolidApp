@@ -26,26 +26,7 @@ import { ResponseUsuarioDto } from './dto/response_usuario.dto';
 import { PaginatedUserDonationsResponseDto } from '../donation/dto/response_donation_paginatedByUser.dto';
 import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
 import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
-
-/**
- * -----------------------------------------------------------------------------
- * UsuarioController
- * -----------------------------------------------------------------------------
- * Controlador encargado de exponer los endpoints HTTP relacionados
- * a la gestión de usuarios.
- *
- * Base route: /users
- *
- * Funcionalidades:
- * - Listar usuarios
- * - Obtener usuario por ID
- * - Paginación para panel admin
- * - Crear usuario
- * - Actualizar usuario
- * - Deshabilitar / Restaurar usuario
- * - Obtener puntos
- * -----------------------------------------------------------------------------
- */
+import { CanjearResponseDto } from '../benefit/dto/canjear_response.dto';
 
 @ApiTags('Usuarios')
 @Controller('users')
@@ -138,13 +119,7 @@ export class UsuarioController {
     @Req() req: RequestConUsuario,
     @Param('cuponId', ParseIntPipe) cuponId: number,
     @Query('cantidad', ParseIntPipe) cantidad: number,
-  ): Promise<{
-    success: boolean;
-    cantidadCanjeada: number;
-    puntosGastados: number;
-    puntosRestantes: number;
-    stockRestante: number;
-  }> {
+  ): Promise<CanjearResponseDto> {
     return this.userService.canjearCupon(req.user.id, cuponId, cantidad);
   }
 

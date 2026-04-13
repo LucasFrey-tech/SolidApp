@@ -53,35 +53,6 @@ export class BeneficiosService extends Crud<Beneficio> {
     return res.json();
   }
 
-  async canjear(
-    beneficioId: number,
-    data: { cantidad: number },
-  ) {
-    const res = await fetch(
-      `${this.baseUrl}/${this.endpoint}/${beneficioId}/canjes`,
-      {
-        method: "POST",
-        headers: {
-          ...this.getHeaders(),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      },
-    );
-
-    const result = await res.json();
-
-    if (!res.ok) {
-      const mensaje = Array.isArray(result.message)
-        ? result.message.join(", ")
-        : result.message;
-
-      throw new Error(mensaje || "Error al canjear beneficio");
-    }
-
-    return result;
-  }
-
   async delete(id: number): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${this.endpoint}/${id}/borrar`, {
       method: "DELETE",
