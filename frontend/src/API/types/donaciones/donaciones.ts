@@ -29,6 +29,7 @@ export interface DonacionResponsePanel {
   campaignId: number;
   campaignTitulo: string;
   cantidad:number;
+  fecha_rechazo?: string;
 }
 
 export interface CreateDonation {

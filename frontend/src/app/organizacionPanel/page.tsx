@@ -131,6 +131,7 @@ export default function OrganizationCampaignsPage() {
       response.items.map((item) => ({
         ...item,
         estado: item.estado as DonacionEstado,
+        fecha_estado: item.fecha_rechazo ?? undefined,
       })),
     );
 
@@ -420,7 +421,7 @@ export default function OrganizationCampaignsPage() {
             </tbody>
           </table>
 
-          {/* 👇 TU TABLA ORIGINAL */}
+          {/* TABLA */}
           <table className={styles.table}>
             <thead>
               <tr>
