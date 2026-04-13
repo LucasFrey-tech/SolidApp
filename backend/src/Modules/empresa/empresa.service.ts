@@ -19,6 +19,9 @@ import { ErrorManager } from '../../common/errors/error.manager';
 import { BeneficiosResponseDTO } from '../benefit/dto/response_beneficios.dto';
 import { Contacto } from '../../Entities/contacto.entity';
 
+/**
+ * Servicio para gestionar las empresas del sistema
+ */
 @Injectable()
 export class EmpresaService {
   private readonly logger = new Logger(EmpresaService.name);
@@ -34,6 +37,15 @@ export class EmpresaService {
     private readonly invitacionesService: InvitacionesService,
   ) {}
 
+  /**
+   * Obtiene empresas paginadas con búsqueda opcional
+   *
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @param search - Búsqueda por razón social o nombre de empresa
+   * @param onlyEnabled - Si solo se muestran empresas habilitadas
+   * @returns Empresas paginadas
+   */
   async findPaginated(
     page: number,
     limit: number,
@@ -75,6 +87,14 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Obtiene la empresa asociada a un usuario colaborador
+   *
+   * @param usuarioId - ID del usuario
+   * @returns Empresa del usuario
+   *
+   * @throws {ErrorManager} Si el usuario no gestiona ninguna empresa
+   */
   async getEmpresaByUsuario(usuarioId: number): Promise<EmpresaResponseDTO> {
     try {
       const empresaUsuario = await this.empresaUsuarioRepository.findOne({
@@ -103,6 +123,14 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Obtiene los cupones (beneficios) de una empresa (paginado)
+   *
+   * @param usuarioid - ID del usuario colaborador
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @returns Cupones paginados de la empresa
+   */
   async getCupones(
     usuarioid: number,
     page: number,
@@ -127,6 +155,13 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Crea un nuevo cupón para la empresa
+   *
+   * @param usuarioId - ID del usuario colaborador
+   * @param dto - Datos del cupón
+   * @returns Cupón creado
+   */
   async createCupon(
     usuarioId: number,
     dto: CreateBeneficiosDTO,
@@ -149,6 +184,14 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Actualiza un cupón existente
+   *
+   * @param cuponId - ID del cupón
+   * @param dto - Datos a actualizar
+   * @param usuarioId - ID del usuario colaborador
+   * @returns Cupón actualizado
+   */
   async updateCupon(
     cuponId: number,
     dto: UpdateBeneficiosDTO,
@@ -167,6 +210,16 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Registra una nueva empresa con su colaborador asociado
+   *
+   * @param dto - Datos de registro de empresa y colaborador
+   * @returns Empresa creada
+   *
+   * @throws {ErrorManager} Si el CUIT ya existe
+   * @throws {ErrorManager} Si el documento ya existe
+   * @throws {ErrorManager} Si el correo ya está registrado
+   */
   async registrarEmpresa(dto: CreateEmpresaDTO): Promise<EmpresaResponseDTO> {
     try {
       return await this.dataSource.transaction(async (manager) => {
@@ -294,6 +347,16 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Actualiza los datos de una empresa
+   *
+   * @param usuarioId - ID del usuario colaborador
+   * @param updateDto - Datos a actualizar
+   * @returns Empresa actualizada
+   *
+   * @throws {ErrorManager} Si el usuario no gestiona ninguna empresa
+   * @throws {ErrorManager} Si la empresa no existe
+   */
   async update(
     usuarioId: number,
     updateDto: UpdateEmpresaDTO,
@@ -358,6 +421,14 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Marca una empresa como verificada
+   *
+   * @param id - ID de la empresa
+   * @returns Empresa verificada
+   *
+   * @throws {ErrorManager} Si la empresa no existe
+   */
   async verify(id: number): Promise<EmpresaResponseDTO> {
     try {
       const empresa = await this.empresaRepository.findOne({
@@ -386,6 +457,13 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Deshabilita una empresa (soft delete)
+   *
+   * @param id - ID de la empresa
+   *
+   * @throws {ErrorManager} Si la empresa no existe
+   */
   async delete(id: number): Promise<void> {
     try {
       const empresa = await this.empresaRepository.findOne({
@@ -412,6 +490,13 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Restaura una empresa deshabilitada
+   *
+   * @param id - ID de la empresa
+   *
+   * @throws {ErrorManager} Si la empresa no existe
+   */
   async restore(id: number): Promise<void> {
     try {
       const empresa = await this.empresaRepository.findOne({
@@ -438,6 +523,12 @@ export class EmpresaService {
     }
   }
 
+  /**
+   * Mapea una entidad Empresa a EmpresaResponseDTO
+   *
+   * @param empresa - Entidad Empresa
+   * @returns DTO de respuesta para empresa
+   */
   private mapToResponseDto(empresa: Empresa): EmpresaResponseDTO {
     const dto = new EmpresaResponseDTO();
 

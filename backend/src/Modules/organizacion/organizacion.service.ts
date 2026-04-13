@@ -22,6 +22,9 @@ import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
 import { PaginatedOrganizationDonationsResponseDto } from '../donation/dto/response_donation_paginatedByOrganizacion.dto';
 import { Contacto } from '../../Entities/contacto.entity';
 
+/**
+ * Servicio para gestionar las organizaciones del sistema
+ */
 @Injectable()
 export class OrganizacionService {
   private readonly logger = new Logger(OrganizacionService.name);
@@ -38,6 +41,14 @@ export class OrganizacionService {
     private readonly invitacionesService: InvitacionesService,
   ) {}
 
+  /**
+   * Obtiene organizaciones paginadas con búsqueda opcional
+   *
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @param search - Búsqueda por razón social o nombre de organización
+   * @returns Organizaciones paginadas
+   */
   async findPaginated(
     page: number,
     limit: number,
@@ -77,6 +88,14 @@ export class OrganizacionService {
     }
   }
 
+  /**
+   * Obtiene la organización asociada a un usuario colaborador
+   *
+   * @param usuarioId - ID del usuario
+   * @returns Organización del usuario
+   *
+   * @throws {ErrorManager} Si el usuario no gestiona ninguna organización
+   */
   async getOrganizacionByUsuario(usuarioId: number): Promise<Organizacion> {
     try {
       const organizacionUsuario =
@@ -111,6 +130,14 @@ export class OrganizacionService {
     }
   }
 
+  /**
+   * Obtiene una organización por su ID
+   *
+   * @param id - ID de la organización
+   * @returns Organización encontrada
+   *
+   * @throws {ErrorManager} Si la organización no existe
+   */
   async findById(id: number): Promise<Organizacion> {
     try {
       const perfil = await this.organizacionRepository.findOne({
@@ -136,6 +163,14 @@ export class OrganizacionService {
     }
   }
 
+  /**
+   * Obtiene las campañas de una organización (paginado)
+   *
+   * @param id - ID de la organización
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @returns Campañas paginadas de la organización
+   */
   async getCampaigns(
     id: number,
     page: number,
@@ -144,6 +179,15 @@ export class OrganizacionService {
     return this.campaignService.findCampaignsPaginated(id, page, limit);
   }
 
+  /**
+   * Obtiene las donaciones de una organización (paginado)
+   *
+   * @param organizacionId - ID de la organización
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @param search - Búsqueda por email del usuario (opcional)
+   * @returns Donaciones paginadas de la organización
+   */
   async getDonaciones(
     organizacionId: number,
     page: number,
@@ -158,6 +202,14 @@ export class OrganizacionService {
     );
   }
 
+  /**
+   * Confirma o rechaza una donación (cambia su estado)
+   *
+   * @param id - ID de la donación
+   * @param dto - Nuevo estado y motivo de rechazo (opcional)
+   * @param gestorId - ID del gestor que realiza la acción
+   * @returns Donación actualizada
+   */
   async confirmarDonacion(
     id: number,
     dto: UpdateDonacionEstadoDto,
@@ -166,6 +218,15 @@ export class OrganizacionService {
     return await this.donacionService.confirmarDonacion(id, dto, gestorId);
   }
 
+  /**
+   * Crea una nueva campaña para la organización
+   *
+   * @param id - ID de la organización
+   * @param createDto - Datos de la campaña
+   * @param imagenes - Lista de URLs de las imágenes
+   * @param usuarioId - ID del usuario que crea la campaña
+   * @returns Campaña creada
+   */
   async createCampaign(
     id: number,
     createDto: CreateCampaignsDto,
@@ -180,6 +241,16 @@ export class OrganizacionService {
     );
   }
 
+  /**
+   * Actualiza una campaña existente de la organización
+   *
+   * @param id - ID de la organización
+   * @param campaignId - ID de la campaña
+   * @param updateDto - Datos a actualizar
+   * @param usuarioId - ID del usuario que actualiza
+   * @param imagenes - Nuevas imágenes (opcional)
+   * @returns Campaña actualizada
+   */
   async updateCampaign(
     id: number,
     campaignId: number,
@@ -196,6 +267,16 @@ export class OrganizacionService {
     );
   }
 
+  /**
+   * Registra una nueva organización con su colaborador asociado
+   *
+   * @param dto - Datos de registro de organización y colaborador
+   * @returns Organización creada
+   *
+   * @throws {ErrorManager} Si el CUIT ya existe
+   * @throws {ErrorManager} Si el documento ya existe
+   * @throws {ErrorManager} Si el correo ya está registrado
+   */
   async registrarOrganizacion(
     dto: CreateOrganizacionDto,
   ): Promise<ResponseOrganizacionDto> {
@@ -328,6 +409,16 @@ export class OrganizacionService {
     }
   }
 
+  /**
+   * Actualiza los datos de una organización
+   *
+   * @param updateDto - Datos a actualizar
+   * @param usuarioId - ID del usuario colaborador
+   * @returns Organización actualizada
+   *
+   * @throws {ErrorManager} Si el usuario no gestiona ninguna organización
+   * @throws {ErrorManager} Si la organización no existe
+   */
   async update(
     updateDto: UpdateOrganizacionDto,
     usuarioId: number,
@@ -394,6 +485,14 @@ export class OrganizacionService {
     }
   }
 
+  /**
+   * Marca una organización como verificada
+   *
+   * @param id - ID de la organización
+   * @returns Organización verificada
+   *
+   * @throws {ErrorManager} Si la organización no existe
+   */
   async verify(id: number): Promise<ResponseOrganizacionDto> {
     try {
       const organizacion = await this.organizacionRepository.findOne({
@@ -422,6 +521,13 @@ export class OrganizacionService {
     }
   }
 
+  /**
+   * Deshabilita una organización (soft delete)
+   *
+   * @param id - ID de la organización
+   *
+   * @throws {ErrorManager} Si la organización no existe
+   */
   async delete(id: number): Promise<void> {
     try {
       const organizacion = await this.organizacionRepository.findOne({
@@ -449,7 +555,11 @@ export class OrganizacionService {
   }
 
   /**
-   * Restaura un organizacion deshabilitado.
+   * Restaura una organización deshabilitada
+   *
+   * @param id - ID de la organización
+   *
+   * @throws {ErrorManager} Si la organización no existe
    */
   async restore(id: number): Promise<void> {
     try {
@@ -477,6 +587,12 @@ export class OrganizacionService {
     }
   }
 
+  /**
+   * Mapea una entidad Organizacion a ResponseOrganizacionDto
+   *
+   * @param organizacion - Entidad Organizacion
+   * @returns DTO de respuesta para organización
+   */
   private mapToResponseDto(
     organizacion: Organizacion,
   ): ResponseOrganizacionDto {

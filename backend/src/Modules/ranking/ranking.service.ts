@@ -5,6 +5,9 @@ import { RankingDonador } from '../../Entities/ranking.entity';
 import { RankingDTO } from './dto/ranking.dto';
 import { ErrorManager } from '../../common/errors/error.manager';
 
+/**
+ * Servicio para gestionar el ranking de usuarios
+ */
 @Injectable()
 export class RankingService {
   private readonly logger = new Logger(RankingService.name);
@@ -14,6 +17,11 @@ export class RankingService {
     private readonly puntosRepository: Repository<RankingDonador>,
   ) {}
 
+  /**
+   * Obtiene los 10 usuarios con más puntos
+   *
+   * @returns Lista de usuarios ordenada por puntaje descendente
+   */
   async getTop10(): Promise<RankingDTO[]> {
     const ranking = await this.puntosRepository
       .createQueryBuilder('ranking')
@@ -37,6 +45,13 @@ export class RankingService {
     }));
   }
 
+  /**
+   * Suma puntos a un usuario en el ranking
+   *
+   * @param userID - ID del usuario
+   * @param puntos - Puntos a sumar (debe ser > 0)
+   * @param manager - EntityManager para transacciones
+   */
   async ajustarPuntos(
     userID: number,
     puntos: number,

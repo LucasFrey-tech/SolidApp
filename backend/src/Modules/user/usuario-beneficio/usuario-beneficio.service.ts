@@ -5,6 +5,9 @@ import { UsuarioBeneficio } from '../../../Entities/usuario-beneficio.entity';
 import { BeneficiosUsuarioEstado } from '../../benefit/dto/enum/enum';
 import { ErrorManager } from '../../../common/errors/error.manager';
 
+/**
+ * Servicio para gestionar los beneficios canjeados por los usuarios
+ */
 @Injectable()
 export class UsuarioBeneficioService {
   private readonly logger = new Logger(UsuarioBeneficioService.name);
@@ -14,6 +17,14 @@ export class UsuarioBeneficioService {
     private readonly usuarioBeneficioRepo: Repository<UsuarioBeneficio>,
   ) {}
 
+  /**
+   * Obtiene todos los beneficios canjeados por un usuario
+   *
+   * @param usuarioId - ID del usuario
+   * @returns Lista de beneficios canjeados por el usuario
+   *
+   * @throws {ErrorManager} Si falla la consulta a la base de datos
+   */
   async getByUsuario(usuarioId: number): Promise<UsuarioBeneficio[]> {
     try {
       return await this.usuarioBeneficioRepo.find({
@@ -32,6 +43,17 @@ export class UsuarioBeneficioService {
     }
   }
 
+  /**
+   * Marca un beneficio como usado por el usuario
+   *
+   * @param id - ID del registro UsuarioBeneficio
+   * @returns El registro actualizado
+   *
+   * @throws {ErrorManager} Si el beneficio no existe
+   * @throws {ErrorManager} Si el beneficio no está activo
+   * @throws {ErrorManager} Si no hay cupones disponibles
+   * @throws {ErrorManager} Si falla la actualización
+   */
   async usarBeneficio(id: number): Promise<UsuarioBeneficio> {
     try {
       const registro = await this.usuarioBeneficioRepo.findOne({
@@ -66,6 +88,15 @@ export class UsuarioBeneficioService {
     }
   }
 
+  /**
+   * Valida que el beneficio sea válido para ser usado
+   *
+   * @param registro - Registro UsuarioBeneficio a validar
+   *
+   * @throws {ErrorManager} Si el registro no existe
+   * @throws {ErrorManager} Si el beneficio no está activo
+   * @throws {ErrorManager} Si no hay cupones disponibles
+   */
   private validarBeneficio(
     registro: UsuarioBeneficio | null,
   ): asserts registro is UsuarioBeneficio {

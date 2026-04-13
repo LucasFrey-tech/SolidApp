@@ -3,6 +3,9 @@ import nodemailer from 'nodemailer';
 import type { Transporter, SendMailOptions } from 'nodemailer';
 import { ErrorManager } from '../../common/errors/error.manager';
 
+/**
+ * Servicio para el envío de correos electrónicos
+ */
 @Injectable()
 export class EmailService {
   private transporter: Transporter;
@@ -36,6 +39,14 @@ export class EmailService {
     });
   }
 
+  /**
+   * Envía un email para recuperación de contraseña
+   *
+   * @param to - Correo electrónico del destinatario
+   * @param token - Token único para restablecer la contraseña
+   *
+   * @throws {ErrorManager} Si falla el envío del correo
+   */
   async sendResetPasswordEmail(to: string, token: string): Promise<void> {
     try {
       const resetLink = `${this.baseUrl}/restaurar-contrasena?token=${token}`;
@@ -64,6 +75,14 @@ export class EmailService {
     }
   }
 
+  /**
+   * Envía una invitación a un usuario para que se registre en la plataforma
+   *
+   * @param to - Correo electrónico del destinatario
+   * @param token - Token único para aceptar la invitación
+   *
+   * @throws {ErrorManager} Si falla el envío del correo
+   */
   async sendInvitationEmail(to: string, token: string): Promise<void> {
     try {
       const inviteLink = `${this.baseUrl}/login?token=${token}`;
@@ -93,6 +112,14 @@ export class EmailService {
     }
   }
 
+  /**
+   * Envía una invitación a una entidad (empresa u organización) para que se registre
+   *
+   * @param to - Correo electrónico del destinatario
+   * @param token - Token único para aceptar la invitación
+   *
+   * @throws {ErrorManager} Si falla el envío del correo
+   */
   async sendEntidadInvitationEmail(to: string, token: string): Promise<void> {
     try {
       const inviteLink = `${this.baseUrl}/registro-entidad?token=${token}`;

@@ -17,6 +17,10 @@ import { GestionDetector } from './estrategias/gestion/gestion_detector';
 
 import { ErrorManager } from '../../common/errors/error.manager';
 
+/**
+ * Servicio para gestionar la autenticación de usuarios
+ */
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -56,6 +60,15 @@ export class AuthService {
       gestionId,
     };
   }
+
+  /**
+   * Registra un nuevo usuario en el sistema
+   *
+   * @param dto - Datos de registro (correo, clave, nombre, apellido, documento)
+   * @returns Token JWT para autenticación
+   *
+   * @throws {ErrorManager} Si el correo ya está registrado
+   */
 
   async register(dto: RegisterDto): Promise<{ token: string }> {
     try {
@@ -128,6 +141,16 @@ export class AuthService {
     }
   }
 
+  /**
+   * Inicia sesión de un usuario existente
+   *
+   * @param dto - Credenciales de inicio de sesión (correo, clave)
+   * @returns Token JWT para autenticación
+   *
+   * @throws {ErrorManager} Si las credenciales son incorrectas
+   * @throws {ErrorManager} Si el usuario está bloqueado
+   */
+
   async login(dto: LoginDto): Promise<{ token: string }> {
     try {
       const usuario = await this.usuarioService.findByEmail(dto.correo);
@@ -185,6 +208,12 @@ export class AuthService {
     }
   }
 
+  /**
+   * Solicita recuperación de contraseña
+   *
+   * @param email - Correo del usuario que olvidó su contraseña
+   * @returns Mensaje de confirmación
+   */
   async forgotPassword(email: string): Promise<{ message: string }> {
     try {
       const usuario = await this.usuarioService.findByEmail(email);
@@ -211,6 +240,15 @@ export class AuthService {
     }
   }
 
+  /**
+   * Restablece la contraseña usando un token
+   *
+   * @param token - Token de recuperación enviado por email
+   * @param newPassword - Nueva contraseña
+   * @returns Mensaje de confirmación
+   *
+   * @throws {ErrorManager} Si el token es inválido o expiró
+   */
   async resetPassword(
     token: string,
     newPassword: string,

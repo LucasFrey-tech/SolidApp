@@ -17,6 +17,9 @@ import { Rol } from '../user/enums/enums';
 import { ErrorManager } from '../../common/errors/error.manager';
 import { CanjearResponseDto } from './dto/canjear_response.dto';
 
+/**
+ * Servicio para gestionar los beneficios (cupones) ofrecidos por empresas
+ */
 @Injectable()
 export class BeneficioService {
   private readonly logger = new Logger(BeneficioService.name);
@@ -31,6 +34,15 @@ export class BeneficioService {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * Obtiene beneficios paginados
+   *
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @param search - Búsqueda por título
+   * @param onlyEnabled - Si solo se muestran beneficios aprobados
+   * @returns Beneficios paginados
+   */
   async findAllPaginated(
     page = 1,
     limit = 10,
@@ -88,6 +100,14 @@ export class BeneficioService {
     }
   }
 
+  /**
+   * Obtiene beneficios paginados de una empresa
+   *
+   * @param idEmpresa - ID de la empresa
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @returns Beneficios paginados de la empresa
+   */
   async findByEmpresaPaginated(
     idEmpresa: number,
     page: number,
@@ -132,6 +152,17 @@ export class BeneficioService {
     }
   }
 
+  /**
+   * Crea un nuevo beneficio
+   *
+   * @param createDto - Datos del beneficio
+   * @param usuarioId - ID del usuario que lo crea
+   * @returns Beneficio creado
+   *
+   * @throws {ErrorManager} Si la empresa no existe
+   * @throws {ErrorManager} Si la cantidad es menor o igual a 0
+   * @throws {ErrorManager} Si el valor es negativo
+   */
   async create(
     createDto: CreateBeneficiosDTO,
     usuarioId: number,
@@ -197,6 +228,19 @@ export class BeneficioService {
     }
   }
 
+  /**
+   * Canjea un beneficio por puntos
+   *
+   * @param beneficioId - ID del beneficio
+   * @param userId - ID del usuario
+   * @param cantidad - Cantidad a canjear
+   * @returns Resultado del canje
+   *
+   * @throws {ErrorManager} Si el beneficio no existe
+   * @throws {ErrorManager} Si no hay stock suficiente
+   * @throws {ErrorManager} Si el usuario no existe
+   * @throws {ErrorManager} Si el usuario no tiene suficientes puntos
+   */
   async canjear(
     beneficioId: number,
     userId: number,
@@ -304,6 +348,18 @@ export class BeneficioService {
     }
   }
 
+  /**
+   * Actualiza un beneficio existente
+   *
+   * @param id - ID del beneficio
+   * @param updateDto - Datos a actualizar
+   * @param usuarioId - ID del usuario que actualiza
+   * @returns Beneficio actualizado
+   *
+   * @throws {ErrorManager} Si el beneficio no existe
+   * @throws {ErrorManager} Si la cantidad es negativa
+   * @throws {ErrorManager} Si el valor es negativo
+   */
   async update(
     id: number,
     updateDto: UpdateBeneficiosDTO,
@@ -375,6 +431,17 @@ export class BeneficioService {
     }
   }
 
+  /**
+   * Cambia el estado de un beneficio
+   *
+   * @param id - ID del beneficio
+   * @param estado - Nuevo estado (PENDIENTE, APROBADO, RECHAZADO)
+   * @param usuarioId - ID del usuario que actualiza
+   * @param rol - Rol del usuario
+   * @returns Beneficio actualizado
+   *
+   * @throws {ErrorManager} Si el beneficio no existe
+   */
   async updateEstado(
     id: number,
     estado: BeneficioEstado,
@@ -442,6 +509,14 @@ export class BeneficioService {
     }
   }
 
+  /**
+   * Valida que los datos de actualización del beneficio sean correctos
+   *
+   * @param data - Datos a validar
+   *
+   * @throws {ErrorManager} Si la cantidad es negativa
+   * @throws {ErrorManager} Si el valor es negativo
+   */
   private validateBeneficioData(data: UpdateBeneficiosDTO): void {
     if (data.cantidad !== undefined && data.cantidad < 0) {
       throw new ErrorManager({
@@ -458,6 +533,14 @@ export class BeneficioService {
     }
   }
 
+  /**
+   * Mapea una entidad Beneficios a BeneficiosResponseDTO
+   *
+   * @param beneficio - Entidad Beneficios
+   * @returns DTO de respuesta para beneficios
+   *
+   * @throws {ErrorManager} Si el beneficio no tiene empresa asociada
+   */
   private readonly mapToResponseDto = (
     beneficio: Beneficios,
   ): BeneficiosResponseDTO => {

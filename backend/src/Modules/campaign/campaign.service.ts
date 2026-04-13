@@ -15,6 +15,9 @@ import { ResponseCampaignsDetailPaginatedDto } from './dto/response_campaign_pag
 import { Usuario } from '../../Entities/usuario.entity';
 import { ErrorManager } from '../../common/errors/error.manager';
 
+/**
+ * Servicio para gestionar las campañas solidarias de las organizaciones
+ */
 @Injectable()
 export class CampaignsService {
   private readonly logger = new Logger(CampaignsService.name);
@@ -30,6 +33,15 @@ export class CampaignsService {
     private readonly campaignsImagesRepository: Repository<imagenes_campania>,
   ) {}
 
+  /**
+   * Obtiene campañas paginadas con filtros opcionales
+   *
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @param search - Búsqueda por título o descripción
+   * @param onlyEnabled - Si solo se muestran campañas activas
+   * @returns Campañas paginadas
+   */
   async findPaginated(
     page: number,
     limit: number,
@@ -87,6 +99,14 @@ export class CampaignsService {
     }
   }
 
+  /**
+   * Obtiene campañas paginadas de una organización específica
+   *
+   * @param organizacionId - ID de la organización
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @returns Campañas paginadas de la organización
+   */
   async findCampaignsPaginated(
     organizacionId: number,
     page: number,
@@ -115,6 +135,14 @@ export class CampaignsService {
     }
   }
 
+  /**
+   * Obtiene el detalle completo de una campaña por su ID
+   *
+   * @param id - ID de la campaña
+   * @returns Detalle de la campaña con imágenes
+   *
+   * @throws {ErrorManager} Si la campaña no existe
+   */
   async findOneDetail(id: number): Promise<ResponseCampaignDetalleDto> {
     try {
       const campaign = await this.campaignsRepository.findOne({
@@ -141,6 +169,19 @@ export class CampaignsService {
     }
   }
 
+  /**
+   * Crea una nueva campaña solidaria
+   *
+   * @param id - ID de la organización
+   * @param createDto - Datos de la campaña
+   * @param imagenes - Lista de URLs de las imágenes
+   * @param usuarioId - ID del usuario que crea la campaña
+   * @returns Campaña creada
+   *
+   * @throws {ErrorManager} Si la organización no existe o está deshabilitada
+   * @throws {ErrorManager} Si el objetivo es menor o igual a 0
+   * @throws {ErrorManager} Si las fechas son inválidas
+   */
   async create(
     id: number,
     createDto: CreateCampaignsDto,
@@ -226,6 +267,21 @@ export class CampaignsService {
     }
   }
 
+  /**
+   * Actualiza una campaña existente
+   *
+   * @param organizacionId - ID de la organización
+   * @param campaignId - ID de la campaña
+   * @param updateDto - Datos a actualizar
+   * @param usuarioId - ID del usuario que actualiza
+   * @param imagenes - Nuevas imágenes (opcional)
+   * @returns Campaña actualizada
+   *
+   * @throws {ErrorManager} Si la campaña no existe
+   * @throws {ErrorManager} Si la campaña no pertenece a la organización
+   * @throws {ErrorManager} Si la organización está deshabilitada
+   * @throws {ErrorManager} Si el objetivo es negativo
+   */
   async update(
     organizacionId: number,
     campaignId: number,
@@ -352,6 +408,15 @@ export class CampaignsService {
     }
   }
 
+  /**
+   * Cambia el estado de una campaña
+   *
+   * @param id - ID de la campaña
+   * @param estado - Nuevo estado (PENDIENTE, ACTIVA, FINALIZADA, RECHAZADA)
+   * @returns Campaña actualizada
+   *
+   * @throws {ErrorManager} Si la campaña no existe
+   */
   async updateEstado(id: number, estado: CampaignEstado): Promise<Campaigns> {
     try {
       const campaign = await this.campaignsRepository.findOne({
@@ -379,6 +444,13 @@ export class CampaignsService {
     }
   }
 
+  /**
+   * Elimina una campaña del sistema (hard delete)
+   *
+   * @param id - ID de la campaña
+   *
+   * @throws {ErrorManager} Si la campaña no existe
+   */
   async delete(id: number): Promise<void> {
     try {
       const campaign = await this.campaignsRepository.findOne({
@@ -405,6 +477,12 @@ export class CampaignsService {
     }
   }
 
+  /**
+   * Mapea una entidad Campaigns a ResponseCampaignsDto
+   *
+   * @param campaign - Entidad Campaigns
+   * @returns DTO de respuesta para campañas
+   */
   private readonly mapToResponseDto = (
     campaign: Campaigns,
   ): ResponseCampaignsDto => {
@@ -452,6 +530,12 @@ export class CampaignsService {
     };
   };
 
+  /**
+   * Mapea una entidad Campaigns a ResponseCampaignDetalleDto (con imágenes)
+   *
+   * @param campaign - Entidad Campaigns
+   * @returns DTO de detalle de campaña
+   */
   private readonly mapToDetailDto = (
     campaign: Campaigns,
   ): ResponseCampaignDetalleDto => {
@@ -468,6 +552,13 @@ export class CampaignsService {
     };
   };
 
+  /**
+   * Determina el estado de la campaña según las fechas
+   *
+   * @param inicio - Fecha de inicio
+   * @param fin - Fecha de fin
+   * @returns Estado calculado (PENDIENTE, ACTIVA, FINALIZADA)
+   */
   private setEstado(inicio: Date, fin: Date): CampaignEstado {
     this.validarRangoFechas(inicio, fin);
 
@@ -480,6 +571,16 @@ export class CampaignsService {
     return CampaignEstado.ACTIVA;
   }
 
+  /**
+   * Valida que el rango de fechas sea correcto
+   *
+   * @param inicio - Fecha de inicio
+   * @param fin - Fecha de fin
+   *
+   * @throws {ErrorManager} Si falta alguna fecha
+   * @throws {ErrorManager} Si las fechas son inválidas
+   * @throws {ErrorManager} Si la fecha de fin es anterior a la de inicio
+   */
   private validarRangoFechas(inicio: Date, fin: Date): void {
     if (!inicio || !fin) {
       throw new ErrorManager({

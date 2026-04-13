@@ -11,6 +11,9 @@ import { RolSecundario } from '../user/enums/enums';
 import { ErrorManager } from '../../common/errors/error.manager';
 import { ResultadoProcesamiento } from './type/resultadoProcesamiento';
 
+/**
+ * Servicio para gestionar las invitaciones a usuarios y entidades
+ */
 @Injectable()
 export class InvitacionesService {
   constructor(
@@ -28,6 +31,14 @@ export class InvitacionesService {
     private readonly emailService: EmailService,
   ) {}
 
+  /**
+   * Crea invitaciones para usuarios a una empresa
+   *
+   * @param correos - Lista de correos a invitar
+   * @param empresaId - ID de la empresa
+   * @param usuarioInvitadorId - ID del usuario que invita
+   * @returns Invitaciones creadas y listas de correos con problemas
+   */
   async crearInvitacionesEmpresa(
     correos: string[],
     empresaId: number,
@@ -84,6 +95,16 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Crea invitaciones para usuarios a una organización
+   *
+   * @param correos - Lista de correos a invitar
+   * @param organizacionId - ID de la organización
+   * @param usuarioInvitadorId - ID del usuario que invita
+   * @returns Invitaciones creadas y listas de correos con problemas
+   *
+   * @throws {ErrorManager} Si excede el límite de 5 invitaciones pendientes
+   */
   async crearInvitacionesOrganizacion(
     correos: string[],
     organizacionId: number,
@@ -155,6 +176,13 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Invita a una entidad (empresa u organización) a registrarse
+   *
+   * @param correos - Lista de correos a invitar
+   * @param usuarioInvitadorId - ID del usuario que invita
+   * @returns Invitaciones creadas y correos existentes
+   */
   async invitarEntidad(
     correos: string[],
     usuarioInvitadorId: number,
@@ -208,6 +236,13 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Lista las invitaciones de entidades (sin empresa/organización asociada)
+   *
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @returns Invitaciones paginadas
+   */
   async listarInvitacionesEntidad(
     page: number = 1,
     limit: number = 10,
@@ -238,6 +273,14 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Lista las invitaciones de una empresa
+   *
+   * @param empresaId - ID de la empresa
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @returns Invitaciones paginadas de la empresa
+   */
   async listarInvitacionesEmpresa(
     empresaId: number,
     page: number = 1,
@@ -271,6 +314,14 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Lista las invitaciones de una organización
+   *
+   * @param organizacionId - ID de la organización
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @returns Invitaciones paginadas de la organización
+   */
   async listarInvitacionesOrganizacion(
     organizacionId: number,
     page: number = 1,
@@ -304,6 +355,16 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Valida un token de invitación para uso público
+   *
+   * @param token - Token de la invitación
+   * @returns Datos de la invitación válida
+   *
+   * @throws {ErrorManager} Si el token es inválido
+   * @throws {ErrorManager} Si la invitación expiró
+   * @throws {ErrorManager} Si la invitación ya fue utilizada
+   */
   async validarToken(token: string): Promise<{
     correo: string;
     organizacionId?: number;
@@ -356,12 +417,25 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Busca una invitación por su token
+   *
+   * @param token - Token de la invitación
+   * @returns Invitación encontrada o null
+   */
   private async buscarPorToken(token: string): Promise<Invitacion | null> {
     return this.invitacionRepo.findOne({
       where: { token },
     });
   }
 
+  /**
+   * Agrega un usuario a una organización
+   *
+   * @param usuarioId - ID del usuario
+   * @param organizacionId - ID de la organización
+   * @returns Relación creada
+   */
   async agregarUsuarioAOrganizacion(
     usuarioId: number,
     organizacionId: number,
@@ -386,6 +460,13 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Agrega un usuario a una empresa
+   *
+   * @param usuarioId - ID del usuario
+   * @param empresaId - ID de la empresa
+   * @returns Relación creada
+   */
   async agregarUsuarioAEmpresa(
     usuarioId: number,
     empresaId: number,
@@ -410,6 +491,16 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Marca una invitación como aceptada
+   *
+   * @param invitacionId - ID de la invitación
+   * @param usuarioId - ID del usuario que acepta
+   * @param manager - EntityManager para transacciones (opcional)
+   * @returns Invitación actualizada
+   *
+   * @throws {ErrorManager} Si la invitación no existe
+   */
   async marcarAceptada(
     invitacionId: number,
     usuarioId: number,
@@ -446,6 +537,17 @@ export class InvitacionesService {
     }
   }
 
+  /**
+   * Valida una invitación para el proceso de registro
+   *
+   * @param token - Token de la invitación
+   * @param correo - Correo del usuario que acepta
+   * @returns Invitación válida
+   *
+   * @throws {ErrorManager} Si el token es inválido
+   * @throws {ErrorManager} Si el correo no coincide
+   * @throws {ErrorManager} Si la invitación ya fue utilizada
+   */
   async validarInvitacion(token: string, correo: string): Promise<Invitacion> {
     const invitacion = await this.buscarPorToken(token);
 
@@ -473,6 +575,14 @@ export class InvitacionesService {
     return invitacion;
   }
 
+  /**
+   * Procesa una invitación individual (valida existencia, expiración, etc.)
+   *
+   * @param correo - Correo a invitar
+   * @param datos - Datos adicionales de la invitación
+   * @param diasExpiracion - Días hasta expiración
+   * @returns Resultado del procesamiento
+   */
   private async procesarInvitacion(
     correo: string,
     datos: Partial<Invitacion>,

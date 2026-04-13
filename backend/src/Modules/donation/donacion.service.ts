@@ -16,6 +16,9 @@ import { UserDonationItemDto } from './dto/usuario_donation_item.dto';
 import { CampaignEstado } from '../campaign/enum';
 import { ErrorManager } from '../../common/errors/error.manager';
 
+/**
+ * Servicio para gestionar las donaciones realizadas por usuarios
+ */
 @Injectable()
 export class DonacionService {
   private readonly logger = new Logger(DonacionService.name);
@@ -33,6 +36,15 @@ export class DonacionService {
     private readonly rankingService: RankingService,
   ) {}
 
+  /**
+   * Obtiene donaciones paginadas de una organización
+   *
+   * @param organizacionId - ID de la organización
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @param search - Búsqueda por email del usuario (opcional)
+   * @returns Donaciones paginadas
+   */
   async findAllPaginatedByOrganizacion(
     organizacionId: number,
     page = 1,
@@ -79,6 +91,14 @@ export class DonacionService {
     }
   }
 
+  /**
+   * Obtiene donaciones paginadas de un usuario
+   *
+   * @param userId - ID del usuario
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @returns Donaciones paginadas del usuario
+   */
   async findAllPaginatedByUser(
     userId: number,
     page = 1,
@@ -114,6 +134,17 @@ export class DonacionService {
     }
   }
 
+  /**
+   * Crea una nueva donación
+   *
+   * @param usuarioId - ID del usuario que dona
+   * @param createDto - Datos de la donación
+   * @returns Donación creada
+   *
+   * @throws {ErrorManager} Si la campaña no existe
+   * @throws {ErrorManager} Si la cantidad supera el objetivo
+   * @throws {ErrorManager} Si el usuario no existe
+   */
   async create(
     usuarioId: number,
     createDto: CreateDonationDto,
@@ -181,6 +212,18 @@ export class DonacionService {
     }
   }
 
+  /**
+   * Confirma o rechaza una donación (cambia su estado)
+   *
+   * @param id - ID de la donación
+   * @param dto - Nuevo estado y motivo de rechazo (opcional)
+   * @param gestorId - ID del gestor que realiza la acción
+   * @returns Donación actualizada
+   *
+   * @throws {ErrorManager} Si la donación no existe
+   * @throws {ErrorManager} Si la transición de estado no es válida
+   * @throws {ErrorManager} Si se intenta revertir un rechazo fuera de plazo
+   */
   async confirmarDonacion(
     id: number,
     dto: UpdateDonacionEstadoDto,
@@ -256,6 +299,15 @@ export class DonacionService {
     }
   }
 
+  /**
+   * Valida que la transición de estado de una donación sea permitida
+   *
+   * @param estadoActual - Estado actual de la donación
+   * @param nuevoEstado - Estado al que se quiere cambiar
+   *
+   * @throws {ErrorManager} Si la donación ya tiene ese estado
+   * @throws {ErrorManager} Si la transición no es válida
+   */
   private validarTransicion(
     estadoActual: DonacionEstado,
     nuevoEstado: DonacionEstado,
@@ -286,6 +338,13 @@ export class DonacionService {
     }
   }
 
+  /**
+   * Valida que la reversión de un rechazo esté dentro del plazo permitido (48 horas)
+   *
+   * @param fechaEstado - Fecha en que se rechazó la donación
+   *
+   * @throws {ErrorManager} Si el plazo para revertir ha expirado
+   */
   private validarVentanaReversion(fechaEstado: Date): void {
     const REVERSAL_WINDOWS_HOURS = 48;
 
@@ -301,6 +360,16 @@ export class DonacionService {
     }
   }
 
+  /**
+   * Aplica los efectos de cambiar el estado de una donación
+   *
+   * @param manager - EntityManager para la transacción
+   * @param donacion - Donación a procesar
+   * @param nuevoEstado - Nuevo estado de la donación
+   * @returns Campaña actualizada si el estado es APROBADA, null en caso contrario
+   *
+   * @throws {ErrorManager} Si la campaña asociada no existe
+   */
   private async aplicarEfectosDeEstado(
     manager: EntityManager,
     donacion: Donaciones,
@@ -339,6 +408,12 @@ export class DonacionService {
     return await manager.save(campaign);
   }
 
+  /**
+   * Mapea una entidad Donaciones a ResponseDonationDto
+   *
+   * @param donation - Entidad Donaciones
+   * @returns DTO de respuesta para donaciones
+   */
   private readonly mapToResponseDto = (
     donation: Donaciones,
   ): ResponseDonationDto => ({
@@ -355,6 +430,15 @@ export class DonacionService {
     imagen: '',
   });
 
+  /**
+   * Mapea una entidad Donaciones a OrganizationDonationItemDto (para vista de organización)
+   *
+   * @param donation - Entidad Donaciones
+   * @returns DTO para listado de donaciones de organización
+   *
+   * @throws {ErrorManager} Si la donación no tiene usuario asociado
+   * @throws {ErrorManager} Si la donación no tiene campaña asociada
+   */
   private mapToOrganizationDonationsResponse(
     donation: Donaciones,
   ): OrganizationDonationItemDto {
@@ -414,6 +498,14 @@ export class DonacionService {
     };
   }
 
+  /**
+   * Mapea una entidad Donaciones a UserDonationItemDto (para vista de usuario)
+   *
+   * @param donation - Entidad Donaciones
+   * @returns DTO para listado de donaciones de usuario
+   *
+   * @throws {ErrorManager} Si la donación no tiene campaña asociada
+   */
   private mapToUserDonationResponse(donation: Donaciones): UserDonationItemDto {
     if (!donation.campaña) {
       throw new ErrorManager({

@@ -20,6 +20,9 @@ import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
 import { UsuarioBeneficio } from '../../Entities/usuario-beneficio.entity';
 import { CanjearResponseDto } from '../benefit/dto/canjear_response.dto';
 
+/**
+ * Servicio para gestionar los usuarios del sistema
+ */
 @Injectable()
 export class UsuarioService {
   private readonly logger = new Logger(UsuarioService.name);
@@ -34,6 +37,12 @@ export class UsuarioService {
     private readonly jwtService: JwtService,
   ) {}
 
+  /**
+   * Busca un usuario por su correo electrónico
+   *
+   * @param email - Correo electrónico del usuario
+   * @returns Usuario encontrado o null
+   */
   async findByEmail(email: string): Promise<Usuario | null> {
     return this.usuarioRepository.findOne({
       relations: [
@@ -46,6 +55,14 @@ export class UsuarioService {
     });
   }
 
+  /**
+   * Crea un nuevo usuario en el sistema
+   *
+   * @param createDto - Datos de creación del usuario
+   * @returns Usuario creado
+   *
+   * @throws {ErrorManager} Si el usuario ya existe
+   */
   async create(createDto: CreateUsuarioDto): Promise<ResponseUsuarioDto> {
     try {
       const existente = await this.usuarioRepository.findOne({
@@ -90,6 +107,14 @@ export class UsuarioService {
 
   // ================ Panel Usuario ===================
 
+  /**
+   * Obtiene las donaciones de un usuario (paginado)
+   *
+   * @param usuarioId - ID del usuario
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @returns Donaciones paginadas del usuario
+   */
   async getDonaciones(
     usuarioId: number,
     page: number,
@@ -98,6 +123,13 @@ export class UsuarioService {
     return this.donacionService.findAllPaginatedByUser(usuarioId, page, limit);
   }
 
+  /**
+   * Realiza una donación
+   *
+   * @param usuarioId - ID del usuario
+   * @param dto - Datos de la donación
+   * @returns Donación creada
+   */
   async donar(
     usuarioId: number,
     dto: CreateDonationDto,
@@ -105,14 +137,34 @@ export class UsuarioService {
     return this.donacionService.create(usuarioId, dto);
   }
 
+  /**
+   * Obtiene los cupones canjeados por el usuario
+   *
+   * @param usuarioId - ID del usuario
+   * @returns Lista de cupones canjeados
+   */
   async getMisCuponesCanjeados(usuarioId: number): Promise<UsuarioBeneficio[]> {
     return this.usuarioBeneficioService.getByUsuario(usuarioId);
   }
 
+  /**
+   * Marca un cupón como usado
+   *
+   * @param usuarioBeneficioId - ID del registro UsuarioBeneficio
+   * @returns Cupón actualizado
+   */
   async usarCupon(usuarioBeneficioId: number): Promise<UsuarioBeneficio> {
     return this.usuarioBeneficioService.usarBeneficio(usuarioBeneficioId);
   }
 
+  /**
+   * Canjea un cupón por puntos
+   *
+   * @param usuarioId - ID del usuario
+   * @param cuponId - ID del cupón
+   * @param cantidad - Cantidad a canjear
+   * @returns Resultado del canje
+   */
   async canjearCupon(
     usuarioId: number,
     cuponId: number,
@@ -121,6 +173,16 @@ export class UsuarioService {
     return this.beneficioService.canjear(cuponId, usuarioId, cantidad);
   }
 
+  /**
+   * Actualiza las credenciales del usuario (email y/o contraseña)
+   *
+   * @param id - ID del usuario
+   * @param dto - Datos de actualización
+   * @returns Nuevo token JWT
+   *
+   * @throws {ErrorManager} Si el usuario no existe
+   * @throws {ErrorManager} Si la contraseña actual es incorrecta
+   */
   async updateCredenciales(
     id: number,
     dto: UpdateCredencialesDto,
@@ -200,6 +262,15 @@ export class UsuarioService {
     }
   }
 
+  /**
+   * Actualiza los datos personales del usuario
+   *
+   * @param id - ID del usuario
+   * @param dto - Datos a actualizar
+   * @returns Usuario actualizado
+   *
+   * @throws {ErrorManager} Si el usuario no existe
+   */
   async updateUsuario(
     id: number,
     dto: UpdateUsuarioDto,
@@ -236,6 +307,15 @@ export class UsuarioService {
     }
   }
 
+  /**
+   * Actualiza los puntos del usuario
+   *
+   * @param id - ID del usuario
+   * @param updateDto - Nuevos puntos
+   * @returns Usuario actualizado
+   *
+   * @throws {ErrorManager} Si el usuario no existe
+   */
   async updatePuntos(
     id: number,
     updateDto: UpdatePuntosDto,
@@ -269,12 +349,25 @@ export class UsuarioService {
     }
   }
 
+  /**
+   * Actualiza la fecha de última conexión del usuario
+   *
+   * @param id - ID del usuario
+   */
   async actualizarUltimaConexion(id: number): Promise<void> {
     await this.usuarioRepository.update(id, {
       ultima_conexion: new Date(),
     });
   }
 
+  /**
+   * Obtiene los puntos del usuario
+   *
+   * @param id - ID del usuario
+   * @returns ID y puntos del usuario
+   *
+   * @throws {ErrorManager} Si el usuario no existe
+   */
   async getPoints(id: number): Promise<{ id: number; puntos: number }> {
     try {
       const usuario = await this.usuarioRepository.findOne({
@@ -303,6 +396,14 @@ export class UsuarioService {
 
   // ================ Panel Admin ================
 
+  /**
+   * Obtiene usuarios de forma paginada (para administrador)
+   *
+   * @param page - Número de página
+   * @param limit - Cantidad por página
+   * @param search - Búsqueda por nombre, apellido, email o documento
+   * @returns Usuarios paginados
+   */
   async findPaginated(
     page: number,
     limit: number,
@@ -349,6 +450,14 @@ export class UsuarioService {
     }
   }
 
+  /**
+   * Obtiene un usuario por su ID
+   *
+   * @param id - ID del usuario
+   * @returns Usuario encontrado
+   *
+   * @throws {ErrorManager} Si el usuario no existe
+   */
   async findOne(id: number): Promise<ResponseUsuarioDto> {
     try {
       const usuario = await this.usuarioRepository.findOne({
@@ -380,6 +489,13 @@ export class UsuarioService {
     }
   }
 
+  /**
+   * Deshabilita un usuario (soft delete)
+   *
+   * @param id - ID del usuario
+   *
+   * @throws {ErrorManager} Si el usuario no existe
+   */
   async delete(id: number): Promise<void> {
     try {
       const usuario = await this.usuarioRepository.findOne({
@@ -406,6 +522,13 @@ export class UsuarioService {
     }
   }
 
+  /**
+   * Restaura un usuario deshabilitado
+   *
+   * @param id - ID del usuario
+   *
+   * @throws {ErrorManager} Si el usuario no existe
+   */
   async restore(id: number): Promise<void> {
     try {
       const usuario = await this.usuarioRepository.findOne({
@@ -432,6 +555,12 @@ export class UsuarioService {
     }
   }
 
+  /**
+   * Mapea una entidad Usuario a ResponseUsuarioDto
+   *
+   * @param usuario - Entidad Usuario
+   * @returns DTO de respuesta para usuario
+   */
   private mapToResponseDto(usuario: Usuario): ResponseUsuarioDto {
     const dto = new ResponseUsuarioDto();
 
@@ -455,6 +584,12 @@ export class UsuarioService {
     return dto;
   }
 
+  /**
+   * Busca un usuario por token de recuperación de contraseña
+   *
+   * @param token - Token de recuperación
+   * @returns Usuario encontrado o null
+   */
   async findByResetToken(token: string): Promise<Usuario | null> {
     return this.usuarioRepository.findOne({
       where: {
@@ -464,6 +599,13 @@ export class UsuarioService {
     });
   }
 
+  /**
+   * Establece el token de recuperación de contraseña
+   *
+   * @param id - ID del usuario
+   * @param token - Token de recuperación
+   * @param expires - Fecha de expiración
+   */
   async setResetToken(id: number, token: string, expires: Date): Promise<void> {
     await this.usuarioRepository.update(id, {
       resetPasswordToken: token,
@@ -471,6 +613,12 @@ export class UsuarioService {
     });
   }
 
+  /**
+   * Resetea la contraseña del usuario
+   *
+   * @param id - ID del usuario
+   * @param newHashedPassword - Nueva contraseña hasheada
+   */
   async resetPassword(id: number, newHashedPassword: string): Promise<void> {
     await this.usuarioRepository.update(id, {
       clave: newHashedPassword,
