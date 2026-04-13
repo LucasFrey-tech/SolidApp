@@ -44,21 +44,6 @@ import { CreateOrganizacionDto } from './dto/create_organizacion.dto';
 import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
 import { ResponseDonationDto } from '../donation/dto/response_donation.dto';
 
-/**
- * Controlador encargado de gestionar las operaciones HTTP
- * relacionadas con las organizaciones.
- *
- * Permite:
- * - Crear organizaciones
- * - Listar organizaciones (simples y paginadas)
- * - Obtener organización por ID
- * - Actualizar datos
- * - Deshabilitar (soft delete)
- * - Restaurar organizaciones
- * - Actualizar credenciales
- *
- * Base path: /organizations
- */
 @ApiTags('Organizaciones')
 @Controller('organizaciones')
 export class OrganizacionesController {
@@ -66,13 +51,6 @@ export class OrganizacionesController {
 
   // ================= PanelOrganizacion ===================
 
-  /**
-   * Obtiene una organización específica por su ID.
-   *
-   * @param id ID numérico de la organización
-   * @returns Organización encontrada
-   * @throws NotFoundException si no existe
-   */
   @Get('perfil')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
@@ -140,13 +118,6 @@ export class OrganizacionesController {
     return this.organizacionService.registrarOrganizacion(dto);
   }
 
-  /**
-   * Crea una nueva Campaña en el sistema.
-   *
-   * @param {CreateCampaignsDto} createCampaignsDto - Datos de la Campaña a crear
-   * @param {Express.Multer.File} files - Imagenes de la Campaña
-   * @returns {Promise<ResponseCampaignsDto>} Campaña creada
-   */
   @Post('campaigns')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR)
@@ -202,13 +173,6 @@ export class OrganizacionesController {
     );
   }
 
-  /**
-   * Actualiza una Campaña existente.
-   *
-   * @param {number} id - ID de la Campaña a actualizar
-   * @param {UpdateCampaignsDto} updateCampaignsDto - Datos actualizados de la Campaña
-   * @returns {Promise<ResponseCampaignsDto>} Campaña actualizada
-   */
   @Patch('campaigns/:campaignId')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR)
@@ -288,16 +252,7 @@ export class OrganizacionesController {
       search,
     );
   }
-  /**
-   * Actualiza el estado de una donación.
-   *
-   * Permite cambiar el estado de la donación (por ejemplo, a RECHAZADA)
-   * y registrar información adicional como el motivo del rechazo.
-   *
-   * @param {number} id - ID de la donación a actualizar.
-   * @param {string} motivo - Motivo del rechazo (opcional, requerido si estado=RECHAZADA).
-   * @returns {Promise<void>} Resultado de la operación.
-   */
+
   @Patch('donaciones/:id')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
@@ -348,13 +303,6 @@ export class OrganizacionesController {
     );
   }
 
-  /**
-   * Actualiza los datos de una organización existente.
-   *
-   * @param id ID de la organización
-   * @param updateDto Datos a modificar
-   * @returns Organización actualizada
-   */
   @Patch('perfil')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR)
@@ -379,15 +327,6 @@ export class OrganizacionesController {
 
   // ====== Panel Admin ======
 
-  /**
-   * Lista organizaciones de forma paginada.
-   *
-   * @param page Número de página (default: 1)
-   * @param limit Cantidad de registros por página (default: 10)
-   * @param search Texto opcional para búsqueda por razón social o nombre fantasía
-   *
-   * @returns Objeto con items y total de registros
-   */
   @Auth(Rol.ADMIN)
   @Get('organizaciones')
   @ApiOperation({ summary: 'Listar organizaciones paginadas' })
@@ -418,11 +357,6 @@ export class OrganizacionesController {
     return this.organizacionService.update(dto, id);
   }
 
-  /**
-   * Deshabilita una organización (soft delete).
-   *
-   * @param id ID de la organización
-   */
   @Auth(Rol.ADMIN)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -440,11 +374,6 @@ export class OrganizacionesController {
     return this.organizacionService.delete(id);
   }
 
-  /**
-   * Restaura una organización previamente deshabilitada.
-   *
-   * @param id ID de la organización
-   */
   @Auth(Rol.ADMIN)
   @Patch(':id/restaurar')
   @HttpCode(HttpStatus.NO_CONTENT)

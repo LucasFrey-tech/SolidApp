@@ -18,24 +18,11 @@ import { Auth, Public } from '../auth/decoradores/auth.decorador';
 import { Rol } from '../user/enums/enums';
 import { Campaigns } from '../../Entities/campaigns.entity';
 
-/**
- * Controlador para gestionar las operaciones de las Campañas.
- * Proporciona endpoints para crear, leer actualizar y eliminar Campañas,
- * así como para obtener Campañas filtrados por organizaciones.
- */
 @ApiTags('Campañas')
 @Controller('campaigns')
 export class CampaignsController {
   constructor(private readonly campaignService: CampaignsService) {}
 
-  /**
-   * Obtiene todas las Campañas paginadas pertenecientes a una misma Organización.
-   *
-   * @param {number} page - Página solicitada (basada en 1)
-   * @param {number} limit - Cantidad de Campañas por página
-   * @param {string} search - Término de busqueda
-   * @returns
-   */
   @Public()
   @Get('campaigns')
   @ApiOperation({ summary: 'Listar campañas solidarias de la organizacion' })

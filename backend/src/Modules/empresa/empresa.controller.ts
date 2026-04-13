@@ -33,50 +33,11 @@ import { Rol, RolSecundario } from '../user/enums/enums';
 import { AuthRelacion } from '../auth/decoradores/auth-relacion.decorator';
 import { BeneficiosResponseDTO } from '../benefit/dto/response_beneficios.dto';
 
-/**
- * ============================================================
- * EmpresaController
- * ============================================================
- *
- * Controlador encargado de exponer los endpoints REST para la
- * gestión de Empresas dentro del sistema.
- *
- * Responsabilidades:
- * - Listar empresas activas
- * - Listar empresas paginadas con búsqueda
- * - Obtener imágenes asociadas
- * - Obtener empresa por ID
- * - Crear empresa
- * - Actualizar empresa
- * - Deshabilitar (Soft Delete)
- * - Restaurar empresa
- * - Actualizar credenciales
- *
- * Arquitectura:
- * Controller → Service → Repository (TypeORM)
- *
- * Todas las reglas de negocio están delegadas en EmpresasService.
- * ============================================================
- */
 @ApiTags('Empresas')
 @Controller('empresas')
 export class EmpresaController {
   constructor(private readonly empresasService: EmpresaService) {}
 
-  /**
-   * GET /list
-   *
-   * Devuelve empresas de manera paginada con opción de búsqueda.
-   *
-   * @param page Número de página (default: 1)
-   * @param limit Cantidad de registros por página (default: 10)
-   * @param search Texto opcional para filtrar por razón social o nombre fantasía
-   *
-   * @returns Promise<{ items: EmpresaResponseDTO[], total: number }>
-   * Objeto con:
-   * - items: lista de empresas
-   * - total: cantidad total de registros
-   */
   @Get('empresas')
   @Public()
   @ApiOperation({ summary: 'Listar empresas paginadas' })
@@ -101,19 +62,6 @@ export class EmpresaController {
 
   // =====Panel Organizacion=====
 
-  /**
-   * GET /empresas/:id
-   *
-   * Obtiene una empresa específica por su ID.
-   *
-   * @param id ID numérico de la empresa.
-   *
-   * @returns Promise<EmpresaResponseDTO>
-   * Empresa encontrada.
-   *
-   * @throws NotFoundException
-   * Si la empresa no existe.
-   */
   @Get('perfil')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR, RolSecundario.MIEMBRO)
@@ -150,20 +98,6 @@ export class EmpresaController {
     return this.empresasService.registrarEmpresa(dto);
   }
 
-  /**
-   * PUT /empresas/:id
-   *
-   * Actualiza los datos de una empresa existente.
-   *
-   * @param id ID de la empresa.
-   * @param updateDto Datos a modificar.
-   *
-   * @returns Promise<EmpresaResponseDTO>
-   * Empresa actualizada.
-   *
-   * @throws NotFoundException
-   * Si la empresa no existe.
-   */
   @Patch('perfil')
   @Auth(Rol.COLABORADOR)
   @AuthRelacion(RolSecundario.GESTOR)
@@ -257,19 +191,6 @@ export class EmpresaController {
 
   // =====Panel Admin=====
 
-  /**
-   * DELETE /empresas/:id
-   *
-   * Realiza un Soft Delete de la empresa.
-   * No elimina el registro físicamente, solo lo marca como deshabilitado.
-   *
-   * @param id ID de la empresa.
-   *
-   * @returns Promise<void>
-   *
-   * @throws NotFoundException
-   * Si la empresa no existe.
-   */
   @Delete('empresas/:id')
   @Auth(Rol.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -278,21 +199,6 @@ export class EmpresaController {
     return this.empresasService.delete(id);
   }
 
-  /**
-   * PATCH /empresas/:id/restaurar
-   *
-   * Restaura una empresa previamente deshabilitada.
-   *
-   * @param id ID de la empresa.
-   *
-   * @returns Promise<void>
-   *
-   * @throws NotFoundException
-   * Si la empresa no existe.
-   *
-   * @throws BadRequestException
-   * Si la empresa ya está activa.
-   */
   @Patch('empresas/:id')
   @Auth(Rol.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)

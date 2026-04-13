@@ -16,9 +16,6 @@ import { UserDonationItemDto } from './dto/usuario_donation_item.dto';
 import { CampaignEstado } from '../campaign/enum';
 import { ErrorManager } from '../../common/errors/error.manager';
 
-/**
- * Servicio que maneja la lógica de negocio para las Donaciones.
- */
 @Injectable()
 export class DonacionService {
   private readonly logger = new Logger(DonacionService.name);
@@ -36,14 +33,6 @@ export class DonacionService {
     private readonly rankingService: RankingService,
   ) {}
 
-  /**
-   * Obtiene
-   *
-   * @param organizacionId
-   * @param page
-   * @param limit
-   * @returns
-   */
   async findAllPaginatedByOrganizacion(
     organizacionId: number,
     page = 1,
@@ -90,14 +79,6 @@ export class DonacionService {
     }
   }
 
-  /**
-   * Obtiene
-   *
-   * @param userId
-   * @param page
-   * @param limit
-   * @returns
-   */
   async findAllPaginatedByUser(
     userId: number,
     page = 1,
@@ -133,9 +114,6 @@ export class DonacionService {
     }
   }
 
-  /**
-   * Crear una Donación
-   */
   async create(
     usuarioId: number,
     createDto: CreateDonationDto,
