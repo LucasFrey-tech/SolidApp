@@ -376,6 +376,7 @@ export class InvitacionesService {
     try {
       const invitacion = await this.invitacionRepo.findOne({
         where: { token },
+        relations: ['empresa', 'organizacion'],
       });
 
       if (!invitacion) {

@@ -6,6 +6,8 @@ import { RequestConUsuario } from '../../src/Modules/auth/interfaces/authenticat
 import { Rol, RolSecundario } from '../../src/Modules/user/enums/enums';
 import { CreateInvitacionDto } from '../../src/Modules/invitaciones/dto/crear_invitacion.dto';
 import { Invitacion } from '../../src/Entities/invitacion.entity';
+import { Usuario } from '../../src/Entities/usuario.entity';
+import { Empresa } from '../../src/Entities/empresa.entity';
 
 describe('InvitacionesController', () => {
   let controller: InvitacionesController;
@@ -16,17 +18,25 @@ describe('InvitacionesController', () => {
   } as RequestConUsuario;
   const mockReqAdmin = { user: { id: 1, rol: Rol.ADMIN } } as RequestConUsuario;
 
-  const mockInvitacion: Invitacion = {
+  const mockUsuario = {
+    id: 1,
+    nombre: 'Juan',
+    apellido: 'Pérez',
+  } as Usuario;
+
+  const mockInvitacion = {
     id: 1,
     token: 'f9a3c5d7e8b1',
     correo: 'test@test.com',
-    empresaId: 1,
-    organizacionId: undefined,
+    empresa: { id: 1 } as Empresa,
+    organizacion: undefined,
     invitadorID: 1,
+    invitador: mockUsuario,
     rol: RolSecundario.GESTOR,
     expirada: false,
     fecha_creacion: new Date(),
     fecha_expiracion: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    estado: 'pendiente',
   } as Invitacion;
 
   beforeEach(async () => {
@@ -277,7 +287,12 @@ describe('InvitacionesController', () => {
     };
 
     it('debe validar un token exitosamente', async () => {
-      invitacionesService.validarToken.mockResolvedValue(mockInvitacion);
+      invitacionesService.validarToken.mockResolvedValue({
+        correo: 'test@test.com',
+        empresaId: 1,
+        organizacionId: undefined,
+        rol: RolSecundario.GESTOR,
+      });
 
       const result = await controller.validarToken(token);
 
