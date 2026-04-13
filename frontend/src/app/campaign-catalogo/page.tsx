@@ -13,10 +13,10 @@ export default function CampaignsCatalogoPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [initialLoading, setInitialLoading] = useState(true); 
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  
+
   const deferredSearch = useDeferredValue(search);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function CampaignsCatalogoPage() {
           currentPage,
           ITEMS_PER_PAGE,
           deferredSearch,
-          true,
+          true
         );
         setCampaigns(res.items);
         setTotal(res.total);
@@ -53,11 +53,12 @@ export default function CampaignsCatalogoPage() {
   return (
     <main className={styles.page}>
       <section className={styles.container}>
-
-        {/* HEADER */}
         <header className={styles.header}>
-          <h1 className={styles.title}>Campañas</h1>
-          <p className={styles.subtitle}>Elegí una campaña y colaborá con una causa</p>
+          <div className={styles.headerBadge}>SolidApp</div>
+          <h1 className={styles.title}>Campañas solidarias</h1>
+          <p className={styles.subtitle}>
+            Elegí una campaña y colaborá con una causa que genere un impacto real.
+          </p>
 
           <div className={styles.searchContainer}>
             <label className={styles.searchLabel}>Buscar campaña</label>
@@ -65,24 +66,22 @@ export default function CampaignsCatalogoPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Ej: alimentos, ropa..."
+              placeholder="Ej: alimentos, ropa, juguetes..."
               className={styles.searchInput}
             />
           </div>
         </header>
 
-        {/* ERROR */}
         {error && (
           <div className={styles.errorContainer}>
             <p className={styles.error}>{error}</p>
           </div>
         )}
-        
+
         {initialLoading ? (
           <p className={styles.loading}>Cargando campañas...</p>
         ) : (
           <>
-            {/* GRID */}
             {campaigns.length > 0 ? (
               <div className={styles.grid}>
                 {campaigns.map((campaign) => (
@@ -100,9 +99,18 @@ export default function CampaignsCatalogoPage() {
                     )}
 
                     <div className={styles.cardContent}>
+                      <div className={styles.metaRow}>
+                        <span className={styles.metaBadge}>Campaña activa</span>
+                      </div>
+
                       <h2 className={styles.cardTitle}>{campaign.titulo}</h2>
+
                       <p className={styles.description}>{campaign.descripcion}</p>
-                      <div className={styles.meta}>Objetivo: {campaign.objetivo}</div>
+
+                      <div className={styles.metaBox}>
+                        <span className={styles.metaLabel}>Objetivo:</span>
+                        <span className={styles.metaValue}>{campaign.objetivo}</span>
+                      </div>
                     </div>
 
                     <Link
@@ -115,12 +123,14 @@ export default function CampaignsCatalogoPage() {
                 ))}
               </div>
             ) : (
-              /* SIN RESULTADOS */
               <div className={styles.noResults}>
                 {deferredSearch ? (
                   <>
-                    <p>No hay campañas que coincidan con &quot;<strong>{deferredSearch}</strong>&ldquo;</p>
-                    <button 
+                    <p>
+                      No hay campañas que coincidan con{" "}
+                      <strong>{deferredSearch}</strong>
+                    </p>
+                    <button
                       onClick={() => setSearch("")}
                       className={styles.clearSearchButton}
                     >
@@ -133,11 +143,10 @@ export default function CampaignsCatalogoPage() {
               </div>
             )}
 
-            {/* PAGINACIÓN */}
             {totalPages > 1 && (
               <div className={styles.pagination}>
                 <button
-                  onClick={() => setCurrentPage(p => p - 1)}
+                  onClick={() => setCurrentPage((p) => p - 1)}
                   disabled={currentPage === 1}
                   className={styles.pageButton}
                 >
@@ -149,7 +158,7 @@ export default function CampaignsCatalogoPage() {
                 </span>
 
                 <button
-                  onClick={() => setCurrentPage(p => p + 1)}
+                  onClick={() => setCurrentPage((p) => p + 1)}
                   disabled={currentPage === totalPages}
                   className={styles.pageButton}
                 >
@@ -159,7 +168,6 @@ export default function CampaignsCatalogoPage() {
             )}
           </>
         )}
-
       </section>
     </main>
   );
