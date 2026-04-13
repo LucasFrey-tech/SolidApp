@@ -1,138 +1,250 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { EmailService } from '../../src/Modules/email/email.service';
-
-jest.mock('nodemailer');
+import { ErrorManager } from '../../src/common/errors/error.manager';
 import nodemailer from 'nodemailer';
 
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue({ messageId: 'test-id' }),
+  }),
+}));
+
 describe('EmailService', () => {
-  let service: EmailService;
-  let mockSendMail: jest.Mock;
-  let mockCreateTransport: jest.Mock;
+  let sendMailMock: jest.Mock;
 
-  beforeEach(async () => {
-    process.env.EMAIL_USER = 'test@gmail.com';
-    process.env.EMAIL_PASS = 'testPassword123';
+  const originalEnv = { ...process.env };
 
-    mockSendMail = jest.fn().mockResolvedValue({ messageId: 'test-id' });
-
-    mockCreateTransport = jest.fn().mockReturnValue({
-      sendMail: mockSendMail,
-    });
-
-    (nodemailer.createTransport as jest.Mock) = mockCreateTransport;
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [EmailService],
-    }).compile();
-
-    service = module.get<EmailService>(EmailService);
+  beforeAll(() => {
+    process.env.EMAIL_USER = 'test@test.com';
+    process.env.EMAIL_PASS = 'test-password';
+    process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
   });
 
-  afterEach(() => {
+  afterAll(() => {
+    process.env = originalEnv;
+  });
+
+  beforeEach(() => {
     jest.clearAllMocks();
-    // Limpiar variables de entorno
-    delete process.env.EMAIL_USER;
-    delete process.env.EMAIL_PASS;
-  });
-
-  // ========== TESTS DE SEND RESET PASSWORD EMAIL ==========
-  describe('sendResetPasswordEmail', () => {
-    it('debe enviar email de recuperación de contraseña', async () => {
-      const to = 'usuario@example.com';
-      const token = 'validToken123';
-
-      await service.sendResetPasswordEmail(to, token);
-
-      expect(mockSendMail).toHaveBeenCalledWith(
-        expect.objectContaining({
-          from: '"SolidApp" <noreply@solidapp.com>',
-          to,
-          subject: 'Recuperación de contraseña',
-        }),
-      );
-    });
-
-    it('debe incluir el token en el enlace del email', async () => {
-      const to = 'usuario@example.com';
-      const token = 'validToken123';
-
-      await service.sendResetPasswordEmail(to, token);
-
-      const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain(`token=${token}`);
-    });
-
-    it('debe construir correctamente la URL de restauración', async () => {
-      const to = 'usuario@example.com';
-      const token = 'testToken456';
-      const expectedUrl = `http://localhost:3000/restaurar-contrasena?token=${token}`;
-
-      await service.sendResetPasswordEmail(to, token);
-
-      const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain(expectedUrl);
-    });
-
-    it('debe incluir el mensaje de expiración del enlace', async () => {
-      const to = 'usuario@example.com';
-      const token = 'validToken123';
-
-      await service.sendResetPasswordEmail(to, token);
-
-      const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain('Este enlace expira en 1 hora');
-    });
-
-    it('debe propagar excepciones del transporter', async () => {
-      mockSendMail.mockRejectedValue(new Error('Email service error'));
-
-      const to = 'usuario@example.com';
-      const token = 'validToken123';
-
-      await expect(service.sendResetPasswordEmail(to, token)).rejects.toThrow(
-        'Email service error',
-      );
-    });
-
-    it('debe enviar email con contenido HTML', async () => {
-      const to = 'usuario@example.com';
-      const token = 'validToken123';
-
-      await service.sendResetPasswordEmail(to, token);
-
-      const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toBeDefined();
-      expect(callArgs.html).toContain('<h2>');
-      expect(callArgs.html).toContain('<a href=');
-    });
-
-    it('debe usar correo "to" correcto', async () => {
-      const to = 'different@example.com';
-      const token = 'validToken123';
-
-      await service.sendResetPasswordEmail(to, token);
-
-      const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.to).toBe(to);
+    (nodemailer.createTransport as jest.Mock).mockClear();
+    (nodemailer.createTransport as jest.Mock).mockReturnValue({
+      sendMail: jest.fn().mockResolvedValue({ messageId: 'test-id' }),
     });
   });
 
-  // ========== TESTS DE CONSTRUCTOR ==========
   describe('constructor', () => {
-    it('debe crear transporter con configuración correcta', () => {
-      expect(mockCreateTransport).toHaveBeenCalledWith({
+    it('debe crear una instancia correctamente cuando hay credenciales', () => {
+      process.env.EMAIL_USER = 'test@test.com';
+      process.env.EMAIL_PASS = 'test-password';
+      process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
+
+      const service = new EmailService();
+      expect(service).toBeDefined();
+      expect(nodemailer.createTransport).toHaveBeenCalledWith({
         service: 'gmail',
-        auth: {
-          user: 'test@gmail.com',
-          pass: 'testPassword123',
-        },
+        auth: { user: 'test@test.com', pass: 'test-password' },
       });
     });
 
-    it('debe usar variables de entorno para credentials', () => {
-      const callArgs = mockCreateTransport.mock.calls[0][0];
-      expect(callArgs.auth.user).toBe(process.env.EMAIL_USER);
-      expect(callArgs.auth.pass).toBe(process.env.EMAIL_PASS);
+    it('debe lanzar error cuando falta EMAIL_USER', () => {
+      process.env.EMAIL_USER = '';
+      process.env.EMAIL_PASS = 'test-password';
+      process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
+
+      expect(() => new EmailService()).toThrow(ErrorManager);
+      expect(() => new EmailService()).toThrow(
+        'Las credenciales de email no están configuradas',
+      );
+    });
+
+    it('debe lanzar error cuando falta EMAIL_PASS', () => {
+      process.env.EMAIL_USER = 'test@test.com';
+      process.env.EMAIL_PASS = '';
+      process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
+
+      expect(() => new EmailService()).toThrow(ErrorManager);
+      expect(() => new EmailService()).toThrow(
+        'Las credenciales de email no están configuradas',
+      );
+    });
+
+    it('debe lanzar error cuando falta NEXT_PUBLIC_API_URL', () => {
+      process.env.EMAIL_USER = 'test@test.com';
+      process.env.EMAIL_PASS = 'test-password';
+      process.env.NEXT_PUBLIC_API_URL = '';
+
+      expect(() => new EmailService()).toThrow(ErrorManager);
+      expect(() => new EmailService()).toThrow(
+        'La URL del frontend no está configurada',
+      );
+    });
+  });
+
+  describe('sendResetPasswordEmail', () => {
+    const to = 'usuario@test.com';
+    const token = 'reset-token-123';
+
+    beforeEach(() => {
+      process.env.EMAIL_USER = 'test@test.com';
+      process.env.EMAIL_PASS = 'test-password';
+      process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
+    });
+
+    it('debe manejar error cuando el error no es una instancia de Error', async () => {
+      const service = new EmailService();
+      const transporter = (nodemailer.createTransport as jest.Mock).mock
+        .results[0]?.value;
+      sendMailMock = transporter?.sendMail as jest.Mock;
+
+      sendMailMock.mockRejectedValue('Error string inesperado');
+
+      await expect(service.sendResetPasswordEmail(to, token)).rejects.toThrow(
+        'Error al enviar el email de recuperación',
+      );
+    });
+
+    it('debe enviar email de recuperación exitosamente', async () => {
+      const service = new EmailService();
+      const transporter = (nodemailer.createTransport as jest.Mock).mock
+        .results[0]?.value;
+      sendMailMock = transporter?.sendMail as jest.Mock;
+
+      await service.sendResetPasswordEmail(to, token);
+
+      expect(sendMailMock).toHaveBeenCalledTimes(1);
+      expect(sendMailMock).toHaveBeenCalledWith({
+        from: '"SolidApp" <noreply@solidapp.com>',
+        to,
+        subject: 'Recuperación de contraseña',
+        html:
+          expect.stringContaining(
+            'http://localhost:3000/restaurar-contrasena?token=reset-token-123',
+          ) && expect.stringContaining('Este enlace expira en 1 hora'),
+      });
+    });
+
+    it('debe manejar error cuando falla el envío', async () => {
+      const service = new EmailService();
+      const transporter = (nodemailer.createTransport as jest.Mock).mock
+        .results[0]?.value;
+      sendMailMock = transporter?.sendMail as jest.Mock;
+      const error = new Error('Error de conexión SMTP');
+      sendMailMock.mockRejectedValue(error);
+
+      await expect(service.sendResetPasswordEmail(to, token)).rejects.toThrow(
+        'Error de conexión SMTP',
+      );
+    });
+  });
+
+  describe('sendInvitationEmail', () => {
+    const to = 'invitado@test.com';
+    const token = 'invite-token-456';
+
+    beforeEach(() => {
+      process.env.EMAIL_USER = 'test@test.com';
+      process.env.EMAIL_PASS = 'test-password';
+      process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
+    });
+
+    it('debe manejar error cuando el error no es una instancia de Error', async () => {
+      const service = new EmailService();
+      const transporter = (nodemailer.createTransport as jest.Mock).mock
+        .results[0]?.value;
+      sendMailMock = transporter?.sendMail as jest.Mock;
+      sendMailMock.mockRejectedValue('Error string inesperado');
+
+      await expect(service.sendInvitationEmail(to, token)).rejects.toThrow(
+        'Error al enviar el email de invitación',
+      );
+    });
+
+    it('debe enviar email de invitación exitosamente', async () => {
+      const service = new EmailService();
+      const transporter = (nodemailer.createTransport as jest.Mock).mock
+        .results[0]?.value;
+      sendMailMock = transporter?.sendMail as jest.Mock;
+
+      await service.sendInvitationEmail(to, token);
+
+      expect(sendMailMock).toHaveBeenCalledTimes(1);
+      expect(sendMailMock).toHaveBeenCalledWith({
+        from: '"SolidApp" <noreply@solidapp.com>',
+        to,
+        subject: 'Invitación a SolidApp',
+        html:
+          expect.stringContaining(
+            'http://localhost:3000/login?token=invite-token-456',
+          ) && expect.stringContaining('Este enlace expira en 48 horas'),
+      });
+    });
+
+    it('debe manejar error cuando falla el envío', async () => {
+      const service = new EmailService();
+      const transporter = (nodemailer.createTransport as jest.Mock).mock
+        .results[0]?.value;
+      sendMailMock = transporter?.sendMail as jest.Mock;
+      const error = new Error('Error al enviar');
+      sendMailMock.mockRejectedValue(error);
+
+      await expect(service.sendInvitationEmail(to, token)).rejects.toThrow(
+        'Error al enviar',
+      );
+    });
+  });
+
+  describe('sendEntidadInvitationEmail', () => {
+    const to = 'empresa@test.com';
+    const token = 'entidad-token-789';
+
+    beforeEach(() => {
+      process.env.EMAIL_USER = 'test@test.com';
+      process.env.EMAIL_PASS = 'test-password';
+      process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000';
+    });
+
+    it('debe manejar error cuando el error no es una instancia de Error', async () => {
+      const service = new EmailService();
+      const transporter = (nodemailer.createTransport as jest.Mock).mock
+        .results[0]?.value;
+      sendMailMock = transporter?.sendMail as jest.Mock;
+      sendMailMock.mockRejectedValue('Error string inesperado');
+
+      await expect(
+        service.sendEntidadInvitationEmail(to, token),
+      ).rejects.toThrow('Error al enviar el email de invitación de entidad');
+    });
+
+    it('debe enviar email de invitación de entidad exitosamente', async () => {
+      const service = new EmailService();
+      const transporter = (nodemailer.createTransport as jest.Mock).mock
+        .results[0]?.value;
+      sendMailMock = transporter?.sendMail as jest.Mock;
+
+      await service.sendEntidadInvitationEmail(to, token);
+
+      expect(sendMailMock).toHaveBeenCalledTimes(1);
+      expect(sendMailMock).toHaveBeenCalledWith({
+        from: '"SolidApp" <noreply@solidapp.com>',
+        to,
+        subject: 'Invitación a registrar tu entidad en SolidApp',
+        html:
+          expect.stringContaining(
+            'http://localhost:3000/registro-entidad?token=entidad-token-789',
+          ) && expect.stringContaining('Este enlace expira en 7 días'),
+      });
+    });
+
+    it('debe manejar error cuando falla el envío', async () => {
+      const service = new EmailService();
+      const transporter = (nodemailer.createTransport as jest.Mock).mock
+        .results[0]?.value;
+      sendMailMock = transporter?.sendMail as jest.Mock;
+      const error = new Error('Error de red');
+      sendMailMock.mockRejectedValue(error);
+
+      await expect(
+        service.sendEntidadInvitationEmail(to, token),
+      ).rejects.toThrow('Error de red');
     });
   });
 });

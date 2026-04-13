@@ -1,177 +1,88 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { mock } from 'jest-mock-extended';
 import { DonacionService } from '../../src/Modules/donation/donacion.service';
+import { RankingService } from '../../src/Modules/ranking/ranking.service';
 import { Donaciones } from '../../src/Entities/donacion.entity';
 import { Campaigns } from '../../src/Entities/campaigns.entity';
 import { Usuario } from '../../src/Entities/usuario.entity';
-import { ImagenesDonaciones } from '../../src/Entities/imagenes_donaciones';
 import { CreateDonationDto } from '../../src/Modules/donation/dto/create_donation.dto';
 import { UpdateDonacionEstadoDto } from '../../src/Modules/donation/dto/update_donation_estado.dto';
 import { DonacionEstado } from '../../src/Modules/donation/enum';
 import { CampaignEstado } from '../../src/Modules/campaign/enum';
-import { RankingService } from '../../src/Modules/ranking/ranking.service';
+
+const mockContacto = { id: 1, correo: 'test@test.com' };
+
+const mockDireccion = { id: 1, calle: 'Av. Test', numero: '123' };
+
+const mockOrganizacion = {
+  id: 1,
+  nombre_organizacion: 'Org Test',
+  direccion: mockDireccion,
+};
+
+const mockCampaign = Object.assign(new Campaigns(), {
+  id: 1,
+  titulo: 'Campaña Test',
+  objetivo: 100,
+  puntos: 10,
+  estado: CampaignEstado.ACTIVA,
+  organizacion: mockOrganizacion,
+});
+
+const mockUsuario = Object.assign(new Usuario(), {
+  id: 1,
+  nombre: 'Juan',
+  apellido: 'Pérez',
+  puntos: 0,
+  habilitado: true,
+  contacto: mockContacto,
+});
+
+const mockDonacionPendiente = Object.assign(new Donaciones(), {
+  id: 1,
+  titulo: 'Donación Test',
+  detalle: 'Detalle de donación',
+  cantidad: 5,
+  estado: DonacionEstado.PENDIENTE,
+  puntos: 50,
+  fecha_registro: new Date(),
+  usuario: mockUsuario,
+  campaña: mockCampaign,
+});
+
+const mockDonacionAprobada = Object.assign(new Donaciones(), {
+  ...mockDonacionPendiente,
+  estado: DonacionEstado.APROBADA,
+  fecha_aprobacion: new Date(),
+  aprobado_por: Object.assign(new Usuario(), {
+    id: 2,
+    nombre: 'Admin',
+    apellido: 'Test',
+  }),
+});
+
+const mockDonacionRechazada = Object.assign(new Donaciones(), {
+  ...mockDonacionPendiente,
+  estado: DonacionEstado.RECHAZADA,
+  fecha_rechazo: new Date(),
+  rechazado_por: Object.assign(new Usuario(), {
+    id: 2,
+    nombre: 'Admin',
+    apellido: 'Test',
+  }),
+  motivo_rechazo: 'Motivo de rechazo',
+});
 
 describe('DonacionService', () => {
   let service: DonacionService;
+  let donacionRepository: jest.Mocked<Repository<Donaciones>>;
+  let campaignsRepository: jest.Mocked<Repository<Campaigns>>;
+  let usuarioRepository: jest.Mocked<Repository<Usuario>>;
+  let rankingService: jest.Mocked<RankingService>;
 
-  // ========== Mocks de repositorios ==========
-  let mockDonacionRepository: {
-    findAndCount: jest.Mock;
-    create: jest.Mock;
-    save: jest.Mock;
-    createQueryBuilder: jest.Mock;
-    manager: { transaction: jest.Mock };
-  };
-  let mockCampaignsRepository: {
-    findOne: jest.Mock;
-  };
-  let mockUsuarioRepository: {
-    findOne: jest.Mock;
-    save: jest.Mock;
-  };
-  let mockDonationImagenRepository: {
-    findOne: jest.Mock;
-  };
-  let mockRankingService: {
-    ajustarPuntos: jest.Mock;
-  };
-
-  // IDs reutilizables
-  const USUARIO_ID = 1;
-  const CAMPAIGN_ID = 1;
-  const DONACION_ID = 1;
-  const GESTOR_ID = 99;
-
-  let usuario: Usuario;
-  let campaign: Campaigns;
-  let donacion: Donaciones;
-  let createDonationDto: CreateDonationDto;
-  let updateDonacionEstadoDto: UpdateDonacionEstadoDto;
-
-  beforeEach(async () => {
-    mockDonacionRepository = {
-      findAndCount: jest.fn(),
-      create: jest.fn(),
-      save: jest.fn(),
-      createQueryBuilder: jest.fn(),
-      manager: { transaction: jest.fn() },
-    };
-
-    mockCampaignsRepository = {
-      findOne: jest.fn(),
-    };
-
-    mockUsuarioRepository = {
-      findOne: jest.fn(),
-      save: jest.fn(),
-    };
-
-    mockDonationImagenRepository = {
-      findOne: jest.fn(),
-    };
-
-    mockRankingService = {
-      ajustarPuntos: jest.fn(),
-    };
-
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        DonacionService,
-        {
-          provide: getRepositoryToken(Donaciones),
-          useValue: mockDonacionRepository,
-        },
-        {
-          provide: getRepositoryToken(Campaigns),
-          useValue: mockCampaignsRepository,
-        },
-        {
-          provide: getRepositoryToken(Usuario),
-          useValue: mockUsuarioRepository,
-        },
-        {
-          provide: getRepositoryToken(ImagenesDonaciones),
-          useValue: mockDonationImagenRepository,
-        },
-        {
-          provide: RankingService,
-          useValue: mockRankingService,
-        },
-      ],
-    }).compile();
-
-    service = module.get<DonacionService>(DonacionService);
-
-    // ========== Usuario ==========
-    usuario = {
-      id: USUARIO_ID,
-      nombre: 'Juan',
-      apellido: 'Pérez',
-      puntos: 500,
-      habilitado: true,
-      contacto: { correo: 'juan@example.com' },
-    } as unknown as Usuario;
-
-    // ========== Campaña ==========
-    campaign = {
-      id: CAMPAIGN_ID,
-      titulo: 'Campaña de Ayuda',
-      descripcion: 'Campaña para ayudar',
-      objetivo: 1000,
-      puntos: 10,
-      estado: CampaignEstado.ACTIVA,
-      fecha_Inicio: new Date('2025-01-01'),
-      fecha_Fin: new Date('2025-12-31'),
-      fecha_Registro: new Date(),
-      ultimo_cambio: new Date(),
-      organizacion: {
-        id: 1,
-        nombre_organizacion: 'Org Test',
-        habilitada: true,
-        direccion: {
-          calle: 'Av. Test',
-          numero: '123',
-        },
-      },
-      imagenes: [],
-      donaciones: [],
-    } as unknown as Campaigns;
-
-    // ========== Donación ==========
-    donacion = {
-      id: DONACION_ID,
-      titulo: `Donación Solidaria de ${usuario.nombre} ${usuario.apellido}`,
-      detalle: 'Detalle de la donación',
-      tipo: 'Articulo',
-      cantidad: 100,
-      puntos: 1000,
-      estado: DonacionEstado.PENDIENTE,
-      fecha_registro: new Date(),
-      motivo_rechazo: null,
-      usuario,
-      campaña: campaign,
-    } as unknown as Donaciones;
-
-    // ========== DTOs ==========
-    createDonationDto = {
-      campaignId: CAMPAIGN_ID,
-      cantidad: 100,
-      detalle: 'Detalle de la donación',
-      puntos: 1000,
-    };
-
-    updateDonacionEstadoDto = {
-      estado: DonacionEstado.APROBADA,
-    };
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  // ========== Helper: buildQueryBuilder para findAllPaginatedByOrganizacion ==========
-  const buildOrgQueryBuilder = (items: Donaciones[], total: number) => ({
+  const mockQueryBuilder = {
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
@@ -179,362 +90,439 @@ describe('DonacionService', () => {
     addOrderBy: jest.fn().mockReturnThis(),
     skip: jest.fn().mockReturnThis(),
     take: jest.fn().mockReturnThis(),
-    getManyAndCount: jest.fn().mockResolvedValue([items, total]),
+    getManyAndCount: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const mockDonacionRepo = mock<Repository<Donaciones>>();
+    const mockCampaignsRepo = mock<Repository<Campaigns>>();
+    const mockUsuarioRepo = mock<Repository<Usuario>>();
+    const mockRankingService = mock<RankingService>();
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        DonacionService,
+        { provide: getRepositoryToken(Donaciones), useValue: mockDonacionRepo },
+        { provide: getRepositoryToken(Campaigns), useValue: mockCampaignsRepo },
+        { provide: getRepositoryToken(Usuario), useValue: mockUsuarioRepo },
+        { provide: RankingService, useValue: mockRankingService },
+      ],
+    }).compile();
+
+    service = module.get<DonacionService>(DonacionService);
+    donacionRepository = module.get(getRepositoryToken(Donaciones));
+    campaignsRepository = module.get(getRepositoryToken(Campaigns));
+    usuarioRepository = module.get(getRepositoryToken(Usuario));
+    rankingService = module.get(RankingService);
   });
 
-  // ========== TESTS DE FIND ALL PAGINATED BY ORGANIZACION ==========
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('findAllPaginatedByOrganizacion', () => {
-    it('debe retornar donaciones paginadas de una organización', async () => {
-      const qb = buildOrgQueryBuilder([donacion], 1);
-      mockDonacionRepository.createQueryBuilder.mockReturnValue(qb);
+    const organizacionId = 1;
 
-      const resultado = await service.findAllPaginatedByOrganizacion(1, 1, 10);
+    beforeEach(() => {
+      donacionRepository.createQueryBuilder = jest
+        .fn()
+        .mockReturnValue(mockQueryBuilder);
+    });
 
-      expect(resultado.items).toHaveLength(1);
-      expect(resultado.total).toBe(1);
-      expect(qb.where).toHaveBeenCalledWith(
+    it('debe obtener donaciones paginadas por organización sin search', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([
+        [mockDonacionPendiente],
+        1,
+      ]);
+
+      const result = await service.findAllPaginatedByOrganizacion(
+        organizacionId,
+        1,
+        10,
+      );
+
+      expect(result.items).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(donacionRepository.createQueryBuilder).toHaveBeenCalledWith(
+        'donacion',
+      );
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith(
         'organizacion.id = :organizacionId',
-        { organizacionId: 1 },
+        { organizacionId },
       );
-    });
-
-    it('debe retornar array vacío si no hay donaciones', async () => {
-      const qb = buildOrgQueryBuilder([], 0);
-      mockDonacionRepository.createQueryBuilder.mockReturnValue(qb);
-
-      const resultado = await service.findAllPaginatedByOrganizacion(1, 1, 10);
-
-      expect(resultado.items).toHaveLength(0);
-      expect(resultado.total).toBe(0);
-    });
-
-    it('debe aplicar filtro de búsqueda por correo cuando se proporciona', async () => {
-      const qb = buildOrgQueryBuilder([donacion], 1);
-      mockDonacionRepository.createQueryBuilder.mockReturnValue(qb);
-
-      await service.findAllPaginatedByOrganizacion(1, 1, 10, 'juan@example.com');
-
-      expect(qb.andWhere).toHaveBeenCalledWith(
-        'LOWER(contacto.correo) LIKE LOWER(:search)',
-        { search: '%juan@example.com%' },
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
+        'donacion.estado',
+        'ASC',
       );
+      expect(mockQueryBuilder.skip).toHaveBeenCalledWith(0);
+      expect(mockQueryBuilder.take).toHaveBeenCalledWith(10);
     });
 
-    it('NO debe aplicar filtro de búsqueda si search no se proporciona', async () => {
-      const qb = buildOrgQueryBuilder([donacion], 1);
-      mockDonacionRepository.createQueryBuilder.mockReturnValue(qb);
+    it('debe obtener donaciones paginadas con search por email', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
-      await service.findAllPaginatedByOrganizacion(1, 1, 10);
+      await service.findAllPaginatedByOrganizacion(
+        organizacionId,
+        1,
+        10,
+        'test@test.com',
+      );
 
-      expect(qb.andWhere).not.toHaveBeenCalled();
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalled();
+    });
+
+    it('debe manejar error cuando falla la consulta', async () => {
+      const error = new Error('Error de base de datos');
+      mockQueryBuilder.getManyAndCount.mockRejectedValue(error);
+
+      await expect(
+        service.findAllPaginatedByOrganizacion(organizacionId, 1, 10),
+      ).rejects.toThrow('Error de base de datos');
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      mockQueryBuilder.getManyAndCount.mockRejectedValue(
+        'Error string inesperado',
+      );
+
+      await expect(
+        service.findAllPaginatedByOrganizacion(organizacionId, 1, 10),
+      ).rejects.toThrow('Error desconocido');
     });
   });
 
-  // ========== TESTS DE FIND ALL PAGINATED BY USER ==========
   describe('findAllPaginatedByUser', () => {
-    it('debe retornar donaciones paginadas de un usuario', async () => {
-      mockDonacionRepository.findAndCount.mockResolvedValue([[donacion], 1]);
+    const userId = 1;
 
-      const resultado = await service.findAllPaginatedByUser(USUARIO_ID, 1, 10);
+    it('debe obtener donaciones paginadas por usuario', async () => {
+      donacionRepository.findAndCount.mockResolvedValue([
+        [mockDonacionPendiente],
+        1,
+      ]);
 
-      expect(resultado.items).toHaveLength(1);
-      expect(resultado.total).toBe(1);
-      expect(mockDonacionRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { usuario: { id: USUARIO_ID } },
-        }),
-      );
+      const result = await service.findAllPaginatedByUser(userId, 1, 10);
+
+      expect(result.items).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(donacionRepository.findAndCount).toHaveBeenCalled();
     });
 
-    it('debe retornar array vacío si no hay donaciones', async () => {
-      mockDonacionRepository.findAndCount.mockResolvedValue([[], 0]);
+    it('debe manejar error cuando falla la consulta', async () => {
+      const error = new Error('Error de base de datos');
+      donacionRepository.findAndCount.mockRejectedValue(error);
 
-      const resultado = await service.findAllPaginatedByUser(USUARIO_ID, 1, 10);
-
-      expect(resultado.items).toHaveLength(0);
-      expect(resultado.total).toBe(0);
+      await expect(
+        service.findAllPaginatedByUser(userId, 1, 10),
+      ).rejects.toThrow('Error de base de datos');
     });
 
-    it('debe respetar la paginación', async () => {
-      mockDonacionRepository.findAndCount.mockResolvedValue([[], 0]);
-
-      await service.findAllPaginatedByUser(USUARIO_ID, 3, 5);
-
-      expect(mockDonacionRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 10, take: 5 }),
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      donacionRepository.findAndCount.mockRejectedValue(
+        'Error string inesperado',
       );
+
+      await expect(
+        service.findAllPaginatedByUser(userId, 1, 10),
+      ).rejects.toThrow('Error desconocido');
     });
   });
 
-  // ========== TESTS DE CREATE ==========
   describe('create', () => {
-    it('debe crear una donación correctamente', async () => {
-      mockCampaignsRepository.findOne.mockResolvedValue(campaign);
-      mockUsuarioRepository.findOne.mockResolvedValue(usuario);
-      mockDonacionRepository.create.mockReturnValue(donacion);
-      mockDonacionRepository.save.mockResolvedValue(donacion);
-      mockUsuarioRepository.save.mockResolvedValue(usuario);
+    const usuarioId = 1;
+    const createDto: CreateDonationDto = {
+      detalle: 'Detalle de donación',
+      cantidad: 5,
+      campaignId: 1,
+      puntos: 50,
+    };
 
-      const resultado = await service.create(USUARIO_ID, createDonationDto);
-
-      expect(resultado.id).toBe(donacion.id);
-      expect(mockDonacionRepository.save).toHaveBeenCalled();
-      expect(mockUsuarioRepository.save).toHaveBeenCalled();
+    beforeEach(() => {
+      campaignsRepository.findOne.mockResolvedValue(mockCampaign);
+      usuarioRepository.findOne.mockResolvedValue(mockUsuario);
+      donacionRepository.create.mockReturnValue(mockDonacionPendiente);
+      donacionRepository.save.mockResolvedValue(mockDonacionPendiente);
     });
 
-    it('debe asignar el título con nombre y apellido del usuario', async () => {
-      mockCampaignsRepository.findOne.mockResolvedValue(campaign);
-      mockUsuarioRepository.findOne.mockResolvedValue(usuario);
-      mockDonacionRepository.create.mockReturnValue(donacion);
-      mockDonacionRepository.save.mockResolvedValue(donacion);
-      mockUsuarioRepository.save.mockResolvedValue(usuario);
+    it('debe crear una donación exitosamente', async () => {
+      const result = await service.create(usuarioId, createDto);
 
-      await service.create(USUARIO_ID, createDonationDto);
+      expect(result.id).toBe(1);
+      expect(campaignsRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+      expect(usuarioRepository.findOne).toHaveBeenCalledWith({
+        where: { id: usuarioId, habilitado: true },
+      });
+    });
 
-      expect(mockDonacionRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          titulo: `Donación Solidaria de ${usuario.nombre} ${usuario.apellido}`,
-        }),
+    it('debe lanzar error cuando la campaña no existe', async () => {
+      campaignsRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.create(usuarioId, createDto)).rejects.toThrow(
+        'Campaña no encontrada',
       );
     });
 
-    it('debe calcular los puntos como cantidad * puntos de la campaña', async () => {
-      mockCampaignsRepository.findOne.mockResolvedValue(campaign);
-      mockUsuarioRepository.findOne.mockResolvedValue(usuario);
-      mockDonacionRepository.create.mockReturnValue(donacion);
-      mockDonacionRepository.save.mockResolvedValue(donacion);
-      mockUsuarioRepository.save.mockResolvedValue(usuario);
+    it('debe lanzar error cuando la cantidad supera el objetivo', async () => {
+      const dtoExcedido = { ...createDto, cantidad: 200 };
 
-      await service.create(USUARIO_ID, createDonationDto);
-
-      const cantidadFinal = Math.min(createDonationDto.cantidad, campaign.objetivo);
-      const puntosEsperados = cantidadFinal * campaign.puntos;
-
-      expect(mockDonacionRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ puntos: puntosEsperados }),
+      await expect(service.create(usuarioId, dtoExcedido)).rejects.toThrow(
+        'superar el objetivo',
       );
     });
 
-    it('debe limitar la cantidad al objetivo de la campaña', async () => {
-      const campaignConObjetivoMenor = { ...campaign, objetivo: 50 };
-      mockCampaignsRepository.findOne.mockResolvedValue(campaignConObjetivoMenor);
-      mockUsuarioRepository.findOne.mockResolvedValue(usuario);
+    it('debe lanzar error cuando el usuario no existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(null);
 
-      const donacionLimitada = { ...donacion, cantidad: 50 };
-      mockDonacionRepository.create.mockReturnValue(donacionLimitada);
-      mockDonacionRepository.save.mockResolvedValue(donacionLimitada);
-      mockUsuarioRepository.save.mockResolvedValue(usuario);
-
-      const resultado = await service.create(USUARIO_ID, createDonationDto);
-
-      expect(resultado.cantidad).toBeLessThanOrEqual(campaignConObjetivoMenor.objetivo);
-      expect(mockDonacionRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({ cantidad: 50 }),
+      await expect(service.create(usuarioId, createDto)).rejects.toThrow(
+        'Usuario no encontrado',
       );
     });
 
-    it('debe asignar creado_por con el usuarioId', async () => {
-      mockCampaignsRepository.findOne.mockResolvedValue(campaign);
-      mockUsuarioRepository.findOne.mockResolvedValue(usuario);
-      mockDonacionRepository.create.mockReturnValue(donacion);
-      mockDonacionRepository.save.mockResolvedValue(donacion);
-      mockUsuarioRepository.save.mockResolvedValue(usuario);
+    it('debe manejar error cuando el error no es instancia de Error en create', async () => {
+      campaignsRepository.findOne.mockRejectedValue('Error string inesperado');
 
-      await service.create(USUARIO_ID, createDonationDto);
-
-      expect(mockDonacionRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          creado_por: { id: USUARIO_ID },
-          estado: DonacionEstado.PENDIENTE,
-        }),
+      await expect(service.create(usuarioId, createDto)).rejects.toThrow(
+        'Error desconocido',
       );
-    });
-
-    it('debe lanzar NotFoundException si la campaña no existe', async () => {
-      mockCampaignsRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.create(USUARIO_ID, createDonationDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(mockUsuarioRepository.findOne).not.toHaveBeenCalled();
-    });
-
-    it('debe lanzar NotFoundException si el usuario no existe o está deshabilitado', async () => {
-      mockCampaignsRepository.findOne.mockResolvedValue(campaign);
-      mockUsuarioRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.create(USUARIO_ID, createDonationDto)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(mockDonacionRepository.save).not.toHaveBeenCalled();
     });
   });
 
-  // ========== TESTS DE CONFIRMAR DONACION ==========
   describe('confirmarDonacion', () => {
-    const buildMockManager = (donacionMock: Donaciones | null, campaignMock?: Campaigns) => ({
-      findOne: jest.fn().mockImplementation((entity) => {
-        if (entity === Donaciones) return Promise.resolve(donacionMock);
-        if (entity === Campaigns) return Promise.resolve(campaignMock ?? campaign);
-        return Promise.resolve(null);
-      }),
-      save: jest.fn().mockImplementation((entity) => Promise.resolve(entity)),
-    });
+    const donacionId = 1;
+    const gestorId = 2;
 
-    it('debe cambiar estado de PENDIENTE a APROBADA y sumar puntos al usuario', async () => {
-      const manager = buildMockManager(donacion);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
-      mockRankingService.ajustarPuntos.mockResolvedValue(undefined);
-
-      const resultado = await service.confirmarDonacion(
-        DONACION_ID,
-        updateDonacionEstadoDto,
-        GESTOR_ID,
-      );
-
-      expect(resultado.id).toBe(donacion.id);
-      expect(manager.save).toHaveBeenCalled();
-      expect(mockRankingService.ajustarPuntos).toHaveBeenCalledWith(
-        usuario.id,
-        donacion.puntos,
-        manager,
-      );
-    });
-
-    it('debe asignar aprobado_por y fecha_aprobacion al aprobar', async () => {
-      const manager = buildMockManager(donacion);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
-      mockRankingService.ajustarPuntos.mockResolvedValue(undefined);
-
-      await service.confirmarDonacion(DONACION_ID, updateDonacionEstadoDto, GESTOR_ID);
-
-      expect(donacion.aprobado_por).toEqual({ id: GESTOR_ID });
-      expect(donacion.fecha_aprobacion).toBeInstanceOf(Date);
-    });
-
-    it('debe asignar rechazado_por, fecha_rechazo y motivo_rechazo al rechazar', async () => {
-      const manager = buildMockManager(donacion);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
-
-      const rechazarDto: UpdateDonacionEstadoDto = {
-        estado: DonacionEstado.RECHAZADA,
-        motivo: 'Artículos dañados',
+    const setupTransaction = async (donacionMock: Donaciones) => {
+      const mockEntityManager = {
+        findOne: jest.fn().mockResolvedValue(donacionMock),
+        save: jest.fn().mockResolvedValue(donacionMock),
+        findOneOrFail: jest.fn(),
       };
+      const transactionSpy = jest
+        .fn()
+        .mockImplementation(async (cb) => cb(mockEntityManager));
+      Object.defineProperty(donacionRepository, 'manager', {
+        get: () => ({ transaction: transactionSpy }),
+      });
+      return { mockEntityManager, transactionSpy };
+    };
 
-      await service.confirmarDonacion(DONACION_ID, rechazarDto, GESTOR_ID);
+    describe('Aprobación de donaciones', () => {
+      it('debe aprobar una donación pendiente exitosamente', async () => {
+        const { mockEntityManager } = await setupTransaction(
+          mockDonacionPendiente,
+        );
 
-      expect(donacion.rechazado_por).toEqual({ id: GESTOR_ID });
-      expect(donacion.fecha_rechazo).toBeInstanceOf(Date);
-      expect(donacion.motivo_rechazo).toBe('Artículos dañados');
+        usuarioRepository.save = jest.fn().mockResolvedValue(mockUsuario);
+        rankingService.ajustarPuntos = jest.fn().mockResolvedValue(undefined);
+        campaignsRepository.findOne = jest.fn().mockResolvedValue(mockCampaign);
+        campaignsRepository.save = jest.fn().mockResolvedValue(mockCampaign);
+
+        const dto: UpdateDonacionEstadoDto = {
+          estado: DonacionEstado.APROBADA,
+        };
+        const result = await service.confirmarDonacion(
+          donacionId,
+          dto,
+          gestorId,
+        );
+
+        expect(result.estado).toBe(DonacionEstado.APROBADA);
+        expect(mockEntityManager.save).toHaveBeenCalled();
+      });
     });
 
-    it('debe finalizar la campaña si objetivo llega a 0 al aprobar', async () => {
-      const campaignConObjetivoExacto = {
-        ...campaign,
-        objetivo: donacion.cantidad,
-      };
-      const manager = buildMockManager(donacion, campaignConObjetivoExacto);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
-      mockRankingService.ajustarPuntos.mockResolvedValue(undefined);
+    describe('Rechazo de donaciones', () => {
+      it('debe rechazar una donación pendiente exitosamente', async () => {
+        const donacionPendiente = Object.assign(new Donaciones(), {
+          ...mockDonacionPendiente,
+          estado: DonacionEstado.PENDIENTE,
+        });
+        const { mockEntityManager } = await setupTransaction(donacionPendiente);
 
-      await service.confirmarDonacion(DONACION_ID, updateDonacionEstadoDto, GESTOR_ID);
+        const dto: UpdateDonacionEstadoDto = {
+          estado: DonacionEstado.RECHAZADA,
+          motivo: 'Motivo de rechazo',
+        };
+        const result = await service.confirmarDonacion(
+          donacionId,
+          dto,
+          gestorId,
+        );
 
-      const savedCampaign = (manager.save as jest.Mock).mock.calls.find(
-        (call) => call[0]?.estado === CampaignEstado.FINALIZADA,
-      );
-      expect(savedCampaign).toBeDefined();
+        expect(result.estado).toBe(DonacionEstado.RECHAZADA);
+        expect(mockEntityManager.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            rechazado_por: expect.objectContaining({ id: gestorId }),
+            fecha_rechazo: expect.any(Date),
+            motivo_rechazo: 'Motivo de rechazo',
+          }),
+        );
+      });
     });
 
-    it('debe lanzar NotFoundException si la donación no existe', async () => {
-      const manager = buildMockManager(null);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
+    describe('Reversión de rechazo', () => {
+      it('debe permitir revertir un rechazo dentro de la ventana de 48 horas', async () => {
+        const fechaRechazo = new Date();
+        fechaRechazo.setHours(fechaRechazo.getHours() - 24);
+        const donacionRechazadaReciente = Object.assign(new Donaciones(), {
+          ...mockDonacionRechazada,
+          fecha_rechazo: fechaRechazo,
+        });
+        const { mockEntityManager } = await setupTransaction(
+          donacionRechazadaReciente,
+        );
 
-      await expect(
-        service.confirmarDonacion(999, updateDonacionEstadoDto, GESTOR_ID),
-      ).rejects.toThrow(NotFoundException);
+        usuarioRepository.save = jest.fn().mockResolvedValue(mockUsuario);
+        rankingService.ajustarPuntos = jest.fn().mockResolvedValue(undefined);
+        campaignsRepository.findOne = jest.fn().mockResolvedValue(mockCampaign);
+        campaignsRepository.save = jest.fn().mockResolvedValue(mockCampaign);
+
+        const dto: UpdateDonacionEstadoDto = {
+          estado: DonacionEstado.APROBADA,
+        };
+        const result = await service.confirmarDonacion(
+          donacionId,
+          dto,
+          gestorId,
+        );
+
+        expect(result.estado).toBe(DonacionEstado.APROBADA);
+      });
+
+      it('debe lanzar error al revertir un rechazo fuera de la ventana de 48 horas', async () => {
+        const fechaRechazo = new Date();
+        fechaRechazo.setHours(fechaRechazo.getHours() - 72);
+        const donacionRechazadaVieja = Object.assign(new Donaciones(), {
+          ...mockDonacionRechazada,
+          fecha_rechazo: fechaRechazo,
+        });
+        await setupTransaction(donacionRechazadaVieja);
+
+        const dto: UpdateDonacionEstadoDto = {
+          estado: DonacionEstado.APROBADA,
+        };
+
+        await expect(
+          service.confirmarDonacion(donacionId, dto, gestorId),
+        ).rejects.toThrow('El plazo para revertir la donación ha expirado');
+      });
     });
 
-    it('debe lanzar BadRequestException si el nuevo estado es igual al actual', async () => {
-      const manager = buildMockManager(donacion);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
+    describe('Validaciones de transición', () => {
+      it('debe lanzar error cuando la donación ya tiene el mismo estado', async () => {
+        await setupTransaction(mockDonacionAprobada);
 
-      const mismoEstado: UpdateDonacionEstadoDto = {
-        estado: DonacionEstado.PENDIENTE,
-      };
+        const dto: UpdateDonacionEstadoDto = {
+          estado: DonacionEstado.APROBADA,
+        };
 
-      await expect(
-        service.confirmarDonacion(DONACION_ID, mismoEstado, GESTOR_ID),
-      ).rejects.toThrow(BadRequestException);
+        await expect(
+          service.confirmarDonacion(donacionId, dto, gestorId),
+        ).rejects.toThrow('La donación ya tiene ese estado');
+      });
+
+      it('debe lanzar error cuando la transición no es válida', async () => {
+        await setupTransaction(mockDonacionAprobada);
+
+        const dto: UpdateDonacionEstadoDto = {
+          estado: DonacionEstado.PENDIENTE,
+        };
+
+        await expect(
+          service.confirmarDonacion(donacionId, dto, gestorId),
+        ).rejects.toThrow('Transición de estado no válida');
+      });
     });
 
-    it('debe lanzar BadRequestException si intenta cambiar desde APROBADA', async () => {
-      const donacionAprobada = {
-        ...donacion,
-        estado: DonacionEstado.APROBADA,
-      } as unknown as Donaciones;
-
-      const manager = buildMockManager(donacionAprobada);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
-
-      await expect(
-        service.confirmarDonacion(DONACION_ID, updateDonacionEstadoDto, GESTOR_ID),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('debe lanzar BadRequestException al revertir rechazo después de 48 horas', async () => {
-      const donacionRechazada = {
-        ...donacion,
-        estado: DonacionEstado.RECHAZADA,
-        fecha_rechazo: new Date(Date.now() - 49 * 60 * 60 * 1000),
-      } as unknown as Donaciones;
-
-      const manager = buildMockManager(donacionRechazada);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
-
-      const revertirDto: UpdateDonacionEstadoDto = {
-        estado: DonacionEstado.APROBADA,
-      };
-
-      await expect(
-        service.confirmarDonacion(DONACION_ID, revertirDto, GESTOR_ID),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('debe lanzar BadRequestException si donación RECHAZADA no tiene fecha_rechazo al intentar revertir', async () => {
-      const donacionRechazadaSinFecha = {
-        ...donacion,
-        estado: DonacionEstado.RECHAZADA,
+    it('debe lanzar error cuando la donación rechazada no tiene fecha de rechazo al intentar revertir', async () => {
+      const donacionRechazadaSinFecha = Object.assign(new Donaciones(), {
+        ...mockDonacionRechazada,
         fecha_rechazo: undefined,
-      } as unknown as Donaciones;
+      });
 
-      const manager = buildMockManager(donacionRechazadaSinFecha);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
+      const mockEntityManager = {
+        findOne: jest.fn().mockResolvedValue(donacionRechazadaSinFecha),
+        save: jest.fn().mockResolvedValue(donacionRechazadaSinFecha),
+      };
+      const transactionSpy = jest
+        .fn()
+        .mockImplementation(async (cb) => cb(mockEntityManager));
+      Object.defineProperty(donacionRepository, 'manager', {
+        get: () => ({ transaction: transactionSpy }),
+      });
 
-      const revertirDto: UpdateDonacionEstadoDto = {
+      const dto: UpdateDonacionEstadoDto = {
         estado: DonacionEstado.APROBADA,
       };
 
       await expect(
-        service.confirmarDonacion(DONACION_ID, revertirDto, GESTOR_ID),
-      ).rejects.toThrow(BadRequestException);
+        service.confirmarDonacion(donacionId, dto, gestorId),
+      ).rejects.toThrow('La donación no tiene fecha de rechazo');
     });
 
-    it('debe lanzar BadRequestException si transición desde RECHAZADA es a algo distinto de APROBADA', async () => {
-      const donacionRechazada = {
-        ...donacion,
-        estado: DonacionEstado.RECHAZADA,
-      } as unknown as Donaciones;
-
-      const manager = buildMockManager(donacionRechazada);
-      mockDonacionRepository.manager.transaction.mockImplementation((cb) => cb(manager));
-
-      const dtoInvalido: UpdateDonacionEstadoDto = {
+    it('debe finalizar la campaña cuando el objetivo llega a 0', async () => {
+      const donacionConCantidadGrande = Object.assign(new Donaciones(), {
+        ...mockDonacionPendiente,
         estado: DonacionEstado.PENDIENTE,
+        cantidad: 100,
+      });
+
+      const campaignConObjetivoPequeno = Object.assign(new Campaigns(), {
+        ...mockCampaign,
+        objetivo: 100,
+      });
+
+      const mockEntityManager = {
+        findOne: jest.fn().mockResolvedValue(donacionConCantidadGrande),
+        save: jest.fn().mockResolvedValue({
+          ...campaignConObjetivoPequeno,
+          objetivo: 0,
+          estado: CampaignEstado.FINALIZADA,
+        }),
+      };
+      const transactionSpy = jest
+        .fn()
+        .mockImplementation(async (cb) => cb(mockEntityManager));
+      Object.defineProperty(donacionRepository, 'manager', {
+        get: () => ({ transaction: transactionSpy }),
+      });
+
+      campaignsRepository.findOne = jest
+        .fn()
+        .mockResolvedValue(campaignConObjetivoPequeno);
+      rankingService.ajustarPuntos = jest.fn().mockResolvedValue(undefined);
+      usuarioRepository.save = jest.fn().mockResolvedValue(mockUsuario);
+
+      const dto: UpdateDonacionEstadoDto = {
+        estado: DonacionEstado.APROBADA,
       };
 
-      await expect(
-        service.confirmarDonacion(DONACION_ID, dtoInvalido, GESTOR_ID),
-      ).rejects.toThrow(BadRequestException);
+      const result = await service.confirmarDonacion(donacionId, dto, gestorId);
+
+      expect(result.estado).toBe(DonacionEstado.APROBADA);
+    });
+
+    describe('Manejo de errores', () => {
+      it('debe lanzar error cuando la donación no existe', async () => {
+        const mockEntityManager = {
+          findOne: jest.fn().mockResolvedValue(null),
+        };
+        const transactionSpy = jest
+          .fn()
+          .mockImplementation(async (cb) => cb(mockEntityManager));
+        Object.defineProperty(donacionRepository, 'manager', {
+          get: () => ({ transaction: transactionSpy }),
+        });
+
+        const dto: UpdateDonacionEstadoDto = {
+          estado: DonacionEstado.APROBADA,
+        };
+
+        await expect(
+          service.confirmarDonacion(donacionId, dto, gestorId),
+        ).rejects.toThrow('Donación no encontrada');
+      });
     });
   });
 });

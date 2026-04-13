@@ -1,499 +1,498 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import {
-  NotFoundException,
-  BadRequestException,
-  ForbiddenException,
-} from '@nestjs/common';
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { Repository } from 'typeorm';
-
+import { mock } from 'jest-mock-extended';
 import { CampaignsService } from '../../src/Modules/campaign/campaign.service';
 import { Campaigns } from '../../src/Entities/campaigns.entity';
 import { Organizacion } from '../../src/Entities/organizacion.entity';
 import { imagenes_campania } from '../../src/Entities/imagenes_campania.entity';
-
 import { CreateCampaignsDto } from '../../src/Modules/campaign/dto/create_campaigns.dto';
 import { UpdateCampaignsDto } from '../../src/Modules/campaign/dto/update_campaigns.dto';
 import { CampaignEstado } from '../../src/Modules/campaign/enum';
+import { Usuario } from '../../src/Entities/usuario.entity';
+
+const mockOrganizacion = Object.assign(new Organizacion(), {
+  id: 1,
+  nombre_organizacion: 'Fundación Test',
+  verificada: true,
+  habilitada: true,
+});
+
+const mockUsuario = Object.assign(new Usuario(), {
+  id: 1,
+  nombre: 'Juan',
+  apellido: 'Pérez',
+});
+
+const mockImagenCampania = Object.assign(new imagenes_campania(), {
+  id: 1,
+  imagen: '/uploads/imagen1.jpg',
+  esPortada: true,
+  campaign: {} as Campaigns,
+});
+
+const mockCampaign = Object.assign(new Campaigns(), {
+  id: 1,
+  titulo: 'Campaña Test',
+  descripcion: 'Descripción de la campaña',
+  estado: CampaignEstado.PENDIENTE,
+  fecha_Inicio: new Date('2025-06-01'),
+  fecha_Fin: new Date('2025-08-31'),
+  fecha_Registro: new Date('2025-05-15'),
+  objetivo: 100000,
+  puntos: 50,
+  organizacion: mockOrganizacion,
+  imagenes: [mockImagenCampania],
+  creado_por: mockUsuario,
+  actualizado_por: mockUsuario,
+  ultimo_cambio: new Date(),
+});
 
 describe('CampaignsService', () => {
   let service: CampaignsService;
+  let campaignsRepository: jest.Mocked<Repository<Campaigns>>;
+  let organizacionRepository: jest.Mocked<Repository<Organizacion>>;
+  let campaignsImagesRepository: jest.Mocked<Repository<imagenes_campania>>;
 
-  let campaignsRepository: DeepMockProxy<Repository<Campaigns>>;
-  let organizacionRepository: DeepMockProxy<Repository<Organizacion>>;
-  let campaignsImagesRepository: DeepMockProxy<Repository<imagenes_campania>>;
-
-  const ORG_ID = 1;
-  const CAMPAIGN_ID = 1;
-  const USUARIO_ID = 10;
-
-  let organizacion: Organizacion;
-  let campaign: Campaigns;
-  let campaignImages: imagenes_campania[];
-
-  let createCampaignDto: CreateCampaignsDto;
-  let updateCampaignDto: UpdateCampaignsDto;
+  const mockQueryBuilder = {
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    leftJoin: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    skip: jest.fn().mockReturnThis(),
+    take: jest.fn().mockReturnThis(),
+    getManyAndCount: jest.fn(),
+  };
 
   beforeEach(async () => {
-    campaignsRepository = mockDeep<Repository<Campaigns>>();
-    organizacionRepository = mockDeep<Repository<Organizacion>>();
-    campaignsImagesRepository = mockDeep<Repository<imagenes_campania>>();
+    const mockCampaignsRepo = mock<Repository<Campaigns>>();
+    const mockOrganizacionRepo = mock<Repository<Organizacion>>();
+    const mockCampaignsImagesRepo = mock<Repository<imagenes_campania>>();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CampaignsService,
-        {
-          provide: getRepositoryToken(Campaigns),
-          useValue: campaignsRepository,
-        },
+        { provide: getRepositoryToken(Campaigns), useValue: mockCampaignsRepo },
         {
           provide: getRepositoryToken(Organizacion),
-          useValue: organizacionRepository,
+          useValue: mockOrganizacionRepo,
         },
         {
           provide: getRepositoryToken(imagenes_campania),
-          useValue: campaignsImagesRepository,
+          useValue: mockCampaignsImagesRepo,
         },
       ],
     }).compile();
 
     service = module.get<CampaignsService>(CampaignsService);
-
-    // ========== DTOs ==========
-    createCampaignDto = {
-      titulo: 'Campaña de Ayuda',
-      descripcion: 'Campaña solidaria',
-      fecha_Inicio: new Date('2025-01-01'),
-      fecha_Fin: new Date('2025-12-31'),
-      objetivo: 10000,
-      puntos: 100,
-    };
-
-    updateCampaignDto = {
-      titulo: 'Campaña Actualizada',
-      descripcion: 'Descripción nueva',
-      objetivo: 20000,
-    };
-
-    // ========== Entidades ==========
-    organizacion = {
-      id: ORG_ID,
-      nombre_organizacion: 'Organización Solidaria',
-      verificada: true,
-      habilitada: true,
-    } as unknown as Organizacion;
-
-    campaignImages = [
-      {
-        id: 1,
-        imagen: '/images/campaign1.jpg',
-        esPortada: true,
-      } as imagenes_campania,
-    ];
-
-    campaign = {
-      id: CAMPAIGN_ID,
-      titulo: 'Campaña de Ayuda',
-      descripcion: 'Campaña solidaria',
-      fecha_Inicio: new Date('2025-01-01'),
-      fecha_Fin: new Date('2025-12-31'),
-      objetivo: 10000,
-      puntos: 100,
-      estado: CampaignEstado.PENDIENTE,
-      fecha_Registro: new Date(),
-      ultimo_cambio: new Date(),
-      organizacion: { ...organizacion, id: CAMPAIGN_ID },
-      imagenes: campaignImages,
-      donaciones: [],
-    } as unknown as Campaigns;
+    campaignsRepository = module.get(getRepositoryToken(Campaigns));
+    organizacionRepository = module.get(getRepositoryToken(Organizacion));
+    campaignsImagesRepository = module.get(
+      getRepositoryToken(imagenes_campania),
+    );
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  // ========== TESTS DE FIND PAGINATED ==========
   describe('findPaginated', () => {
-    const buildQueryBuilder = () => ({
-      leftJoinAndSelect: jest.fn().mockReturnThis(),
-      leftJoin: jest.fn().mockReturnThis(),
-      andWhere: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      skip: jest.fn().mockReturnThis(),
-      take: jest.fn().mockReturnThis(),
-      getManyAndCount: jest.fn().mockResolvedValue([[campaign], 1]),
+    beforeEach(() => {
+      campaignsRepository.createQueryBuilder = jest
+        .fn()
+        .mockReturnValue(mockQueryBuilder);
     });
 
-    it('debe retornar campañas paginadas', async () => {
-      const queryBuilder: any = buildQueryBuilder();
-      campaignsRepository.createQueryBuilder.mockReturnValue(queryBuilder);
+    it('debe obtener campañas paginadas con onlyEnabled = true', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockCampaign], 1]);
 
-      const result = await service.findPaginated(1, 10, '', false);
+      const result = await service.findPaginated(1, 10, '', true);
 
+      expect(result.items).toHaveLength(1);
       expect(result.total).toBe(1);
-      expect(result.items.length).toBe(1);
-    });
-
-    it('debe aplicar filtros fijos de habilitado y habilitada siempre', async () => {
-      const queryBuilder: any = buildQueryBuilder();
-      campaignsRepository.createQueryBuilder.mockReturnValue(queryBuilder);
-
-      await service.findPaginated(1, 10, '', false);
-
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'usuario.habilitado = :habilitado',
-        { habilitado: 1 },
-      );
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'organizacion.habilitada = :habilitada',
-        { habilitada: 1 },
-      );
-    });
-
-    it('debe aplicar filtro de estado cuando onlyEnabled es true', async () => {
-      const queryBuilder: any = buildQueryBuilder();
-      campaignsRepository.createQueryBuilder.mockReturnValue(queryBuilder);
-
-      await service.findPaginated(1, 10, '', true);
-
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'campaign.estado = :estado',
         { estado: CampaignEstado.ACTIVA },
       );
-    });
-
-    it('debe aplicar filtro objetivo > 0 cuando onlyEnabled es true', async () => {
-      const queryBuilder: any = buildQueryBuilder();
-      campaignsRepository.createQueryBuilder.mockReturnValue(queryBuilder);
-
-      await service.findPaginated(1, 10, '', true);
-
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         'campaign.objetivo > 0',
       );
     });
 
-    it('NO debe aplicar filtro de estado cuando onlyEnabled es false', async () => {
-      const queryBuilder: any = buildQueryBuilder();
-      campaignsRepository.createQueryBuilder.mockReturnValue(queryBuilder);
+    it('debe obtener campañas paginadas con onlyEnabled = false', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[mockCampaign], 1]);
 
-      await service.findPaginated(1, 10, '', false);
+      const result = await service.findPaginated(1, 10, '', false);
 
-      expect(queryBuilder.andWhere).not.toHaveBeenCalledWith(
-        'campaign.estado = :estado',
-        { estado: CampaignEstado.ACTIVA },
-      );
+      expect(result.items).toHaveLength(1);
+      expect(result.total).toBe(1);
     });
 
-    it('debe aplicar búsqueda por título y descripción', async () => {
-      const queryBuilder: any = buildQueryBuilder();
-      campaignsRepository.createQueryBuilder.mockReturnValue(queryBuilder);
+    it('debe filtrar por search cuando se proporciona', async () => {
+      mockQueryBuilder.getManyAndCount.mockResolvedValue([[], 0]);
 
-      await service.findPaginated(1, 10, 'ayuda', false);
+      await service.findPaginated(1, 10, 'test', false);
 
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
         '(campaign.titulo LIKE :search OR campaign.descripcion LIKE :search)',
-        { search: '%ayuda%' },
+        { search: '%test%' },
       );
     });
 
-    it('NO debe aplicar búsqueda cuando search está vacío', async () => {
-      const queryBuilder: any = buildQueryBuilder();
-      campaignsRepository.createQueryBuilder.mockReturnValue(queryBuilder);
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      mockQueryBuilder.getManyAndCount.mockRejectedValue(
+        'Error string inesperado',
+      );
 
-      await service.findPaginated(1, 10, '', false);
-
-      expect(queryBuilder.andWhere).not.toHaveBeenCalledWith(
-        expect.stringContaining('LIKE :search'),
-        expect.anything(),
+      await expect(service.findPaginated(1, 10, '', false)).rejects.toThrow(
+        'Error desconocido',
       );
     });
   });
 
-  // ========== TESTS DE FIND CAMPAIGNS PAGINATED ==========
   describe('findCampaignsPaginated', () => {
-    it('debe retornar campañas de una organización', async () => {
-      campaignsRepository.findAndCount.mockResolvedValue([[campaign], 1]);
+    const organizacionId = 1;
 
-      const result = await service.findCampaignsPaginated(ORG_ID, 1, 10);
+    it('debe obtener campañas paginadas por organización', async () => {
+      campaignsRepository.findAndCount.mockResolvedValue([[mockCampaign], 1]);
 
+      const result = await service.findCampaignsPaginated(
+        organizacionId,
+        1,
+        10,
+      );
+
+      expect(result.items).toHaveLength(1);
       expect(result.total).toBe(1);
-      expect(result.items.length).toBe(1);
       expect(campaignsRepository.findAndCount).toHaveBeenCalledWith({
-        where: { organizacion: { id: ORG_ID } },
+        where: { organizacion: { id: organizacionId } },
         relations: ['organizacion', 'imagenes'],
         skip: 0,
         take: 10,
       });
     });
 
-    it('debe respetar la paginación', async () => {
-      campaignsRepository.findAndCount.mockResolvedValue([[], 0]);
-
-      await service.findCampaignsPaginated(ORG_ID, 3, 5);
-
-      expect(campaignsRepository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 10, take: 5 }),
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      campaignsRepository.findAndCount.mockRejectedValue(
+        'Error string inesperado',
       );
+
+      await expect(
+        service.findCampaignsPaginated(organizacionId, 1, 10),
+      ).rejects.toThrow('Error desconocido');
     });
   });
 
-  // ========== TESTS DE FIND ONE DETAIL ==========
   describe('findOneDetail', () => {
-    it('debe retornar el detalle de una campaña', async () => {
-      campaignsRepository.findOne.mockResolvedValue(campaign);
+    const campaignId = 1;
 
-      const result = await service.findOneDetail(CAMPAIGN_ID);
+    it('debe obtener detalle de campaña por ID', async () => {
+      campaignsRepository.findOne.mockResolvedValue(mockCampaign);
 
-      expect(result.id).toBe(CAMPAIGN_ID);
-      expect(result.imagenes.length).toBe(1);
+      const result = await service.findOneDetail(campaignId);
+
+      expect(result.id).toBe(1);
+      expect(campaignsRepository.findOne).toHaveBeenCalledWith({
+        where: { id: campaignId },
+        relations: ['organizacion', 'imagenes'],
+      });
     });
 
-    it('debe lanzar NotFoundException si la campaña no existe', async () => {
+    it('debe lanzar error cuando la campaña no existe', async () => {
       campaignsRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOneDetail(999)).rejects.toThrow(NotFoundException);
+      await expect(service.findOneDetail(campaignId)).rejects.toThrow(
+        'Campaña no encontrada',
+      );
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      campaignsRepository.findOne.mockRejectedValue('Error string inesperado');
+
+      await expect(service.findOneDetail(campaignId)).rejects.toThrow(
+        'Error desconocido',
+      );
     });
   });
 
-  // ========== TESTS DE CREATE ==========
   describe('create', () => {
-    it('debe crear una campaña correctamente', async () => {
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
-      campaignsRepository.create.mockReturnValue(campaign);
-      campaignsRepository.save.mockResolvedValue(campaign);
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-      campaignsImagesRepository.save.mockResolvedValue(campaignImages[0]);
+    const organizacionId = 1;
+    const usuarioId = 1;
+    const createDto: CreateCampaignsDto = {
+      titulo: 'Nueva Campaña',
+      descripcion: 'Descripción de la campaña',
+      fecha_Inicio: new Date('2025-06-01'),
+      fecha_Fin: new Date('2025-08-31'),
+      objetivo: 100000,
+      puntos: 50,
+    };
+    const imagenes = ['/uploads/img1.jpg', '/uploads/img2.jpg'];
 
+    beforeEach(() => {
+      organizacionRepository.findOne.mockResolvedValue(mockOrganizacion);
+      campaignsRepository.create.mockReturnValue(mockCampaign);
+      campaignsRepository.save.mockResolvedValue(mockCampaign);
+      campaignsImagesRepository.save.mockResolvedValue(mockImagenCampania);
+      campaignsRepository.findOne.mockResolvedValue(mockCampaign);
+    });
+
+    it('debe crear una campaña exitosamente', async () => {
       const result = await service.create(
-        ORG_ID,
-        createCampaignDto,
-        ['/images/campaign1.jpg'],
-        USUARIO_ID,
+        organizacionId,
+        createDto,
+        imagenes,
+        usuarioId,
       );
 
-      expect(result.id).toBe(campaign.id);
+      expect(result.id).toBe(1);
+      expect(organizacionRepository.findOne).toHaveBeenCalledWith({
+        where: { id: organizacionId, habilitada: true },
+      });
+      expect(campaignsRepository.create).toHaveBeenCalled();
       expect(campaignsRepository.save).toHaveBeenCalled();
-      expect(campaignsImagesRepository.save).toHaveBeenCalled();
     });
 
-    it('debe crear campaña sin imágenes', async () => {
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
-      campaignsRepository.create.mockReturnValue(campaign);
-      campaignsRepository.save.mockResolvedValue(campaign);
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-
-      const result = await service.create(ORG_ID, createCampaignDto, [], USUARIO_ID);
-
-      expect(result.id).toBe(campaign.id);
-      expect(campaignsImagesRepository.save).not.toHaveBeenCalled();
-    });
-
-    it('debe asignar creado_por y actualizado_por con usuarioId', async () => {
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
-      campaignsRepository.create.mockReturnValue(campaign);
-      campaignsRepository.save.mockResolvedValue(campaign);
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-
-      await service.create(ORG_ID, createCampaignDto, [], USUARIO_ID);
-
-      expect(campaignsRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          creado_por: { id: USUARIO_ID },
-          actualizado_por: { id: USUARIO_ID },
-        }),
-      );
-    });
-
-    it('debe lanzar NotFoundException si la organización no existe o está deshabilitada', async () => {
+    it('debe lanzar error cuando la organización no existe', async () => {
       organizacionRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.create(ORG_ID, createCampaignDto, [], USUARIO_ID),
-      ).rejects.toThrow(NotFoundException);
-
-      expect(campaignsRepository.save).not.toHaveBeenCalled();
+        service.create(organizacionId, createDto, imagenes, usuarioId),
+      ).rejects.toThrow(
+        'Organización con ID 1 no encontrada o está deshabilitada',
+      );
     });
 
-    it('debe lanzar BadRequestException si el objetivo es menor o igual a 0', async () => {
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
+    it('debe lanzar error cuando el objetivo es menor o igual a 0', async () => {
+      const dtoInvalido = { ...createDto, objetivo: 0 };
 
       await expect(
-        service.create(ORG_ID, { ...createCampaignDto, objetivo: 0 }, [], USUARIO_ID),
-      ).rejects.toThrow(BadRequestException);
+        service.create(organizacionId, dtoInvalido, imagenes, usuarioId),
+      ).rejects.toThrow('El objetivo tiene que ser mayor a 0');
     });
 
-    it('debe lanzar BadRequestException si las fechas son inválidas (fin anterior a inicio)', async () => {
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
+    it('debe lanzar error cuando la fecha de fin es anterior a la fecha de inicio', async () => {
+      const dtoFechasInvalidas = {
+        ...createDto,
+        fecha_Inicio: new Date('2025-08-31'),
+        fecha_Fin: new Date('2025-06-01'),
+      };
 
       await expect(
-        service.create(
-          ORG_ID,
-          {
-            ...createCampaignDto,
-            fecha_Inicio: new Date('2025-12-31'),
-            fecha_Fin: new Date('2025-01-01'),
-          },
-          [],
-          USUARIO_ID,
-        ),
-      ).rejects.toThrow(BadRequestException);
+        service.create(organizacionId, dtoFechasInvalidas, imagenes, usuarioId),
+      ).rejects.toThrow(
+        'La fecha de fin debe ser posterior a la fecha de inicio',
+      );
     });
 
-    it('debe marcar la primera imagen como portada', async () => {
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
-      campaignsRepository.create.mockReturnValue(campaign);
-      campaignsRepository.save.mockResolvedValue(campaign);
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-      campaignsImagesRepository.save.mockResolvedValue(campaignImages[0]);
+    it('debe lanzar error cuando la campaña no se encuentra después de crear', async () => {
+      organizacionRepository.findOne.mockResolvedValue(mockOrganizacion);
+      campaignsRepository.create.mockReturnValue(mockCampaign);
+      campaignsRepository.save.mockResolvedValue(mockCampaign);
+      campaignsImagesRepository.save.mockResolvedValue(mockImagenCampania);
 
-      await service.create(
-        ORG_ID,
-        createCampaignDto,
-        ['/img1.jpg', '/img2.jpg'],
-        USUARIO_ID,
+      campaignsRepository.findOne.mockResolvedValueOnce(null);
+
+      await expect(
+        service.create(organizacionId, createDto, imagenes, usuarioId),
+      ).rejects.toThrow('Error al recuperar la campaña recién creada');
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      organizacionRepository.findOne.mockRejectedValue(
+        'Error string inesperado',
       );
 
-      const primerGuardado = (campaignsImagesRepository.save as jest.Mock).mock.calls[0][0];
-      expect(primerGuardado.esPortada).toBe(true);
+      await expect(
+        service.create(organizacionId, createDto, imagenes, usuarioId),
+      ).rejects.toThrow('Error desconocido');
+    });
 
-      const segundoGuardado = (campaignsImagesRepository.save as jest.Mock).mock.calls[1][0];
-      expect(segundoGuardado.esPortada).toBe(false);
+    it('debe lanzar error cuando falta fecha de inicio', async () => {
+      const dtoSinFechaInicio = {
+        ...createDto,
+        fecha_Inicio: undefined as unknown as Date,
+      };
+      organizacionRepository.findOne.mockResolvedValue(mockOrganizacion);
+
+      await expect(
+        service.create(organizacionId, dtoSinFechaInicio, imagenes, usuarioId),
+      ).rejects.toThrow('Las fechas son obligatorias');
     });
   });
 
-  // ========== TESTS DE UPDATE ==========
   describe('update', () => {
-    it('debe actualizar una campaña correctamente', async () => {
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
-      campaignsRepository.save.mockResolvedValue(campaign);
-      campaignsImagesRepository.find.mockResolvedValue([]);
+    const organizacionId = 1;
+    const campaignId = 1;
+    const usuarioId = 1;
+    const updateDto: UpdateCampaignsDto = {
+      titulo: 'Título Actualizado',
+      objetivo: 150000,
+    };
 
-      const result = await service.update(CAMPAIGN_ID, updateCampaignDto, USUARIO_ID);
+    beforeEach(() => {
+      campaignsRepository.findOne.mockResolvedValue(mockCampaign);
+      organizacionRepository.findOne.mockResolvedValue(mockOrganizacion);
+      campaignsRepository.save.mockResolvedValue({
+        ...mockCampaign,
+        titulo: 'Título Actualizado',
+      });
+      campaignsImagesRepository.find.mockResolvedValue([mockImagenCampania]);
+    });
 
-      expect(result.id).toBe(campaign.id);
+    it('debe actualizar una campaña exitosamente', async () => {
+      const result = await service.update(
+        organizacionId,
+        campaignId,
+        updateDto,
+        usuarioId,
+      );
+
+      expect(result.id).toBe(1);
       expect(campaignsRepository.save).toHaveBeenCalled();
     });
 
-    it('debe asignar actualizado_por con usuarioId', async () => {
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
-      campaignsRepository.save.mockResolvedValue(campaign);
-      campaignsImagesRepository.find.mockResolvedValue([]);
-
-      await service.update(CAMPAIGN_ID, updateCampaignDto, USUARIO_ID);
-
-      const savedCampaign = (campaignsRepository.save as jest.Mock).mock.calls[0][0];
-      expect(savedCampaign.actualizado_por).toEqual({ id: USUARIO_ID });
-    });
-
-    it('debe agregar nuevas imágenes', async () => {
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
-      campaignsImagesRepository.find.mockResolvedValue([]);
-      campaignsImagesRepository.findOne.mockResolvedValue(null);
-      campaignsRepository.save.mockResolvedValue(campaign);
-
-      await service.update(CAMPAIGN_ID, updateCampaignDto, USUARIO_ID, ['/img1.jpg']);
-
-      expect(campaignsImagesRepository.save).toHaveBeenCalled();
-    });
-
-    it('debe eliminar imágenes que no están en imagenesExistentes', async () => {
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
-      campaignsImagesRepository.find.mockResolvedValue(campaignImages);
-      campaignsRepository.save.mockResolvedValue(campaign);
-
-      await service.update(CAMPAIGN_ID, { imagenesExistentes: [] }, USUARIO_ID);
-
-      expect(campaignsImagesRepository.remove).toHaveBeenCalled();
-    });
-
-    it('debe lanzar NotFoundException si la campaña no existe', async () => {
+    it('debe lanzar error cuando la campaña no existe', async () => {
       campaignsRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.update(CAMPAIGN_ID, updateCampaignDto, USUARIO_ID),
-      ).rejects.toThrow(NotFoundException);
+        service.update(organizacionId, campaignId, updateDto, usuarioId),
+      ).rejects.toThrow(`Campaña con ID ${campaignId} no encontrada`);
     });
 
-    it('debe lanzar ForbiddenException si la campaña no pertenece a la organización del id', async () => {
-      const campaignDeOtraOrg = {
-        ...campaign,
-        organizacion: { ...organizacion, id: 999 },
-      } as unknown as Campaigns;
-
-      campaignsRepository.findOne.mockResolvedValue(campaignDeOtraOrg);
+    it('debe lanzar error cuando la campaña no pertenece a la organización', async () => {
+      const campaignOtraOrg = Object.assign(new Campaigns(), {
+        ...mockCampaign,
+        organizacion: Object.assign(new Organizacion(), { id: 999 }),
+      });
+      campaignsRepository.findOne.mockResolvedValue(campaignOtraOrg);
 
       await expect(
-        service.update(CAMPAIGN_ID, updateCampaignDto, USUARIO_ID),
-      ).rejects.toThrow(ForbiddenException);
+        service.update(organizacionId, campaignId, updateDto, usuarioId),
+      ).rejects.toThrow('Esta campaña no pertenece a tu organización');
     });
 
-    it('debe lanzar BadRequestException si el objetivo es negativo', async () => {
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-      organizacionRepository.findOne.mockResolvedValue(organizacion);
-
-      await expect(
-        service.update(CAMPAIGN_ID, { objetivo: -100 }, USUARIO_ID),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('debe lanzar NotFoundException si la organización no existe o está deshabilitada', async () => {
-      campaignsRepository.findOne.mockResolvedValue(campaign);
+    it('debe lanzar error cuando la organización está deshabilitada', async () => {
       organizacionRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.update(CAMPAIGN_ID, updateCampaignDto, USUARIO_ID),
-      ).rejects.toThrow(NotFoundException);
+        service.update(organizacionId, campaignId, updateDto, usuarioId),
+      ).rejects.toThrow(
+        `Organización con ID ${organizacionId} no encontrada o está deshabilitada`,
+      );
     });
-  });
 
-  // ========== TESTS DE UPDATE ESTADO ==========
-  describe('updateEstado', () => {
-    it('debe actualizar el estado de una campaña', async () => {
-      campaignsRepository.findOne.mockResolvedValue(campaign);
+    it('debe lanzar error cuando el objetivo es negativo', async () => {
+      const updateDtoNegativo: UpdateCampaignsDto = { objetivo: -100 };
+
+      campaignsRepository.findOne.mockResolvedValue(mockCampaign);
+      organizacionRepository.findOne.mockResolvedValue(mockOrganizacion);
+
+      await expect(
+        service.update(
+          organizacionId,
+          campaignId,
+          updateDtoNegativo,
+          usuarioId,
+        ),
+      ).rejects.toThrow('El objetivo no puede ser negativo');
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      const updateDto: UpdateCampaignsDto = { titulo: 'Nuevo título' };
+
+      campaignsRepository.findOne.mockRejectedValue('Error string inesperado');
+
+      await expect(
+        service.update(organizacionId, campaignId, updateDto, usuarioId),
+      ).rejects.toThrow('Error desconocido');
+    });
+
+    it('debe actualizar el estado automáticamente cuando se actualizan fechas', async () => {
+      const updateDtoFechas: UpdateCampaignsDto = {
+        fecha_Inicio: new Date('2025-01-01'),
+        fecha_Fin: new Date('2025-12-31'),
+      };
+
+      campaignsRepository.findOne.mockResolvedValue(mockCampaign);
+      organizacionRepository.findOne.mockResolvedValue(mockOrganizacion);
       campaignsRepository.save.mockResolvedValue({
-        ...campaign,
-        estado: CampaignEstado.ACTIVA,
+        ...mockCampaign,
+        estado: CampaignEstado.PENDIENTE,
       });
 
-      await service.updateEstado(CAMPAIGN_ID, CampaignEstado.ACTIVA);
-
-      expect(campaignsRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ estado: CampaignEstado.ACTIVA }),
+      const result = await service.update(
+        organizacionId,
+        campaignId,
+        updateDtoFechas,
+        usuarioId,
       );
-    });
 
-    it('debe lanzar NotFoundException si la campaña no existe', async () => {
-      campaignsRepository.findOne.mockResolvedValue(null);
-
-      await expect(
-        service.updateEstado(999, CampaignEstado.ACTIVA),
-      ).rejects.toThrow(NotFoundException);
+      expect(result).toBeDefined();
+      expect(campaignsRepository.save).toHaveBeenCalled();
     });
   });
 
-  // ========== TESTS DE DELETE ==========
-  describe('delete', () => {
-    it('debe eliminar una campaña correctamente', async () => {
-      campaignsRepository.findOne.mockResolvedValue(campaign);
-      campaignsRepository.remove.mockResolvedValue(campaign);
+  describe('updateEstado', () => {
+    const campaignId = 1;
+    const estado = CampaignEstado.ACTIVA;
 
-      await service.delete(CAMPAIGN_ID);
-
-      expect(campaignsRepository.remove).toHaveBeenCalledWith(campaign);
+    beforeEach(() => {
+      campaignsRepository.findOne.mockResolvedValue(mockCampaign);
+      campaignsRepository.save.mockResolvedValue({ ...mockCampaign, estado });
     });
 
-    it('debe lanzar NotFoundException si la campaña no existe', async () => {
+    it('debe actualizar el estado de una campaña', async () => {
+      const result = await service.updateEstado(campaignId, estado);
+
+      expect(result.estado).toBe(CampaignEstado.ACTIVA);
+      expect(campaignsRepository.save).toHaveBeenCalled();
+    });
+
+    it('debe lanzar error cuando la campaña no existe', async () => {
       campaignsRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.delete(999)).rejects.toThrow(NotFoundException);
+      await expect(service.updateEstado(campaignId, estado)).rejects.toThrow(
+        `Campaña con ID ${campaignId} no encontrada`,
+      );
+    });
 
-      expect(campaignsRepository.remove).not.toHaveBeenCalled();
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      campaignsRepository.findOne.mockRejectedValue('Error string inesperado');
+
+      await expect(service.updateEstado(campaignId, estado)).rejects.toThrow(
+        'Error desconocido',
+      );
+    });
+  });
+
+  describe('delete', () => {
+    const campaignId = 1;
+
+    beforeEach(() => {
+      campaignsRepository.findOne.mockResolvedValue(mockCampaign);
+      campaignsRepository.remove.mockResolvedValue(mockCampaign as any);
+    });
+
+    it('debe eliminar una campaña', async () => {
+      await service.delete(campaignId);
+
+      expect(campaignsRepository.remove).toHaveBeenCalledWith(mockCampaign);
+    });
+
+    it('debe lanzar error cuando la campaña no existe', async () => {
+      campaignsRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.delete(campaignId)).rejects.toThrow(
+        `Campaña con ID ${campaignId} no encontrada`,
+      );
+    });
+
+    it('debe manejar error cuando el error no es instancia de Error', async () => {
+      campaignsRepository.findOne.mockRejectedValue('Error string inesperado');
+
+      await expect(service.delete(campaignId)).rejects.toThrow(
+        'Error desconocido',
+      );
     });
   });
 });

@@ -12,20 +12,21 @@ La plataforma centraliza la gestión de campañas, beneficios y participación, 
 
 ---
 
-## Objetivo del sistema
-Proporcionar una plataforma digital que permita gestionar campañas solidarias de manera organizada, facilitando la interacción entre organizaciones y donantes, e incentivando la participación mediante un sistema de recompensas.
-
----
-
 ## Roles del sistema
 
-El sistema posee cuatro roles principales:
+El sistema posee 3 roles principales:
 
 - Usuario: puede donar, acumular puntos y canjear beneficios.
-- Organización: puede crear y administrar campañas.
-- Empresa: puede crear y administrar cupones o beneficios.
+- Colaborador: 
+    - En la Empresa, crea/actualiza cupones y puede invitar a más Colaboradores
+    - En la Organización, crea/actualiza Campañas Solidarias, acepta/ rechaza las Donaciones de los usuarios y puede invitar a más Colaboradores
 - Administrador: posee control total del sistema.
 
+Y 3 Secundarios:
+
+- Gestor: Tiene acceso a todas las funcionalidades de la Empresa u Organización.
+- Miembro: Rol base de empleado (permisos limitados definidos por el sistema).
+- Entidad: Es utilizado para las invitaciones.
 ---
 
 ## Funcionamiento del sistema
@@ -72,7 +73,7 @@ La organización puede:
 - Editar campañas
 - Activar o desactivar campañas
 - Gestionar donaciones recibidas
-
+- Invitar a más personas
 ---
 
 ### Panel de Empresa
@@ -82,7 +83,7 @@ La empresa puede:
 - Editar beneficios
 - Activar o desactivar beneficios
 - Gestionar promociones
-
+- Invitar a más personas
 ---
 
 ### Panel de Administrador
@@ -94,59 +95,21 @@ El administrador posee control total del sistema:
 - Gestión de campañas
 - Gestión de beneficios
 - Control de estados (habilitar / deshabilitar)
+- Invitar a entidades (Empresa u Organización)
 
 Las acciones del administrador afectan la visibilidad del contenido dentro del sistema.
 
 ---
 
 ## Ranking
-El sistema incluye un ranking de usuarios con mayor participación, basado en puntos acumulados.
-
----
-
-## Arquitectura del sistema
-
-El sistema utiliza una arquitectura cliente-servidor de tres capas:
-
-- Presentación (Frontend – Next.js)
-- Lógica de negocio (Backend – NestJS)
-- Persistencia (Base de datos – SQL Server)
-
-La comunicación se realiza mediante API REST.
-
----
-
-## Tecnologías utilizadas
-
-### Frontend
-- Next.js
-- React
-- TypeScript
-- CSS Modules
-- SweetAlert2
-- shadcn/ui
-
-### Backend
-- NestJS
-- TypeORM
-- Express
-- JWT
-- bcrypt
-- Passport
-- Multer
-- Winston
-
-### Base de datos
-- Microsoft SQL Server
-
----
+El sistema incluye un ranking de usuarios con mayor participación (Top10), basado en puntos acumulados.
 
 ## Instalación del proyecto
 
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone <https://github.com/LucasFrey-tech/SolidApp>
 cd solidapp
 2. Configurar el Backend
 cd backend
@@ -156,16 +119,60 @@ Configurar variables de entorno en archivo .env:
 
 DB_HOST=localhost
 DB_PORT=1433
-DB_USERNAME=solid_user
-DB_PASSWORD=tu_password
-DB_DATABASE=Solid
-
+DB_USERNAME=nombre_usuario
+DB_PASSWORD=tu_pass
+DB_DATABASE=nombre_db
 JWT_SECRET=tu_secret
-PORT=3001
+NEST_PUBLIC_API_UR=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:3000
+EMAIL_USER=tu_email@gmail.com
+EMAIL_PASS=tu_pass
+ADMIN_EMAIL=admin_email
+ADMIN_PASSWORD=admin_pass
+
+Crear y Configurar un archivo app.config.json en la carpeta private:
+
+{
+    "front_url":"http://localhost:3000",
+    "host":{
+        "port": 3001,
+        "url": "http://localhost:3001"
+    },
+    "database_connection": {
+        "host": "localhost",
+        "port": 1433,
+        "username": "tu_usuario",
+        "password": "tu_pass",
+        "database": "nombre_db"
+    },
+    "logger":{
+        "console_details_level": "debug",
+        "file_details_level": "info",
+        "log_file": "logs/backend.log",
+        "colorize_logs": true
+    },
+    "static_resources": {
+        "images":{
+            "prefix": "/resources",
+            "path": "C:/StaticResources/Solid/"
+        }
+    },
+    "campaigns_images": {
+        "prefix": "/resources/campaigns",
+        "path": "C:/StaticResources/Solid/campaigns/"
+    },
+    "empresas_images": {
+        "prefix": "/resources/empresas",
+        "path": "C:/StaticResources/Solid/empresas/"
+    }
+}
 
 Ejecutar backend:
 
-npm run start:dev
+- npm run start:dev (desarrollo)
+o
+- npm run build + npm run start (o start:prod)
+
 
 El backend se ejecutará en:
 http://localhost:3001
@@ -174,7 +181,8 @@ http://localhost:3001
 cd backend
 npm run seed:admin
 
-Esto creará un usuario administrador para acceder al panel de administración.
+Esto creará un usuario administrador para acceder al panel de administración. Sus datos se pueden cambiar
+directamente desde el sitio web.
 
 4. Configurar el Frontend
 cd frontend
@@ -196,9 +204,8 @@ Limitaciones
 No incluye pagos electrónicos
 No gestiona logística de envíos
 No valida físicamente las donaciones
-Escalabilidad futura
 
-El sistema permite futuras integraciones como:
+El sistema permitira a futuro integraciones como:
 
 Pasarelas de pago
 Donaciones monetarias

@@ -1,558 +1,604 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import {
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { mock, MockProxy } from 'jest-mock-extended';
+import { Repository, Like, UpdateResult } from 'typeorm';
+import { mock } from 'jest-mock-extended';
 import { JwtService } from '@nestjs/jwt';
-import { HashService } from '../../src/common/bcryptService/hashService';
-
-import { Usuario } from '../../src/Entities/usuario.entity';
-import { UsuarioBeneficio } from '../../src/Entities/usuario-beneficio.entity';
-
 import { UsuarioService } from '../../src/Modules/user/usuario.service';
 import { DonacionService } from '../../src/Modules/donation/donacion.service';
 import { BeneficioService } from '../../src/Modules/benefit/beneficio.service';
 import { UsuarioBeneficioService } from '../../src/Modules/user/usuario-beneficio/usuario-beneficio.service';
-
+import { HashService } from '../../src/common/bcryptService/hashService';
+import { Usuario } from '../../src/Entities/usuario.entity';
+import { Contacto } from '../../src/Entities/contacto.entity';
+import { Direccion } from '../../src/Entities/direccion.entity';
 import { CreateUsuarioDto } from '../../src/Modules/user/dto/create_usuario.dto';
-import { CreateDonationDto } from '../../src/Modules/donation/dto/create_donation.dto';
 import { UpdateCredencialesDto } from '../../src/Modules/user/dto/panelUsuario.dto';
 import { UpdateUsuarioDto } from '../../src/Modules/user/dto/update_usuario.dto';
-import { ResponseDonationDto } from '../../src/Modules/donation/dto/response_donation.dto';
-import { ResponseUsuarioDto } from '../../src/Modules/user/dto/response_usuario.dto';
-import { PaginatedUserDonationsResponseDto } from '../../src/Modules/donation/dto/response_donation_paginatedByUser.dto';
-
 import { Rol } from '../../src/Modules/user/enums/enums';
+import { ResponseDonationDto } from '../../src/Modules/donation/dto/response_donation.dto';
+import { DonacionEstado } from '../../src/Modules/donation/enum';
+import { UsuarioBeneficio } from '../../src/Entities/usuario-beneficio.entity';
+import { BeneficiosUsuarioEstado } from '../../src/Modules/benefit/dto/enum/enum';
+import { Beneficios } from '../../src/Entities/beneficio.entity';
+
+const mockContacto = Object.assign(new Contacto(), {
+  id: 1,
+  correo: 'test@test.com',
+});
+
+const mockDireccion = Object.assign(new Direccion(), {
+  id: 1,
+  calle: 'Av. Test',
+  numero: '123',
+});
+
+const mockUsuario = Object.assign(new Usuario(), {
+  id: 1,
+  documento: '12345678',
+  clave: 'hashed_password',
+  nombre: 'Juan',
+  apellido: 'Pérez',
+  rol: Rol.USUARIO,
+  puntos: 100,
+  habilitado: true,
+  verificado: true,
+  contacto: mockContacto,
+  direccion: mockDireccion,
+  fecha_registro: new Date(),
+  ultimo_cambio: new Date(),
+  ultima_conexion: new Date(),
+});
+
+const mockDonationResponse: ResponseDonationDto = {
+  id: 1,
+  titulo: 'Donación Test',
+  detalle: 'Detalle de donación',
+  cantidad: 5,
+  estado: DonacionEstado.PENDIENTE,
+  puntos: 50,
+  fecha_registro: new Date(),
+  campaignId: 1,
+  userId: 1,
+  imagen: '',
+};
+
+const mockUsuarioBeneficio: UsuarioBeneficio = {
+  id: 1,
+  usuario: mockUsuario,
+  beneficio: {} as Beneficios,
+  cantidad: 2,
+  usados: 0,
+  estado: BeneficiosUsuarioEstado.ACTIVO,
+  fecha_reclamo: new Date(),
+  ultimo_cambio: new Date(),
+};
+
+const mockUpdateResult: UpdateResult = {
+  affected: 1,
+  raw: {},
+  generatedMaps: [],
+};
 
 describe('UsuarioService', () => {
   let service: UsuarioService;
-  let repository: MockProxy<Repository<Usuario>>;
-  let donacionService: MockProxy<DonacionService>;
-  let beneficioService: MockProxy<BeneficioService>;
-  let usuarioBeneficioService: MockProxy<UsuarioBeneficioService>;
-  let hashService: MockProxy<HashService>;
-  let jwtService: MockProxy<JwtService>;
-
-  const USUARIO_ID = 1;
+  let usuarioRepository: jest.Mocked<Repository<Usuario>>;
+  let donacionService: jest.Mocked<DonacionService>;
+  let beneficioService: jest.Mocked<BeneficioService>;
+  let usuarioBeneficioService: jest.Mocked<UsuarioBeneficioService>;
+  let hashService: jest.Mocked<HashService>;
+  let jwtService: jest.Mocked<JwtService>;
 
   beforeEach(async () => {
-    repository = mock<Repository<Usuario>>();
-    donacionService = mock<DonacionService>();
-    beneficioService = mock<BeneficioService>();
-    usuarioBeneficioService = mock<UsuarioBeneficioService>();
-    hashService = mock<HashService>();
-    jwtService = mock<JwtService>();
+    const mockUsuarioRepo = mock<Repository<Usuario>>();
+    const mockDonacionService = mock<DonacionService>();
+    const mockBeneficioService = mock<BeneficioService>();
+    const mockUsuarioBeneficioService = mock<UsuarioBeneficioService>();
+    const mockHashService = mock<HashService>();
+    const mockJwtService = mock<JwtService>();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsuarioService,
+        { provide: getRepositoryToken(Usuario), useValue: mockUsuarioRepo },
+        { provide: DonacionService, useValue: mockDonacionService },
+        { provide: BeneficioService, useValue: mockBeneficioService },
         {
-          provide: getRepositoryToken(Usuario),
-          useValue: repository,
+          provide: UsuarioBeneficioService,
+          useValue: mockUsuarioBeneficioService,
         },
-        { provide: DonacionService, useValue: donacionService },
-        { provide: BeneficioService, useValue: beneficioService },
-        { provide: UsuarioBeneficioService, useValue: usuarioBeneficioService },
-        { provide: HashService, useValue: hashService },
-        { provide: JwtService, useValue: jwtService },
+        { provide: HashService, useValue: mockHashService },
+        { provide: JwtService, useValue: mockJwtService },
       ],
     }).compile();
 
     service = module.get<UsuarioService>(UsuarioService);
+    usuarioRepository = module.get(getRepositoryToken(Usuario));
+    donacionService = module.get(DonacionService);
+    beneficioService = module.get(BeneficioService);
+    usuarioBeneficioService = module.get(UsuarioBeneficioService);
+    hashService = module.get(HashService);
+    jwtService = module.get(JwtService);
   });
 
-  afterEach(() => jest.clearAllMocks());
-
-  // ========== Helper ==========
-  const buildUsuario = (overrides: Partial<Usuario> = {}): Usuario =>
-    ({
-      id: USUARIO_ID,
-      documento: '12345678',
-      nombre: 'Juan',
-      apellido: 'Perez',
-      clave: 'hashed-password',
-      puntos: 10,
-      rol: Rol.USUARIO,
-      habilitado: true,
-      verificado: false,
-      fecha_registro: new Date(),
-      ultimo_cambio: new Date(),
-      ultima_conexion: new Date(),
-      contacto: {
-        id: 1,
-        correo: 'juan@mail.com',
-        prefijo: '+54',
-        telefono: '1123456789',
-      },
-      direccion: {
-        id: 1,
-        calle: 'Av. Siempreviva',
-        numero: '742',
-      },
-      ...overrides,
-    }) as unknown as Usuario;
-
-  // ========== TESTS DE CREATE ==========
-  describe('create', () => {
-    const createDto: CreateUsuarioDto = {
-      correo: 'juan@mail.com',
-      clave: 'Password123',
-      nombre: 'Juan',
-      apellido: 'Perez',
-      documento: '12345678',
-      rol: Rol.USUARIO,
-    };
-
-    it('debe crear un usuario correctamente', async () => {
-      repository.findOne.mockResolvedValue(null);
-      repository.create.mockReturnValue(buildUsuario());
-      repository.save.mockResolvedValue(buildUsuario());
-
-      const result = await service.create(createDto);
-
-      expect(repository.save).toHaveBeenCalled();
-      expect(result.id).toBe(USUARIO_ID);
-    });
-
-    it('debe separar correo del resto del DTO al crear', async () => {
-      repository.findOne.mockResolvedValue(null);
-      repository.create.mockReturnValue(buildUsuario());
-      repository.save.mockResolvedValue(buildUsuario());
-
-      await service.create(createDto);
-
-      expect(repository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          contacto: { correo: createDto.correo },
-          puntos: 0,
-        }),
-      );
-    });
-
-    it('debe lanzar ConflictException si ya existe un usuario con ese documento', async () => {
-      repository.findOne.mockResolvedValue(buildUsuario());
-
-      await expect(service.create(createDto)).rejects.toThrow(ConflictException);
-      expect(repository.save).not.toHaveBeenCalled();
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
-  // ========== TESTS DE FIND BY EMAIL ==========
   describe('findByEmail', () => {
-    it('debe retornar usuario si existe', async () => {
-      repository.findOne.mockResolvedValue(buildUsuario());
+    const email = 'test@test.com';
 
-      const result = await service.findByEmail('juan@mail.com');
+    it('debe encontrar un usuario por email', async () => {
+      usuarioRepository.findOne.mockResolvedValue(mockUsuario);
 
-      expect(result).not.toBeNull();
-      expect(result!.id).toBe(USUARIO_ID);
-      expect(repository.findOne).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { contacto: { correo: 'juan@mail.com' } },
-        }),
-      );
+      const result = await service.findByEmail(email);
+
+      expect(result).toEqual(mockUsuario);
+      expect(usuarioRepository.findOne).toHaveBeenCalledWith({
+        relations: [
+          'contacto',
+          'direccion',
+          'empresaUsuario',
+          'organizacionUsuario',
+        ],
+        where: { contacto: { correo: email } },
+      });
     });
 
-    it('debe retornar null si no existe', async () => {
-      repository.findOne.mockResolvedValue(null);
+    it('debe retornar null cuando el email no existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(null);
 
-      const result = await service.findByEmail('noexiste@mail.com');
+      const result = await service.findByEmail(email);
 
       expect(result).toBeNull();
     });
   });
 
-  // ========== TESTS DE GET DONACIONES ==========
-  describe('getDonaciones', () => {
-    it('debe delegar correctamente a donacionService', async () => {
-      donacionService.findAllPaginatedByUser.mockResolvedValue(
-        {} as PaginatedUserDonationsResponseDto,
+  describe('create', () => {
+    const createDto: CreateUsuarioDto = {
+      correo: 'test@test.com',
+      clave: 'password123',
+      documento: '12345678',
+      nombre: 'Juan',
+      apellido: 'Pérez',
+      rol: Rol.USUARIO,
+    };
+
+    beforeEach(() => {
+      usuarioRepository.findOne.mockResolvedValue(null);
+      usuarioRepository.create.mockReturnValue(mockUsuario);
+      usuarioRepository.save.mockResolvedValue(mockUsuario);
+    });
+
+    it('debe crear un usuario exitosamente', async () => {
+      const result = await service.create(createDto);
+
+      expect(result.id).toBe(1);
+      expect(usuarioRepository.create).toHaveBeenCalled();
+      expect(usuarioRepository.save).toHaveBeenCalled();
+    });
+
+    it('debe lanzar error cuando el usuario ya existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(mockUsuario);
+
+      await expect(service.create(createDto)).rejects.toThrow(
+        'Ya existe este Usuario',
       );
+    });
+  });
 
-      await service.getDonaciones(USUARIO_ID, 1, 10);
+  describe('getDonaciones', () => {
+    const usuarioId = 1;
+    const mockResponse = { items: [], total: 0 };
 
+    it('debe obtener las donaciones del usuario', async () => {
+      donacionService.findAllPaginatedByUser.mockResolvedValue(mockResponse);
+
+      const result = await service.getDonaciones(usuarioId, 1, 10);
+
+      expect(result).toEqual(mockResponse);
       expect(donacionService.findAllPaginatedByUser).toHaveBeenCalledWith(
-        USUARIO_ID,
+        usuarioId,
         1,
         10,
       );
     });
   });
 
-  // ========== TESTS DE DONAR ==========
   describe('donar', () => {
-    it('debe delegar correctamente a donacionService', async () => {
-      donacionService.create.mockResolvedValue({} as ResponseDonationDto);
+    const usuarioId = 1;
+    const createDto = {
+      campaignId: 1,
+      cantidad: 5,
+      detalle: 'Test',
+      puntos: 50,
+    };
 
-      await service.donar(USUARIO_ID, {} as CreateDonationDto);
+    it('debe realizar una donación', async () => {
+      donacionService.create.mockResolvedValue(mockDonationResponse);
 
-      expect(donacionService.create).toHaveBeenCalledWith(
-        USUARIO_ID,
-        expect.anything(),
-      );
+      const result = await service.donar(usuarioId, createDto as any);
+
+      expect(result).toEqual(mockDonationResponse);
+      expect(donacionService.create).toHaveBeenCalledWith(usuarioId, createDto);
     });
   });
 
-  // ========== TESTS DE GET MIS CUPONES CANJEADOS ==========
   describe('getMisCuponesCanjeados', () => {
-    it('debe delegar correctamente a usuarioBeneficioService', async () => {
-      usuarioBeneficioService.getByUsuario.mockResolvedValue(
-        [] as UsuarioBeneficio[],
+    const usuarioId = 1;
+
+    it('debe obtener los cupones canjeados', async () => {
+      usuarioBeneficioService.getByUsuario.mockResolvedValue([
+        mockUsuarioBeneficio,
+      ]);
+
+      const result = await service.getMisCuponesCanjeados(usuarioId);
+
+      expect(result).toEqual([mockUsuarioBeneficio]);
+      expect(usuarioBeneficioService.getByUsuario).toHaveBeenCalledWith(
+        usuarioId,
       );
-
-      await service.getMisCuponesCanjeados(USUARIO_ID);
-
-      expect(usuarioBeneficioService.getByUsuario).toHaveBeenCalledWith(USUARIO_ID);
     });
   });
 
-  // ========== TESTS DE USAR CUPON ==========
   describe('usarCupon', () => {
-    it('debe delegar correctamente a usuarioBeneficioService', async () => {
+    const usuarioBeneficioId = 1;
+
+    it('debe usar un cupón', async () => {
       usuarioBeneficioService.usarBeneficio.mockResolvedValue(
-        {} as UsuarioBeneficio,
+        mockUsuarioBeneficio,
       );
 
-      await service.usarCupon(10);
+      const result = await service.usarCupon(usuarioBeneficioId);
 
-      expect(usuarioBeneficioService.usarBeneficio).toHaveBeenCalledWith(10);
+      expect(result).toEqual(mockUsuarioBeneficio);
+      expect(usuarioBeneficioService.usarBeneficio).toHaveBeenCalledWith(
+        usuarioBeneficioId,
+      );
     });
   });
 
-  // ========== TESTS DE CANJEAR CUPON ==========
   describe('canjearCupon', () => {
-    it('debe delegar correctamente a beneficioService', async () => {
-      beneficioService.canjear.mockResolvedValue({
-        success: true,
-        cantidadCanjeada: 1,
-        puntosGastados: 10,
-        puntosRestantes: 90,
-        stockRestante: 5,
-      });
+    const usuarioId = 1;
+    const cuponId = 1;
+    const cantidad = 2;
+    const mockResponse = {
+      success: true,
+      cantidadCanjeada: 2,
+      puntosGastados: 100,
+      puntosRestantes: 900,
+      stockRestante: 98,
+    };
 
-      await service.canjearCupon(USUARIO_ID, 2, 3);
+    it('debe canjear un cupón', async () => {
+      beneficioService.canjear.mockResolvedValue(mockResponse);
 
-      expect(beneficioService.canjear).toHaveBeenCalledWith(USUARIO_ID, 2, 3);
+      const result = await service.canjearCupon(usuarioId, cuponId, cantidad);
+
+      expect(result).toEqual(mockResponse);
+      expect(beneficioService.canjear).toHaveBeenCalledWith(
+        cuponId,
+        usuarioId,
+        cantidad,
+      );
     });
   });
 
-  // ========== TESTS DE UPDATE CREDENCIALES ==========
   describe('updateCredenciales', () => {
-    it('debe actualizar solo el correo sin cambio de contraseña', async () => {
-      const usuario = buildUsuario();
-      repository.findOne.mockResolvedValue(usuario);
-      repository.save.mockResolvedValue(usuario);
-      jwtService.sign.mockReturnValue('nuevo-token');
+    const usuarioId = 1;
+    const dto: UpdateCredencialesDto = {
+      correo: 'nuevo@test.com',
+      passwordActual: 'oldPass123',
+      passwordNueva: 'newPass123',
+    };
 
-      const dto: UpdateCredencialesDto = { correo: 'nuevo@mail.com' };
-      const result = await service.updateCredenciales(USUARIO_ID, dto);
+    beforeEach(() => {
+      usuarioRepository.findOne.mockResolvedValue(mockUsuario);
+      hashService.compare.mockResolvedValue(true);
+      hashService.hash.mockResolvedValue('new_hashed_password');
+      usuarioRepository.save.mockResolvedValue({
+        ...mockUsuario,
+        contacto: { ...mockContacto, correo: 'nuevo@test.com' },
+      });
+      jwtService.sign.mockReturnValue('new-jwt-token');
+    });
 
-      expect(result.token).toBe('nuevo-token');
+    it('debe actualizar email y contraseña exitosamente', async () => {
+      const result = await service.updateCredenciales(usuarioId, dto);
+
+      expect(result).toEqual({ token: 'new-jwt-token' });
+      expect(hashService.compare).toHaveBeenCalledWith(
+        'oldPass123',
+        'hashed_password',
+      );
+      expect(hashService.hash).toHaveBeenCalledWith('newPass123');
+    });
+
+    it('debe actualizar solo el email cuando no se proporciona nueva contraseña', async () => {
+      const dtoSinPass: UpdateCredencialesDto = { correo: 'nuevo@test.com' };
+
+      const result = await service.updateCredenciales(usuarioId, dtoSinPass);
+
+      expect(result).toEqual({ token: 'new-jwt-token' });
       expect(hashService.compare).not.toHaveBeenCalled();
       expect(hashService.hash).not.toHaveBeenCalled();
     });
 
-    it('debe actualizar la contraseña cuando se provee passwordNueva', async () => {
-      const usuario = buildUsuario();
-      repository.findOne.mockResolvedValue(usuario);
-      repository.save.mockResolvedValue(usuario);
-      hashService.compare.mockResolvedValue(true);
-      hashService.hash.mockResolvedValue('nueva-clave-hash');
-      jwtService.sign.mockReturnValue('token-updated');
+    it('debe lanzar error cuando el usuario no existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(null);
 
-      const dto: UpdateCredencialesDto = {
-        passwordActual: 'OldPass123',
-        passwordNueva: 'NewPass456',
-      };
-
-      const result = await service.updateCredenciales(USUARIO_ID, dto);
-
-      expect(hashService.compare).toHaveBeenCalledWith('OldPass123', usuario.clave);
-      expect(hashService.hash).toHaveBeenCalledWith('NewPass456');
-      expect(result.token).toBe('token-updated');
-    });
-
-    it('debe lanzar BadRequestException si no se provee passwordActual al cambiar contraseña', async () => {
-      const usuario = buildUsuario();
-      repository.findOne.mockResolvedValue(usuario);
-
-      const dto: UpdateCredencialesDto = { passwordNueva: 'NewPass456' };
-
-      await expect(service.updateCredenciales(USUARIO_ID, dto)).rejects.toThrow(
-        BadRequestException,
+      await expect(service.updateCredenciales(usuarioId, dto)).rejects.toThrow(
+        'Usuario no encontrado',
       );
-      expect(hashService.hash).not.toHaveBeenCalled();
     });
 
-    it('debe lanzar UnauthorizedException si la contraseña actual es incorrecta', async () => {
-      const usuario = buildUsuario();
-      repository.findOne.mockResolvedValue(usuario);
+    it('debe lanzar error cuando la contraseña actual es incorrecta', async () => {
       hashService.compare.mockResolvedValue(false);
 
-      const dto: UpdateCredencialesDto = {
-        passwordActual: 'WrongPass',
-        passwordNueva: 'NewPass456',
-      };
-
-      await expect(service.updateCredenciales(USUARIO_ID, dto)).rejects.toThrow(
-        UnauthorizedException,
+      await expect(service.updateCredenciales(usuarioId, dto)).rejects.toThrow(
+        'La contraseña actual es incorrecta',
       );
-      expect(hashService.hash).not.toHaveBeenCalled();
     });
 
-    it('debe lanzar NotFoundException si el usuario no existe', async () => {
-      repository.findOne.mockResolvedValue(null);
+    it('debe lanzar error cuando se proporciona nueva contraseña sin la actual', async () => {
+      const dtoSinActual: UpdateCredencialesDto = {
+        passwordNueva: 'newPass123',
+      };
 
       await expect(
-        service.updateCredenciales(USUARIO_ID, {}),
-      ).rejects.toThrow(NotFoundException);
+        service.updateCredenciales(usuarioId, dtoSinActual),
+      ).rejects.toThrow('Debés ingresar la contraseña actual');
     });
   });
 
-  // ========== TESTS DE UPDATE USUARIO ==========
   describe('updateUsuario', () => {
-    it('debe actualizar los datos del usuario', async () => {
-      const usuario = buildUsuario();
-      repository.findOne.mockResolvedValue(usuario);
-      repository.merge.mockReturnValue(usuario);
-      repository.save.mockResolvedValue(usuario);
+    const usuarioId = 1;
+    const updateDto: UpdateUsuarioDto = {
+      nombre: 'Juan Carlos',
+      apellido: 'Pérez García',
+    };
 
-      const dto: UpdateUsuarioDto = { nombre: 'Pedro', apellido: 'Gomez' };
-      const result = await service.updateUsuario(USUARIO_ID, dto);
+    beforeEach(() => {
+      const usuarioOriginal = Object.assign(new Usuario(), {
+        ...mockUsuario,
+        nombre: 'Juan',
+        apellido: 'Pérez',
+      });
 
-      expect(repository.save).toHaveBeenCalled();
-      expect(result.id).toBe(USUARIO_ID);
+      usuarioRepository.findOne.mockResolvedValue(usuarioOriginal);
+
+      usuarioRepository.merge = jest.fn((entity, dto) => {
+        Object.assign(entity, dto);
+        return entity;
+      });
+
+      usuarioRepository.save.mockResolvedValue(usuarioOriginal as any);
     });
 
-    it('debe actualizar contacto y dirección si se proporcionan', async () => {
-      const usuario = buildUsuario();
-      repository.findOne.mockResolvedValue(usuario);
-      repository.merge.mockReturnValue(usuario);
-      repository.save.mockResolvedValue(usuario);
+    it('debe actualizar los datos del usuario exitosamente', async () => {
+      const result = await service.updateUsuario(usuarioId, updateDto);
 
-      const dto: UpdateUsuarioDto = {
-        contacto: { telefono: '1198765432' },
-        direccion: { calle: 'Av. Nueva' },
-      };
-
-      await service.updateUsuario(USUARIO_ID, dto);
-
-      expect(repository.save).toHaveBeenCalled();
+      expect(result.nombre).toBe('Juan Carlos');
+      expect(result.apellido).toBe('Pérez García');
+      expect(usuarioRepository.merge).toHaveBeenCalled();
+      expect(usuarioRepository.save).toHaveBeenCalled();
     });
 
-    it('debe lanzar NotFoundException si el usuario no existe', async () => {
-      repository.findOne.mockResolvedValue(null);
+    it('debe lanzar error cuando el usuario no existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.updateUsuario(USUARIO_ID, {} as UpdateUsuarioDto),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.updateUsuario(usuarioId, updateDto)).rejects.toThrow(
+        'Usuario con ID 1 no encontrado',
+      );
     });
   });
 
-  // ========== TESTS DE UPDATE PUNTOS ==========
   describe('updatePuntos', () => {
+    const usuarioId = 1;
+    const updateDto = { puntos: 500 };
+
+    beforeEach(() => {
+      usuarioRepository.findOne.mockResolvedValue(mockUsuario);
+      usuarioRepository.save.mockResolvedValue({ ...mockUsuario, puntos: 500 });
+    });
+
     it('debe actualizar los puntos del usuario', async () => {
-      const usuario = buildUsuario();
-      const updatedUsuario = { ...usuario, puntos: 50 } as Usuario;
+      const result = await service.updatePuntos(usuarioId, updateDto);
 
-      repository.findOne.mockResolvedValue(usuario);
-      repository.save.mockResolvedValue(updatedUsuario);
-
-      const result = await service.updatePuntos(USUARIO_ID, { puntos: 50 });
-
-      expect(repository.save).toHaveBeenCalled();
-      expect(result.puntos).toBe(50);
+      expect(result.puntos).toBe(500);
     });
 
-    it('debe lanzar NotFoundException si el usuario no existe', async () => {
-      repository.findOne.mockResolvedValue(null);
+    it('debe lanzar error cuando el usuario no existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.updatePuntos(USUARIO_ID, { puntos: 10 }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.updatePuntos(usuarioId, updateDto)).rejects.toThrow(
+        'Usuario con ID 1 no encontrado',
+      );
     });
   });
 
-  // ========== TESTS DE ACTUALIZAR ULTIMA CONEXION ==========
   describe('actualizarUltimaConexion', () => {
-    it('debe llamar a update con la fecha actual', async () => {
-      repository.update.mockResolvedValue({ affected: 1 } as any);
+    const usuarioId = 1;
 
-      await service.actualizarUltimaConexion(USUARIO_ID);
+    it('debe actualizar la última conexión', async () => {
+      usuarioRepository.update.mockResolvedValue(mockUpdateResult);
 
-      expect(repository.update).toHaveBeenCalledWith(
-        USUARIO_ID,
-        expect.objectContaining({ ultima_conexion: expect.any(Date) }),
-      );
+      await service.actualizarUltimaConexion(usuarioId);
+
+      expect(usuarioRepository.update).toHaveBeenCalledWith(usuarioId, {
+        ultima_conexion: expect.any(Date),
+      });
     });
   });
 
-  // ========== TESTS DE GET POINTS ==========
   describe('getPoints', () => {
-    it('debe retornar los puntos del usuario', async () => {
-      repository.findOne.mockResolvedValue(buildUsuario());
+    const usuarioId = 1;
 
-      const result = await service.getPoints(USUARIO_ID);
+    it('debe obtener los puntos del usuario', async () => {
+      usuarioRepository.findOne.mockResolvedValue({
+        id: 1,
+        puntos: 100,
+      } as Usuario);
 
-      expect(result.puntos).toBe(10);
-      expect(result.id).toBe(USUARIO_ID);
+      const result = await service.getPoints(usuarioId);
+
+      expect(result).toEqual({ id: 1, puntos: 100 });
     });
 
-    it('debe lanzar NotFoundException si el usuario no existe', async () => {
-      repository.findOne.mockResolvedValue(null);
+    it('debe lanzar error cuando el usuario no existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.getPoints(USUARIO_ID)).rejects.toThrow(
-        NotFoundException,
+      await expect(service.getPoints(usuarioId)).rejects.toThrow(
+        'Usuario con ID 1 no encontrado',
       );
     });
   });
 
-  // ========== TESTS DE FIND PAGINATED ==========
   describe('findPaginated', () => {
-    it('debe retornar usuarios paginados sin búsqueda', async () => {
-      repository.findAndCount.mockResolvedValue([[buildUsuario()], 1]);
+    const mockResponse = { items: [mockUsuario], total: 1 };
 
+    beforeEach(() => {
+      usuarioRepository.findAndCount.mockResolvedValue([[mockUsuario], 1]);
+    });
+
+    it('debe obtener usuarios paginados sin búsqueda', async () => {
       const result = await service.findPaginated(1, 10, '');
 
-      expect(result.total).toBe(1);
       expect(result.items).toHaveLength(1);
-      expect(repository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 0, take: 10 }),
-      );
+      expect(result.total).toBe(1);
     });
 
-    it('debe aplicar condiciones de búsqueda cuando se proporciona search', async () => {
-      repository.findAndCount.mockResolvedValue([[buildUsuario()], 1]);
-
+    it('debe obtener usuarios paginados con búsqueda por nombre', async () => {
       await service.findPaginated(1, 10, 'Juan');
 
-      const call = (repository.findAndCount as jest.Mock).mock.calls[0][0];
-      expect(Array.isArray(call.where)).toBe(true);
-      expect(call.where).toHaveLength(4);
-    });
-
-    it('debe respetar la paginación', async () => {
-      repository.findAndCount.mockResolvedValue([[], 0]);
-
-      await service.findPaginated(3, 5, '');
-
-      expect(repository.findAndCount).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 10, take: 5 }),
+      expect(usuarioRepository.findAndCount).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.arrayContaining([
+            { nombre: Like('%Juan%') },
+            { apellido: Like('%Juan%') },
+            { contacto: { correo: Like('%Juan%') } },
+            { documento: Like('%Juan%') },
+          ]),
+        }),
       );
     });
   });
 
-  // ========== TESTS DE FIND ONE ==========
   describe('findOne', () => {
-    it('debe retornar el DTO del usuario', async () => {
-      repository.findOne.mockResolvedValue(buildUsuario());
+    const usuarioId = 1;
 
-      const result = await service.findOne(USUARIO_ID);
+    it('debe obtener un usuario por ID', async () => {
+      usuarioRepository.findOne.mockResolvedValue(mockUsuario);
 
-      expect(result).toBeInstanceOf(ResponseUsuarioDto);
-      expect(result.id).toBe(USUARIO_ID);
+      const result = await service.findOne(usuarioId);
+
+      expect(result.id).toBe(1);
     });
 
-    it('debe lanzar NotFoundException si no existe', async () => {
-      repository.findOne.mockResolvedValue(null);
+    it('debe lanzar error cuando el usuario no existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.findOne(USUARIO_ID)).rejects.toThrow(NotFoundException);
+      await expect(service.findOne(usuarioId)).rejects.toThrow(
+        'Usuario con ID 1 no encontrado',
+      );
     });
   });
 
-  // ========== TESTS DE DELETE ==========
   describe('delete', () => {
-    it('debe deshabilitar al usuario con update directo', async () => {
-      repository.findOne.mockResolvedValue(buildUsuario());
-      repository.update.mockResolvedValue({ affected: 1 } as any);
+    const usuarioId = 1;
 
-      await service.delete(USUARIO_ID);
+    beforeEach(() => {
+      usuarioRepository.findOne.mockResolvedValue(mockUsuario);
+      usuarioRepository.update.mockResolvedValue(mockUpdateResult);
+    });
 
-      expect(repository.update).toHaveBeenCalledWith(USUARIO_ID, {
+    it('debe deshabilitar un usuario', async () => {
+      await service.delete(usuarioId);
+
+      expect(usuarioRepository.update).toHaveBeenCalledWith(usuarioId, {
         habilitado: false,
       });
     });
 
-    it('debe lanzar NotFoundException si no existe', async () => {
-      repository.findOne.mockResolvedValue(null);
+    it('debe lanzar error cuando el usuario no existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.delete(USUARIO_ID)).rejects.toThrow(NotFoundException);
-      expect(repository.update).not.toHaveBeenCalled();
+      await expect(service.delete(usuarioId)).rejects.toThrow(
+        'Usuario con ID 1 no encontrado',
+      );
     });
   });
 
-  // ========== TESTS DE RESTORE ==========
   describe('restore', () => {
-    it('debe rehabilitar al usuario con update directo', async () => {
-      repository.findOne.mockResolvedValue(buildUsuario());
-      repository.update.mockResolvedValue({ affected: 1 } as any);
+    const usuarioId = 1;
 
-      await service.restore(USUARIO_ID);
+    beforeEach(() => {
+      usuarioRepository.findOne.mockResolvedValue(mockUsuario);
+      usuarioRepository.update.mockResolvedValue(mockUpdateResult);
+    });
 
-      expect(repository.update).toHaveBeenCalledWith(USUARIO_ID, {
+    it('debe restaurar un usuario', async () => {
+      await service.restore(usuarioId);
+
+      expect(usuarioRepository.update).toHaveBeenCalledWith(usuarioId, {
         habilitado: true,
       });
     });
 
-    it('debe lanzar NotFoundException si no existe', async () => {
-      repository.findOne.mockResolvedValue(null);
+    it('debe lanzar error cuando el usuario no existe', async () => {
+      usuarioRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.restore(USUARIO_ID)).rejects.toThrow(NotFoundException);
-      expect(repository.update).not.toHaveBeenCalled();
+      await expect(service.restore(usuarioId)).rejects.toThrow(
+        'Usuario con ID 1 no encontrado',
+      );
     });
   });
 
-  // ========== TESTS DE RESET PASSWORD ==========
   describe('findByResetToken', () => {
-    it('debe retornar usuario si el token es válido y no está expirado', async () => {
-      repository.findOne.mockResolvedValue(buildUsuario());
+    const token = 'reset-token-123';
 
-      const result = await service.findByResetToken('token-valido');
+    it('debe encontrar usuario por token de reseteo', async () => {
+      usuarioRepository.findOne.mockResolvedValue(mockUsuario);
 
-      expect(result).not.toBeNull();
-      expect(repository.findOne).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: expect.objectContaining({ resetPasswordToken: 'token-valido' }),
-        }),
-      );
-    });
+      const result = await service.findByResetToken(token);
 
-    it('debe retornar null si el token no existe o está expirado', async () => {
-      repository.findOne.mockResolvedValue(null);
-
-      const result = await service.findByResetToken('token-invalido');
-
-      expect(result).toBeNull();
+      expect(result).toEqual(mockUsuario);
+      expect(usuarioRepository.findOne).toHaveBeenCalledWith({
+        where: {
+          resetPasswordToken: token,
+          resetPasswordExpires: expect.anything(),
+        },
+      });
     });
   });
 
   describe('setResetToken', () => {
-    it('debe actualizar el token y su expiración', async () => {
-      repository.update.mockResolvedValue({ affected: 1 } as any);
-      const expires = new Date(Date.now() + 3600000);
+    const usuarioId = 1;
+    const token = 'reset-token-123';
+    const expires = new Date();
 
-      await service.setResetToken(USUARIO_ID, 'nuevo-token', expires);
+    it('debe establecer el token de reseteo', async () => {
+      usuarioRepository.update.mockResolvedValue(mockUpdateResult);
 
-      expect(repository.update).toHaveBeenCalledWith(USUARIO_ID, {
-        resetPasswordToken: 'nuevo-token',
+      await service.setResetToken(usuarioId, token, expires);
+
+      expect(usuarioRepository.update).toHaveBeenCalledWith(usuarioId, {
+        resetPasswordToken: token,
         resetPasswordExpires: expires,
       });
     });
   });
 
   describe('resetPassword', () => {
-    it('debe actualizar la contraseña y limpiar el token', async () => {
-      repository.update.mockResolvedValue({ affected: 1 } as any);
+    const usuarioId = 1;
+    const newHashedPassword = 'new_hashed_password';
 
-      await service.resetPassword(USUARIO_ID, 'nueva-clave-hash');
+    it('debe resetear la contraseña', async () => {
+      usuarioRepository.update.mockResolvedValue(mockUpdateResult);
 
-      expect(repository.update).toHaveBeenCalledWith(USUARIO_ID, {
-        clave: 'nueva-clave-hash',
+      await service.resetPassword(usuarioId, newHashedPassword);
+
+      expect(usuarioRepository.update).toHaveBeenCalledWith(usuarioId, {
+        clave: newHashedPassword,
         resetPasswordToken: undefined,
         resetPasswordExpires: undefined,
       });

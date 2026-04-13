@@ -5,9 +5,6 @@ import { RankingDonador } from '../../Entities/ranking.entity';
 import { RankingDTO } from './dto/ranking.dto';
 import { ErrorManager } from '../../common/errors/error.manager';
 
-/**
- * Servicio que maneja la lÃ³gica de negocio para el Ranking
- */
 @Injectable()
 export class RankingService {
   private readonly logger = new Logger(RankingService.name);

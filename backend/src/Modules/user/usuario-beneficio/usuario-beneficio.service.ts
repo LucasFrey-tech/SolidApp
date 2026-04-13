@@ -5,21 +5,6 @@ import { UsuarioBeneficio } from '../../../Entities/usuario-beneficio.entity';
 import { BeneficiosUsuarioEstado } from '../../benefit/dto/enum/enum';
 import { ErrorManager } from '../../../common/errors/error.manager';
 
-/**
- * =============================================================================
- * UsuarioBeneficioService
- * =============================================================================
- * Servicio encargado de gestionar los beneficios (cupones) asociados
- * a los usuarios del sistema.
- *
- * Funcionalidades:
- *  - Obtener beneficios de un usuario
- *  - Reclamar un beneficio (crear o acumular)
- *  - Usar un beneficio disponible
- *
- * Todas las operaciones interactúan con la entidad UsuarioBeneficio.
- * =============================================================================
- */
 @Injectable()
 export class UsuarioBeneficioService {
   private readonly logger = new Logger(UsuarioBeneficioService.name);

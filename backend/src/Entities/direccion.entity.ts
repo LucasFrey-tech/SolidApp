@@ -1,10 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-/**
- * Entidad Direccion
- * Almacena información de ubicación física reutilizable para Usuarios, Empresas y Organizaciones
- */
 @Entity('direcciones')
 export class Direccion {
   @ApiProperty({

@@ -10,6 +10,7 @@ import { EmailService } from '../email/email.service';
 import { RolSecundario } from '../user/enums/enums';
 import { ErrorManager } from '../../common/errors/error.manager';
 import { ResultadoProcesamiento } from './type/resultadoProcesamiento';
+
 @Injectable()
 export class InvitacionesService {
   constructor(
@@ -367,8 +368,8 @@ export class InvitacionesService {
   ): Promise<OrganizacionUsuario> {
     try {
       const relacion = this.organizacionUsuarioRepo.create({
-        id_usuario: usuarioId,
-        id_organizacion: organizacionId,
+        usuario: { id: usuarioId },
+        organizacion: { id: organizacionId },
         rol: RolSecundario.MIEMBRO,
         activo: true,
       });
@@ -391,8 +392,8 @@ export class InvitacionesService {
   ): Promise<EmpresaUsuario> {
     try {
       const relacion = this.empresaUsuarioRepo.create({
-        id_usuario: usuarioId,
-        id_empresa: empresaId,
+        usuario: { id: usuarioId },
+        empresa: { id: empresaId },
         rol: RolSecundario.MIEMBRO,
         activo: true,
       });

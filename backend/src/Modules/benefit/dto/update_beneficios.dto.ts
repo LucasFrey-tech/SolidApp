@@ -3,9 +3,6 @@ import { CreateBeneficiosDTO } from './create_beneficios.dto';
 import { IsEnum, IsOptional, Min } from 'class-validator';
 import { BeneficioEstado } from './enum/enum';
 
-/**
- * DTO para la actualizacion de datos de los Beneficios.
- */
 export class UpdateBeneficiosDTO extends PartialType(CreateBeneficiosDTO) {
   @ApiProperty({
     example: 10,

@@ -16,9 +16,6 @@ import { BeneficioEstado, BeneficiosUsuarioEstado } from './dto/enum/enum';
 import { Rol } from '../user/enums/enums';
 import { ErrorManager } from '../../common/errors/error.manager';
 
-/**
- * Servicio que maneja la lógica de negocio para los Beneficios.
- */
 @Injectable()
 export class BeneficioService {
   private readonly logger = new Logger(BeneficioService.name);

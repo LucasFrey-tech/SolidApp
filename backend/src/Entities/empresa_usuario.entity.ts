@@ -28,20 +28,6 @@ export class EmpresaUsuario {
   id: number;
 
   @ApiProperty({
-    example: 5,
-    description: 'ID del usuario que gestiona la empresa',
-  })
-  @Column({ type: 'int', nullable: false })
-  id_usuario: number;
-
-  @ApiProperty({
-    example: 2,
-    description: 'ID de la empresa gestionada',
-  })
-  @Column({ type: 'int', nullable: false })
-  id_empresa: number;
-
-  @ApiProperty({
     example: '2024-01-15T10:30:00Z',
     description: 'Fecha en que el usuario fue asignado a la empresa',
   })
@@ -67,8 +53,6 @@ export class EmpresaUsuario {
     default: RolSecundario.MIEMBRO,
   })
   rol: RolSecundario;
-
-  // ==================== RELACIONES ====================
 
   @ApiProperty({
     description: 'Usuario que gestiona',
