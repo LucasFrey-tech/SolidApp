@@ -1,6 +1,6 @@
 import { Invitacion, InvitacionCrearResponse } from "../types/invitaciones/invitaciones";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const API_URL = process.env.NEST_PUBLIC_API_URL || "http://localhost:3001";
 
 interface InvitacionesResponse {
   items: Invitacion[];
@@ -65,7 +65,7 @@ export class InvitacionesOrganizacionService {
 
   async validarToken(token: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/invitaciones/${token}/validacion`,
+    `${API_URL}/invitaciones/${token}/validacion`,
     {
       method: "GET",
     }
