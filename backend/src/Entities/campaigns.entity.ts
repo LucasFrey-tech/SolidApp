@@ -17,18 +17,10 @@ import { Usuario } from './usuario.entity';
 
 @Entity('campañas')
 export class Campaigns {
-  /**
-   * Id único de la Campaña
-   * @type {number}
-   */
   @ApiProperty({ example: 1, description: 'Id único de la Campaña' })
   @PrimaryGeneratedColumn()
   id: number;
 
-  /**
-   * Estado de la Campaña
-   * @type {CampaignEstado}
-   */
   @ApiProperty({
     example: 'Activa',
     description: 'Indica si la Campaña esta activa',
@@ -36,10 +28,6 @@ export class Campaigns {
   @Column({ type: 'varchar', length: 20 })
   estado?: CampaignEstado;
 
-  /**
-   * Título de la Campaña
-   * @type {string}
-   */
   @ApiProperty({
     example: 'Doná y Ganá: Tu Compra se Convierte en Ayuda',
     description: 'Titulo de la Campaña Solidaria',
@@ -47,10 +35,6 @@ export class Campaigns {
   @Column({ type: 'varchar', length: 255 })
   titulo: string;
 
-  /**
-   * Descripción de la Campaña
-   * @type {string}
-   */
   @ApiProperty({
     example: 'Doná hoy y ayudá a quienes más lo necesitan',
     description: 'Descripción de la Campaña Solidaria',
@@ -58,10 +42,6 @@ export class Campaigns {
   @Column({ type: 'varchar', length: 255 })
   descripcion: string;
 
-  /**
-   * Fecha de Inicio de la Campaña
-   * @type {Date}
-   */
   @ApiProperty({
     example: '2025-12-15',
     description: 'Fecha de Inicio de la Campaña Solidaria',
@@ -69,10 +49,6 @@ export class Campaigns {
   @Column({ type: 'date' })
   fecha_Inicio: Date;
 
-  /**
-   * Fecha de Finalizacion de la Campaña
-   * @type {Date}
-   */
   @ApiProperty({
     example: '2025-12-15',
     description: 'Fecha de Finalización de la Campaña Solidaria',
@@ -80,10 +56,6 @@ export class Campaigns {
   @Column({ type: 'date' })
   fecha_Fin: Date;
 
-  /**
-   * Fecha de Registro de la Campaña
-   * @type {Date}
-   */
   @ApiProperty({
     example: '2025-12-15',
     description: 'Fecha de la Creación de la Campaña Solidaria',
@@ -91,14 +63,13 @@ export class Campaigns {
   @CreateDateColumn({ type: 'datetime2' })
   fecha_Registro: Date;
 
+  @ApiPropertyOptional({
+    description: 'Usuario que creó la campaña',
+  })
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'creado_por_id' })
   creado_por?: Usuario;
 
-  /**
-   * Objetivo de la Campaña
-   * @type {number}
-   */
   @ApiProperty({
     example: 50,
     description:
@@ -114,10 +85,6 @@ export class Campaigns {
   @Column({ type: 'int', default: 0 })
   puntos: number;
 
-  /**
-   * Fecha del Ultimo cambio de la Campaña
-   * @type {Date}
-   */
   @ApiProperty({
     example: '2025-12-15T10:30:45Z',
     description: 'Fecha del Ultimo cambio realizado a la Campaña Solidaria',
@@ -125,23 +92,18 @@ export class Campaigns {
   @UpdateDateColumn({ type: 'datetime2' })
   ultimo_cambio: Date;
 
+  @ApiPropertyOptional({
+    description: 'Usuario que realizó el último cambio en la campaña',
+  })
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'actualizado_por_id' })
   actualizado_por?: Usuario;
 
-  /**
-   * Organización asociadas
-   * @type {Organizacion}
-   */
   @ApiProperty({ example: 1, description: 'Clave Foranea de la Organización' })
   @ManyToOne(() => Organizacion, (organizacion) => organizacion.campaign)
   @JoinColumn({ name: 'id_organizacion' })
   organizacion: Organizacion;
 
-  /**
-   * Donaciones asociadas a la organización
-   * @type {Donations}
-   */
   @ApiProperty({
     type: () => Donaciones,
     isArray: true,
@@ -150,10 +112,6 @@ export class Campaigns {
   @OneToMany(() => Donaciones, (donation) => donation.campaña)
   donaciones: Donaciones[];
 
-  /**
-   * Imagenes relacionadas a la campaña
-   * @type {imagenesCampania}
-   */
   @ApiPropertyOptional({
     type: () => imagenes_campania,
     isArray: true,

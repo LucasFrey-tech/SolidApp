@@ -35,25 +35,49 @@ export class Invitacion {
   @Column({ type: 'varchar', length: 255 })
   correo: string;
 
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Empresa asociada a la invitación',
+  })
   @ManyToOne(() => Empresa, { nullable: true })
   @JoinColumn({ name: 'empresaId' })
   empresa?: Empresa;
 
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Organización asociada a la invitación',
+  })
   @ManyToOne(() => Organizacion, { nullable: true })
   @JoinColumn({ name: 'organizacionId' })
   organizacion?: Organizacion;
 
+  @ApiProperty({
+    example: 1,
+    description: 'Usuario que envió la invitación',
+  })
   @ManyToOne(() => Usuario)
   @JoinColumn({ name: 'invitadorID' })
   invitador: Usuario;
 
+  @ApiProperty({
+    example: 1,
+    description: 'ID del usuario que envió la invitación',
+  })
   @Column()
   invitadorID: number;
 
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Usuario que aceptó la invitación',
+  })
   @ManyToOne(() => Usuario, { nullable: true })
   @JoinColumn({ name: 'usuarioId' })
   usuario?: Usuario;
 
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'ID del usuario que aceptó la invitación',
+  })
   @Column({ nullable: true })
   usuarioId?: number;
 
