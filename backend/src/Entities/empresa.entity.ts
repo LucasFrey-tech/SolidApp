@@ -150,8 +150,6 @@ export class Empresa {
   @JoinColumn({ name: 'actualizado_por_id' })
   actualizado_por?: Usuario;
 
-  // ==================== RELACIONES ====================
-
   @ApiPropertyOptional({
     description: 'Relaciones empresa-usuario con roles (tabla intermedia)',
     type: () => [EmpresaUsuario],

@@ -10,10 +10,6 @@ import { Campaigns } from './campaigns.entity';
 
 @Entity('imagenes_campaña')
 export class imagenes_campania {
-  /**
-   * Id única de la Imagen de la Campaña
-   * @type {number}
-   */
   @ApiProperty({
     example: 1,
     description: 'Id única de la Imagen de la Campaña',
@@ -21,26 +17,15 @@ export class imagenes_campania {
   @PrimaryGeneratedColumn()
   id: number;
 
-  /**
-   * Imagen de la Campaña
-   * @type {string}
-   */
   @ApiProperty({ example: 'imagen.jpg', description: 'Imagen de la Campaña' })
   @Column({ type: 'varchar', length: 255 })
   imagen: string;
 
-  /**
-   * Campaña asociada
-   * @type {Campaigns}
-   */
   @ApiProperty({ example: 1, description: 'Id Foranea de la Campaña' })
   @ManyToOne(() => Campaigns, (campaign) => campaign.imagenes)
   @JoinColumn({ name: 'campañas_id' })
   campaign: Campaigns;
 
-  /**
-   * Indica si la imágen es portada
-   */
   @ApiProperty({
     example: false,
     description: 'Variable Booleana que indica si la imágen es portada',
