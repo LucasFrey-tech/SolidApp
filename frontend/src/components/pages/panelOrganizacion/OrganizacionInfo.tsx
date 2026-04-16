@@ -9,6 +9,8 @@ import {
 } from "@/API/types/organizaciones";
 import styles from "@/styles/Paneles/organizacionInfo.module.css";
 import { useUser } from "@/app/context/UserContext";
+import { NumericInput } from "@/components/Utils/NumericInputProp";
+import { LetterInput } from "@/components/Utils/letterInputProps";
 
 function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
     return Object.fromEntries(
@@ -130,7 +132,7 @@ export default function OrganizationInfo() {
             <div className={styles.grid}>
                 <div className={styles.formGroup}>
                     <label>Nombre de la organización</label>
-                    <input
+                    <LetterInput
                         className={styles.input}
                         value={form.nombre_organizacion}
                         disabled={!isGestor}
@@ -142,7 +144,7 @@ export default function OrganizationInfo() {
 
                 <div className={styles.formGroup}>
                     <label>Razón social</label>
-                    <input
+                    <LetterInput
                         className={styles.input}
                         value={form.razon_social}
                         disabled={!isGestor}
@@ -154,7 +156,7 @@ export default function OrganizationInfo() {
 
                 <div className={styles.formGroup}>
                     <label>CUIT</label>
-                    <input
+                    <NumericInput
                         className={styles.input}
                         value={form.cuit}
                         disabled={!isGestor}
@@ -183,7 +185,7 @@ export default function OrganizationInfo() {
                 </div>
                 <div className={styles.formGroup}>
                     <label>Prefijo</label>
-                    <input
+                    <NumericInput
                         className={styles.input}
                         value={form.prefijo}
                         disabled={!isGestor}
@@ -193,7 +195,7 @@ export default function OrganizationInfo() {
 
                 <div className={styles.formGroup}>
                     <label>Teléfono</label>
-                    <input
+                    <NumericInput
                         className={styles.input}
                         value={form.telefono}
                         disabled={!isGestor}
@@ -213,7 +215,7 @@ export default function OrganizationInfo() {
 
                 <div className={styles.formGroup}>
                     <label>Número</label>
-                    <input
+                    <NumericInput
                         className={styles.input}
                         value={form.numero}
                         disabled={!isGestor}
@@ -223,7 +225,7 @@ export default function OrganizationInfo() {
 
                 <div className={styles.formGroup}>
                     <label>Provincia</label>
-                    <input
+                    <LetterInput
                         className={styles.input}
                         value={form.provincia}
                         disabled={!isGestor}
@@ -233,7 +235,7 @@ export default function OrganizationInfo() {
 
                 <div className={styles.formGroup}>
                     <label>Ciudad</label>
-                    <input
+                    <LetterInput
                         className={styles.input}
                         value={form.ciudad}
                         disabled={!isGestor}

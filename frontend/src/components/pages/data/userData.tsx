@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { User } from "@/API/types/user";
 import { useUser } from "@/app/context/UserContext";
 import { Rol } from "@/API/types/auth";
+import { LetterInput } from "@/components/Utils/letterInputProps";
 
 type EditableUserFields = {
   documento: string;
@@ -163,6 +164,7 @@ export default function UserData() {
               <NumericInput
                 className={styles.Input}
                 value={editableData?.documento}
+                maxLength={8}
                 readOnly={!isAdmin}
                 onChange={
                   isAdmin
@@ -174,7 +176,7 @@ export default function UserData() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Nombre</label>
-              <input
+              <LetterInput
                 className={styles.Input}
                 type="text"
                 value={editableData?.nombre}
@@ -193,7 +195,7 @@ export default function UserData() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Apellido</label>
-              <input
+              <LetterInput
                 className={styles.Input}
                 type="text"
                 value={editableData?.apellido}
@@ -219,7 +221,7 @@ export default function UserData() {
           <div className={styles.Grid}>
             <div className={styles.Field}>
               <label className={styles.Label}>Calle</label>
-              <input
+              <LetterInput
                 className={styles.Input}
                 type="text"
                 value={editableData.calle}
@@ -239,6 +241,7 @@ export default function UserData() {
               <NumericInput
                 className={styles.Input}
                 value={editableData.numero}
+                maxLength={6}
                 onChange={(e) => handleInputChange("numero", e.target.value)}
                 placeholder="123"
                 required
@@ -258,9 +261,10 @@ export default function UserData() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Código Postal</label>
-              <NumericInput
+              <input
                 className={styles.Input}
                 value={editableData.codigo_postal}
+                maxLength={8}
                 onChange={(e) =>
                   handleInputChange("codigo_postal", e.target.value)
                 }
@@ -271,7 +275,7 @@ export default function UserData() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Provincia</label>
-              <input
+              <LetterInput
                 className={styles.Input}
                 type="text"
                 value={editableData.provincia}
@@ -288,7 +292,7 @@ export default function UserData() {
 
             <div className={styles.Field}>
               <label className={styles.Label}>Ciudad</label>
-              <input
+              <LetterInput
                 className={styles.Input}
                 type="text"
                 value={editableData.ciudad}
@@ -315,7 +319,7 @@ export default function UserData() {
               <NumericInput
                 className={styles.Input}
                 value={editableData.prefijo}
-                maxLength={5}
+                maxLength={4}
                 onChange={(e) => handleInputChange("prefijo", e.target.value)}
                 placeholder="11"
                 required
@@ -327,6 +331,7 @@ export default function UserData() {
               <NumericInput
                 className={styles.Input}
                 value={editableData.telefono}
+                maxLength={10}
                 onChange={(e) => handleInputChange("telefono", e.target.value)}
                 placeholder="12345678"
                 required

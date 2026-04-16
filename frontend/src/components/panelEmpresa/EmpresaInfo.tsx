@@ -7,6 +7,8 @@ import { Empresa, EmpresaUpdateRequest } from "@/API/types/empresas";
 import styles from "@/styles/Paneles/empresaInfo.module.css";
 import { useUser } from "@/app/context/UserContext";
 import Image from "next/image";
+import { LetterInput } from "../Utils/letterInputProps";
+import { NumericInput } from "../Utils/NumericInputProp";
 
 function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
   return Object.fromEntries(
@@ -177,7 +179,7 @@ export default function EmpresaInfo() {
 
         <div className={styles.formGroup}>
           <label>Razón social</label>
-          <input
+          <LetterInput
             className={styles.input}
             value={form.razon_social}
             disabled={!isGestor}
@@ -187,7 +189,7 @@ export default function EmpresaInfo() {
 
         <div className={styles.formGroup}>
           <label>CUIT</label>
-          <input
+          <NumericInput
             className={styles.input}
             value={form.cuit}
             disabled={!isGestor}
@@ -216,7 +218,7 @@ export default function EmpresaInfo() {
         </div>
         <div className={styles.formGroup}>
           <label>Prefijo</label>
-          <input
+          <NumericInput
             className={styles.input}
             value={form.prefijo}
             disabled={!isGestor}
@@ -226,7 +228,7 @@ export default function EmpresaInfo() {
 
         <div className={styles.formGroup}>
           <label>Teléfono</label>
-          <input
+          <NumericInput
             className={styles.input}
             value={form.telefono}
             disabled={!isGestor}
@@ -236,7 +238,7 @@ export default function EmpresaInfo() {
 
         <div className={styles.formGroup}>
           <label>Calle</label>
-          <input
+          <LetterInput
             className={styles.input}
             value={form.calle}
             disabled={!isGestor}
@@ -246,7 +248,7 @@ export default function EmpresaInfo() {
 
         <div className={styles.formGroup}>
           <label>Número</label>
-          <input
+          <NumericInput
             className={styles.input}
             value={form.numero}
             disabled={!isGestor}
@@ -256,7 +258,7 @@ export default function EmpresaInfo() {
 
         <div className={styles.formGroup}>
           <label>Provincia</label>
-          <input
+          <LetterInput
             className={styles.input}
             value={form.provincia}
             disabled={!isGestor}
@@ -266,7 +268,7 @@ export default function EmpresaInfo() {
 
         <div className={styles.formGroup}>
           <label>Ciudad</label>
-          <input
+          <LetterInput
             className={styles.input}
             value={form.ciudad}
             disabled={!isGestor}

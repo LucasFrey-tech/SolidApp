@@ -5,6 +5,8 @@ import { z } from "zod";
 import styles from "@/styles/login-registro/registro.module.css";
 import Swal from "sweetalert2";
 import { baseApi } from "@/API/baseApi";
+import { NumericInput } from "../Utils/NumericInputProp";
+import { LetterInput } from "../Utils/letterInputProps";
 
 const usuarioSchema = z
   .object({
@@ -169,7 +171,7 @@ export default function RegistroUsuario({
           {/* DOCUMENTO */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Documento</label>
-            <input
+            <NumericInput
               className={`${styles.input} ${
                 errors.documento ? styles.inputError : ""
               }`}
@@ -240,7 +242,7 @@ export default function RegistroUsuario({
 
           {/* NOMBRE */}
           <div className={styles.fieldGroup}>
-            <label className={styles.label}>Nombre</label>
+            <LetterInput className={styles.label}>Nombre</LetterInput>
             <input
               className={`${styles.input} ${
                 errors.nombre ? styles.inputError : ""
@@ -257,7 +259,7 @@ export default function RegistroUsuario({
           {/* APELLIDO */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Apellido</label>
-            <input
+            <LetterInput
               className={`${styles.input} ${
                 errors.apellido ? styles.inputError : ""
               }`}
