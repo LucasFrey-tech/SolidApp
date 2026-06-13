@@ -1,3 +1,5 @@
+![image alt](https://github.com/LucasFrey-tech/SolidApp/blob/06f92dbbdad3d866796ebf59f6115edd0c6803d3/frontend/public/logos/SolidApp_sqr_logo.svg)
+
 # SolidApp – Plataforma de Donaciones y Campañas Solidarias con Sistema de Recompensas
 
 ## Descripción 
