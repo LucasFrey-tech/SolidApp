@@ -59,9 +59,7 @@ export default function Empresas() {
 
         setEmpresas(items);
 
-        setTotalPages(
-          Math.ceil((res.total ?? items.length) / LIMIT),
-        );
+        setTotalPages(Math.max(1, Math.ceil(res.total / LIMIT)));
       } catch (err) {
         console.error(err);
         setError('Error al cargar empresas');
