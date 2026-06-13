@@ -242,8 +242,8 @@ export default function RegistroUsuario({
 
           {/* NOMBRE */}
           <div className={styles.fieldGroup}>
-            <LetterInput className={styles.label}>Nombre</LetterInput>
-            <input
+            <label className={styles.label}>Nombre</label>
+            <LetterInput
               className={`${styles.input} ${
                 errors.nombre ? styles.inputError : ""
               }`}
